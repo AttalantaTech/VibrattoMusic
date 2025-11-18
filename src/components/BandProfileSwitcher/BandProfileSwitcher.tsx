@@ -1,0 +1,105 @@
+import React, { useState, useRef, useEffect } from "react";
+import { ChevronDown, Check } from "lucide-react";
+import { Avatar } from "../Avatar/Avatar";
+import { cn } from "../../lib/utils/cn";
+
+export interface MusicalProduct {
+	id: string;
+	name: string;
+	avatarUrl?: string;
+}
+
+export interface BandProfileSwitcherProps {
+	activeMusicalProduct: MusicalProduct;
+	musicalProducts: MusicalProduct[];
+	onProductChange: (product: MusicalProduct) => void;
+	className?: string;
+}
+
+export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
+	activeMusicalProduct,
+	musicalProducts,
+	onProductChange,
+	className,
+}) => {
+	const [isOpen, setIsOpen] = useState(false);
+	const dropdownRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				dropdownRef.current &&
+				!dropdownRef.current.contains(event.target as Node)
+			) {
+				setIsOpen(false);
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
+
+	const handleProductSelect = (product: MusicalProduct) => {
+		onProductChange(product);
+		setIsOpen(false);
+	};
+
+	const handleTriggerClick = () => {
+		setIsOpen(!isOpen);
+	};
+
+	return (
+		<div ref={dropdownRef} className={cn("relative inline-block", className)}>
+			<div
+				onClick={handleTriggerClick}
+				className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+			>
+				<Avatar
+					src={activeMusicalProduct.avatarUrl}
+					alt={activeMusicalProduct.name}
+					size={32}
+				/>
+				<div className="flex flex-col">
+					<span className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
+						{activeMusicalProduct.name}
+					</span>
+				</div>
+				<ChevronDown
+					className={cn(
+						"h-4 w-4 text-gray-400 transition-transform duration-200",
+						isOpen && "rotate-180"
+					)}
+				/>
+			</div>
+
+			{isOpen && (
+				<div className="absolute z-50 left-0 mt-1 w-64 overflow-hidden rounded-md border bg-white shadow-md">
+					<div className="w-64 py-1">
+						{/* Seção de Perfis/Bandas */}
+						<div className="px-3 py-2">
+							<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+								Produtos Musicais
+							</p>
+						</div>
+
+						{musicalProducts.map((product) => (
+							<button
+								key={product.id}
+								onClick={() => handleProductSelect(product)}
+								className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors"
+							>
+								<Avatar src={product.avatarUrl} alt={product.name} size={24} />
+								<span className="text-sm text-gray-700 truncate">{product.name}</span>
+								{product.id === activeMusicalProduct.id && (
+									<Check className="h-4 w-4 text-blue-600 ml-auto" />
+								)}
+							</button>
+						))}
+					</div>
+				</div>
+			)}
+		</div>
+	);
+};

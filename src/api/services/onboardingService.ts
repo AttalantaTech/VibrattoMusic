@@ -1,0 +1,133 @@
+import type { ApiClient } from "../core/client";
+import type {
+	OnboardingContactCreate,
+	OnboardingDetails,
+	OnboardingMedia,
+	OnboardingImages,
+	OnboardingTechnicalConfig,
+	OnboardingSchedule,
+} from "../types";
+
+export class OnboardingService {
+	public constructor(private readonly apiClient: ApiClient) {}
+
+	/**
+	 * Get onboarding data for a product
+	 */
+	public async getOnboarding(productId: number): Promise<unknown> {
+		return this.apiClient.get(`/produtomusical/onboarding/${productId}`);
+	}
+	/**
+	 * Step 1: Save contact information
+	 */
+	public async createContact(
+		data: OnboardingContactCreate
+	): Promise<{ id: number }> {
+		return this.apiClient.post<{ id: number }>(
+			"/produtomusical/onboarding/contato",
+			data
+		);
+	}
+
+	/**
+	 * Step 2: Save band details
+	 */
+	public async updateDetails(
+		productId: number,
+		data: OnboardingDetails
+	): Promise<void> {
+		return this.apiClient.post<void>(
+			`/produtomusical/onboarding/${productId}/detalhes`,
+			data
+		);
+	}
+
+	/**
+	 * Step 3: Save media information
+	 */
+	public async updateMedia(
+		productId: number,
+		data: OnboardingMedia
+	): Promise<void> {
+		return this.apiClient.post<void>(
+			`/produtomusical/onboarding/${productId}/midias`,
+			data
+		);
+	}
+
+	/**
+	 * Step 3: Save images
+	 */
+	public async updateImages(
+		productId: number,
+		data: OnboardingImages
+	): Promise<void> {
+		return this.apiClient.post<void>(
+			`/produtomusical/onboarding/${productId}/imagens`,
+			data
+		);
+	}
+
+	/**
+	 * Generate pre-signed URL for image upload
+	 */
+	public async generateImageUrl(data: {
+		Evento: string;
+		IdCadastro: string;
+		ExtensaoArquivo: string;
+		IdLista?: null;
+	}): Promise<{ url: string }> {
+		return this.apiClient.post<{ url: string }>("/imagem/gerar-url", data);
+	}
+
+	/**
+	 * Delete an uploaded image
+	 */
+	public async deleteImage(data: { url: string }): Promise<void> {
+		return this.apiClient.delete<void>("/imagem", { data });
+	}
+
+	/**
+	 * Step 4: Save technical configuration
+	 */
+	public async updateTechnical(
+		productId: number,
+		data: OnboardingTechnicalConfig
+	): Promise<void> {
+		return this.apiClient.post<void>(
+			`/produtomusical/onboarding/${productId}/configuracaoTecnica`,
+			data
+		);
+	}
+
+	/**
+	 * Step 5: Save schedule
+	 */
+	public async updateSchedule(
+		productId: number,
+		data: OnboardingSchedule
+	): Promise<void> {
+		return this.apiClient.post<void>(
+			`/produtomusical/onboarding/${productId}/agenda`,
+			data
+		);
+	}
+
+	/**
+	 * Get available schedule for a product
+	 */
+	public async getSchedule(productId: number): Promise<any> {
+		return this.apiClient.get<any>(
+			`/produtomusical/onboarding/${productId}/agenda`
+		);
+	}
+
+	/**
+	 * Step 6: Publish the product
+	 */
+	public async publish(productId: number): Promise<void> {
+		return this.apiClient.post<void>(
+			`/produtomusical/onboarding/${productId}/publicar`
+		);
+	}
+}
