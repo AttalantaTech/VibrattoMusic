@@ -19,7 +19,6 @@ import { useAuthStore } from "../../store/authStore";
 import { ImprovedSettingsTab } from "../../components/BandProfile/Settings/ImprovedSettingsTab";
 import { MainLayout } from "../../components/layout/MainLayout/MainLayout";
 import { AgendaTab } from "../../components/BandProfile/Agenda/AgendaTab";
-import { ConsolidadoVendasTab } from "../../components/BandProfile/MySales/ConsolidadoVendasTab";
 import { FavoritesTab } from "../../components/BandProfile/Favorites/FavoritesTab";
 import { OnboardingProvider } from "../../contexts/OnboardingContext";
 import { useTabWithUrl } from "../../hooks/useTabWithUrl";
@@ -30,6 +29,8 @@ import { useActiveMusicalProduct } from "../../hooks/useActiveMusicalProduct";
 import MessagesTab from "../../components/BandProfile/Messages/MessagesTab";
 import { ProposalsTab } from "../../components/BandProfile/Proposals/ProposalsTab";
 import { ContractsTab } from "../../components/BandProfile/Contracts/ContractsTab";
+import { Reports } from "../../components/BandProfile/MySales/Reports";
+import { ConsolidadoVendasTab } from "../../components/BandProfile/MySales/ConsolidadoVendasTab";
 
 const styles = {
 	genre: "font-medium text-[#085EC5] bg-[#D6F2FF] py-[2x] px-2 rounded-2xl",
@@ -88,10 +89,10 @@ export const BandProfile = () => {
 		{ label: "Conta", value: "account" },
 		{ label: "Mensagens", value: "messages" /* , badgeCount: 4 */ },
 		{ label: "Agenda", value: "bookings" },
-		...(hasMusicalProducts ? [{ label: "Vendas", value: "sales" }] : []),
-		/* { label: "Contratações", value: "hires" }, */
-		/* { label: "Propostas", value: "proposals" }, */
-		{ label: "Contratos", value: "contracts" },
+		{ label: "Vendas", value: "sales" },
+		// { label: "Propostas", value: "proposals" },
+		// { label: "Contratos", value: "contracts" },
+		{ label: "Contratações", value: "hires" },
 		{ label: "Favoritos", value: "favorites" },
 		{ label: "Ajustes", value: "settings" },
 	]; // Function to render content based on active tab
@@ -108,7 +109,13 @@ export const BandProfile = () => {
 			case "messages":
 				return <MessagesTab />;
 			case "sales":
-				return hasMusicalProducts ? <ConsolidadoVendasTab productId={activeProductId} /> : null;
+				return (
+					<div className="flex flex-col w-full h-full gap-6">
+						<ConsolidadoVendasTab productId={activeProductId} />
+						<ContractsTab />
+						<Reports />
+					</div>
+				);
 			case "hires":
 				return <MyHiresTab />;
 			case "proposals":

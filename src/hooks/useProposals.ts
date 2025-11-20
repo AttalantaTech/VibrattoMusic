@@ -100,7 +100,9 @@ export const useUpdateProposalStatus = () => {
 				case "rejeitado":
 					// If reasonId is provided, use it; otherwise default to 1 (Outro motivo)
 					if (reasonId) {
-						return proposalService.rejectProposalWithReason(proposalId, { IdMotivoRejeicao: reasonId });
+						return proposalService.rejectProposalWithReason(proposalId, {
+							IdMotivoRejeicao: reasonId,
+						});
 					}
 					return proposalService.rejectProposal(proposalId);
 				case "cancelado":
@@ -220,8 +222,10 @@ export const useFilteredProposals = (filters: {
 						case "valor":
 							return ((a.valor ?? 0) - (b.valor ?? 0)) * factor;
 						case "status": {
-							const statusA = typeof a.status === "object" ? a.status.nome : a.status;
-							const statusB = typeof b.status === "object" ? b.status.nome : b.status;
+							const statusA =
+								typeof a.status === "object" ? a.status.nome : a.status;
+							const statusB =
+								typeof b.status === "object" ? b.status.nome : b.status;
 							return statusA.localeCompare(statusB) * factor;
 						}
 						case "cliente":
