@@ -29,8 +29,7 @@ import { useActiveMusicalProduct } from "../../hooks/useActiveMusicalProduct";
 import MessagesTab from "../../components/BandProfile/Messages/MessagesTab";
 import { ProposalsTab } from "../../components/BandProfile/Proposals/ProposalsTab";
 import { ContractsTab } from "../../components/BandProfile/Contracts/ContractsTab";
-import { Reports } from "../../components/BandProfile/MySales/Reports";
-import { ConsolidadoVendasTab } from "../../components/BandProfile/MySales/ConsolidadoVendasTab";
+import { SalesTab } from "../../components/BandProfile/Sales/SalesTab";
 
 const styles = {
 	genre: "font-medium text-[#085EC5] bg-[#D6F2FF] py-[2x] px-2 rounded-2xl",
@@ -83,13 +82,20 @@ export const BandProfile = () => {
 		: undefined;
 
 	// Check if user has musical products to show sales tab
-	const hasMusicalProducts = myProducts?.data && myProducts.data.length > 0;
+	// const hasMusicalProducts = myProducts?.data && myProducts.data.length > 0;
 
 	const mainTabs = [
 		{ label: "Conta", value: "account" },
 		{ label: "Mensagens", value: "messages" /* , badgeCount: 4 */ },
 		{ label: "Agenda", value: "bookings" },
-		{ label: "Vendas", value: "sales" },
+		{
+			label: "Vendas",
+			value: "sales",
+			subTabs: [
+				{ label: "Minhas Vendas", value: "sales" },
+				{ label: "Modelos de Contratos", value: "contracts" },
+			],
+		},
 		// { label: "Propostas", value: "proposals" },
 		// { label: "Contratos", value: "contracts" },
 		{ label: "Contratações", value: "hires" },
@@ -111,9 +117,7 @@ export const BandProfile = () => {
 			case "sales":
 				return (
 					<div className="flex flex-col w-full h-full gap-6">
-						<ConsolidadoVendasTab productId={activeProductId} />
-						<ContractsTab />
-						<Reports />
+						<SalesTab />
 					</div>
 				);
 			case "hires":
@@ -457,11 +461,12 @@ export const BandProfile = () => {
 	return (
 		<MainLayout>
 			{/* Tab Navigation - specific to band profile */}
-			<div className="w-full h-16 sm:h-18 border-b border-gray-100 overflow-x-auto scrollbar-hide flex items-center">
+			<div className="w-full h-16 sm:h-18 border-b border-gray-100 overflow-visible scrollbar-hide flex items-center">
 				<TabNavigation
 					currentTab={activeMainTab}
 					tabs={mainTabs}
 					onChange={setActiveMainTab}
+					variant="underline"
 				/>
 			</div>
 

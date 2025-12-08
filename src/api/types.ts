@@ -876,8 +876,8 @@ export interface DashboardMetricsResponse {
 // ===== Sales Chart Types =====
 
 export interface SalesChartResponse {
-	labels: string[]; // datas formatadas
-	values: number[];  // valores das vendas
+	labels: Array<string>; // datas formatadas
+	values: Array<number>; // valores das vendas
 	periodo: string;
 	totalVendas: number;
 	crescimentoPercentual: number;
@@ -937,7 +937,7 @@ export interface ContractResponse {
 	dataCriacao: string;
 	dataAtualizacao: string;
 	idContratoDigital: string;
-	secoes?: ContractSection[];
+	secoes?: Array<ContractSection>;
 	// Additional computed fields
 	titulo?: string;
 	valorTotal?: number;
@@ -962,7 +962,12 @@ export interface ContractSectionUpdateRequest {
 	texto: string;
 }
 
-export type ContractStatus = "rascunho" | "assinatura_pendente" | "ativo" | "concluido" | "cancelado";
+export type ContractStatus =
+	| "rascunho"
+	| "assinatura_pendente"
+	| "ativo"
+	| "concluido"
+	| "cancelado";
 
 // ===== D4Sign Webhook Types =====
 
@@ -996,7 +1001,13 @@ export interface D4SignContingencyResponse {
 
 // ===== Advanced Filtering Types =====
 
-export type ProposalStatus = "pendente" | "aguardando_pagamento" | "aceito" | "concluido" | "rejeitado" | "cancelado";
+export type ProposalStatus =
+	| "pendente"
+	| "aguardando_pagamento"
+	| "aceito"
+	| "concluido"
+	| "rejeitado"
+	| "cancelado";
 
 // ===== Period Types =====
 
