@@ -9,6 +9,7 @@ import type {
 	OnboardingImages,
 	OnboardingTechnicalConfig,
 	OnboardingSchedule,
+	OnboardingApiResponse,
 } from "../types";
 
 export class MusicalProductService {
@@ -99,7 +100,9 @@ export class MusicalProductService {
 	/**
 	 * Get onboarding data for a product
 	 */
-	public async getOnboardingData(productId: number): Promise<unknown> {
+	public async getOnboardingData(
+		productId: number
+	): Promise<OnboardingApiResponse> {
 		return this.apiClient.get(`produtomusical/onboarding/${productId}`);
 	}
 
