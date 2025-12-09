@@ -217,7 +217,7 @@ export default function StageMapBuilder({
 			icon: getInstrumentIcon(instrument.Nome),
 			category: "instrument" as const,
 			color: STAGE_COLORS.instrument,
-			instrumentId: parseInt(instrument.Id),
+			instrumentId: instrument.Id,
 			instrumentName: instrument.Nome,
 			width: 80,
 			height: 80,
@@ -433,8 +433,8 @@ export default function StageMapBuilder({
 									type="text"
 									placeholder="Buscar instrumentos..."
 									value={instrumentSearch}
-									onChange={(e) => {
-										setInstrumentSearch(e.target.value);
+									onChange={(event) => {
+										setInstrumentSearch(event.target.value);
 									}}
 									className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
 								/>
@@ -569,6 +569,7 @@ export default function StageMapBuilder({
 								{/* Stage Elements */}
 								{elements.map((element) => {
 									const isSelected = selectedElementId === element.id;
+
 									return (
 										<button
 											key={element.id}

@@ -1,11 +1,14 @@
 import type { ApiClient } from "../core/client";
 import type {
-	OnboardingContactCreate,
+	OnboardingContact,
 	OnboardingDetails,
 	OnboardingMedia,
 	OnboardingImages,
 	OnboardingTechnicalConfig,
 	OnboardingSchedule,
+	ScheduleApiResponse,
+	OnboardingApiResponse,
+	ImageDeleteRequest,
 } from "../types";
 
 export class OnboardingService {
@@ -14,14 +17,24 @@ export class OnboardingService {
 	/**
 	 * Get onboarding data for a product
 	 */
-	public async getOnboarding(productId: number): Promise<unknown> {
+	public async getOnboarding(
+		productId: number
+	): Promise<OnboardingApiResponse> {
 		return this.apiClient.get(`/produtomusical/onboarding/${productId}`);
 	}
+
+	/**
+	 * Get onboarding pending for logged user
+	 */
+	public async getOnboardingPending(): Promise<Array<OnboardingApiResponse>> {
+		return this.apiClient.get(`produtomusical/onboarding/pendentes`);
+	}
+
 	/**
 	 * Step 1: Save contact information
 	 */
-	public async createContact(
-		data: OnboardingContactCreate
+	public async createAndUpdateContact(
+		data: OnboardingContact
 	): Promise<{ id: number }> {
 		return this.apiClient.post<{ id: number }>(
 			"/produtomusical/onboarding/contato",
@@ -83,7 +96,7 @@ export class OnboardingService {
 	/**
 	 * Delete an uploaded image
 	 */
-	public async deleteImage(data: { url: string }): Promise<void> {
+	public async deleteImage(data: ImageDeleteRequest): Promise<void> {
 		return this.apiClient.delete<void>("/imagem", { data });
 	}
 
@@ -116,10 +129,10 @@ export class OnboardingService {
 	/**
 	 * Get available schedule for a product
 	 */
-	public async getSchedule(productId: number): Promise<any> {
-		return this.apiClient.get<any>(
-			`/produtomusical/onboarding/${productId}/agenda`
-		);
+	public async getSchedule(
+		productId: number
+	): Promise<Array<ScheduleApiResponse>> {
+		return this.apiClient.get(`/produtomusical/onboarding/${productId}/agenda`);
 	}
 
 	/**

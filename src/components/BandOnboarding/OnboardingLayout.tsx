@@ -3,7 +3,6 @@ import { useContext } from "react";
 import { OnboardingContext } from "../../contexts/context/OnboardingContext";
 import { cn } from "../../lib/utils/cn";
 import { Progress } from "../ui/Progress/Progress";
-import { OnboardingHeader } from "./OnboardingHeader/OnboardingHeader";
 
 const steps = [
 	{ number: 1, name: "Contato", path: "/band/register/onboarding/1" },
@@ -43,7 +42,6 @@ export default function OnboardingLayout() {
 
 	return (
 		<div className="flex flex-col w-screen h-screen justify-start items-center">
-			<OnboardingHeader />
 			<main className="flex flex-col items-center justify-start w-full h-full overflow-y-auto">
 				<div className="min-h-full bg-gray-50 w-full">
 					<div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">

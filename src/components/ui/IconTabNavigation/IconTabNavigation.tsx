@@ -54,9 +54,9 @@ export const IconTabNavigation = ({
 								styles[variant].button,
 								isActive ? styles[variant].active : styles[variant].inactive
 							)}
-							onClick={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
+							onClick={(event) => {
+								event.preventDefault();
+								event.stopPropagation();
 								onChange(tab.value);
 							}}
 						>

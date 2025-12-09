@@ -106,9 +106,14 @@ export const Register = () => {
 			}
 		};
 
-		const timeoutId = setTimeout(fetchAddress, 500); // Debounce
-		return () => clearTimeout(timeoutId);
+		const timeoutId = setTimeout(() => {
+			void fetchAddress();
+		}, 500); // Debounce
+		return () => {
+			clearTimeout(timeoutId);
+		};
 	}, [cepValue, setValue, setError]);
+
 	const onSubmit = async (data: RegisterFormData) => {
 		try {
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -141,23 +146,26 @@ export const Register = () => {
 			);
 
 			// Check for temporary user choice made during user type selection
-			const tempUserChoice = localStorage.getItem("temp-user-choice") as "cliente" | "produto_musical" | null;
-			if (tempUserChoice) {
+			const temporaryUserChoice = localStorage.getItem("temp-user-choice") as
+				| "cliente"
+				| "produto_musical"
+				| null;
+			if (temporaryUserChoice) {
 				// Set the user type based on the temporary choice
-				setStoredUserType(tempUserChoice);
+				setStoredUserType(temporaryUserChoice);
 				localStorage.removeItem("temp-user-choice"); // Clean up
 
 				// Navigate based on user type: clients skip onboarding and go to home
-				if (tempUserChoice === "cliente") {
+				if (temporaryUserChoice === "cliente") {
 					await router.navigate({ to: "/" });
-				} else if (tempUserChoice === "produto_musical") {
+				} else if (temporaryUserChoice === "produto_musical") {
 					await router.navigate({ to: "/band/profile-type" });
 				}
 				return;
 			}
 
 			// Fallback: Redirect based on persisted userType in vibratto-auth
-			let userType = getStoredUserType();
+			const userType = getStoredUserType();
 			// If userType isn't set yet, force selection
 			if (!userType) {
 				await router.navigate({ to: "/welcome" });
@@ -178,14 +186,15 @@ export const Register = () => {
 				// Check if it's a validation error with structured errors
 				const validationError = error as {
 					status?: number;
-					errors?: Record<string, string[]>;
+					errors?: Record<string, Array<string>>;
 					title?: string;
 					message?: string;
 				};
 
 				if (validationError.status === 400 && validationError.errors) {
 					// It's a validation error - show user-friendly message
-					errorMessage = "Erro ao criar conta. Preencha os campos obrigatórios e tente novamente.";
+					errorMessage =
+						"Erro ao criar conta. Preencha os campos obrigatórios e tente novamente.";
 				} else if ("message" in error) {
 					const errorWithMessage = error as { message: string };
 					errorMessage = `Erro ao criar conta, ${errorWithMessage.message.toLocaleLowerCase()}`;
@@ -261,49 +270,48 @@ export const Register = () => {
 									Documento de identificação
 								</label>
 								<div className="grid grid-cols-4 gap-1 w-full">
-								<div className="col-span-1">
-									<Select
-										value={tipoDocumento}
-										onValueChange={(value) => {
-											setTipoDocumento((value as "cpf" | "cnpj") ?? "cpf");
-										}}
-									>
-										<SelectTrigger className="w-full">
-											<SelectValue placeholder="Selecione..." />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="cpf">CPF</SelectItem>
-											<SelectItem value="cnpj">CNPJ</SelectItem>
-										</SelectContent>
-									</Select>
-									{/* Documento */}
-								</div>
-								<div className="col-span-3">
-									<Controller
-										name="documento"
-										control={control}
-										render={({ field }) => (
-											<InputField
-												{...field}
-												placeholder={
-													isCPF ? "000.000.000-00" : "00.000.000/0000-00"
-												}
-												mask={isCPF ? "999.999.999-99" : "99.999.999/9999-99"}
-												maskPlaceholder=""
-												type="text"
-												required
-											/>
+									<div className="col-span-1">
+										<Select
+											value={tipoDocumento}
+											onValueChange={(value) => {
+												setTipoDocumento((value as "cpf" | "cnpj") ?? "cpf");
+											}}
+										>
+											<SelectTrigger className="w-full">
+												<SelectValue placeholder="Selecione..." />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="cpf">CPF</SelectItem>
+												<SelectItem value="cnpj">CNPJ</SelectItem>
+											</SelectContent>
+										</Select>
+										{/* Documento */}
+									</div>
+									<div className="col-span-3">
+										<Controller
+											name="documento"
+											control={control}
+											render={({ field }) => (
+												<InputField
+													{...field}
+													placeholder={
+														isCPF ? "000.000.000-00" : "00.000.000/0000-00"
+													}
+													mask={isCPF ? "999.999.999-99" : "99.999.999/9999-99"}
+													maskPlaceholder=""
+													type="text"
+													required
+												/>
+											)}
+										/>
+										{errors.documento && (
+											<p className="text-red-600 text-sm mt-1">
+												{errors.documento.message}
+											</p>
 										)}
-									/>
-									{errors.documento && (
-										<p className="text-red-600 text-sm mt-1">
-											{errors.documento.message}
-										</p>
-									)}
+									</div>
 								</div>
 							</div>
-							</div>
-							
 							{/* CEP Field */}
 							<div>
 								<InputField
@@ -334,7 +342,6 @@ export const Register = () => {
 											label="Logradouro"
 											placeholder="Rua, Avenida, etc."
 											type="text"
-											readOnly
 											required
 										/>
 										{errors.logradouro && (
@@ -379,7 +386,6 @@ export const Register = () => {
 											label="Bairro"
 											placeholder="Centro"
 											type="text"
-											readOnly
 											required
 										/>
 										{errors.bairro && (
@@ -395,7 +401,6 @@ export const Register = () => {
 											label="Cidade"
 											placeholder="São Paulo"
 											type="text"
-											readOnly
 											required
 										/>
 										{errors.cidade && (
@@ -411,7 +416,6 @@ export const Register = () => {
 											label="Estado"
 											placeholder="SP"
 											type="text"
-											readOnly
 											required
 										/>
 										{errors.estado && (
@@ -488,24 +492,8 @@ export const Register = () => {
 									? "Criando conta..."
 									: "Realizar cadastro"}
 							</Button>
-						</div>{" "}
-					</form>
-
-					{/* 					<div className="flex flex-col gap-4 lg:gap-6 w-full mt-3">
-						<div className="text-xs sm:text-sm flex items-center justify-center text-center">
-							{" "}
-							<p className="text-gray-500 text-normal">
-								É um profissional?{" "}
-								<button
-									className="font-semibold text-[#007BFF] bg-transparent border-none cursor-pointer"
-									type="button"
-									onClick={handleBandRegisterRedirect}
-								>
-									Cadastre-se agora
-								</button>
-							</p>
 						</div>
-					</div> */}
+					</form>
 				</div>
 			</div>
 

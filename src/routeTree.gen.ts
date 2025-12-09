@@ -8,378 +8,153 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as RegisterIndexRouteImport } from './routes/register/index'
+import { Route as BandRegisterRouteImport } from './routes/band/register'
+import { Route as BandProfileTypeRouteImport } from './routes/band/profile-type'
+import { Route as BandMeRouteImport } from './routes/band/me'
+import { Route as BandDashboardRouteImport } from './routes/band/dashboard'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as Password_resetsTokenEditRouteImport } from './routes/password_resets/$token/edit'
+import { Route as BandProfileIdRouteImport } from './routes/band/profile/$id'
+import { Route as BandContractCreateRouteImport } from './routes/band/contract/create'
+import { Route as BandContractIdRouteImport } from './routes/band/contract/$id'
+import { Route as BandRegisterOnboarding6RouteImport } from './routes/band/register/onboarding/6'
+import { Route as BandRegisterOnboarding5RouteImport } from './routes/band/register/onboarding/5'
+import { Route as BandRegisterOnboarding4RouteImport } from './routes/band/register/onboarding/4'
+import { Route as BandRegisterOnboarding3RouteImport } from './routes/band/register/onboarding/3'
+import { Route as BandRegisterOnboarding2RouteImport } from './routes/band/register/onboarding/2'
+import { Route as BandRegisterOnboarding1RouteImport } from './routes/band/register/onboarding/1'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as WelcomeImport } from './routes/welcome'
-import { Route as SearchImport } from './routes/search'
-import { Route as ResetPasswordImport } from './routes/reset-password'
-import { Route as LoginImport } from './routes/login'
-import { Route as ForgotPasswordImport } from './routes/forgot-password'
-import { Route as FavoritesImport } from './routes/favorites'
-import { Route as CadastroImport } from './routes/cadastro'
-import { Route as IndexImport } from './routes/index'
-import { Route as RegisterIndexImport } from './routes/register/index'
-import { Route as BandRegisterImport } from './routes/band/register'
-import { Route as BandProfileTypeImport } from './routes/band/profile-type'
-import { Route as BandMeImport } from './routes/band/me'
-import { Route as BandDashboardImport } from './routes/band/dashboard'
-import { Route as AdminLoginImport } from './routes/admin/login'
-import { Route as PasswordresetsTokenEditImport } from './routes/password_resets/$token/edit'
-import { Route as BandProfileIdImport } from './routes/band/profile/$id'
-import { Route as BandContractCreateImport } from './routes/band/contract/create'
-import { Route as BandContractIdImport } from './routes/band/contract/$id'
-import { Route as BandRegisterOnboarding6Import } from './routes/band/register/onboarding/6'
-import { Route as BandRegisterOnboarding5Import } from './routes/band/register/onboarding/5'
-import { Route as BandRegisterOnboarding4Import } from './routes/band/register/onboarding/4'
-import { Route as BandRegisterOnboarding3Import } from './routes/band/register/onboarding/3'
-import { Route as BandRegisterOnboarding2Import } from './routes/band/register/onboarding/2'
-import { Route as BandRegisterOnboarding1Import } from './routes/band/register/onboarding/1'
-
-// Create/Update Routes
-
-const WelcomeRoute = WelcomeImport.update({
+const WelcomeRoute = WelcomeRouteImport.update({
   id: '/welcome',
   path: '/welcome',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const SearchRoute = SearchImport.update({
+const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const ResetPasswordRoute = ResetPasswordImport.update({
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const LoginRoute = LoginImport.update({
+const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const ForgotPasswordRoute = ForgotPasswordImport.update({
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const FavoritesRoute = FavoritesImport.update({
+const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const CadastroRoute = CadastroImport.update({
+const CadastroRoute = CadastroRouteImport.update({
   id: '/cadastro',
   path: '/cadastro',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const IndexRoute = IndexImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const RegisterIndexRoute = RegisterIndexImport.update({
+const RegisterIndexRoute = RegisterIndexRouteImport.update({
   id: '/register/',
   path: '/register/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const BandRegisterRoute = BandRegisterImport.update({
+const BandRegisterRoute = BandRegisterRouteImport.update({
   id: '/band/register',
   path: '/band/register',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const BandProfileTypeRoute = BandProfileTypeImport.update({
+const BandProfileTypeRoute = BandProfileTypeRouteImport.update({
   id: '/band/profile-type',
   path: '/band/profile-type',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const BandMeRoute = BandMeImport.update({
+const BandMeRoute = BandMeRouteImport.update({
   id: '/band/me',
   path: '/band/me',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const BandDashboardRoute = BandDashboardImport.update({
+const BandDashboardRoute = BandDashboardRouteImport.update({
   id: '/band/dashboard',
   path: '/band/dashboard',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AdminLoginRoute = AdminLoginImport.update({
+const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin/login',
   path: '/admin/login',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const PasswordresetsTokenEditRoute = PasswordresetsTokenEditImport.update({
-  id: '/password_resets/$token/edit',
-  path: '/password_resets/$token/edit',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const BandProfileIdRoute = BandProfileIdImport.update({
+const Password_resetsTokenEditRoute =
+  Password_resetsTokenEditRouteImport.update({
+    id: '/password_resets/$token/edit',
+    path: '/password_resets/$token/edit',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const BandProfileIdRoute = BandProfileIdRouteImport.update({
   id: '/band/profile/$id',
   path: '/band/profile/$id',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const BandContractCreateRoute = BandContractCreateImport.update({
+const BandContractCreateRoute = BandContractCreateRouteImport.update({
   id: '/band/contract/create',
   path: '/band/contract/create',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const BandContractIdRoute = BandContractIdImport.update({
+const BandContractIdRoute = BandContractIdRouteImport.update({
   id: '/band/contract/$id',
   path: '/band/contract/$id',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const BandRegisterOnboarding6Route = BandRegisterOnboarding6Import.update({
+const BandRegisterOnboarding6Route = BandRegisterOnboarding6RouteImport.update({
   id: '/onboarding/6',
   path: '/onboarding/6',
   getParentRoute: () => BandRegisterRoute,
 } as any)
-
-const BandRegisterOnboarding5Route = BandRegisterOnboarding5Import.update({
+const BandRegisterOnboarding5Route = BandRegisterOnboarding5RouteImport.update({
   id: '/onboarding/5',
   path: '/onboarding/5',
   getParentRoute: () => BandRegisterRoute,
 } as any)
-
-const BandRegisterOnboarding4Route = BandRegisterOnboarding4Import.update({
+const BandRegisterOnboarding4Route = BandRegisterOnboarding4RouteImport.update({
   id: '/onboarding/4',
   path: '/onboarding/4',
   getParentRoute: () => BandRegisterRoute,
 } as any)
-
-const BandRegisterOnboarding3Route = BandRegisterOnboarding3Import.update({
+const BandRegisterOnboarding3Route = BandRegisterOnboarding3RouteImport.update({
   id: '/onboarding/3',
   path: '/onboarding/3',
   getParentRoute: () => BandRegisterRoute,
 } as any)
-
-const BandRegisterOnboarding2Route = BandRegisterOnboarding2Import.update({
+const BandRegisterOnboarding2Route = BandRegisterOnboarding2RouteImport.update({
   id: '/onboarding/2',
   path: '/onboarding/2',
   getParentRoute: () => BandRegisterRoute,
 } as any)
-
-const BandRegisterOnboarding1Route = BandRegisterOnboarding1Import.update({
+const BandRegisterOnboarding1Route = BandRegisterOnboarding1RouteImport.update({
   id: '/onboarding/1',
   path: '/onboarding/1',
   getParentRoute: () => BandRegisterRoute,
 } as any)
-
-// Populate the FileRoutesByPath interface
-
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/cadastro': {
-      id: '/cadastro'
-      path: '/cadastro'
-      fullPath: '/cadastro'
-      preLoaderRoute: typeof CadastroImport
-      parentRoute: typeof rootRoute
-    }
-    '/favorites': {
-      id: '/favorites'
-      path: '/favorites'
-      fullPath: '/favorites'
-      preLoaderRoute: typeof FavoritesImport
-      parentRoute: typeof rootRoute
-    }
-    '/forgot-password': {
-      id: '/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof ForgotPasswordImport
-      parentRoute: typeof rootRoute
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginImport
-      parentRoute: typeof rootRoute
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordImport
-      parentRoute: typeof rootRoute
-    }
-    '/search': {
-      id: '/search'
-      path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof SearchImport
-      parentRoute: typeof rootRoute
-    }
-    '/welcome': {
-      id: '/welcome'
-      path: '/welcome'
-      fullPath: '/welcome'
-      preLoaderRoute: typeof WelcomeImport
-      parentRoute: typeof rootRoute
-    }
-    '/admin/login': {
-      id: '/admin/login'
-      path: '/admin/login'
-      fullPath: '/admin/login'
-      preLoaderRoute: typeof AdminLoginImport
-      parentRoute: typeof rootRoute
-    }
-    '/band/dashboard': {
-      id: '/band/dashboard'
-      path: '/band/dashboard'
-      fullPath: '/band/dashboard'
-      preLoaderRoute: typeof BandDashboardImport
-      parentRoute: typeof rootRoute
-    }
-    '/band/me': {
-      id: '/band/me'
-      path: '/band/me'
-      fullPath: '/band/me'
-      preLoaderRoute: typeof BandMeImport
-      parentRoute: typeof rootRoute
-    }
-    '/band/profile-type': {
-      id: '/band/profile-type'
-      path: '/band/profile-type'
-      fullPath: '/band/profile-type'
-      preLoaderRoute: typeof BandProfileTypeImport
-      parentRoute: typeof rootRoute
-    }
-    '/band/register': {
-      id: '/band/register'
-      path: '/band/register'
-      fullPath: '/band/register'
-      preLoaderRoute: typeof BandRegisterImport
-      parentRoute: typeof rootRoute
-    }
-    '/register/': {
-      id: '/register/'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/band/contract/$id': {
-      id: '/band/contract/$id'
-      path: '/band/contract/$id'
-      fullPath: '/band/contract/$id'
-      preLoaderRoute: typeof BandContractIdImport
-      parentRoute: typeof rootRoute
-    }
-    '/band/contract/create': {
-      id: '/band/contract/create'
-      path: '/band/contract/create'
-      fullPath: '/band/contract/create'
-      preLoaderRoute: typeof BandContractCreateImport
-      parentRoute: typeof rootRoute
-    }
-    '/band/profile/$id': {
-      id: '/band/profile/$id'
-      path: '/band/profile/$id'
-      fullPath: '/band/profile/$id'
-      preLoaderRoute: typeof BandProfileIdImport
-      parentRoute: typeof rootRoute
-    }
-    '/password_resets/$token/edit': {
-      id: '/password_resets/$token/edit'
-      path: '/password_resets/$token/edit'
-      fullPath: '/password_resets/$token/edit'
-      preLoaderRoute: typeof PasswordresetsTokenEditImport
-      parentRoute: typeof rootRoute
-    }
-    '/band/register/onboarding/1': {
-      id: '/band/register/onboarding/1'
-      path: '/onboarding/1'
-      fullPath: '/band/register/onboarding/1'
-      preLoaderRoute: typeof BandRegisterOnboarding1Import
-      parentRoute: typeof BandRegisterImport
-    }
-    '/band/register/onboarding/2': {
-      id: '/band/register/onboarding/2'
-      path: '/onboarding/2'
-      fullPath: '/band/register/onboarding/2'
-      preLoaderRoute: typeof BandRegisterOnboarding2Import
-      parentRoute: typeof BandRegisterImport
-    }
-    '/band/register/onboarding/3': {
-      id: '/band/register/onboarding/3'
-      path: '/onboarding/3'
-      fullPath: '/band/register/onboarding/3'
-      preLoaderRoute: typeof BandRegisterOnboarding3Import
-      parentRoute: typeof BandRegisterImport
-    }
-    '/band/register/onboarding/4': {
-      id: '/band/register/onboarding/4'
-      path: '/onboarding/4'
-      fullPath: '/band/register/onboarding/4'
-      preLoaderRoute: typeof BandRegisterOnboarding4Import
-      parentRoute: typeof BandRegisterImport
-    }
-    '/band/register/onboarding/5': {
-      id: '/band/register/onboarding/5'
-      path: '/onboarding/5'
-      fullPath: '/band/register/onboarding/5'
-      preLoaderRoute: typeof BandRegisterOnboarding5Import
-      parentRoute: typeof BandRegisterImport
-    }
-    '/band/register/onboarding/6': {
-      id: '/band/register/onboarding/6'
-      path: '/onboarding/6'
-      fullPath: '/band/register/onboarding/6'
-      preLoaderRoute: typeof BandRegisterOnboarding6Import
-      parentRoute: typeof BandRegisterImport
-    }
-  }
-}
-
-// Create and export the route tree
-
-interface BandRegisterRouteChildren {
-  BandRegisterOnboarding1Route: typeof BandRegisterOnboarding1Route
-  BandRegisterOnboarding2Route: typeof BandRegisterOnboarding2Route
-  BandRegisterOnboarding3Route: typeof BandRegisterOnboarding3Route
-  BandRegisterOnboarding4Route: typeof BandRegisterOnboarding4Route
-  BandRegisterOnboarding5Route: typeof BandRegisterOnboarding5Route
-  BandRegisterOnboarding6Route: typeof BandRegisterOnboarding6Route
-}
-
-const BandRegisterRouteChildren: BandRegisterRouteChildren = {
-  BandRegisterOnboarding1Route: BandRegisterOnboarding1Route,
-  BandRegisterOnboarding2Route: BandRegisterOnboarding2Route,
-  BandRegisterOnboarding3Route: BandRegisterOnboarding3Route,
-  BandRegisterOnboarding4Route: BandRegisterOnboarding4Route,
-  BandRegisterOnboarding5Route: BandRegisterOnboarding5Route,
-  BandRegisterOnboarding6Route: BandRegisterOnboarding6Route,
-}
-
-const BandRegisterRouteWithChildren = BandRegisterRoute._addFileChildren(
-  BandRegisterRouteChildren,
-)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -399,7 +174,7 @@ export interface FileRoutesByFullPath {
   '/band/contract/$id': typeof BandContractIdRoute
   '/band/contract/create': typeof BandContractCreateRoute
   '/band/profile/$id': typeof BandProfileIdRoute
-  '/password_resets/$token/edit': typeof PasswordresetsTokenEditRoute
+  '/password_resets/$token/edit': typeof Password_resetsTokenEditRoute
   '/band/register/onboarding/1': typeof BandRegisterOnboarding1Route
   '/band/register/onboarding/2': typeof BandRegisterOnboarding2Route
   '/band/register/onboarding/3': typeof BandRegisterOnboarding3Route
@@ -407,7 +182,6 @@ export interface FileRoutesByFullPath {
   '/band/register/onboarding/5': typeof BandRegisterOnboarding5Route
   '/band/register/onboarding/6': typeof BandRegisterOnboarding6Route
 }
-
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
@@ -426,7 +200,7 @@ export interface FileRoutesByTo {
   '/band/contract/$id': typeof BandContractIdRoute
   '/band/contract/create': typeof BandContractCreateRoute
   '/band/profile/$id': typeof BandProfileIdRoute
-  '/password_resets/$token/edit': typeof PasswordresetsTokenEditRoute
+  '/password_resets/$token/edit': typeof Password_resetsTokenEditRoute
   '/band/register/onboarding/1': typeof BandRegisterOnboarding1Route
   '/band/register/onboarding/2': typeof BandRegisterOnboarding2Route
   '/band/register/onboarding/3': typeof BandRegisterOnboarding3Route
@@ -434,9 +208,8 @@ export interface FileRoutesByTo {
   '/band/register/onboarding/5': typeof BandRegisterOnboarding5Route
   '/band/register/onboarding/6': typeof BandRegisterOnboarding6Route
 }
-
 export interface FileRoutesById {
-  __root__: typeof rootRoute
+  __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
   '/favorites': typeof FavoritesRoute
@@ -454,7 +227,7 @@ export interface FileRoutesById {
   '/band/contract/$id': typeof BandContractIdRoute
   '/band/contract/create': typeof BandContractCreateRoute
   '/band/profile/$id': typeof BandProfileIdRoute
-  '/password_resets/$token/edit': typeof PasswordresetsTokenEditRoute
+  '/password_resets/$token/edit': typeof Password_resetsTokenEditRoute
   '/band/register/onboarding/1': typeof BandRegisterOnboarding1Route
   '/band/register/onboarding/2': typeof BandRegisterOnboarding2Route
   '/band/register/onboarding/3': typeof BandRegisterOnboarding3Route
@@ -462,7 +235,6 @@ export interface FileRoutesById {
   '/band/register/onboarding/5': typeof BandRegisterOnboarding5Route
   '/band/register/onboarding/6': typeof BandRegisterOnboarding6Route
 }
-
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
@@ -544,7 +316,6 @@ export interface FileRouteTypes {
     | '/band/register/onboarding/6'
   fileRoutesById: FileRoutesById
 }
-
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CadastroRoute: typeof CadastroRoute
@@ -563,8 +334,203 @@ export interface RootRouteChildren {
   BandContractIdRoute: typeof BandContractIdRoute
   BandContractCreateRoute: typeof BandContractCreateRoute
   BandProfileIdRoute: typeof BandProfileIdRoute
-  PasswordresetsTokenEditRoute: typeof PasswordresetsTokenEditRoute
+  Password_resetsTokenEditRoute: typeof Password_resetsTokenEditRoute
 }
+
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favorites': {
+      id: '/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register/': {
+      id: '/register/'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/band/register': {
+      id: '/band/register'
+      path: '/band/register'
+      fullPath: '/band/register'
+      preLoaderRoute: typeof BandRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/band/profile-type': {
+      id: '/band/profile-type'
+      path: '/band/profile-type'
+      fullPath: '/band/profile-type'
+      preLoaderRoute: typeof BandProfileTypeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/band/me': {
+      id: '/band/me'
+      path: '/band/me'
+      fullPath: '/band/me'
+      preLoaderRoute: typeof BandMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/band/dashboard': {
+      id: '/band/dashboard'
+      path: '/band/dashboard'
+      fullPath: '/band/dashboard'
+      preLoaderRoute: typeof BandDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/password_resets/$token/edit': {
+      id: '/password_resets/$token/edit'
+      path: '/password_resets/$token/edit'
+      fullPath: '/password_resets/$token/edit'
+      preLoaderRoute: typeof Password_resetsTokenEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/band/profile/$id': {
+      id: '/band/profile/$id'
+      path: '/band/profile/$id'
+      fullPath: '/band/profile/$id'
+      preLoaderRoute: typeof BandProfileIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/band/contract/create': {
+      id: '/band/contract/create'
+      path: '/band/contract/create'
+      fullPath: '/band/contract/create'
+      preLoaderRoute: typeof BandContractCreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/band/contract/$id': {
+      id: '/band/contract/$id'
+      path: '/band/contract/$id'
+      fullPath: '/band/contract/$id'
+      preLoaderRoute: typeof BandContractIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/band/register/onboarding/6': {
+      id: '/band/register/onboarding/6'
+      path: '/onboarding/6'
+      fullPath: '/band/register/onboarding/6'
+      preLoaderRoute: typeof BandRegisterOnboarding6RouteImport
+      parentRoute: typeof BandRegisterRoute
+    }
+    '/band/register/onboarding/5': {
+      id: '/band/register/onboarding/5'
+      path: '/onboarding/5'
+      fullPath: '/band/register/onboarding/5'
+      preLoaderRoute: typeof BandRegisterOnboarding5RouteImport
+      parentRoute: typeof BandRegisterRoute
+    }
+    '/band/register/onboarding/4': {
+      id: '/band/register/onboarding/4'
+      path: '/onboarding/4'
+      fullPath: '/band/register/onboarding/4'
+      preLoaderRoute: typeof BandRegisterOnboarding4RouteImport
+      parentRoute: typeof BandRegisterRoute
+    }
+    '/band/register/onboarding/3': {
+      id: '/band/register/onboarding/3'
+      path: '/onboarding/3'
+      fullPath: '/band/register/onboarding/3'
+      preLoaderRoute: typeof BandRegisterOnboarding3RouteImport
+      parentRoute: typeof BandRegisterRoute
+    }
+    '/band/register/onboarding/2': {
+      id: '/band/register/onboarding/2'
+      path: '/onboarding/2'
+      fullPath: '/band/register/onboarding/2'
+      preLoaderRoute: typeof BandRegisterOnboarding2RouteImport
+      parentRoute: typeof BandRegisterRoute
+    }
+    '/band/register/onboarding/1': {
+      id: '/band/register/onboarding/1'
+      path: '/onboarding/1'
+      fullPath: '/band/register/onboarding/1'
+      preLoaderRoute: typeof BandRegisterOnboarding1RouteImport
+      parentRoute: typeof BandRegisterRoute
+    }
+  }
+}
+
+interface BandRegisterRouteChildren {
+  BandRegisterOnboarding1Route: typeof BandRegisterOnboarding1Route
+  BandRegisterOnboarding2Route: typeof BandRegisterOnboarding2Route
+  BandRegisterOnboarding3Route: typeof BandRegisterOnboarding3Route
+  BandRegisterOnboarding4Route: typeof BandRegisterOnboarding4Route
+  BandRegisterOnboarding5Route: typeof BandRegisterOnboarding5Route
+  BandRegisterOnboarding6Route: typeof BandRegisterOnboarding6Route
+}
+
+const BandRegisterRouteChildren: BandRegisterRouteChildren = {
+  BandRegisterOnboarding1Route: BandRegisterOnboarding1Route,
+  BandRegisterOnboarding2Route: BandRegisterOnboarding2Route,
+  BandRegisterOnboarding3Route: BandRegisterOnboarding3Route,
+  BandRegisterOnboarding4Route: BandRegisterOnboarding4Route,
+  BandRegisterOnboarding5Route: BandRegisterOnboarding5Route,
+  BandRegisterOnboarding6Route: BandRegisterOnboarding6Route,
+}
+
+const BandRegisterRouteWithChildren = BandRegisterRoute._addFileChildren(
+  BandRegisterRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -584,125 +550,8 @@ const rootRouteChildren: RootRouteChildren = {
   BandContractIdRoute: BandContractIdRoute,
   BandContractCreateRoute: BandContractCreateRoute,
   BandProfileIdRoute: BandProfileIdRoute,
-  PasswordresetsTokenEditRoute: PasswordresetsTokenEditRoute,
+  Password_resetsTokenEditRoute: Password_resetsTokenEditRoute,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.ts",
-      "children": [
-        "/",
-        "/cadastro",
-        "/favorites",
-        "/forgot-password",
-        "/login",
-        "/reset-password",
-        "/search",
-        "/welcome",
-        "/admin/login",
-        "/band/dashboard",
-        "/band/me",
-        "/band/profile-type",
-        "/band/register",
-        "/register/",
-        "/band/contract/$id",
-        "/band/contract/create",
-        "/band/profile/$id",
-        "/password_resets/$token/edit"
-      ]
-    },
-    "/": {
-      "filePath": "index.ts"
-    },
-    "/cadastro": {
-      "filePath": "cadastro.tsx"
-    },
-    "/favorites": {
-      "filePath": "favorites.tsx"
-    },
-    "/forgot-password": {
-      "filePath": "forgot-password.tsx"
-    },
-    "/login": {
-      "filePath": "login.ts"
-    },
-    "/reset-password": {
-      "filePath": "reset-password.tsx"
-    },
-    "/search": {
-      "filePath": "search.tsx"
-    },
-    "/welcome": {
-      "filePath": "welcome.tsx"
-    },
-    "/admin/login": {
-      "filePath": "admin/login.ts"
-    },
-    "/band/dashboard": {
-      "filePath": "band/dashboard.tsx"
-    },
-    "/band/me": {
-      "filePath": "band/me.tsx"
-    },
-    "/band/profile-type": {
-      "filePath": "band/profile-type.tsx"
-    },
-    "/band/register": {
-      "filePath": "band/register.tsx",
-      "children": [
-        "/band/register/onboarding/1",
-        "/band/register/onboarding/2",
-        "/band/register/onboarding/3",
-        "/band/register/onboarding/4",
-        "/band/register/onboarding/5",
-        "/band/register/onboarding/6"
-      ]
-    },
-    "/register/": {
-      "filePath": "register/index.ts"
-    },
-    "/band/contract/$id": {
-      "filePath": "band/contract/$id.tsx"
-    },
-    "/band/contract/create": {
-      "filePath": "band/contract/create.tsx"
-    },
-    "/band/profile/$id": {
-      "filePath": "band/profile/$id.tsx"
-    },
-    "/password_resets/$token/edit": {
-      "filePath": "password_resets/$token/edit.tsx"
-    },
-    "/band/register/onboarding/1": {
-      "filePath": "band/register/onboarding/1.ts",
-      "parent": "/band/register"
-    },
-    "/band/register/onboarding/2": {
-      "filePath": "band/register/onboarding/2.ts",
-      "parent": "/band/register"
-    },
-    "/band/register/onboarding/3": {
-      "filePath": "band/register/onboarding/3.ts",
-      "parent": "/band/register"
-    },
-    "/band/register/onboarding/4": {
-      "filePath": "band/register/onboarding/4.ts",
-      "parent": "/band/register"
-    },
-    "/band/register/onboarding/5": {
-      "filePath": "band/register/onboarding/5.ts",
-      "parent": "/band/register"
-    },
-    "/band/register/onboarding/6": {
-      "filePath": "band/register/onboarding/6.ts",
-      "parent": "/band/register"
-    }
-  }
-}
-ROUTE_MANIFEST_END */

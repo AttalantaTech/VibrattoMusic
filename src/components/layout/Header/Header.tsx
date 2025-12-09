@@ -8,6 +8,8 @@ import { useAuthStore } from "../../../store/authStore";
 import { useState, useRef, useEffect } from "react";
 import { BandProfileSwitcher } from "../../BandProfileSwitcher";
 import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
+import { useOnboardingData } from "@/hooks/useMusicalProducts";
+import { useProfileStatus } from "@/hooks/useProfileStatus";
 
 export const Header = () => {
 	const { isAuthenticated, logout } = useAuthStore();
@@ -20,7 +22,8 @@ export const Header = () => {
 	const { activeProduct, availableProducts, changeActiveProduct } =
 		useActiveMusicalProduct();
 
-
+	const { data: onboardingData } = useOnboardingData();
+	const { musicalProducts } = useProfileStatus();
 
 	const isOnboardingPage = location.pathname.includes("/onboarding");
 	const showNotifications = isAuthenticated && !isOnboardingPage;
@@ -43,9 +46,33 @@ export const Header = () => {
 		};
 	}, []);
 
-	const handleLogout = () => {
+	const handleLogout = async () => {
 		logout();
-		navigate({ to: "/login" });
+		await navigate({ to: "/login" });
+	};
+
+	const handleProfile = async () => {
+		setShowDropdown(false);
+
+		if (onboardingData?.etapaCadastro) {
+			const etapaCadastro =
+				onboardingData.etapaCadastro === 6
+					? onboardingData.etapaCadastro
+					: onboardingData.etapaCadastro + 1;
+
+			await navigate({
+				to: `/band/register/onboarding/${etapaCadastro}`,
+			});
+		} else if (!musicalProducts || musicalProducts.length === 0) {
+			await navigate({
+				to: `/band/register/onboarding/1`,
+			});
+		} else {
+			await navigate({
+				to: "/band/me",
+				search: { tab: "account" },
+			});
+		}
 	};
 
 	return (
@@ -98,10 +125,7 @@ export const Header = () => {
 							{showDropdown && (
 								<div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200">
 									<button
-										onClick={() => {
-											setShowDropdown(false);
-											navigate({ to: "/band/me", search: { tab: "account" } });
-										}}
+										onClick={handleProfile}
 										className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
 									>
 										<User className="w-4 h-4" />
@@ -153,7 +177,6 @@ export const Header = () => {
 					)}
 				</div>
 			</nav>
-
 		</header>
 	);
 };

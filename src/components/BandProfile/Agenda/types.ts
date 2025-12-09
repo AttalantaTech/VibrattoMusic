@@ -66,7 +66,7 @@ export const eventTypeConfig: Record<EventType, EventTypeConfig> = {
 export interface CreateEventModalProps {
 	onClose: () => void;
 	onSubmit: (event: Partial<AgendaEvent>) => void;
-	initialDate?: Date;
+	initialDate?: Date | null;
 }
 
 export interface DraggableEventProps {
@@ -100,7 +100,7 @@ export interface CreateEventModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	onSubmit: (event: Partial<AgendaEvent>) => void;
-	initialDate?: Date;
+	initialDate?: Date | null;
 	initialType?: AgendaEvent["type"];
 	initialStartTime?: string;
 	initialEndTime?: string;
