@@ -117,8 +117,14 @@ export const LineChartComponent: React.FC<LineChartProps> = ({
 	};
 
 	return (
-		<div className="w-full h-80 bg-white rounded-lg shadow-sm p-4">
-			<Line data={chartData} options={options} />
+		<div className="w-full h-80 bg-white rounded-lg shadow-sm p-4 flex justify-center items-center">
+			{chartData.labels.length > 0 ? (
+				<Line data={chartData} options={options} />
+			) : (
+				<div className="text-gray-600">
+					Nenhum dado disponível para exibir o gráfico.
+				</div>
+			)}
 		</div>
 	);
 };

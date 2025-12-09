@@ -19,7 +19,6 @@ import { useAuthStore } from "../../store/authStore";
 import { ImprovedSettingsTab } from "../../components/BandProfile/Settings/ImprovedSettingsTab";
 import { MainLayout } from "../../components/layout/MainLayout/MainLayout";
 import { AgendaTab } from "../../components/BandProfile/Agenda/AgendaTab";
-import { ConsolidadoVendasTab } from "../../components/BandProfile/MySales/ConsolidadoVendasTab";
 import { FavoritesTab } from "../../components/BandProfile/Favorites/FavoritesTab";
 import { OnboardingProvider } from "../../contexts/OnboardingContext";
 import { useTabWithUrl } from "../../hooks/useTabWithUrl";
@@ -30,6 +29,7 @@ import { useActiveMusicalProduct } from "../../hooks/useActiveMusicalProduct";
 import MessagesTab from "../../components/BandProfile/Messages/MessagesTab";
 import { ProposalsTab } from "../../components/BandProfile/Proposals/ProposalsTab";
 import { ContractsTab } from "../../components/BandProfile/Contracts/ContractsTab";
+import { SalesTab } from "../../components/BandProfile/Sales/SalesTab";
 
 const styles = {
 	genre: "font-medium text-[#085EC5] bg-[#D6F2FF] py-[2x] px-2 rounded-2xl",
@@ -82,16 +82,23 @@ export const BandProfile = () => {
 		: undefined;
 
 	// Check if user has musical products to show sales tab
-	const hasMusicalProducts = myProducts?.data && myProducts.data.length > 0;
+	// const hasMusicalProducts = myProducts?.data && myProducts.data.length > 0;
 
 	const mainTabs = [
 		{ label: "Conta", value: "account" },
 		{ label: "Mensagens", value: "messages" /* , badgeCount: 4 */ },
 		{ label: "Agenda", value: "bookings" },
-		...(hasMusicalProducts ? [{ label: "Vendas", value: "sales" }] : []),
-		/* { label: "Contratações", value: "hires" }, */
-		/* { label: "Propostas", value: "proposals" }, */
-		{ label: "Contratos", value: "contracts" },
+		{
+			label: "Vendas",
+			value: "sales",
+			subTabs: [
+				{ label: "Minhas Vendas", value: "sales" },
+				{ label: "Modelos de Contratos", value: "contracts" },
+			],
+		},
+		// { label: "Propostas", value: "proposals" },
+		// { label: "Contratos", value: "contracts" },
+		{ label: "Contratações", value: "hires" },
 		{ label: "Favoritos", value: "favorites" },
 		{ label: "Ajustes", value: "settings" },
 	]; // Function to render content based on active tab
@@ -108,7 +115,11 @@ export const BandProfile = () => {
 			case "messages":
 				return <MessagesTab />;
 			case "sales":
-				return hasMusicalProducts ? <ConsolidadoVendasTab productId={activeProductId} /> : null;
+				return (
+					<div className="flex flex-col w-full h-full gap-6">
+						<SalesTab />
+					</div>
+				);
 			case "hires":
 				return <MyHiresTab />;
 			case "proposals":
@@ -450,11 +461,12 @@ export const BandProfile = () => {
 	return (
 		<MainLayout>
 			{/* Tab Navigation - specific to band profile */}
-			<div className="w-full h-16 sm:h-18 border-b border-gray-100 overflow-x-auto scrollbar-hide flex items-center">
+			<div className="w-full h-16 sm:h-18 border-b border-gray-100 overflow-visible scrollbar-hide flex items-center">
 				<TabNavigation
 					currentTab={activeMainTab}
 					tabs={mainTabs}
 					onChange={setActiveMainTab}
+					variant="underline"
 				/>
 			</div>
 
