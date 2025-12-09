@@ -1,4 +1,5 @@
 import type { ApiClient } from "../core/client";
+import type { FileEventType } from "../types";
 
 interface GenerateImageUrlRequest {
 	Evento: string;
@@ -7,9 +8,7 @@ interface GenerateImageUrlRequest {
 	IdLista?: number | null;
 }
 
-interface GenerateImageUrlResponse {
-	url: string;
-}
+type GenerateImageUrlResponse = string;
 
 export class ImageUploadService {
 	constructor(private readonly apiClient: ApiClient) {}
@@ -18,7 +17,7 @@ export class ImageUploadService {
 	 * Generate a pre-signed SAS URL for image upload
 	 */
 	async generateSasUrl(parameters: {
-		evento: string;
+		evento: FileEventType;
 		idCadastro: number;
 		extensaoArquivo: string;
 		idLista?: number;
@@ -35,7 +34,7 @@ export class ImageUploadService {
 			request
 		);
 
-		return response.url;
+		return response;
 	}
 
 	/**
@@ -84,12 +83,13 @@ export class ImageUploadService {
 	 */
 	async uploadImage(parameters: {
 		file: File;
-		evento: string;
+		evento: FileEventType;
 		idCadastro: number;
 		idLista?: number;
 	}): Promise<string> {
 		// Get file extension from the file name
-		const fileExtension = parameters.file.name.split(".").pop()?.toLowerCase() || "jpg";
+		const fileExtension =
+			parameters.file.name.split(".").pop()?.toLowerCase() || "jpg";
 
 		// Step 1: Generate SAS URL
 		const sasUrl = await this.generateSasUrl({
