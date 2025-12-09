@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
 	Loader2,
@@ -6,144 +6,26 @@ import {
 	AlertCircle,
 	PenSquareIcon,
 	ExternalLink,
+	ChevronLeft,
 } from "lucide-react";
-import { onboardingService, musicalProductService } from "../../../api";
+import { onboardingService } from "../../../api";
 import { Button } from "../../ui/Button/Button";
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
 import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
+import { useOnboardingData } from "@/hooks/useMusicalProducts";
+import { toast } from "sonner";
 
 export default function PublishStep() {
 	const [loading, setLoading] = useState(false);
-	const [fetchingProduct, setFetchingProduct] = useState(true);
-	const [productData, setProductData] = useState<any>(null);
 	const navigate = useNavigate();
-	const { onboardingData, completedSteps, produtoMusicalId, clearData } =
-		useOnboarding();
+	const { clearData } = useOnboarding();
+
+	const { data: onboardingData, isFetching } = useOnboardingData();
+	const produtoMusicalId = onboardingData ? onboardingData.id : 0;
 
 	const requiredSteps = [1, 2, 3, 4, 5];
 
-	useEffect(() => {
-		const fetchProductData = async () => {
-			if (!produtoMusicalId) {
-				setFetchingProduct(false);
-				return;
-			}
-
-			try {
-				const data = await musicalProductService.getOnboardingData(
-					Number(produtoMusicalId)
-				);
-				setProductData(data);
-			} catch (error) {
-				console.error("Error fetching product data:", error);
-			} finally {
-				setFetchingProduct(false);
-			}
-		};
-
-		fetchProductData();
-	}, [produtoMusicalId, completedSteps]);
-
-	// Enhanced step validation based on actual data
-	const getStepStatus = (stepNumber: number) => {
-		// First check if step is marked as completed locally
-		const isMarkedComplete = completedSteps.includes(stepNumber.toString());
-
-		// If we have fetched product data, use it for additional validation
-		if (productData) {
-			// Check if etapaCadastro indicates this step is completed
-			const isCompletedByEtapa =
-				productData.etapaCadastro && productData.etapaCadastro >= stepNumber;
-			// For now, trust the local completion status since we don't know the exact API structure
-			// Log what fields exist for debugging
-
-			if (stepNumber === 3) {}
-
-			// Always prioritize local completion status, then etapaCadastro, then field validation
-			switch (stepNumber) {
-				case 1: // Contact
-					if (isMarkedComplete || isCompletedByEtapa) return true;
-					return !!(
-						productData.email ||
-						productData.telefone ||
-						productData.razaoSocial
-					);
-
-				case 2: // Details
-					if (isMarkedComplete || isCompletedByEtapa) return true;
-					return !!(productData.nome && productData.descricao);
-
-				case 3: // Media
-					if (isMarkedComplete || isCompletedByEtapa) return true;
-					// Check for redeSocial array, videosYouTube array, or spotifyPlaylistId
-					return !!(
-						(productData.redeSocial && productData.redeSocial.length > 0) ||
-						(productData.videosYouTube &&
-							productData.videosYouTube.length > 0) ||
-						(productData.spotifyPlaylistId &&
-							productData.spotifyPlaylistId.trim() !== "")
-					);
-
-				case 4: // Images
-					if (isMarkedComplete || isCompletedByEtapa) return true;
-					return !!(
-						productData.fotoPerfil ||
-						productData.logomarca ||
-						(productData.imagens && productData.imagens.length > 0)
-					);
-
-				case 5: // Technical
-					if (isMarkedComplete || isCompletedByEtapa) return true;
-					return !!(
-						(productData.mapaPalco && productData.mapaPalco.length > 0) ||
-						productData.rider ||
-						productData.infraCamarim ||
-						productData.camarimIncluso
-					);
-
-				case 6: // Schedule
-					if (isMarkedComplete || isCompletedByEtapa) return true;
-					// For now, just check if marked complete since agenda structure is not clear
-					return false;
-
-				default:
-					return false;
-			}
-		}
-
-		// Fallback to local data check if product data not loaded
-
-		switch (stepNumber) {
-			case 1: // Contact
-				const contactData = onboardingData["contact"] as any;
-				return isMarkedComplete && contactData && contactData.nome;
-
-			case 2: // Details
-				const detailsData = onboardingData["details"] as any;
-				return isMarkedComplete && detailsData && detailsData.nome;
-
-			case 3: // Media
-				const mediaData = onboardingData["media"] as any;
-				return isMarkedComplete && mediaData;
-
-			case 4: // Images
-				const imagesData = onboardingData["images"] as any;
-				return isMarkedComplete && imagesData;
-
-			case 5: // Technical
-				const technicalData = onboardingData["technical"] as any;
-				return isMarkedComplete && technicalData;
-
-			case 6: // Schedule
-				const scheduleData = onboardingData["schedule"] as any;
-				return isMarkedComplete && scheduleData;
-
-			default:
-				return false;
-		}
-	};
-
-	const allStepsCompleted = requiredSteps.every((step) => getStepStatus(step));
+	const allStepsCompleted = onboardingData?.etapaCadastro === 6;
 
 	const getStepUrl = (stepNumber: number) => {
 		return `/band/register/onboarding/${stepNumber}`;
@@ -151,12 +33,12 @@ export default function PublishStep() {
 
 	const handlePublish = async () => {
 		if (!produtoMusicalId) {
-			alert("Erro: ID do produto musical não encontrado");
+			toast.error("Erro: ID do produto musical não encontrado");
 			return;
 		}
 
 		if (!allStepsCompleted) {
-			alert("Atenção: Complete todos os passos antes de publicar");
+			toast.warning("Atenção: Complete todos os passos antes de publicar");
 			return;
 		}
 
@@ -164,15 +46,16 @@ export default function PublishStep() {
 		try {
 			await onboardingService.publish(Number(produtoMusicalId));
 			clearData();
-			setTimeout(() => {
-				void navigate({
-					to: "/band/profile/$id",
-					params: { id: produtoMusicalId.toString() },
-				});
-			}, 2000);
+
+			toast.success("Produto musical publicado com sucesso");
+
+			await navigate({
+				to: "/band/me",
+				search: { tab: "account" },
+			});
 		} catch (error: any) {
 			console.error("Error publishing:", error);
-			alert("Erro ao publicar produto musical");
+			toast.error("Erro ao publicar produto musical");
 		} finally {
 			setLoading(false);
 		}
@@ -202,7 +85,7 @@ export default function PublishStep() {
 					</p>
 				</div>
 
-				{fetchingProduct ? (
+				{isFetching ? (
 					<div className="flex items-center justify-center py-12">
 						<Loader2 className="h-8 w-8 animate-spin text-primary" />
 						<span className="ml-3 text-gray-600">
@@ -217,7 +100,10 @@ export default function PublishStep() {
 							</h3>
 							<div className="grid grid-cols-1 gap-3">
 								{requiredSteps.map((step) => {
-									const isCompleted = getStepStatus(step);
+									const isCompleted =
+										onboardingData?.etapaCadastro &&
+										onboardingData?.etapaCadastro >= step;
+
 									return (
 										<div
 											key={step}
@@ -261,7 +147,7 @@ export default function PublishStep() {
 							</div>
 						</div>
 
-						{(productData || onboardingData["details"]) && (
+						{onboardingData && (
 							<div className="border border-gray-200 rounded-lg p-6 mb-8 bg-white shadow-md">
 								<h3 className="font-semibold text-xl text-gray-700 mb-4">
 									Resumo
@@ -269,34 +155,24 @@ export default function PublishStep() {
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-base">
 									<div>
 										<span className="font-medium text-gray-600">Nome:</span>{" "}
-										{productData
-											? productData.nome
-											: String((onboardingData["details"] as any)?.nome ?? "")}
+										{onboardingData.nome}
 									</div>
 									<div className="md:col-span-2">
 										<span className="font-medium text-gray-600">
 											Descrição:
 										</span>{" "}
-										{productData
-											? productData.descricao
-											: String(
-													(onboardingData["details"] as any)?.descricao ?? ""
-												)}
+										{onboardingData.descricao}
 									</div>
-									{productData?.cidade && (
+									{onboardingData.cidade && (
 										<div>
 											<span className="font-medium text-gray-600">Cidade:</span>{" "}
-											{typeof productData.cidade === "object"
-												? productData.cidade.nome
-												: productData.cidade}
+											{onboardingData.cidade.nome}
 										</div>
 									)}
-									{productData?.estado && (
+									{onboardingData.estadoContato && (
 										<div>
 											<span className="font-medium text-gray-600">Estado:</span>{" "}
-											{typeof productData.estado === "object"
-												? productData.estado.nome
-												: productData.estado}
+											{onboardingData.estadoContato}
 										</div>
 									)}
 								</div>
@@ -313,8 +189,9 @@ export default function PublishStep() {
 										</p>
 										<p className="text-sm text-yellow-700">
 											{
-												requiredSteps.filter((step) => !getStepStatus(step))
-													.length
+												requiredSteps.filter(
+													(step) => !(step === onboardingData?.etapaCadastro)
+												).length
 											}{" "}
 											passo(s) pendente(s). Use os botões "Completar" acima para
 											ir diretamente a cada etapa.
@@ -338,28 +215,29 @@ export default function PublishStep() {
 							</div>
 						)}
 
-						<div className="flex flex-col sm:flex-row justify-between gap-4">
+						<div className="flex flex-col sm:flex-row justify-end gap-4">
 							<Button
 								type="button"
 								variant="outline"
 								onClick={() => navigate({ to: "/band/register/onboarding/5" })}
 								className="w-full sm:w-auto"
 							>
-								Voltar
+								<div className="flex items-center gap-1">
+									<ChevronLeft />
+									Voltar
+								</div>
 							</Button>
+
 							<Button
 								onClick={handlePublish}
 								disabled={loading || !allStepsCompleted}
 								className="w-full sm:w-auto min-h-[44px]"
 							>
-								{loading ? (
-									<>
-										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										Publicando...
-									</>
-								) : (
-									"Publicar"
-								)}
+								{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+
+								<div className="flex items-center gap-1">
+									{loading ? "Finalizando..." : "Finalizar"}
+								</div>
 							</Button>
 						</div>
 					</>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -8,10 +8,10 @@ import {
 	Phone,
 	MapPin,
 	UserIcon,
+	ChevronRight,
 } from "lucide-react";
 
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
-import { onboardingService } from "../../../api";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "../../../store/authStore";
 import type { z } from "zod";
@@ -20,12 +20,23 @@ import { Button } from "../../ui/Button/Button";
 import { InputField } from "../../forms/InputField/InputField";
 import { ToggleSwitch } from "../../forms/ToggleSwitch/ToggleSwitch";
 import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
+import {
+	useOnboardingData,
+	useSaveOnboardingContact,
+} from "../../../hooks/useMusicalProducts";
+import type { OnboardingContact } from "@/api/types";
+import { toast } from "sonner";
 
 // helper text matching Step1
 const helperText =
 	"Essa informação será incluída no contrato com os seus clientes.";
 
-type ContactFormData = z.infer<typeof ContactValidationSchema>;
+const helpTextContact = "Caso não tenha sede, utilize o endereço residencial.";
+
+type ContactFormData = Omit<
+	z.infer<typeof ContactValidationSchema>,
+	"nome" | "cpf"
+>;
 
 interface CepResponse {
 	erro?: boolean;
@@ -37,20 +48,38 @@ interface CepResponse {
 
 export default function ContactStep() {
 	const [loading, setLoading] = useState(false);
-	const { updateData, markStepComplete, onboardingData, setProdutoMusicalId } =
-		useOnboarding();
+
+	const { data: onboardingData } = useOnboardingData();
+
+	const { markStepComplete } = useOnboarding();
+	const saveOnboardingContactMutation = useSaveOnboardingContact();
+
+	const values = useMemo(() => {
+		return {
+			usaCnpj: onboardingData?.usaCnpj ?? false,
+			razaoSocial: onboardingData?.razaoSocial ?? "",
+			telefone: onboardingData?.telefone ?? "",
+			cepContato: onboardingData?.cepContato ?? "",
+			logradouroContato: onboardingData?.logradouroContato ?? "",
+			numeroContato: onboardingData?.numeroContato ?? "",
+			bairroContato: onboardingData?.bairroContato ?? "",
+			cidadeContato: onboardingData?.cidadeContato ?? "",
+			estadoContato: onboardingData?.estadoContato ?? "",
+			cnpj: onboardingData?.cnpj ?? "",
+			complementoContato: onboardingData?.complementoContato ?? "",
+		};
+	}, [onboardingData]);
+
 	const { user } = useAuthStore();
-	const form = useForm<ContactFormData>({
-		resolver: zodResolver(ContactValidationSchema),
-		defaultValues: {
-			usaCnpj: false,
-			...onboardingData.contact,
-		},
-	});
-	const { register, handleSubmit, watch, setValue, formState } = form;
+	const { register, handleSubmit, watch, setValue, formState, reset } =
+		useForm<ContactFormData>({
+			resolver: zodResolver(ContactValidationSchema),
+			defaultValues: { ...values },
+		});
 	const { errors } = formState;
 	const navigate = useNavigate();
 	const watchUsaCnpj = watch("usaCnpj");
+
 	const onSubmit = async (data: ContactFormData) => {
 		setLoading(true);
 		try {
@@ -63,50 +92,28 @@ export default function ContactStep() {
 			const cleanedCep = (data.cepContato || "").replace(/\D/g, "");
 
 			// Remove email field since it's not collected in this form, but add user's email
-			const { email, ...contactData } = data;
+			const { ...contactData } = data;
 
-			const response = await onboardingService.createContact({
+			const payload: OnboardingContact = {
+				id: onboardingData?.id ?? 0,
 				...contactData,
+				cnpj: contactData.cnpj?.replace(/\D/g, ""),
 				telefone: cleanedTelefone,
 				cepContato: cleanedCep,
 				email: user?.email || "",
-			});
+			};
 
-			// Store the ID in context
-			const produtoMusicalId = String(response.id ?? 1);
+			await saveOnboardingContactMutation.mutateAsync(payload);
 
-			// Direct localStorage update for redundancy
-			localStorage.setItem("produto-musical-id", produtoMusicalId);
-
-			setProdutoMusicalId(produtoMusicalId);
-
-			// Check localStorage after a brief delay
-			setTimeout(() => {
-				const storedValue = localStorage.getItem("produto-musical-id");
-				if (storedValue !== produtoMusicalId) {
-					console.error(
-						"❌ ContactStep: localStorage value mismatch! Expected:",
-						produtoMusicalId,
-						"Got:",
-						storedValue
-					);
-				}
-			}, 100);
-
-			// Update onboarding data and mark step complete
-			updateData("contact", {
-				...data,
-				telefone: cleanedTelefone,
-				cepContato: cleanedCep,
-				email: user?.email || "",
-			});
 			markStepComplete("1");
 
+			toast.success("Informações de contato salvas com sucesso");
+
 			// Navigate to next step
-			void navigate({ to: "/band/register/onboarding/2" });
+			await navigate({ to: "/band/register/onboarding/2" });
 		} catch (error: unknown) {
 			console.error("Error saving contact data:", error);
-			alert("Erro ao salvar informações de contato");
+			toast.error("Erro ao salvar informações de contato");
 		} finally {
 			setLoading(false);
 		}
@@ -118,16 +125,25 @@ export default function ContactStep() {
 				const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
 				const data = (await response.json()) as CepResponse;
 				if (!data.erro) {
-					form.setValue("logradouroContato", data.logradouro ?? "");
-					form.setValue("bairroContato", data.bairro ?? "");
-					form.setValue("cidadeContato", data.localidade ?? "");
-					form.setValue("estadoContato", data.uf ?? "");
+					setValue("logradouroContato", data.logradouro ?? "");
+					setValue("bairroContato", data.bairro ?? "");
+					setValue("cidadeContato", data.localidade ?? "");
+					setValue("estadoContato", data.uf ?? "");
 				}
 			} catch (error) {
 				console.error("Erro ao buscar CEP:", error);
 			}
 		}
 	};
+
+	useEffect(() => {
+		if (onboardingData) {
+			reset({
+				...values,
+			});
+		}
+	}, [values, reset, onboardingData]);
+
 	return (
 		<StepLayout
 			currentStep={1}
@@ -143,25 +159,10 @@ export default function ContactStep() {
 					helperText={helperText}
 					icon={<User size={20} />}
 					label="Nome Completo"
+					disabled
+					value={onboardingData?.usuario.nome || user?.nome || ""}
 					placeholder="Ex: Marcio Almeida Pereira"
-					{...register("nome")}
 				/>
-				{errors.nome?.message && (
-					<div className="text-red-500 text-sm">{errors.nome.message}</div>
-				)}
-
-				<InputField
-					required
-					helperText={helperText}
-					icon={<Briefcase size={20} />}
-					label="CPF do Responsável"
-					mask="999.999.999-99"
-					placeholder="000.000.000-00"
-					{...register("cpf")}
-				/>
-				{errors.cpf?.message && (
-					<div className="text-red-500 text-sm">{errors.cpf.message}</div>
-				)}
 
 				<ToggleSwitch
 					name="usaCnpj"
@@ -235,7 +236,7 @@ export default function ContactStep() {
 
 				<InputField
 					required
-					helperText={helperText}
+					helperText={`${helperText} ${helpTextContact}`}
 					icon={<MapPin size={20} />}
 					label="Endereço da Sede"
 					placeholder="Digitar o endereço completo..."
@@ -309,7 +310,11 @@ export default function ContactStep() {
 					</div>
 					<Button type="submit" disabled={loading} className="w-full sm:w-auto">
 						{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-						{loading ? "Salvando..." : "Próximo"}
+
+						<div className="flex items-center gap-1">
+							{loading ? "Salvando..." : "Continuar"}
+							<ChevronRight />
+						</div>
 					</Button>
 				</div>
 			</form>
