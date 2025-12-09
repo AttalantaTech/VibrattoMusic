@@ -46,7 +46,7 @@ export interface Address {
 // ===== Filter Types =====
 
 export interface FilterOption {
-	Id: string;
+	Id: number;
 	Nome: string;
 	descricao?: string;
 }
