@@ -172,13 +172,13 @@ export class ApiClient {
 			const ttl = this.cache.getTtlConfig(config.url ?? "");
 			const etag = response.headers["etag"];
 			const lastModified = response.headers["last-modified"];
-			this.cache.setWithEtag(
-				config._cacheKey,
-				response.data,
-				typeof etag === "string" ? etag : undefined,
-				typeof lastModified === "string" ? lastModified : undefined,
-				ttl
-			);
+			// this.cache.setWithEtag(
+			// 	config._cacheKey,
+			// 	response.data,
+			// 	typeof etag === "string" ? etag : undefined,
+			// 	typeof lastModified === "string" ? lastModified : undefined,
+			// 	ttl
+			// );
 		}
 
 		return response;
