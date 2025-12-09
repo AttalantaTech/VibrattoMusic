@@ -57,66 +57,11 @@ export const proposalService = {
 			DataAte: filters.DataAte ?? null,
 		};
 
-		// const response = await apiClient.post<Array<ProposalResponse>>(
-		// 	"produtomusical/listarPropostas",
-		// 	payload
-		// );
-		return [
-			{
-				id: 1,
-				identificadorUnico: "ABC123",
-				contratante: {
-					id: 10,
-					nome: "Empresa XYZ",
-				},
-				produtoMusical: {
-					id: 47,
-					nome: "Produto Musical XYZ",
-				},
-				tipoEvento: {
-					id: 1,
-					nome: "Evento XYZ",
-				},
-				descricao: "Descrição do evento XYZ",
-				valor: 1000,
-				local: "Local XYZ",
-				dataInicio: "2024-01-01",
-				dataFim: "2024-01-02",
-				horaInicio: "18:00",
-				horaFim: "22:00",
-				transporteIncluso: true,
-				acomodacaoInclusa: true,
-				camarimIncluso: true,
-				formaPagamento: {
-					id: 1,
-					nome: "Forma de Pagamento XYZ",
-				},
-				condicoesPagamento: {
-					id: 1,
-					nome: "Condições de Pagamento XYZ",
-				},
-				condicoesPagamentoRestante: {
-					id: 1,
-					nome: "Condições de Pagamento Restante XYZ",
-				},
-				tipoSinalPagamento: null,
-				valorSinalPagamento: null,
-				dataVencimentoSinalPagamento: null,
-				status: {
-					id: 1,
-					nome: "Pendente",
-				},
-				motivoRejeicao: null,
-				assinaturaContratante: false,
-				dataAssinaturaContratante: null,
-				assinaturaContratado: false,
-				dataAssinaturaContratado: null,
-				dataCriacao: "2024-05-01",
-				dataAtualizacao: "",
-				idContratoDigital: "",
-			},
-		];
-		// return response;
+		const response = await apiClient.post<Array<ProposalResponse>>(
+			"produtomusical/listarPropostas",
+			payload
+		);
+		return response;
 	},
 
 	/**
