@@ -187,12 +187,8 @@ export const ProposalRejectionModal = ({
 										Motivo da Rejeição *
 									</label>
 									<Select
-										value={String(
-											rejectionReasons?.find((r) => r.Id === selectedReasonId)
-												?.Id
-										)}
+										value={selectedReasonId?.toString() || undefined}
 										onValueChange={(value) => {
-											console.log(value);
 											setSelectedReasonId(Number(value));
 										}}
 										disabled={isLoadingReasons || !!reasonsError}
@@ -208,7 +204,10 @@ export const ProposalRejectionModal = ({
 										</SelectTrigger>
 										<SelectContent>
 											{rejectionReasons?.map((reason: FilterOption) => (
-												<SelectItem key={reason.Id} value={String(reason.Id)}>
+												<SelectItem
+													key={reason.Id}
+													value={reason.Id.toString()}
+												>
 													{reason.Nome}
 												</SelectItem>
 											))}
