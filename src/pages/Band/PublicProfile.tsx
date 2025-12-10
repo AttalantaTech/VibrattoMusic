@@ -417,7 +417,9 @@ export const PublicBandProfile = () => {
 						{/* Media content (YouTube or Spotify) */}
 						{band.videosYouTube && band.videosYouTube.length > 0 ? (
 							(() => {
-								const videoId = extractYouTubeId(band.videosYouTube[0]!);
+								const video =
+									band.videosYouTube.find((item) => item)?.link ?? "";
+								const videoId = extractYouTubeId(video);
 								return videoId ? (
 									<div
 										className="relative w-full rounded-lg overflow-hidden"
@@ -434,7 +436,7 @@ export const PublicBandProfile = () => {
 									</div>
 								) : (
 									<a
-										href={band.videosYouTube[0]}
+										href={video}
 										target="_blank"
 										rel="noopener noreferrer"
 										className="block"

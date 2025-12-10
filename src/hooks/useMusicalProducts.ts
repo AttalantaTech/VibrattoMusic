@@ -21,6 +21,7 @@ export const musicalProductKeys = {
 	onboarding: (id: number) =>
 		[...musicalProductKeys.all, "onboarding", id] as const,
 	pending: () => [...musicalProductKeys.all, "pending"] as const,
+	schedule: () => [...musicalProductKeys.all, "schedule"] as const,
 };
 
 /**
@@ -70,6 +71,23 @@ export const useMusicalProduct = (
 	return useQuery({
 		queryKey: musicalProductKeys.detail(productId),
 		queryFn: () => musicalProductService.getProductById(productId),
+		enabled: enabled && productId > 0,
+		staleTime: 5 * 60 * 1000, // 5 minutes
+	});
+};
+
+/**
+ * Hook to GET schedule
+ */
+export const useMusicalProductSchedule = (
+	productId: number,
+	enabled: boolean = true
+) => {
+	return useQuery({
+		queryKey: musicalProductKeys.schedule(),
+		queryFn: () => {
+			return onboardingService.getSchedule(productId);
+		},
 		enabled: enabled && productId > 0,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 	});

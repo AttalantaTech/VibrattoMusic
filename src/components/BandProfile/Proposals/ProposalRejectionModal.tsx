@@ -113,7 +113,7 @@ export const ProposalRejectionModal = ({
 	};
 
 	const selectedReason = rejectionReasons?.find(
-		(r) => r.Id === selectedReasonId?.toString()
+		(r) => r.Id === selectedReasonId
 	);
 
 	if (!proposal) return null;
@@ -187,11 +187,10 @@ export const ProposalRejectionModal = ({
 										Motivo da Rejeição *
 									</label>
 									<Select
-										value={
-											rejectionReasons?.find(
-												(r) => r.Id === selectedReasonId?.toString()
-											)?.Id
-										}
+										value={String(
+											rejectionReasons?.find((r) => r.Id === selectedReasonId)
+												?.Id
+										)}
 										onValueChange={(value) => {
 											console.log(value);
 											setSelectedReasonId(Number(value));
@@ -209,7 +208,7 @@ export const ProposalRejectionModal = ({
 										</SelectTrigger>
 										<SelectContent>
 											{rejectionReasons?.map((reason: FilterOption) => (
-												<SelectItem key={reason.Id} value={reason.Id}>
+												<SelectItem key={reason.Id} value={String(reason.Id)}>
 													{reason.Nome}
 												</SelectItem>
 											))}
