@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
 	Calendar,
 	Clock,
@@ -12,6 +12,7 @@ import { Button } from "../../ui/Button/Button";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 } from "../../ui/dialog";
@@ -135,24 +136,42 @@ export const CreateEventModal = ({
 	];
 
 	// Common event templates
-	const eventTemplates = {
-		show: {
-			duration: 120, // 2 hours
-			reminder: "1440", // 1 day before
-		},
-		rehearsal: {
-			duration: 180, // 3 hours
-			reminder: "60", // 1 hour before
-		},
-		meeting: {
-			duration: 60, // 1 hour
-			reminder: "15", // 15 minutes before
-		},
-		personal: {
-			duration: 60,
-			reminder: "15",
-		},
-	};
+	const eventTemplates = useMemo(() => {
+		return {
+			show: {
+				duration: 120, // 2 hours
+				reminder: "1440", // 1 day before
+			},
+			rehearsal: {
+				duration: 180, // 3 hours
+				reminder: "60", // 1 hour before
+			},
+			meeting: {
+				duration: 60, // 1 hour
+				reminder: "15", // 15 minutes before
+			},
+			personal: {
+				duration: 60,
+				reminder: "15",
+			},
+		};
+	}, []);
+
+	useEffect(() => {
+		setFormData({
+			title: "",
+			description: "",
+			date: initialDate
+				? format(initialDate, "yyyy-MM-dd")
+				: format(new Date(), "yyyy-MM-dd"),
+			startTime: defaultTimes.startTime,
+			endTime: defaultTimes.endTime,
+			location: "",
+			type: initialType || "show",
+			allDay: false,
+			reminder: "15", // minutes before})
+		});
+	}, [defaultTimes.endTime, defaultTimes.startTime, initialDate, initialType]);
 
 	// Update end time automatically when type changes
 	useEffect(() => {
@@ -171,7 +190,7 @@ export const CreateEventModal = ({
 				reminder: template.reminder,
 			}));
 		}
-	}, [formData.type]);
+	}, [eventTemplates, formData.startTime, formData.type]);
 
 	const handleInputChange = (field: string, value: string | boolean) => {
 		setFormData((previous) => ({
@@ -211,6 +230,7 @@ export const CreateEventModal = ({
 
 		handleInputChange("endTime", format(endDate, "HH:mm"));
 	};
+
 	const validateForm = () => {
 		const newErrors: Record<string, string> = {};
 
@@ -297,6 +317,8 @@ export const CreateEventModal = ({
 						<DialogTitle className="text-xl font-semibold text-gray-900">
 							Novo Evento
 						</DialogTitle>
+
+						<DialogDescription />
 					</DialogHeader>
 				</div>
 
@@ -359,8 +381,8 @@ export const CreateEventModal = ({
 								type="text"
 								placeholder="Ex: Show no Teatro Municipal"
 								value={formData.title}
-								onChange={(e) => {
-									handleInputChange("title", e.target.value);
+								onChange={(event) => {
+									handleInputChange("title", event.target.value);
 								}}
 								className={errors["title"] ? "border-red-500" : ""}
 								autoFocus
@@ -388,8 +410,8 @@ export const CreateEventModal = ({
 										id="date"
 										type="date"
 										value={formData.date}
-										onChange={(e) => {
-											handleInputChange("date", e.target.value);
+										onChange={(event) => {
+											handleInputChange("date", event.target.value);
 										}}
 										className={`pl-10 ${errors["date"] ? "border-red-500" : ""}`}
 									/>
@@ -412,8 +434,8 @@ export const CreateEventModal = ({
 										<Input
 											type="time"
 											value={formData.startTime}
-											onChange={(e) => {
-												handleInputChange("startTime", e.target.value);
+											onChange={(event) => {
+												handleInputChange("startTime", event.target.value);
 											}}
 											className={`pl-10 ${errors["startTime"] ? "border-red-500" : ""}`}
 										/>
@@ -422,8 +444,8 @@ export const CreateEventModal = ({
 									<Input
 										type="time"
 										value={formData.endTime}
-										onChange={(e) => {
-											handleInputChange("endTime", e.target.value);
+										onChange={(event) => {
+											handleInputChange("endTime", event.target.value);
 										}}
 										className={`flex-1 ${errors["endTime"] ? "border-red-500" : ""}`}
 									/>
@@ -471,8 +493,8 @@ export const CreateEventModal = ({
 									type="text"
 									placeholder="Ex: Teatro Municipal de São Paulo"
 									value={formData.location}
-									onChange={(e) => {
-										handleInputChange("location", e.target.value);
+									onChange={(event) => {
+										handleInputChange("location", event.target.value);
 									}}
 									className="pl-10"
 								/>
@@ -491,8 +513,8 @@ export const CreateEventModal = ({
 								id="description"
 								placeholder="Adicione detalhes sobre o evento..."
 								value={formData.description}
-								onChange={(e) => {
-									handleInputChange("description", e.target.value);
+								onChange={(event) => {
+									handleInputChange("description", event.target.value);
 								}}
 								rows={3}
 								className="resize-none"

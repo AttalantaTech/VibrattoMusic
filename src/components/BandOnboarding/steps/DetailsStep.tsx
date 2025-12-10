@@ -1,13 +1,19 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-// TODO: Implement proper toast system
-// import { useToast } from "../../ui/use-toast";
-import { Loader2, Music, User } from "lucide-react";
+
+import {
+	ChevronLeft,
+	ChevronRight,
+	Loader2,
+	Music,
+	Info,
+	User,
+} from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
-import { onboardingService, filterService } from "../../../api";
+import { filterService } from "../../../api";
 import type { FilterOption } from "../../../api/types";
 import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
 import { InputField } from "../../forms/InputField/InputField";
@@ -15,6 +21,11 @@ import { Select, type Option } from "../../forms/Select/Select";
 import { ToggleSwitch } from "../../forms/ToggleSwitch/ToggleSwitch";
 import { TextAreaField } from "../../forms/TextAreaField/TextAreaField";
 import { Button } from "../../ui/Button/Button";
+import {
+	useOnboardingData,
+	useSaveOnboardingDetails,
+} from "../../../hooks/useMusicalProducts";
+import { toast } from "sonner";
 
 const detailsSchema = z.object({
 	nome: z.string().min(1, "Nome é obrigatório"),
@@ -29,11 +40,17 @@ const detailsSchema = z.object({
 		.array(z.number())
 		.min(1, "Selecione pelo menos um gênero musical"),
 	tipoProducao: z.array(z.number()).optional(),
+	numeroIntegrantes: z.number().optional(),
 });
 
 type DetailsFormData = z.infer<typeof detailsSchema>;
 
 export default function DetailsStep() {
+	const { data: onboardingData } = useOnboardingData();
+	const produtoMusicalId = onboardingData ? onboardingData.id : 0;
+
+	const saveOnboardingDetails = useSaveOnboardingDetails();
+
 	const [loading, setLoading] = useState(false);
 	const [categories, setCategories] = useState<Array<FilterOption>>([]);
 	const [cities, setCities] = useState<Array<FilterOption>>([]);
@@ -53,61 +70,32 @@ export default function DetailsStep() {
 	const [selectedEventTypes, setSelectedEventTypes] = useState<Array<Option>>(
 		[]
 	);
-	const [numberOfMembers, setNumberOfMembers] = useState<number>(0);
 
 	const navigate = useNavigate();
-	// TODO: Implement proper toast system
-	// const { toast } = useToast();
-	const {
-		updateData,
-		markStepComplete,
-		onboardingData,
-		produtoMusicalId,
-		_debugProviderId,
-	} = useOnboarding();
 
-	console.log("🔍 DetailsStep: Component rendered");
-	console.log(
-		"🔍 DetailsStep: produtoMusicalId from context:",
-		produtoMusicalId
-	);
-	console.log("🔍 DetailsStep: Provider ID:", _debugProviderId);
-	console.log("🔍 DetailsStep: onboardingData:", onboardingData);
+	const { updateData, markStepComplete } = useOnboarding();
 
-	useEffect(() => {
-		console.log(
-			"🔄 DetailsStep: produtoMusicalId changed to:",
-			produtoMusicalId
-		);
-		const storedValue = localStorage.getItem("produto-musical-id");
-		console.log("🔍 DetailsStep: localStorage value:", storedValue);
+	const detailedValues: DetailsFormData = useMemo(() => {
+		return {
+			nome: onboardingData?.nome ?? "",
+			idCategoria: onboardingData?.categoria.id ?? 0,
+			descricao: onboardingData?.descricao ?? "",
+			podeDeslocamento: onboardingData?.podeDeslocamento ?? false,
+			codigoMunicipio: onboardingData?.cidade.id ?? 0,
+			tipoEvento: onboardingData?.tipoEvento.map((item) => item.id) ?? [],
+			generoMusical: onboardingData?.generoMusical.map((item) => item.id) ?? [],
+			tipoProducao: onboardingData?.tiposProducao.map((item) => item.id) ?? [],
+			numeroIntegrantes: onboardingData?.numeroIntegrantes ?? 0,
+		};
+	}, [onboardingData]);
 
-		// If localStorage has a value but context doesn't, try to use it
-		if (storedValue && !produtoMusicalId) {
-			console.log(
-				"⚠️ DetailsStep: localStorage has value but context doesn't!"
-			);
-			console.log(
-				"🔄 DetailsStep: Will try to use localStorage value:",
-				storedValue
-			);
-			// We can't update the context here because we don't have the setter
-		}
-	}, [produtoMusicalId]);
-
-	const form = useForm<DetailsFormData>({
-		resolver: zodResolver(detailsSchema),
-		defaultValues: onboardingData["details"] ?? {
-			nome: "",
-			idCategoria: 0,
-			descricao: "",
-			podeDeslocamento: false,
-			codigoMunicipio: 0,
-			tipoEvento: [],
-			generoMusical: [],
-			tipoProducao: [],
-		},
-	});
+	const { setValue, formState, reset, watch, handleSubmit } =
+		useForm<DetailsFormData>({
+			resolver: zodResolver(detailsSchema),
+			defaultValues: {
+				...detailedValues,
+			},
+		});
 
 	// Transform API data to select options with proper null checks
 	const categoriaOptions: Array<Option> = (categories || []).map((cat) => ({
@@ -131,6 +119,7 @@ export default function DetailsStep() {
 			label: genero.Nome,
 		})
 	);
+
 	const loadFilters = useCallback(async () => {
 		try {
 			setLoadingCategories(true);
@@ -157,7 +146,7 @@ export default function DetailsStep() {
 		} catch (loadError) {
 			console.error("Failed to load filters:", loadError);
 			// TODO: Replace with proper toast system
-			alert("Erro ao carregar filtros");
+			toast.error("Erro ao carregar filtros");
 		} finally {
 			setLoadingCategories(false);
 			setLoadingCities(false);
@@ -169,9 +158,11 @@ export default function DetailsStep() {
 	useEffect(() => {
 		void loadFilters();
 	}, [loadFilters]);
+
 	// Initialize select fields with previously saved data
 	useEffect(() => {
-		const details = onboardingData["details"] as DetailsFormData | undefined;
+		const details = { ...detailedValues };
+
 		if (
 			details &&
 			categories.length &&
@@ -182,7 +173,7 @@ export default function DetailsStep() {
 			// Initialize categoria
 			if (details.idCategoria) {
 				const categoriaOption = categories.find(
-					(cat) => cat.Id === details.idCategoria.toString()
+					(cat) => cat.Id === details.idCategoria
 				);
 				if (categoriaOption) {
 					setSelectedCategoria([
@@ -197,7 +188,7 @@ export default function DetailsStep() {
 			// Initialize cidade
 			if (details.codigoMunicipio) {
 				const cidadeOption = cities.find(
-					(cidade) => cidade.Id === details.codigoMunicipio.toString()
+					(cidade) => cidade.Id === details.codigoMunicipio
 				);
 				if (cidadeOption) {
 					setSelectedCidade([
@@ -209,7 +200,7 @@ export default function DetailsStep() {
 			// Initialize genres
 			if (details.generoMusical?.length) {
 				const genreOptions = details.generoMusical
-					.map((id: number) => musicalGenres.find((genero) => genero.Id === id.toString()))
+					.map((id: number) => musicalGenres.find((genero) => genero.Id === id))
 					.filter((genero): genero is FilterOption => genero !== undefined)
 					.map((genero) => ({
 						value: genero.Id.toString(),
@@ -221,47 +212,51 @@ export default function DetailsStep() {
 			// Initialize event types
 			if (details.tipoEvento?.length) {
 				const eventOptions = details.tipoEvento
-					.map((id: number) => eventTypes.find((tipo) => tipo.Id === id.toString()))
+					.map((id: number) => eventTypes.find((tipo) => tipo.Id === id))
 					.filter((tipo): tipo is FilterOption => tipo !== undefined)
 					.map((tipo) => ({ value: tipo.Id.toString(), label: tipo.Nome }));
 				setSelectedEventTypes(eventOptions);
 			}
 		}
-	}, [onboardingData, categories, cities, eventTypes, musicalGenres]);
-	const onSubmit = async (data: DetailsFormData) => {
-		console.log("🚀 DetailsStep: Form submitted with data:", data);
-		console.log("🔍 DetailsStep: produtoMusicalId check:", produtoMusicalId);
-		console.log("🔍 DetailsStep: Provider ID:", _debugProviderId);
+	}, [categories, cities, eventTypes, musicalGenres, detailedValues]);
 
-		// Try to get ID from context or localStorage
-		let idToUse = produtoMusicalId;
+	useEffect(() => {
+		if (onboardingData) {
+			const { categoria, cidade } = onboardingData;
+			if (categoria.id > 0)
+				setSelectedCategoria([
+					{
+						value: String(categoria.id),
+						label: categoria.nome,
+					},
+				]);
+			if (cidade.id > 0)
+				setSelectedCidade([
+					{
+						value: String(cidade.id),
+						label: cidade.nome,
+					},
+				]);
 
-		// If not in context, check localStorage
-		if (!idToUse) {
-			const storedValue = localStorage.getItem("produto-musical-id");
-			console.log("🔍 DetailsStep: Checking localStorage:", storedValue);
+			setSelectedGenres(
+				onboardingData.generoMusical.map((gender) => {
+					return { value: String(gender.id), label: gender.nome };
+				})
+			);
+			setSelectedEventTypes(
+				onboardingData.tipoEvento.map((evento) => {
+					return { value: String(evento.id), label: evento.nome };
+				})
+			);
 
-			if (storedValue) {
-				console.log(
-					"🔄 DetailsStep: Using localStorage value instead of context"
-				);
-				idToUse = storedValue;
-			} else {
-				console.error(
-					"❌ DetailsStep: No produtoMusicalId found in context or localStorage!"
-				);
-				// TODO: Replace with proper toast system
-				alert(
-					"ID do produto musical não encontrado. Por favor, volte e preencha o formulário de contato novamente."
-				);
-				return;
-			}
+			reset({ ...detailedValues });
 		}
+	}, [onboardingData, detailedValues, reset]);
 
-		console.log("📡 DetailsStep: Starting API call with ID:", Number(idToUse));
+	const onSubmit = async (data: DetailsFormData) => {
 		setLoading(true);
 		try {
-			await onboardingService.updateDetails(Number(idToUse), {
+			const detailsData = {
 				nome: data.nome,
 				idCategoria: data.idCategoria,
 				descricao: data.descricao,
@@ -270,10 +265,18 @@ export default function DetailsStep() {
 				tipoEvento: data.tipoEvento,
 				generoMusical: data.generoMusical,
 				tipoProducao: data.tipoProducao ?? [],
+				numeroIntegrantes: data.numeroIntegrantes ?? 0,
+			};
+
+			await saveOnboardingDetails.mutateAsync({
+				productId: produtoMusicalId,
+				detailsData,
 			});
+
 			updateData("details", data);
 			markStepComplete("2");
-			// TODO: Replace with proper toast system
+
+			toast.success("Informações da Banda salvas com sucesso");
 
 			void navigate({ to: "/band/register/onboarding/3" });
 		} catch (submitError) {
@@ -281,21 +284,23 @@ export default function DetailsStep() {
 			const errorMessage =
 				submitError instanceof Error
 					? submitError.message
-					: "Erro ao salvar detalhes"; // TODO: Replace with proper toast system
+					: "Erro ao salvar detalhes";
 			console.error("❌ Erro ao salvar detalhes:", errorMessage);
-			alert(errorMessage);
+
+			toast.error(errorMessage);
 		} finally {
 			setLoading(false);
 		}
 	};
+
 	return (
 		<StepLayout
 			currentStep={2}
-			headerTitle="Informações Profissionais"
-			headerIcon={<Music color="#007bff" size={24} />}
+			headerTitle="Informações da Banda"
+			headerIcon={<Info color="#007bff" size={24} />}
 		>
 			<form
-				onSubmit={form.handleSubmit(onSubmit)}
+				onSubmit={handleSubmit(onSubmit)}
 				className="flex flex-col w-full h-full gap-6"
 			>
 				<InputField
@@ -303,14 +308,14 @@ export default function DetailsStep() {
 					label="Nome Artístico"
 					name="artistic_name"
 					placeholder="Digitar..."
-					value={form.watch("nome") || ""}
+					value={watch("nome") || ""}
 					onChange={(event) => {
-						form.setValue("nome", event.target.value);
+						setValue("nome", event.target.value);
 					}}
 				/>
-				{form.formState.errors.nome && (
+				{formState.errors.nome && (
 					<div className="text-red-500 text-sm">
-						{form.formState.errors.nome.message}
+						{formState.errors.nome.message}
 					</div>
 				)}{" "}
 				<Select
@@ -324,13 +329,13 @@ export default function DetailsStep() {
 					setSelectedOptions={(options) => {
 						setSelectedCategoria(options);
 						if (options && options.length > 0) {
-							form.setValue("idCategoria", Number(options[0]?.value));
+							setValue("idCategoria", Number(options[0]?.value));
 						}
 					}}
 				/>
-				{form.formState.errors.idCategoria && (
+				{formState.errors.idCategoria && (
 					<div className="text-red-500 text-sm">
-						{form.formState.errors.idCategoria.message}
+						{formState.errors.idCategoria.message}
 					</div>
 				)}
 				<Select
@@ -342,35 +347,37 @@ export default function DetailsStep() {
 					setSelectedOptions={(options) => {
 						setSelectedCidade(options);
 						if (options && options.length > 0) {
-							form.setValue("codigoMunicipio", Number(options[0]?.value));
+							setValue("codigoMunicipio", Number(options[0]?.value));
 						}
 					}}
 				/>
-				{form.formState.errors.codigoMunicipio && (
+				{formState.errors.codigoMunicipio && (
 					<div className="text-red-500 text-sm">
-						{form.formState.errors.codigoMunicipio.message}
+						{formState.errors.codigoMunicipio.message}
 					</div>
 				)}
 				<Select
 					label="Gênero Musical"
 					name="genres"
+					multiple
 					options={generoMusicalOptions}
 					placeholder={loadingGenres ? "Carregando..." : "Selecione os gêneros"}
 					selectedOptions={selectedGenres}
 					setSelectedOptions={(options) => {
 						setSelectedGenres(options);
 						const values = (options || []).map((opt) => Number(opt.value));
-						form.setValue("generoMusical", values);
+						setValue("generoMusical", values);
 					}}
 				/>
-				{form.formState.errors.generoMusical && (
+				{formState.errors.generoMusical && (
 					<div className="text-red-500 text-sm">
-						{form.formState.errors.generoMusical.message}
+						{formState.errors.generoMusical.message}
 					</div>
 				)}
 				<Select
 					label="Tipos de Eventos"
 					name="events"
+					multiple
 					options={tipoEventoOptions}
 					placeholder={
 						loadingEventTypes ? "Carregando..." : "Selecione os tipos de evento"
@@ -379,21 +386,21 @@ export default function DetailsStep() {
 					setSelectedOptions={(options) => {
 						setSelectedEventTypes(options);
 						const values = (options || []).map((opt) => Number(opt.value));
-						form.setValue("tipoEvento", values);
+						setValue("tipoEvento", values);
 					}}
 				/>
-				{form.formState.errors.tipoEvento && (
+				{formState.errors.tipoEvento && (
 					<div className="text-red-500 text-sm">
-						{form.formState.errors.tipoEvento.message}
+						{formState.errors.tipoEvento.message}
 					</div>
 				)}
 				<hr className="w-full" />
 				<ToggleSwitch
-					checked={form.watch("podeDeslocamento") || false}
+					checked={watch("podeDeslocamento") || false}
 					label="Disponível para deslocamentos a outras regiões."
 					name="avaliable_for_moving"
 					setChecked={(checked) => {
-						form.setValue("podeDeslocamento", checked);
+						setValue("podeDeslocamento", checked);
 					}}
 				/>
 				<hr className="w-full" />
@@ -401,12 +408,12 @@ export default function DetailsStep() {
 					icon={<User size={20} />}
 					label="Número de integrantes da banda"
 					min={1}
-					name="num_members"
 					placeholder="Ex: 3"
 					type="number"
-					value={numberOfMembers}
+					name="numberBandMembers"
+					value={watch("numeroIntegrantes") || 0}
 					onChange={(event) => {
-						setNumberOfMembers(parseInt(event.target.value) || 0);
+						setValue("numeroIntegrantes", Number(event.target.value));
 					}}
 				/>
 				<TextAreaField
@@ -415,30 +422,37 @@ export default function DetailsStep() {
 					label="Bio (release)"
 					name="bio"
 					placeholder="Digitar..."
-					value={form.watch("descricao") || ""}
+					value={watch("descricao") || ""}
 					onChange={(event) => {
-						form.setValue("descricao", event.target.value);
+						setValue("descricao", event.target.value);
 					}}
 				/>
-				{form.formState.errors.descricao && (
+				{formState.errors.descricao && (
 					<div className="text-red-500 text-sm">
-						{form.formState.errors.descricao.message}
+						{formState.errors.descricao.message}
 					</div>
 				)}{" "}
 				{/* Navigation buttons */}
-				<div className="flex flex-col sm:flex-row w-full gap-3 items-stretch sm:items-center justify-between mt-4 md:mt-6">
+				<div className="flex flex-col sm:flex-row w-full gap-8 items-stretch sm:items-center justify-end mt-4 md:mt-6">
 					<Button
 						type="button"
 						variant="outline"
 						className="w-full sm:w-auto"
 						onClick={() => navigate({ to: "/band/register/onboarding/1" })}
 					>
-						Anterior
+						<div className="flex items-center gap-1">
+							<ChevronLeft />
+							Voltar
+						</div>
 					</Button>
 
 					<Button type="submit" disabled={loading} className="w-full sm:w-auto">
 						{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-						{loading ? "Salvando..." : "Próximo"}
+
+						<div className="flex items-center gap-1">
+							{loading ? "Salvando..." : "Continuar"}
+							<ChevronRight />
+						</div>
 					</Button>
 				</div>
 			</form>

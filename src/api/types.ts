@@ -323,7 +323,101 @@ export interface UpdateBookingRequest {
 	observacoes?: string;
 }
 
+export interface RedeSocial {
+	idProdutoMusical: number;
+	idRedeSocial: number;
+	link: string;
+	nomeRedeSocial: string;
+}
+
+// Real API Response Types (based on actual API structure)
+export interface MusicalProductApiResponse {
+	id: number;
+	nome: string;
+	descricao: string;
+	usuario: {
+		id: number;
+		nome: string;
+	};
+	categoria: {
+		id: number;
+		nome: string;
+	};
+	cidade: {
+		id: number;
+		nome: string; // format: "São Paulo - SP"
+	};
+	avaliacao: number | null;
+	podeDeslocamento: boolean;
+	spotifyPlaylistId: string | null;
+	tipoEvento: Array<{
+		id: number;
+		nome: string;
+	}>;
+	generoMusical: Array<{
+		id: number;
+		nome: string;
+	}>;
+	redeSocial: Array<RedeSocial>;
+	videosYouTube: Array<{ id: number; link: string }>;
+	imagens: Array<{
+		id: number;
+		link: string;
+	}>;
+	mapaPalco: Array<{
+		idProdutoMusical: number;
+		idInstrumento: number;
+		posicaoX: number;
+		posicaoY: number;
+		nomeInstrumento: string;
+	}>;
+	tiposProducao: Array<{
+		id: number;
+		nome: string;
+	}>;
+	usaCnpj: boolean;
+	cnpj: string | null;
+	cpf: string | null;
+	razaoSocial: string | null;
+	telefone: string | null;
+	cepContato: string | null;
+	logradouroContato: string | null;
+	numeroContato: string | null;
+	bairroContato: string | null;
+	cidadeContato: string | null;
+	estadoContato: string | null;
+	complementoContato: string | null;
+	email: string | null;
+	fotoPerfil: string | null;
+	logomarca: string | null;
+	exibirValorServico: boolean;
+	valorServico: number | null;
+	camarimIncluso: boolean;
+	rider: string | null; // Send file link in Azure.
+	riderTexto: string | null; // Send rider text
+	infraCamarim: string | null;
+}
+
+export interface MusicalProductListApiResponse {
+	data: Array<MusicalProductApiResponse>;
+	pagination: {
+		currentPage: number;
+		totalPages: number;
+		totalItems: number;
+		itemsPerPage: number;
+		hasNextPage: boolean;
+		hasPreviousPage: boolean;
+	};
+}
+
 // ===== Onboarding Types =====
+
+export interface OnboardingApiResponse extends MusicalProductApiResponse {
+	etapaCadastro: number;
+	idCadastro: number;
+	codigoMunicipio: number;
+	numeroIntegrantes: number;
+}
 
 export interface OnboardingContact {
 	id: number;
@@ -343,8 +437,6 @@ export interface OnboardingContact {
 	email?: string;
 }
 
-export type OnboardingContactCreate = Omit<OnboardingContact, "id">;
-
 export interface OnboardingDetails {
 	nome: string;
 	idCategoria: number;
@@ -354,15 +446,14 @@ export interface OnboardingDetails {
 	tipoEvento: Array<number>;
 	generoMusical: Array<number>;
 	tipoProducao: Array<number>;
+	numeroIntegrantes: number;
 }
 
 export interface OnboardingMedia {
 	videosYouTube: Array<string>;
-	spotifyPlaylistId?: string;
-	appleMusicUrl?: string;
-	deezerUrl?: string;
+	spotifyPlaylistId?: string | null;
 	exibirValorServico: boolean;
-	valorServico?: number;
+	valorServico?: number | null;
 	redeSocial: Array<{
 		idRedeSocial: number;
 		link: string;
@@ -370,14 +461,15 @@ export interface OnboardingMedia {
 }
 
 export interface OnboardingImages {
-	FotoPerfil?: string;
-	Logomarca?: string;
+	FotoPerfil?: string | null;
+	Logomarca?: string | null;
 	ImagensCarrossel: Array<string>;
 }
 
 export interface OnboardingTechnicalConfig {
-	rider?: string;
-	infraCamarim?: string;
+	rider?: string | null;
+	riderText?: string | null;
+	infraCamarim?: string | null;
 	camarimIncluso: boolean;
 	mapaPalco: Array<{
 		idInstrumento: number;
@@ -387,6 +479,7 @@ export interface OnboardingTechnicalConfig {
 }
 
 export interface OnboardingSchedule {
+	id: number;
 	compromissos: Array<{
 		data: string;
 		horaInicio: string;
@@ -431,8 +524,15 @@ export interface Document {
 
 // ===== Image Upload Types =====
 
+export type FileEventType =
+	| "ProdutoMusicalOnboardingFotoPerfil"
+	| "ProdutoMusicalOnboardingLogomarca"
+	| "ProdutoMusicalOnboardingCarrossel"
+	| "ProdutoMusicalOnboardingRider"
+	| "ProdutoMusicalOnboardingInfraCamarim";
+
 export interface ImageUploadRequest {
-	evento: string;
+	evento: FileEventType;
 	idCadastro: string | number;
 	idLista?: number;
 	extensaoArquivo: string;
@@ -444,9 +544,9 @@ export interface ImageUploadResponse {
 }
 
 export interface ImageDeleteRequest {
-	evento: string;
-	idCadastro: string | number;
-	idLista?: number;
+	evento: FileEventType;
+	idCadastro: number;
+	idLista?: number | null;
 }
 
 // ===== Error Types =====
@@ -663,89 +763,6 @@ export interface SearchSuggestion {
 	text: string;
 	type: "artist" | "genre" | "location";
 	count?: number;
-}
-
-// Real API Response Types (based on actual API structure)
-export interface MusicalProductApiResponse {
-	id: number;
-	nome: string;
-	descricao: string;
-	usuario: {
-		id: number;
-		nome: string;
-	};
-	categoria: {
-		id: number;
-		nome: string;
-	};
-	cidade: {
-		id: number;
-		nome: string; // format: "São Paulo - SP"
-	};
-	avaliacao: number | null;
-	podeDeslocamento: boolean;
-	spotifyPlaylistId: string | null;
-	tipoEvento: Array<{
-		id: number;
-		nome: string;
-	}>;
-	generoMusical: Array<{
-		id: number;
-		nome: string;
-	}>;
-	redeSocial: Array<{
-		idProdutoMusical: number;
-		idRedeSocial: number;
-		link: string;
-		nomeRedeSocial: string;
-	}>;
-	videosYouTube: Array<string>;
-	imagens: Array<{
-		id: number;
-		link: string;
-	}>;
-	mapaPalco: Array<{
-		idProdutoMusical: number;
-		idInstrumento: number;
-		posicaoX: number;
-		posicaoY: number;
-		nomeInstrumento: string;
-	}>;
-	tiposProducao: Array<{
-		id: number;
-		nome: string;
-	}>;
-	usaCnpj: boolean;
-	cnpj: string | null;
-	razaoSocial: string | null;
-	telefone: string | null;
-	cepContato: string | null;
-	logradouroContato: string | null;
-	numeroContato: string | null;
-	bairroContato: string | null;
-	cidadeContato: string | null;
-	estadoContato: string | null;
-	complementoContato: string | null;
-	email: string | null;
-	fotoPerfil: string | null;
-	logomarca: string | null;
-	exibirValorServico: boolean;
-	valorServico: number | null;
-	camarimIncluso: boolean;
-	rider: string | null;
-	infraCamarim: string | null;
-}
-
-export interface MusicalProductListApiResponse {
-	data: Array<MusicalProductApiResponse>;
-	pagination: {
-		currentPage: number;
-		totalPages: number;
-		totalItems: number;
-		itemsPerPage: number;
-		hasNextPage: boolean;
-		hasPreviousPage: boolean;
-	};
 }
 
 // Proposal types

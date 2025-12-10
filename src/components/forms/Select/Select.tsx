@@ -16,6 +16,7 @@ type SelectProps = {
 	selectedOptions: Array<Option>;
 	setSelectedOptions: (options: Array<Option>) => void;
 	className?: string;
+	multiple?: boolean;
 };
 
 export const Select = ({
@@ -26,6 +27,7 @@ export const Select = ({
 	selectedOptions,
 	setSelectedOptions,
 	className,
+	multiple,
 }: SelectProps): FunctionComponent => {
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
@@ -55,12 +57,22 @@ export const Select = ({
 
 	const toggleOption = (option: Option) => {
 		const isSelected = selectedOptions.some((o) => o.value === option.value);
-		if (isSelected) {
-			setSelectedOptions(
-				selectedOptions.filter((o) => o.value !== option.value)
-			);
+
+		if (multiple) {
+			if (isSelected) {
+				setSelectedOptions(
+					selectedOptions.filter((o) => o.value !== option.value)
+				);
+			} else {
+				setSelectedOptions([...selectedOptions, option]);
+			}
 		} else {
-			setSelectedOptions([...selectedOptions, option]);
+			if (isSelected) {
+				setSelectedOptions([]);
+			} else {
+				setSelectedOptions([option]);
+				setIsOpen(false);
+			}
 		}
 	};
 
@@ -83,7 +95,7 @@ export const Select = ({
 				<div
 					id={name}
 					className={cn(
-						"w-full rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer flex items-center justify-between",
+						"w-full bg-white rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer flex items-center justify-between",
 						className
 					)}
 					onClick={toggleDropdown}
@@ -94,7 +106,9 @@ export const Select = ({
 						}
 					>
 						{selectedOptions.length > 0
-							? `${selectedOptions.length} selecionados`
+							? multiple
+								? `${selectedOptions.length} selecionados`
+								: selectedOptions[0]?.label
 							: placeholder}
 					</span>
 					<ChevronDown
@@ -111,8 +125,8 @@ export const Select = ({
 								<li
 									key={option.value}
 									className="px-4 py-2 text-sm text-gray-900 hover:bg-blue-50 cursor-pointer flex items-center gap-2"
-									onClick={(e) => {
-										e.stopPropagation();
+									onClick={(event) => {
+										event.stopPropagation();
 										handleSelect(option);
 									}}
 								>
@@ -120,7 +134,7 @@ export const Select = ({
 										readOnly
 										className="text-blue-500"
 										size={16}
-										type="checkbox"
+										type={multiple ? "checkbox" : "radio"}
 										checked={selectedOptions.some(
 											(o) => o.value === option.value
 										)}

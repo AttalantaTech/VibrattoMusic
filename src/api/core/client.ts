@@ -164,22 +164,22 @@ export class ApiClient {
 		this.logger.logResponse(response, traceId, startTime);
 
 		// Cache GET responses
-		if (
-			config.method?.toLowerCase() === "get" &&
-			!config._skipCache &&
-			config._cacheKey
-		) {
-			const ttl = this.cache.getTtlConfig(config.url ?? "");
-			const etag = response.headers["etag"];
-			const lastModified = response.headers["last-modified"];
-			this.cache.setWithEtag(
-				config._cacheKey,
-				response.data,
-				typeof etag === "string" ? etag : undefined,
-				typeof lastModified === "string" ? lastModified : undefined,
-				ttl
-			);
-		}
+		// if (
+		// 	config.method?.toLowerCase() === "get" &&
+		// 	!config._skipCache &&
+		// 	config._cacheKey
+		// ) {
+		// 	const ttl = this.cache.getTtlConfig(config.url ?? "");
+		// 	const etag = response.headers["etag"];
+		// 	const lastModified = response.headers["last-modified"];
+		// 	// this.cache.setWithEtag(
+		// 	// 	config._cacheKey,
+		// 	// 	response.data,
+		// 	// 	typeof etag === "string" ? etag : undefined,
+		// 	// 	typeof lastModified === "string" ? lastModified : undefined,
+		// 	// 	ttl
+		// 	// );
+		// }
 
 		return response;
 	};
@@ -443,6 +443,7 @@ export class ApiClient {
 				console.log("Connected to localhost API");
 				return localhostClient;
 			} catch (localhostError) {
+				console.error(localhostError);
 				console.warn(
 					"Localhost API also not available, using production URL anyway"
 				);

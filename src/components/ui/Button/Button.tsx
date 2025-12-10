@@ -21,7 +21,7 @@ const buttonVariants = cva(
 					"bg-[#D92D20] text-white border border-[#D92D20] shadow-sm hover:bg-[#C5271B] focus:ring-red-300",
 			},
 			size: {
-				default: "h-[44px] px-[18px] text-base rounded-[12px]",
+				default: "h-[52px] px-[18px] py-[8px] text-base rounded-[8px]",
 				sm: "h-[38px] px-4 text-sm rounded-md",
 				lg: "h-[52px] px-6 text-lg rounded-xl",
 			},
@@ -34,7 +34,8 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-	extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+	extends
+		React.ButtonHTMLAttributes<HTMLButtonElement>,
 		VariantProps<typeof buttonVariants> {}
 
 export const Button: React.FC<ButtonProps> = ({

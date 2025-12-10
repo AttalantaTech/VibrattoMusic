@@ -52,14 +52,15 @@ export const StepLayout = ({
 
 	const handleSkipOnboarding = async () => {
 		addToast({
-			message: "Tudo bem, mais tarde você pode preencher essa informação na tela de Configurações do Perfil",
+			message:
+				"Tudo bem, mais tarde você pode preencher essa informação na tela de Configurações do Perfil",
 			type: "info",
 		});
 		await router.navigate({ to: "/" });
 	};
 
 	return (
-		<div className="flex flex-col min-h-screen justify-start items-center">
+		<div className="flex flex-col min-h-screen justify-start items-center bg-white">
 			<OnboardingHeader />
 
 			<main className="flex flex-col items-center justify-center w-full">
@@ -70,6 +71,14 @@ export const StepLayout = ({
 						<h1 className="text-gray-900 font-bold text-xl md:text-2xl">
 							Cadastre sua banda
 						</h1>
+
+						<div className="max-w-screen-md">
+							<h4 className="text-sm font-normal text-center text-gray-600 sm:text-xl">
+								Preencher todos os campos de contrato é obrigatório para
+								realizar o cadastro. Já os dados artísticos da banda podem ser
+								editados posteriormente.
+							</h4>
+						</div>
 					</div>
 
 					<div className="flex flex-col lg:flex-row w-full gap-4 lg:gap-8">

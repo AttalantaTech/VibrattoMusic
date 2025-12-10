@@ -48,7 +48,7 @@ export const SearchPage = () => {
 		if (filters.NomeOuDescricao !== searchInput) {
 			setSearchInput(filters.NomeOuDescricao ?? "");
 		}
-	}, [filters.NomeOuDescricao]);
+	}, [filters.NomeOuDescricao, searchInput]);
 
 	// API hooks
 	const { data: cidades } = useCidades();
@@ -60,7 +60,7 @@ export const SearchPage = () => {
 		if (hasActiveFilters && !showFilters) {
 			setShowFilters(true);
 		}
-	}, []); // Empty dependency array to run only on mount
+	}, [hasActiveFilters, showFilters]); // Empty dependency array to run only on mount
 
 	// Focar no input de busca quando o componente for montado
 	React.useEffect(() => {
