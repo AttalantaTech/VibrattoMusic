@@ -212,6 +212,7 @@ export default function TechnicalStep() {
 		setRiderFileUrl(initialTechinicalData.rider);
 		setDressingRoomFileUrl(initialTechinicalData.infraCamarim);
 		setStageMapData(initialTechinicalData.mapaPalco || []);
+		setRiderTab(initialTechinicalData.riderTexto ? "digital" : "upload");
 	}, [reset, initialTechinicalData]);
 
 	const handleRiderFileUpload = (file: File | null) => {
@@ -333,11 +334,16 @@ export default function TechnicalStep() {
 				setDressingRoomFileUrl(newUrl);
 			}
 
+			//Remove all HTML tags and then check if the text should be sent.
+			const text = technicalData.riderTexto
+				? technicalData.riderTexto
+						.replace(/<[^>]+>/g, "")
+						.replace(/&nbsp;/g, " ")
+						.trim()
+				: "";
+
 			const data = {
-				riderTexto:
-					technicalData.riderTexto && technicalData.riderTexto.trim() !== ""
-						? technicalData.riderTexto
-						: null,
+				riderTexto: text.length > 0 ? technicalData.riderTexto : null,
 				rider: finalRiderUrl ?? null,
 				infraCamarim: finalDressingRoomUrl ?? null,
 				// camarimTexto:

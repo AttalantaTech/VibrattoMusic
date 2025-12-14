@@ -102,7 +102,7 @@ export default function PublishStep() {
 								{requiredSteps.map((step) => {
 									const isCompleted =
 										onboardingData?.etapaCadastro &&
-										onboardingData?.etapaCadastro >= step;
+										onboardingData?.etapaCadastro > step;
 
 									return (
 										<div
