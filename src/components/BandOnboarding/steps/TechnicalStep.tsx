@@ -109,7 +109,7 @@ const technicalSchema = z.object({
 		.transform((value) => (value && value.trim() !== "" ? value : null))
 		.nullable(),
 	camarimIncluso: z.boolean().default(false),
-	camarimTexto: z
+	infraCamarimTexto: z
 		.string()
 		.optional()
 		.transform((value) => (value && value.trim() !== "" ? value : null))
@@ -188,9 +188,9 @@ export default function TechnicalStep() {
 			rider: onboardingData?.rider ?? null,
 			riderTexto: onboardingData?.riderTexto ?? null,
 			infraCamarim: onboardingData?.infraCamarim ?? null,
+			infraCamarimTexto: onboardingData?.infraCamarimTexto ?? null,
 			camarimIncluso: onboardingData?.camarimIncluso ?? false,
 			mapaPalco: onboardingData?.mapaPalco ?? [],
-			camarimTexto: null,
 		};
 	}, [onboardingData]);
 
@@ -213,6 +213,9 @@ export default function TechnicalStep() {
 		setDressingRoomFileUrl(initialTechinicalData.infraCamarim);
 		setStageMapData(initialTechinicalData.mapaPalco || []);
 		setRiderTab(initialTechinicalData.riderTexto ? "digital" : "upload");
+		setDressingRoomTab(
+			initialTechinicalData.infraCamarimTexto ? "digital" : "upload"
+		);
 	}, [reset, initialTechinicalData]);
 
 	const handleRiderFileUpload = (file: File | null) => {
@@ -283,6 +286,13 @@ export default function TechnicalStep() {
 		setIsStageBuilderOpen(false);
 	};
 
+	const removeHtml = (text: string): string => {
+		return text
+			.replace(/<[^>]+>/g, "")
+			.replace(/&nbsp;/g, " ")
+			.trim();
+	};
+
 	const onSubmit = async (technicalData: TechnicalFormData) => {
 		if (!produtoMusicalId) {
 			console.error("ID do produto musical não encontrado");
@@ -335,21 +345,21 @@ export default function TechnicalStep() {
 			}
 
 			//Remove all HTML tags and then check if the text should be sent.
-			const text = technicalData.riderTexto
-				? technicalData.riderTexto
-						.replace(/<[^>]+>/g, "")
-						.replace(/&nbsp;/g, " ")
-						.trim()
+			const riderText = technicalData.riderTexto
+				? removeHtml(technicalData.riderTexto)
+				: "";
+
+			const dressingRoomText = technicalData.infraCamarimTexto
+				? removeHtml(technicalData.infraCamarimTexto)
 				: "";
 
 			const data = {
-				riderTexto: text.length > 0 ? technicalData.riderTexto : null,
+				riderTexto: riderText.length > 0 ? technicalData.riderTexto : null,
 				rider: finalRiderUrl ?? null,
 				infraCamarim: finalDressingRoomUrl ?? null,
-				// camarimTexto:
-				// 	technicalData.camarimTexto && technicalData.camarimTexto.trim() !== ""
-				// 		? technicalData.camarimTexto
-				// 		: null,
+				infraCamarimTexto: dressingRoomText
+					? technicalData.infraCamarimTexto
+					: null,
 				camarimIncluso: hasDressingRoom,
 				mapaPalco: stageMapData,
 			};
@@ -510,7 +520,7 @@ export default function TechnicalStep() {
 									) : (
 										<Controller
 											control={control}
-											name="camarimTexto"
+											name="infraCamarimTexto"
 											render={({ field }) => (
 												<SimpleEditor
 													value={field.value ?? ""}
