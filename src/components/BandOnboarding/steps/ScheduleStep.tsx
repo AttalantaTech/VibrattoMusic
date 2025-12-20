@@ -120,17 +120,29 @@ export default function ScheduleStep() {
 
 		setLoading(true);
 		try {
-			// Convert events to API format
-			const scheduleData: OnboardingSchedule = {
-				id: Number(produtoMusicalId),
-				compromissos: events.map((event) => ({
+			const compromissos = events
+				.sort((a, b) => a.date.getTime() - b.date.getTime())
+				.map((event) => ({
 					titulo: event.title.trim(),
 					descricao: event.description?.trim() || "",
 					data: format(event.date, "yyyy-MM-dd"),
 					horaInicio: event.startTime,
 					horaFim: event.endTime,
 					disponibilidadeOutrosEventos: event.type !== "show",
-				})),
+				}));
+
+			// Convert events to API format
+			const scheduleData: OnboardingSchedule = {
+				id: Number(produtoMusicalId),
+				inicioCalendario:
+					compromissos.length > 0
+						? compromissos.at(0)?.data
+						: format(new Date(), "yyyy-MM-dd"),
+				finalCalendario:
+					compromissos.length > 0
+						? compromissos.at(-1)?.data
+						: format(new Date(), "yyyy-MM-dd"),
+				compromissos,
 			};
 
 			await onboardingService.updateSchedule(

@@ -1,9 +1,9 @@
+import type { OnboardingContactData } from "@/utils/validation";
 import type { ApiClient } from "../core/client";
 import type {
 	MusicalProductSearchRequest,
 	MusicalProductListApiResponse,
 	MusicalProductApiResponse,
-	OnboardingContact,
 	OnboardingDetails,
 	OnboardingMedia,
 	OnboardingImages,
@@ -110,7 +110,7 @@ export class MusicalProductService {
 	 * Save onboarding contact information (Step 1)
 	 */
 	public async saveOnboardingContact(
-		contactData: OnboardingContact
+		contactData: OnboardingContactData
 	): Promise<{ id: number }> {
 		return this.apiClient.post<{ id: number }>(
 			"produtomusical/onboarding/contato",

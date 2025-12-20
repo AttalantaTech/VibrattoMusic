@@ -396,6 +396,7 @@ export interface MusicalProductApiResponse {
 	rider: string | null; // Send file link in Azure.
 	riderTexto: string | null; // Send rider text
 	infraCamarim: string | null;
+	infraCamarimTexto: string | null;
 }
 
 export interface MusicalProductListApiResponse {
@@ -470,6 +471,7 @@ export interface OnboardingTechnicalConfig {
 	rider?: string | null;
 	riderText?: string | null;
 	infraCamarim?: string | null;
+	infraCamarimTexto?: string | null;
 	camarimIncluso: boolean;
 	mapaPalco: Array<{
 		idInstrumento: number;
@@ -480,6 +482,8 @@ export interface OnboardingTechnicalConfig {
 
 export interface OnboardingSchedule {
 	id: number;
+	inicioCalendario?: string | null;
+	finalCalendario?: string | null;
 	compromissos: Array<{
 		data: string;
 		horaInicio: string;

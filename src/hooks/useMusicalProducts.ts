@@ -3,13 +3,13 @@ import { musicalProductService, onboardingService } from "../api";
 import type {
 	MusicalProductSearchRequest,
 	MusicalProductListApiResponse,
-	OnboardingContact,
 	OnboardingDetails,
 	OnboardingMedia,
 	OnboardingImages,
 	OnboardingTechnicalConfig,
 	OnboardingSchedule,
 } from "../api/types";
+import type { OnboardingContactData } from "@/utils/validation";
 
 // Query Keys
 export const musicalProductKeys = {
@@ -117,7 +117,7 @@ export const useOnboardingData = (enabled: boolean = true) => {
 export const useSaveOnboardingContact = () => {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: (contactData: OnboardingContact) =>
+		mutationFn: (contactData: OnboardingContactData) =>
 			musicalProductService.saveOnboardingContact(contactData),
 
 		onSuccess: () => {
