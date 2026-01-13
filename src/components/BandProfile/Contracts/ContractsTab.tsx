@@ -18,8 +18,7 @@ const statusConfig = {
 		color: "text-green-600",
 		bgColor: "bg-green-50",
 	},
-	// eslint-disable-next-line camelcase
-	sinal_pago: {
+	sinalpago: {
 		label: "Sinal Pago",
 		icon: CheckCircle,
 		variant: "success" as const,
@@ -38,34 +37,46 @@ const statusConfig = {
 export const ContractsTab = () => {
 	const [isViewerOpen, setIsViewerOpen] = useState(false);
 	const [isEditorOpen, setIsEditorOpen] = useState(false);
-	
+
 	const navigate = useNavigate();
 	const { activeProduct } = useActiveMusicalProduct();
-	const activeProductId = activeProduct?.id ? Number(activeProduct.id) : undefined;
+	const activeProductId = activeProduct?.id
+		? Number(activeProduct.id)
+		: undefined;
 
-	const { data: proposals, isLoading: proposalsLoading, error: proposalsError } = useProductProposals(activeProductId || 0);
-	
+	const {
+		data: proposals,
+		isLoading: proposalsLoading,
+		error: proposalsError,
+	} = useProductProposals(activeProductId || 0);
+
 	const contractProposal = useMemo(() => {
 		if (!proposals) return null;
 
-		const acceptedProposals = proposals.filter(p =>
-			p.status.nome === "aceito" || p.status.nome === "sinal_pago" || p.status.nome === "concluido"
+		const acceptedProposals = proposals.filter(
+			(p) =>
+				p.status.nome === "Aceita" ||
+				p.status.nome === "SinalPago" ||
+				p.status.nome === "Concluido"
 		);
 
 		return acceptedProposals[0] || null;
 	}, [proposals]);
 
-	const { data: contract, isLoading: contractLoading, error: contractError } = useContract(
-		contractProposal?.identificadorUnico || ""
-	);
+	const {
+		data: contract,
+		isLoading: contractLoading,
+		error: contractError,
+	} = useContract(contractProposal?.identificadorUnico || "");
 
-	const { data: contractPdfUrl, isLoading: pdfLoading, error: pdfError } = useContractPDF(
-		contractProposal?.identificadorUnico || ""
-	);
+	const {
+		data: contractPdfUrl,
+		isLoading: pdfLoading,
+		error: pdfError,
+	} = useContractPDF(contractProposal?.identificadorUnico || "");
 
 	const isLoading = proposalsLoading || contractLoading || pdfLoading;
 	const error = proposalsError || contractError || pdfError;
-
 
 	const handleViewContract = () => {
 		setIsViewerOpen(true);
@@ -96,10 +107,13 @@ export const ContractsTab = () => {
 					Erro ao Carregar Contratos
 				</h3>
 				<p className="text-gray-600 max-w-md mb-4">
-					Não foi possível carregar informações do contrato. Tente recarregar a página.
+					Não foi possível carregar informações do contrato. Tente recarregar a
+					página.
 				</p>
 				<Button
-					onClick={() => { window.location.reload(); }}
+					onClick={() => {
+						window.location.reload();
+					}}
 					variant="outline"
 				>
 					Recarregar Página
@@ -117,7 +131,7 @@ export const ContractsTab = () => {
 						Visualize o contrato do seu produto musical
 					</p>
 				</div>
-				
+
 				{!contract && activeProduct && (
 					<Button
 						onClick={() => {
@@ -131,14 +145,15 @@ export const ContractsTab = () => {
 				)}
 			</div>
 
-			{!contract ? (
+			{!contractProposal ? (
 				<div className="flex flex-col items-center justify-center min-h-[400px] bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
 					<FileText className="h-12 w-12 text-gray-400 mb-4" />
 					<h3 className="text-lg font-semibold text-gray-900 mb-2">
 						Nenhum contrato encontrado
 					</h3>
 					<p className="text-gray-600 text-center max-w-md mb-4">
-						Você ainda não possui um contrato ativo. Os contratos são criados automaticamente quando uma proposta é aceita.
+						Você ainda não possui um contrato ativo. Os contratos são criados
+						automaticamente quando uma proposta é aceita.
 					</p>
 				</div>
 			) : (
@@ -147,22 +162,29 @@ export const ContractsTab = () => {
 						<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 							<div>
 								<h3 className="text-lg font-semibold text-gray-900">
-									{contract.titulo || `Contrato - ${contract.tipoEvento?.nome || 'Evento'}`}
+									{contractProposal.descricao ||
+										`Contrato - ${contractProposal.tipoEvento.nome || "Evento"}`}
 								</h3>
 								<div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-600">
-									<span>Cliente: {contract.contratante?.nome}</span>
+									<span>Cliente: {contractProposal?.contratante?.nome}</span>
 									<span>•</span>
-									<span>{formatCurrency(contract.valor || 0)}</span>
+									<span>{formatCurrency(contractProposal?.valor || 0)}</span>
 									<span>•</span>
-									<span>{formatDate(contract.dataInicio)}</span>
+									<span>{formatDate(contractProposal?.dataInicio)}</span>
 								</div>
 							</div>
 							<Badge
-								variant={statusConfig[contract.status?.nome as keyof typeof statusConfig]?.variant || "default"}
+								variant={
+									statusConfig[
+										contractProposal.status.nome as keyof typeof statusConfig
+									]?.variant || "default"
+								}
 								className="flex items-center gap-1"
 							>
 								<CheckCircle className="h-3 w-3" />
-								{statusConfig[contract.status?.nome as keyof typeof statusConfig]?.label || contract.status?.nome}
+								{statusConfig[
+									contractProposal.status.nome as keyof typeof statusConfig
+								]?.label || contractProposal.status.nome}
 							</Badge>
 						</div>
 					</div>
@@ -200,7 +222,7 @@ export const ContractsTab = () => {
 								<Eye className="h-4 w-4 mr-1" />
 								Visualizar em Tela Cheia
 							</Button>
-							{(contract.status?.nome === "aceito" || contract.status?.nome === "Aceita") && (
+							{contractProposal.status.nome === "Aceita" && (
 								<>
 									<Button
 										size="sm"
@@ -215,8 +237,11 @@ export const ContractsTab = () => {
 										size="sm"
 										className="bg-green-600 hover:bg-green-700 text-white"
 										onClick={() => {
-											if (contract?.identificadorUnico) {
-												navigate({ to: `/band/contract/${contract.identificadorUnico}` });
+											if (contractProposal?.identificadorUnico) {
+												// eslint-disable-next-line @typescript-eslint/no-floating-promises
+												navigate({
+													to: `/band/contract/${contractProposal.identificadorUnico}`,
+												});
 											}
 										}}
 									>
@@ -230,9 +255,9 @@ export const ContractsTab = () => {
 									size="sm"
 									variant="outline"
 									onClick={() => {
-										const link = document.createElement('a');
+										const link = document.createElement("a");
 										link.href = contractPdfUrl;
-										link.download = `contrato-${contract.id}.pdf`;
+										link.download = `contrato-${contractProposal.id}.pdf`;
 										document.body.appendChild(link);
 										link.click();
 										document.body.removeChild(link);
@@ -251,7 +276,7 @@ export const ContractsTab = () => {
 				onClose={() => {
 					setIsViewerOpen(false);
 				}}
-				identificadorUnico={contract?.identificadorUnico ?? null}
+				identificadorUnico={contractProposal?.identificadorUnico ?? null}
 			/>
 
 			<ContractEditor
@@ -259,7 +284,7 @@ export const ContractsTab = () => {
 				onClose={() => {
 					setIsEditorOpen(false);
 				}}
-				identificadorUnico={contract?.identificadorUnico ?? null}
+				identificadorUnico={contractProposal?.identificadorUnico ?? null}
 			/>
 		</div>
 	);

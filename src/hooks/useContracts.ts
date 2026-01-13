@@ -11,8 +11,10 @@ import { useActiveMusicalProduct } from "./useActiveMusicalProduct";
 
 const CONTRACT_QUERY_KEYS = {
 	all: ["contracts"] as const,
-	byId: (identificadorUnico: string) => [...CONTRACT_QUERY_KEYS.all, "id", identificadorUnico] as const,
-	sections: (identificadorUnico: string) => [...CONTRACT_QUERY_KEYS.all, "sections", identificadorUnico] as const,
+	byId: (identificadorUnico: string) =>
+		[...CONTRACT_QUERY_KEYS.all, "id", identificadorUnico] as const,
+	sections: (identificadorUnico: string) =>
+		[...CONTRACT_QUERY_KEYS.all, "sections", identificadorUnico] as const,
 	mine: () => [...CONTRACT_QUERY_KEYS.all, "mine"] as const,
 };
 
@@ -47,11 +49,12 @@ export const useContractPDF = (identificadorUnico: string) => {
 /**
  * Hook to load contract sections for editing
  */
-export const useContractSections = (identificadorUnico: string) => {
+export const useContractSections = (idProdutoMusical: number) => {
 	return useQuery({
-		queryKey: CONTRACT_QUERY_KEYS.sections(identificadorUnico),
-		queryFn: () => contractService.listContractSectionsByIdentificador(identificadorUnico),
-		enabled: !!identificadorUnico && identificadorUnico.length > 0,
+		queryKey: CONTRACT_QUERY_KEYS.sections(idProdutoMusical.toString()),
+		queryFn: () =>
+			contractService.listContractSectionsByMusicalProductId(idProdutoMusical),
+		enabled: !!idProdutoMusical,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 		retry: 2,
 		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
@@ -71,7 +74,11 @@ export const useUpdateContractSections = () => {
 		}: {
 			identificadorUnico: string;
 			sections: Array<ContractSectionUpdateRequest>;
-		}) => contractService.saveContractSectionsByIdentificador(identificadorUnico, sections),
+		}) =>
+			contractService.saveContractSectionsByIdentificador(
+				identificadorUnico,
+				sections
+			),
 		onSuccess: (_, variables) => {
 			// Invalidate related queries
 			void queryClient.invalidateQueries({
@@ -94,14 +101,16 @@ export const useUpdateContractSections = () => {
  * Hook to fetch the contract for the current active musical product
  * Gets the proposal for the current product and loads its contract using identificadorUnico
  */
-export const useMyContracts = (): ReturnType<typeof useQuery<Array<ContractResponse>>> => {
+export const useMyContracts = (): ReturnType<
+	typeof useQuery<Array<ContractResponse>>
+> => {
 	const user = useAuthStore((state) => state.user);
 	const { activeProduct } = useActiveMusicalProduct();
 
-	console.log("🔍 Debug - useMyContracts called with:", { 
-		user: user?.id, 
+	console.log("🔍 Debug - useMyContracts called with:", {
+		user: user?.id,
 		activeProduct: activeProduct?.id,
-		activeProductName: activeProduct?.name 
+		activeProductName: activeProduct?.name,
 	});
 
 	return useQuery({
@@ -113,14 +122,17 @@ export const useMyContracts = (): ReturnType<typeof useQuery<Array<ContractRespo
 			}
 
 			try {
-				console.log("🔍 Debug - Loading proposals for product:", activeProduct.id);
-				
+				console.log(
+					"🔍 Debug - Loading proposals for product:",
+					activeProduct.id
+				);
+
 				const productId = Number(activeProduct.id);
 				if (isNaN(productId)) {
 					console.error("🔍 Debug - Invalid product ID:", activeProduct.id);
 					return [];
 				}
-				
+
 				// Get proposals for this musical product
 				const proposals = await proposalService.listProposals({
 					IdProdutoMusical: productId,
@@ -130,34 +142,37 @@ export const useMyContracts = (): ReturnType<typeof useQuery<Array<ContractRespo
 					DataDe: null,
 					DataAte: null,
 				});
-				
+
 				console.log("🔍 Debug - Found proposals:", proposals?.length || 0);
-				
+
 				if (!Array.isArray(proposals) || proposals.length === 0) {
 					console.log("🔍 Debug - No proposals found for this product");
 					return [];
 				}
-				
+
 				// Get the first proposal (assuming one proposal per product)
 				const proposal = proposals[0];
-				
+
 				if (!proposal || !proposal.identificadorUnico) {
-					console.log("🔍 Debug - No valid proposal with identificadorUnico found");
+					console.log(
+						"🔍 Debug - No valid proposal with identificadorUnico found"
+					);
 					return [];
 				}
-				
+
 				console.log("🔍 Debug - Using proposal:", {
 					id: proposal.id,
 					identificadorUnico: proposal.identificadorUnico,
-					status: proposal.status?.nome
+					status: proposal.status?.nome,
 				});
-				
+
 				// Load the contract using the proposal's identificadorUnico
-				const contract = await contractService.loadContract(proposal.identificadorUnico);
-				
+				const contract = await contractService.loadContract(
+					proposal.identificadorUnico
+				);
+
 				console.log("🔍 Debug - Contract loaded successfully");
 				return [contract];
-				
 			} catch (error) {
 				console.log("🔍 Debug - No contract found or error occurred:", error);
 				return [];
@@ -193,10 +208,7 @@ export const useContractStatistics = (periodo: string = "30d") => {
 /**
  * Hook to search contracts
  */
-export const useSearchContracts = (
-	searchTerm: string,
-	limit: number = 50
-) => {
+export const useSearchContracts = (searchTerm: string, limit: number = 50) => {
 	const user = useAuthStore((state) => state.user);
 
 	return useQuery({
@@ -229,10 +241,20 @@ export const useContractPermissions = (identificadorUnico: string) => {
 
 			// This would check contract ownership and status
 			// For now, return basic permissions
-			const contract = await contractService.loadContract(identificadorUnico);
+			const proposal = await proposalService
+				.listProposals({
+					IdentificadorUnico: identificadorUnico,
+				})
+				.then((proposals) => proposals[0]);
+
+			if (!proposal) {
+				return { canEdit: false, canView: false };
+			}
 
 			return {
-				canEdit: contract.status.nome === "Assinado" || contract.status.nome === "Aceita",
+				canEdit:
+					proposal.status.nome === "Assinado" ||
+					proposal.status.nome === "Aceita",
 				canView: true,
 				isOwner: true, // TODO: Check actual ownership
 			};
@@ -241,4 +263,3 @@ export const useContractPermissions = (identificadorUnico: string) => {
 		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 };
-

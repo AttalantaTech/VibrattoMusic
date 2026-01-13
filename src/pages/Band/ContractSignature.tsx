@@ -11,8 +11,9 @@ import {
 } from "lucide-react";
 import { Button } from "../../components/ui/Button/Button";
 import { Badge } from "../../components/ui/Badge/Badge";
-import { useContract } from "../../hooks/useContracts";
+import { useContractSections } from "../../hooks/useContracts";
 import { toast } from "sonner";
+import { useProposalById } from "../../hooks/useProposals";
 
 interface ContractSignaturePageProps {
 	identificadorUnico: string;
@@ -59,10 +60,18 @@ export const ContractSignaturePage = ({
 	const [downloading, setDownloading] = useState(false);
 	const [signing, setSigning] = useState(false);
 
-	const { data: contract, isLoading, error } = useContract(identificadorUnico);
+	const {
+		data: proposal,
+		isLoading,
+		error,
+	} = useProposalById(identificadorUnico || "");
+
+	const { data: contractSections } = useContractSections(
+		proposal?.produtoMusical.id || 0
+	);
 
 	const handleDownload = () => {
-		if (!contract) return;
+		if (!proposal) return;
 
 		setDownloading(true);
 		try {
@@ -70,21 +79,21 @@ export const ContractSignaturePage = ({
 			const contractText = `
 CONTRATO DE PRESTAÇÃO DE SERVIÇOS ARTÍSTICOS
 
-Contrato ID: ${contract.id}
-Proposta ID: ${contract.idProposta}
-Título: ${contract.titulo}
-Status: ${getStatusLabel(contract.status?.nome || "")}
-Valor Total: R$ ${contract.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-Data de Criação: ${new Date(contract.dataCriacao).toLocaleDateString("pt-BR")}
+Contrato ID: ${proposal.idContrato}
+Proposta ID: ${proposal.id}
+Título: ${proposal.descricao}
+Status: ${getStatusLabel(proposal.status?.nome || "")}
+Valor Total: R$ ${proposal.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+Data de Criação: ${new Date(proposal.dataCriacao).toLocaleDateString("pt-BR")}
 
-${contract.secoes?.map((section) => `${section.numero}. ${section.titulo}\n\n${section.texto}\n\n`).join("") || "Nenhuma seção disponível."}
+${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${section.texto}\n\n`).join("") || "Nenhuma seção disponível."}
 			`;
 
 			const blob = new Blob([contractText], { type: "text/plain;charset=utf-8" });
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;
-			a.download = `contrato-${contract.id}.txt`;
+			a.download = `contrato-${proposal.id}.txt`;
 			document.body.appendChild(a);
 			a.click();
 			document.body.removeChild(a);
@@ -98,8 +107,8 @@ ${contract.secoes?.map((section) => `${section.numero}. ${section.titulo}\n\n${s
 		}
 	};
 
-	const handleSign = async () => {
-		if (!contract) return;
+	const handleSign = () => {
+		if (!proposal) return;
 
 		setSigning(true);
 		try {
@@ -121,7 +130,8 @@ ${contract.secoes?.map((section) => `${section.numero}. ${section.titulo}\n\n${s
 	};
 
 	const handleBack = () => {
-		navigate({ to: "/band/dashboard" });
+		// eslint-disable-next-line @typescript-eslint/no-floating-promises
+		navigate({ to: "/band/me", search: { tab: "sales" } });
 	};
 
 	if (isLoading) {
@@ -135,7 +145,7 @@ ${contract.secoes?.map((section) => `${section.numero}. ${section.titulo}\n\n${s
 		);
 	}
 
-	if (error) {
+	if (error || proposal?.identificadorUnico === undefined) {
 		return (
 			<div className="min-h-screen flex items-center justify-center bg-gray-50">
 				<div className="text-center">
@@ -153,7 +163,7 @@ ${contract.secoes?.map((section) => `${section.numero}. ${section.titulo}\n\n${s
 		);
 	}
 
-	if (!contract) {
+	if (!proposal) {
 		return (
 			<div className="min-h-screen flex items-center justify-center bg-gray-50">
 				<div className="text-center">
@@ -171,8 +181,7 @@ ${contract.secoes?.map((section) => `${section.numero}. ${section.titulo}\n\n${s
 	}
 
 	const canSign =
-		contract.status?.nome === "Aceita" ||
-		contract.status?.nome === "Pendente";
+		proposal.status?.nome === "Aceita" || proposal.status?.nome === "Pendente";
 
 	return (
 		<div className="min-h-screen bg-gray-50">
@@ -194,16 +203,16 @@ ${contract.secoes?.map((section) => `${section.numero}. ${section.titulo}\n\n${s
 								<FileText className="h-6 w-6 text-blue-600" />
 								<div>
 									<h1 className="text-xl font-bold text-gray-900">
-										Contrato #{contract.id}
+										Contrato #{proposal.idContrato}
 									</h1>
 									<p className="text-sm text-gray-600">
-										Proposta #{contract.idProposta}
+										Proposta #{proposal.id}
 									</p>
 								</div>
 							</div>
 						</div>
-						<Badge className={getStatusColor(contract.status?.nome || "")}>
-							{getStatusLabel(contract.status?.nome || "")}
+						<Badge className={getStatusColor(proposal.status?.nome || "")}>
+							{getStatusLabel(proposal.status?.nome || "")}
 						</Badge>
 					</div>
 				</div>
@@ -216,14 +225,14 @@ ${contract.secoes?.map((section) => `${section.numero}. ${section.titulo}\n\n${s
 						<div>
 							<p className="text-sm text-gray-600">Data de Criação</p>
 							<p className="text-lg font-semibold text-gray-900">
-								{new Date(contract.dataCriacao).toLocaleDateString("pt-BR")}
+								{new Date(proposal.dataCriacao).toLocaleDateString("pt-BR")}
 							</p>
 						</div>
 						<div>
 							<p className="text-sm text-gray-600">Valor Total</p>
 							<p className="text-lg font-semibold text-gray-900">
 								R${" "}
-								{contract.valor.toLocaleString("pt-BR", {
+								{proposal.valor.toLocaleString("pt-BR", {
 									minimumFractionDigits: 2,
 								})}
 							</p>
@@ -231,7 +240,7 @@ ${contract.secoes?.map((section) => `${section.numero}. ${section.titulo}\n\n${s
 						<div>
 							<p className="text-sm text-gray-600">Título</p>
 							<p className="text-lg font-semibold text-gray-900">
-								{contract.titulo}
+								{proposal.descricao}
 							</p>
 						</div>
 					</div>
@@ -246,9 +255,9 @@ ${contract.secoes?.map((section) => `${section.numero}. ${section.titulo}\n\n${s
 					</div>
 					<div className="p-6">
 						{/* Contract Sections */}
-						{contract.secoes && contract.secoes.length > 0 ? (
+						{contractSections && contractSections.length > 0 ? (
 							<div className="space-y-6 max-h-[60vh] overflow-y-auto">
-								{contract.secoes.map((section) => (
+								{contractSections.map((section) => (
 									<div
 										key={section.numero}
 										className="border rounded-lg p-6 bg-gray-50"
