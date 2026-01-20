@@ -26,12 +26,14 @@ export const messagingKeys = {
  * Hook to get conversations
  */
 export const useConversations = (
+	IdProdutoMusical: number | null | undefined,
 	parameters?: PaginationParameters,
 	enabled: boolean = true
 ) => {
 	return useQuery<PaginatedResponse<Conversation>, Error>({
-		queryKey: messagingKeys.conversations(),
-		queryFn: () => messagingService.getConversations(parameters),
+		queryKey: [...messagingKeys.conversations(), IdProdutoMusical, parameters],
+		queryFn: () =>
+			messagingService.getConversations(IdProdutoMusical, parameters),
 		enabled,
 		staleTime: 30 * 1000, // 30 seconds
 		refetchInterval: 10 * 1000, // Refetch every 10 seconds for real-time feel
@@ -96,10 +98,11 @@ export const useSendMessage = () => {
 			messagingService.sendMessage(messageData),
 		onSuccess: (data) => {
 			// Parse conversationId safely
-			const conversationId = typeof data.conversationId === 'string' 
-				? parseInt(data.conversationId.replace(/\D/g, ''), 10) 
-				: Number(data.conversationId);
-				
+			const conversationId =
+				typeof data.conversationId === "string"
+					? parseInt(data.conversationId.replace(/\D/g, ""), 10)
+					: Number(data.conversationId);
+
 			// Only invalidate if we have a valid conversation ID
 			if (!isNaN(conversationId) && conversationId > 0) {
 				// Invalidate conversation messages
@@ -107,7 +110,7 @@ export const useSendMessage = () => {
 					queryKey: messagingKeys.conversationMessages(conversationId),
 				});
 			}
-			
+
 			// Invalidate conversations list
 			void queryClient.invalidateQueries({
 				queryKey: messagingKeys.conversations(),

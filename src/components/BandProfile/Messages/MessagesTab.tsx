@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
 import { useProfileStatus } from "../../../hooks/useProfileStatus";
 import { ProfileIncompleteModal } from "../../ui/ProfileIncompleteModal/ProfileIncompleteModal";
+import { SignalRService } from "@/api/services/signalRService";
 
 interface Conversation {
 	id: number;
@@ -45,15 +46,19 @@ const MessagesTab = () => {
 		id: number;
 		name: string;
 	} | null>(null);
-	const [isProfileIncompleteModalOpen, setIsProfileIncompleteModalOpen] = useState(false);
+	const [isProfileIncompleteModalOpen, setIsProfileIncompleteModalOpen] =
+		useState(false);
 	const [messageInput, setMessageInput] = useState("");
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const messagesContainerRef = useRef<HTMLDivElement>(null);
 
 	// Auth store - using same approach as BandProfile account tab
-	const { user } = useAuthStore();
+	const { user, token } = useAuthStore();
 	const queryClient = useQueryClient();
 	const { activeProduct } = useActiveMusicalProduct();
+	const currentProductId = activeProduct?.id
+		? Number(activeProduct.id)
+		: undefined;
 
 	// Check if user profile is complete for proposal functionality
 	const { isProfileComplete } = useProfileStatus();
@@ -69,12 +74,14 @@ const MessagesTab = () => {
 
 	// Get conversations from API
 	const { data: conversationsData, isLoading: conversationsLoading } =
-		useConversations();
+		useConversations(currentProductId);
 
 	// Transform API data to component format
 	const conversations: Array<Conversation> =
 		conversationsData?.data?.map((conv: any) => ({
-			id: parseInt(conv.id, 10),
+			id: parseInt(conv.id, 0),
+			contratanteName: conv.metadata?.contratanteNome || "Usuario Desconhecido",
+			contratanteId: conv.metadata?.contratanteId || "Usuario Desconhecido",
 			participantName: conv.metadata?.participantName || "Usuario Desconhecido",
 			participantId: conv.metadata?.participantId || 0,
 			lastMessage: conv.lastMessage?.content || "",
@@ -120,12 +127,6 @@ const MessagesTab = () => {
 
 	// Enter existing conversation when selected
 	useEffect(() => {
-		console.log(
-			"🎯 selectedConversation changed:",
-			selectedConversation?.id,
-			"user:",
-			!!user
-		);
 		if (selectedConversation && user) {
 			console.log("🚀 Entering conversation:", selectedConversation.id);
 			// For existing conversations, use enterConversation instead of initializeChat
@@ -294,6 +295,22 @@ const MessagesTab = () => {
 		return <Check className="w-4 h-4 text-gray-400" />;
 	};
 
+	const [signalRService, setSignalRService] = useState<SignalRService | null>(
+		null
+	);
+
+	useEffect(() => {
+		if (signalRService === null) {
+			setSignalRService(new SignalRService());
+		} else {
+			signalRService?.createConnection("chatHub", token!);
+
+			signalRService?.on("ReceberMensagem", (mensagem) => {
+				console.log("mensagem", mensagem);
+			});
+		}
+	}, [signalRService]);
+
 	return (
 		<div className="flex h-[75vh] w-full border bg-gray-50">
 			{/* Sidebar */}
@@ -399,7 +416,9 @@ const MessagesTab = () => {
 										</div>
 										<div className="flex-1 min-w-0">
 											<h4 className="font-medium text-gray-900 truncate">
-												{conversation.participantName}
+												{currentProductId
+													? conversation.contratanteName
+													: conversation.participantName}
 											</h4>
 											<p className="text-sm text-gray-500 truncate">
 												{conversation.lastMessage
@@ -453,39 +472,45 @@ const MessagesTab = () => {
 										</h2>
 									</div>
 								</div>
-							{firstProduct ? (
-								activeProduct ? (
-									isProfileComplete ? (
-										<button
-											onClick={() => {
-												setIsProposalModalOpen(true);
-											}}
-											className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-										>
-											<DollarSign className="w-4 h-4" />
-											<span className="text-sm font-medium">Enviar Proposta</span>
-										</button>
+								{firstProduct ? (
+									activeProduct ? (
+										isProfileComplete ? (
+											<button
+												onClick={() => {
+													setIsProposalModalOpen(true);
+												}}
+												className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+											>
+												<DollarSign className="w-4 h-4" />
+												<span className="text-sm font-medium">
+													Enviar Proposta
+												</span>
+											</button>
+										) : (
+											<button
+												onClick={() => {
+													setIsProfileIncompleteModalOpen(true);
+												}}
+												className="flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+											>
+												<DollarSign className="w-4 h-4" />
+												<span className="text-sm font-medium">
+													Completar Perfil
+												</span>
+											</button>
+										)
 									) : (
 										<button
-											onClick={() => {
-												setIsProfileIncompleteModalOpen(true);
-											}}
-											className="flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+											disabled
+											className="flex items-center space-x-2 px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed"
 										>
 											<DollarSign className="w-4 h-4" />
-											<span className="text-sm font-medium">Completar Perfil</span>
+											<span className="text-sm font-medium">
+												Enviar Proposta
+											</span>
 										</button>
 									)
-								) : (
-									<button
-										disabled
-										className="flex items-center space-x-2 px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed"
-									>
-										<DollarSign className="w-4 h-4" />
-										<span className="text-sm font-medium">Enviar Proposta</span>
-									</button>
-								)
-							) : null}
+								) : null}
 							</div>
 						</div>
 

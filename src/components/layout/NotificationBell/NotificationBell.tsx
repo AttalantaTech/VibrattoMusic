@@ -43,7 +43,7 @@ export const NotificationBell = () => {
 	useEffect(() => {
 		if (!isAuthenticated || !user || !token) return;
 
-		const wsClient = new WebSocketClient();
+		const wsClient = new WebSocketClient({ url: "chatHub" });
 		const handleNotificationReceived = (data: unknown) => {
 			const notification = data as {
 				id: string;

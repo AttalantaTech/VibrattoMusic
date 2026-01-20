@@ -17,27 +17,32 @@ export class MessagingService {
 	 * Send a message
 	 */
 	public async sendMessage(messageData: SendMessageRequest): Promise<Message> {
-		const response = await this.apiClient.post<Message>("chat/mensagem", messageData);
-		
+		const response = await this.apiClient.post<Message>(
+			"chat/mensagem",
+			messageData
+		);
+
 		// Update last activity in localStorage if we have a conversation ID
 		if (messageData.conversationId) {
 			// Try to parse conversation ID from request
-			const conversationId = typeof messageData.conversationId === 'string' 
-				? parseInt(messageData.conversationId, 10) 
-				: Number(messageData.conversationId);
+			const conversationId =
+				typeof messageData.conversationId === "string"
+					? parseInt(messageData.conversationId, 10)
+					: Number(messageData.conversationId);
 			if (!isNaN(conversationId)) {
 				ConversationStorage.updateLastActivity(conversationId);
 			}
 		} else if (response.conversationId) {
 			// Try to parse conversation ID from response as fallback
-			const conversationId = typeof response.conversationId === 'string' 
-				? parseInt(response.conversationId, 10) 
-				: Number(response.conversationId);
+			const conversationId =
+				typeof response.conversationId === "string"
+					? parseInt(response.conversationId, 10)
+					: Number(response.conversationId);
 			if (!isNaN(conversationId)) {
 				ConversationStorage.updateLastActivity(conversationId);
 			}
 		}
-		
+
 		return response;
 	}
 
@@ -81,7 +86,9 @@ export class MessagingService {
 	 * Mark multiple messages as read
 	 */
 	public async markMultipleAsRead(messageIds: Array<number>): Promise<void> {
-		return this.apiClient.patch<void>("chat/mensagem/mark-read", { messageIds });
+		return this.apiClient.patch<void>("chat/mensagem/mark-read", {
+			messageIds,
+		});
 	}
 
 	/**
@@ -109,75 +116,84 @@ export class MessagingService {
 	 * Uses the direct API endpoint chat/listaConversas
 	 */
 	public async getConversations(
+		IdProdutoMusical: number | null | undefined,
 		parameters?: PaginationParameters
 	): Promise<PaginatedResponse<Conversation>> {
 		try {
 			// Call the direct API endpoint
-			const response = await this.apiClient.get<Array<{
-				idConversa: number;
-				contratante: {
-					id: number;
-					nome: string;
-				};
-				produtoMusical: {
-					id: number;
-					nome: string;
-				};
-				ultimaMensagem: {
-					id: number;
-					conteudo: string;
-					dataEnvio: string;
-					lida: boolean;
-					remetente: {
+			const response = await this.apiClient.get<
+				Array<{
+					idConversa: number;
+					contratante: {
 						id: number;
 						nome: string;
 					};
-				} | null;
-			}>>("chat/listaConversas");
+					produtoMusical: {
+						id: number;
+						nome: string;
+					};
+					ultimaMensagem: {
+						id: number;
+						conteudo: string;
+						dataEnvio: string;
+						lida: boolean;
+						remetente: {
+							id: number;
+							nome: string;
+						};
+					} | null;
+				}>
+			>("chat/listaConversas", {
+				params: {
+					IdProdutoMusical,
+				},
+			});
 
 			// Ensure response is an array
 			const conversationsData = Array.isArray(response) ? response : [];
 
 			// Transform API response to Conversation format
-			const transformedConversations: Array<Conversation> = conversationsData.map((item) => {
-				// Transform last message if it exists
-				let lastMessage: Message | undefined;
-				if (item.ultimaMensagem) {
-					lastMessage = {
-						id: item.ultimaMensagem.id?.toString() || "0",
-						conversationId: item.idConversa.toString(),
-						senderId: item.ultimaMensagem.remetente?.id?.toString() || "0",
-						receiverId: "0", // Not provided by this endpoint
-						content: item.ultimaMensagem.conteudo || "",
-						type: "text" as const,
-						status: item.ultimaMensagem.lida ? "read" as const : "delivered" as const,
-						createdAt: item.ultimaMensagem.dataEnvio || new Date().toISOString(),
-						updatedAt: item.ultimaMensagem.dataEnvio || new Date().toISOString(),
-						metadata: {
-							senderName: item.ultimaMensagem.remetente?.nome || "Usuário",
-						}
-					};
-				}
-
-				// Build conversation object
-				return {
-					id: item.idConversa.toString(),
-					participants: [
-						item.contratante.nome,
-						item.produtoMusical.nome
-					],
-					lastMessage: lastMessage,
-					unreadCount: 0, // This endpoint doesn't provide unread count
-					createdAt: lastMessage?.createdAt || new Date().toISOString(),
-					updatedAt: lastMessage?.updatedAt || new Date().toISOString(),
-					metadata: {
-						participantId: item.produtoMusical.id,
-						participantName: item.produtoMusical.nome,
-						contratanteId: item.contratante.id,
-						contratanteNome: item.contratante.nome,
+			const transformedConversations: Array<Conversation> =
+				conversationsData.map((item) => {
+					// Transform last message if it exists
+					let lastMessage: Message | undefined;
+					if (item.ultimaMensagem) {
+						lastMessage = {
+							id: item.ultimaMensagem.id?.toString() || "0",
+							conversationId: item.idConversa.toString(),
+							senderId: item.ultimaMensagem.remetente?.id?.toString() || "0",
+							receiverId: "0", // Not provided by this endpoint
+							content: item.ultimaMensagem.conteudo || "",
+							type: "text" as const,
+							status: item.ultimaMensagem.lida
+								? ("read" as const)
+								: ("delivered" as const),
+							createdAt:
+								item.ultimaMensagem.dataEnvio || new Date().toISOString(),
+							updatedAt:
+								item.ultimaMensagem.dataEnvio || new Date().toISOString(),
+							metadata: {
+								senderName: item.ultimaMensagem.remetente?.nome || "Usuário",
+							},
+						};
 					}
-				};
-			});
+
+					// Build conversation object
+					return {
+						id: item.idConversa.toString(),
+						participants: [item.contratante.nome, item.produtoMusical.nome],
+						lastMessage: lastMessage,
+						unreadCount: 0, // This endpoint doesn't provide unread count
+						createdAt: lastMessage?.createdAt || new Date().toISOString(),
+						updatedAt: lastMessage?.updatedAt || new Date().toISOString(),
+						metadata: {
+							participantId: item.produtoMusical.id,
+							participantName: item.produtoMusical.nome,
+							contratanteId: item.contratante.id,
+							contratanteNome: item.contratante.nome,
+						},
+					};
+				});
 
 			// Populate conversations with full message history
 			// Fetch messages for each conversation to ensure they have complete message data
@@ -194,7 +210,9 @@ export class MessagingService {
 						if (messagesResponse.data && messagesResponse.data.length > 0) {
 							// Sort messages by creation date to ensure proper order
 							const sortedMessages = messagesResponse.data.sort(
-								(a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+								(a, b) =>
+									new Date(a.createdAt).getTime() -
+									new Date(b.createdAt).getTime()
 							);
 
 							// Update last message if we have messages
@@ -208,14 +226,17 @@ export class MessagingService {
 									...conversation.metadata,
 									messages: sortedMessages,
 									totalMessages: sortedMessages.length,
-								}
+								},
 							};
 						}
 
 						// Return conversation as-is if no messages were found
 						return conversation;
 					} catch (error) {
-						console.warn(`Failed to fetch messages for conversation ${conversation.id}:`, error);
+						console.warn(
+							`Failed to fetch messages for conversation ${conversation.id}:`,
+							error
+						);
 						// Return conversation without messages if fetching fails
 						return conversation;
 					}
@@ -228,7 +249,10 @@ export class MessagingService {
 			const startIndex = (page - 1) * limit;
 			const endIndex = startIndex + limit;
 
-			const paginatedData = conversationsWithMessages.slice(startIndex, endIndex);
+			const paginatedData = conversationsWithMessages.slice(
+				startIndex,
+				endIndex
+			);
 			const totalItems = conversationsWithMessages.length;
 			const totalPages = Math.ceil(totalItems / limit);
 
@@ -244,7 +268,7 @@ export class MessagingService {
 				},
 			};
 		} catch (error) {
-			console.error('Error fetching conversations:', error);
+			console.error("Error fetching conversations:", error);
 			// Return empty list on error
 			return {
 				data: [],
@@ -280,20 +304,20 @@ export class MessagingService {
 		const conversationId = await this.apiClient.post<number>("chat/obter", {
 			IdProdutoMusical: participanteId,
 		});
-		
+
 		// Save conversation ID to localStorage for future retrieval
 		ConversationStorage.saveConversation(
 			conversationId,
 			participanteId,
 			undefined // We don't have participant name here yet
 		);
-		
+
 		// Then send the initial message
 		await this.apiClient.post<Message>("chat/mensagem", {
 			IdConversa: conversationId,
 			Conteudo: `${assunto}: ${conteudo}`,
 		});
-		
+
 		// Return a minimal conversation object for compatibility
 		return {
 			id: conversationId.toString(),
@@ -303,8 +327,8 @@ export class MessagingService {
 			updatedAt: new Date().toISOString(),
 			metadata: {
 				participantId: participanteId,
-				assunto: assunto
-			}
+				assunto: assunto,
+			},
 		};
 	}
 
@@ -318,33 +342,38 @@ export class MessagingService {
 	): Promise<PaginatedResponse<Message>> {
 		try {
 			// Use the correct Vibratto API endpoint
-			const response = await this.apiClient.get<Array<any>>(`chat/${conversationId}`);
-			
+			const response = await this.apiClient.get<Array<any>>(
+				`chat/${conversationId}`
+			);
+
 			// Ensure response is an array
 			const messages = Array.isArray(response) ? response : [];
-			
+
 			// Transform API response to Message format
-			const transformedMessages: Array<Message> = messages.map((message: any) => ({
-				id: message.id?.toString() || "0",
-				conversationId: message.idConversa?.toString() || conversationId.toString(),
-				senderId: message.remetente?.id?.toString() || "0",
-				receiverId: "0", // Not provided by this endpoint
-				content: message.conteudo || "",
-				type: "text" as const,
-				status: message.lida ? "read" as const : "delivered" as const,
-				createdAt: message.dataEnvio || new Date().toISOString(),
-				updatedAt: message.dataEnvio || new Date().toISOString(),
-				metadata: {
-					senderName: message.remetente?.nome || "Usuário",
-				}
-			}));
+			const transformedMessages: Array<Message> = messages.map(
+				(message: any) => ({
+					id: message.id?.toString() || "0",
+					conversationId:
+						message.idConversa?.toString() || conversationId.toString(),
+					senderId: message.remetente?.id?.toString() || "0",
+					receiverId: "0", // Not provided by this endpoint
+					content: message.conteudo || "",
+					type: "text" as const,
+					status: message.lida ? ("read" as const) : ("delivered" as const),
+					createdAt: message.dataEnvio || new Date().toISOString(),
+					updatedAt: message.dataEnvio || new Date().toISOString(),
+					metadata: {
+						senderName: message.remetente?.nome || "Usuário",
+					},
+				})
+			);
 
 			// Apply basic pagination (since API doesn't support it yet)
 			const page = parameters?.page || 1;
 			const limit = parameters?.limit || 20;
 			const startIndex = (page - 1) * limit;
 			const endIndex = startIndex + limit;
-			
+
 			const paginatedMessages = transformedMessages.slice(startIndex, endIndex);
 			const totalItems = transformedMessages.length;
 			const totalPages = Math.ceil(totalItems / limit);
@@ -361,7 +390,7 @@ export class MessagingService {
 				},
 			};
 		} catch (error) {
-			console.error('Error fetching conversation messages:', error);
+			console.error("Error fetching conversation messages:", error);
 			// Return empty response on error
 			return {
 				data: [],
@@ -383,7 +412,6 @@ export class MessagingService {
 	public async markConversationAsRead(conversationId: number): Promise<void> {
 		return this.apiClient.patch<void>(`chat/lida/${conversationId}`);
 	}
-
 
 	/**
 	 * Delete conversation

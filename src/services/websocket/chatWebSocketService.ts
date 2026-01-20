@@ -1,6 +1,7 @@
-import { getWebSocketService, type VibrattoWebSocketService } from "../../api/websocket/client";
+import { getWebSocketService } from "../../api/websocket/client";
 import type { SignalRMessage } from "../../api/types";
 import { api as apiClient } from "../../api";
+import { VibrattoWebSocketService } from "@/api/websocket/vibrattoWebSocketService";
 
 export interface ChatWebSocketEvents {
 	onMessageReceived: (message: SignalRMessage) => void;
@@ -18,10 +19,15 @@ export class ChatWebSocketService {
 	private isInitialized = false;
 	private reconnectAttempts = 0;
 	private messageQueue: Array<{ conversationId: number; content: string }> = [];
-	
+
 	// Debug mode
 	private debugMode = false;
-	private debugLog: Array<{ timestamp: string; type: string; message: string; data?: any }> = [];
+	private debugLog: Array<{
+		timestamp: string;
+		type: string;
+		message: string;
+		data?: any;
+	}> = [];
 	private maxDebugLogSize = 100;
 
 	private static instance: ChatWebSocketService | null = null;
@@ -41,14 +47,15 @@ export class ChatWebSocketService {
 	public async initialize(userId: string, authToken: string): Promise<void> {
 		if (this.isInitialized && this.webSocketService?.isConnected()) {
 			console.log("✅ WebSocket already initialized and connected");
-			this.addDebugLog('info', 'Already initialized and connected');
+			this.addDebugLog("info", "Already initialized and connected");
 			return;
 		}
 
-		this.addDebugLog('connection', `Initializing WebSocket for user ${userId}`);
+		this.addDebugLog("connection", `Initializing WebSocket for user ${userId}`);
 
 		try {
 			this.webSocketService = getWebSocketService({
+				url: "chatHub",
 				reconnectInterval: 5000,
 				maxReconnectAttempts: 10,
 				heartbeatInterval: 30000,
@@ -64,7 +71,7 @@ export class ChatWebSocketService {
 				this.isInitialized = true;
 				this.reconnectAttempts = 0;
 				console.log("✅ WebSocket chat service initialized successfully");
-				this.addDebugLog('success', 'WebSocket initialized successfully');
+				this.addDebugLog("success", "WebSocket initialized successfully");
 
 				// Process any queued messages
 				await this.processMessageQueue();
@@ -73,21 +80,37 @@ export class ChatWebSocketService {
 				this.emitEvent("connectionStatusChanged", true);
 			} catch (wsError) {
 				// WebSocket not available, continue in REST-only mode
-				console.log("📵 WebSocket not available, using REST-only mode for chat");
-				this.addDebugLog('info', 'WebSocket not available, using REST fallback');
+				console.log(
+					"📵 WebSocket not available, using REST-only mode for chat"
+				);
+				this.addDebugLog(
+					"info",
+					"WebSocket not available, using REST fallback"
+				);
 				this.isInitialized = true; // Mark as initialized even in REST-only mode
 				this.emitEvent("connectionStatusChanged", false);
 				// Don't emit error for expected WebSocket unavailability
 				// Only emit error if it's not an expected "not available" error
-				const errorMessage = wsError instanceof Error ? wsError.message : String(wsError);
-				if (!errorMessage.includes('WebSocket not available')) {
-					this.emitEvent("error", wsError instanceof Error ? wsError : new Error("WebSocket initialization failed"));
+				const errorMessage =
+					wsError instanceof Error ? wsError.message : String(wsError);
+				if (!errorMessage.includes("WebSocket not available")) {
+					this.emitEvent(
+						"error",
+						wsError instanceof Error
+							? wsError
+							: new Error("WebSocket initialization failed")
+					);
 				}
 				// Don't throw - we can still use REST API
 			}
 		} catch (error) {
 			console.error("❌ Failed to initialize chat service:", error);
-			this.emitEvent("error", error instanceof Error ? error : new Error("Chat service initialization failed"));
+			this.emitEvent(
+				"error",
+				error instanceof Error
+					? error
+					: new Error("Chat service initialization failed")
+			);
 			// Don't throw - allow REST fallback
 		}
 	}
@@ -101,7 +124,10 @@ export class ChatWebSocketService {
 		}
 
 		// Leave previous conversation if any
-		if (this.currentConversationId && this.currentConversationId !== conversationId) {
+		if (
+			this.currentConversationId &&
+			this.currentConversationId !== conversationId
+		) {
 			this.leaveConversation(this.currentConversationId);
 		}
 
@@ -128,15 +154,24 @@ export class ChatWebSocketService {
 	/**
 	 * Send a message via WebSocket
 	 */
-	public async sendMessage(conversationId: number, content: string): Promise<void> {
-		this.addDebugLog('send', `Sending message to conversation ${conversationId}`, { content });
-		
+	public async sendMessage(
+		conversationId: number,
+		content: string
+	): Promise<void> {
+		this.addDebugLog(
+			"send",
+			`Sending message to conversation ${conversationId}`,
+			{ content }
+		);
+
 		// If WebSocket is not connected, queue the message and use REST API
 		if (!this.webSocketService?.isConnected()) {
-			console.warn("⚠️ WebSocket not connected, queueing message and using REST API");
-			this.addDebugLog('queue', 'Message queued, using REST API fallback');
+			console.warn(
+				"⚠️ WebSocket not connected, queueing message and using REST API"
+			);
+			this.addDebugLog("queue", "Message queued, using REST API fallback");
 			this.messageQueue.push({ conversationId, content });
-			
+
 			// Fallback to REST API
 			await this.sendMessageViaREST(conversationId, content);
 			return;
@@ -144,13 +179,24 @@ export class ChatWebSocketService {
 
 		try {
 			// Send via WebSocket
-			this.webSocketService.sendMessage(String(conversationId), content, "text");
-			console.log(`📤 Message sent via WebSocket to conversation ${conversationId}`);
-			this.addDebugLog('success', 'Message sent via WebSocket');
+			this.webSocketService.sendMessage(
+				String(conversationId),
+				content,
+				"text"
+			);
+			console.log(
+				`📤 Message sent via WebSocket to conversation ${conversationId}`
+			);
+			this.addDebugLog("success", "Message sent via WebSocket");
 		} catch (error) {
-			console.error("❌ Failed to send message via WebSocket, falling back to REST:", error);
-			this.addDebugLog('error', 'WebSocket send failed, using REST fallback', { error });
-			
+			console.error(
+				"❌ Failed to send message via WebSocket, falling back to REST:",
+				error
+			);
+			this.addDebugLog("error", "WebSocket send failed, using REST fallback", {
+				error,
+			});
+
 			// Fallback to REST API
 			await this.sendMessageViaREST(conversationId, content);
 		}
@@ -159,7 +205,10 @@ export class ChatWebSocketService {
 	/**
 	 * Send message via REST API (fallback)
 	 */
-	private async sendMessageViaREST(conversationId: number, content: string): Promise<void> {
+	private async sendMessageViaREST(
+		conversationId: number,
+		content: string
+	): Promise<void> {
 		try {
 			await apiClient.post("chat/mensagem", {
 				IdConversa: conversationId,
@@ -206,13 +255,19 @@ export class ChatWebSocketService {
 			return;
 		}
 
-		this.webSocketService.sendMessage(String(conversationId), "", "typing" as any);
+		this.webSocketService.sendMessage(
+			String(conversationId),
+			"",
+			"typing" as any
+		);
 	}
 
 	/**
 	 * Update user status
 	 */
-	public updateUserStatus(status: "online" | "away" | "busy" | "offline"): void {
+	public updateUserStatus(
+		status: "online" | "away" | "busy" | "offline"
+	): void {
 		if (!this.webSocketService) {
 			return;
 		}
@@ -238,7 +293,7 @@ export class ChatWebSocketService {
 		if (this.webSocketService) {
 			// Remove all event listeners
 			this.removeWebSocketEventHandlers();
-			
+
 			this.webSocketService.disconnect();
 			this.webSocketService = null;
 		}
@@ -254,7 +309,10 @@ export class ChatWebSocketService {
 	/**
 	 * Register event handler
 	 */
-	public on(event: keyof ChatWebSocketEvents, handler: (data: any) => void): void {
+	public on(
+		event: keyof ChatWebSocketEvents,
+		handler: (data: any) => void
+	): void {
 		const handlers = this.eventHandlers.get(event) || [];
 		handlers.push(handler);
 		this.eventHandlers.set(event, handlers);
@@ -263,7 +321,10 @@ export class ChatWebSocketService {
 	/**
 	 * Unregister event handler
 	 */
-	public off(event: keyof ChatWebSocketEvents, handler: (data: any) => void): void {
+	public off(
+		event: keyof ChatWebSocketEvents,
+		handler: (data: any) => void
+	): void {
 		const handlers = this.eventHandlers.get(event) || [];
 		const index = handlers.indexOf(handler);
 		if (index > -1) {
@@ -328,7 +389,7 @@ export class ChatWebSocketService {
 			console.log("✅ WebSocket connected");
 			this.reconnectAttempts = 0;
 			this.emitEvent("connectionStatusChanged", true);
-			
+
 			// Process queued messages
 			this.processMessageQueue();
 		});
@@ -340,24 +401,29 @@ export class ChatWebSocketService {
 
 		this.webSocketService.on("error", (error: any) => {
 			console.error("❌ WebSocket error:", error);
-			this.emitEvent("error", error instanceof Error ? error : new Error("WebSocket error"));
+			this.emitEvent(
+				"error",
+				error instanceof Error ? error : new Error("WebSocket error")
+			);
 		});
 
 		this.webSocketService.on("reconnecting", () => {
 			this.reconnectAttempts++;
-			console.log(`🔄 WebSocket reconnecting... (attempt ${this.reconnectAttempts})`);
+			console.log(
+				`🔄 WebSocket reconnecting... (attempt ${this.reconnectAttempts})`
+			);
 		});
 
 		this.webSocketService.on("reconnected", () => {
 			console.log("✅ WebSocket reconnected successfully");
 			this.reconnectAttempts = 0;
 			this.emitEvent("connectionStatusChanged", true);
-			
+
 			// Rejoin current conversation if any
 			if (this.currentConversationId) {
 				this.joinConversation(this.currentConversationId);
 			}
-			
+
 			// Process queued messages
 			this.processMessageQueue();
 		});
@@ -390,7 +456,10 @@ export class ChatWebSocketService {
 	 * Process queued messages
 	 */
 	private async processMessageQueue(): Promise<void> {
-		if (this.messageQueue.length === 0 || !this.webSocketService?.isConnected()) {
+		if (
+			this.messageQueue.length === 0 ||
+			!this.webSocketService?.isConnected()
+		) {
 			return;
 		}
 
@@ -414,14 +483,16 @@ export class ChatWebSocketService {
 	 * Emit event to registered handlers
 	 */
 	private emitEvent(event: string, data?: any): void {
-		this.addDebugLog('info', `Emitting event: ${event}`, data);
+		this.addDebugLog("info", `Emitting event: ${event}`, data);
 		const handlers = this.eventHandlers.get(event) || [];
 		for (const handler of handlers) {
 			try {
 				handler(data);
 			} catch (error) {
 				console.error(`Error in event handler for ${event}:`, error);
-				this.addDebugLog('error', `Error in event handler for ${event}`, { error });
+				this.addDebugLog("error", `Error in event handler for ${event}`, {
+					error,
+				});
 			}
 		}
 	}
@@ -429,22 +500,26 @@ export class ChatWebSocketService {
 	/**
 	 * Load message history via REST API
 	 */
-	public async loadMessageHistory(conversationId: number): Promise<Array<SignalRMessage>> {
+	public async loadMessageHistory(
+		conversationId: number
+	): Promise<Array<SignalRMessage>> {
 		try {
 			const timestamp = Date.now();
-			const messages = await apiClient.get<Array<any>>(`chat/${conversationId}?_t=${timestamp}`);
-			
+			const messages = await apiClient.get<Array<any>>(
+				`chat/${conversationId}?_t=${timestamp}`
+			);
+
 			// Map the API response to SignalRMessage format
 			const mappedMessages = messages.map((msg) => ({
 				id: msg.id,
 				idConversa: msg.idConversa,
-				idRemetente: msg.remetente?.id || 0,
-				nomeRemetente: msg.remetente?.nome || "Usuário",
+				idRemetente: msg.idRemetente || 0,
+				nomeRemetente: msg.nomeRemetente || "Usuário",
 				conteudo: msg.conteudo,
 				dataEnvio: msg.dataEnvio,
 				lida: msg.lida || false,
 			}));
-			
+
 			// Sort messages chronologically
 			return mappedMessages.sort((a, b) => {
 				const dateA = new Date(a.dataEnvio).getTime();
@@ -460,7 +535,10 @@ export class ChatWebSocketService {
 	/**
 	 * Create or get a conversation
 	 */
-	public async iniciarConversa(_idContratante: number, idContratado: number): Promise<number> {
+	public async iniciarConversa(
+		_idContratante: number,
+		idContratado: number
+	): Promise<number> {
 		try {
 			const conversationId = await apiClient.post<number>("chat/obter", {
 				IdProdutoMusical: idContratado,
@@ -478,10 +556,12 @@ export class ChatWebSocketService {
 	public setDebugMode(enabled: boolean): void {
 		this.debugMode = enabled;
 		if (enabled) {
-			console.log('🐛 WebSocket Debug Mode ENABLED');
-			console.log('Debug logs will be collected. Use getDebugLog() to retrieve.');
+			console.log("🐛 WebSocket Debug Mode ENABLED");
+			console.log(
+				"Debug logs will be collected. Use getDebugLog() to retrieve."
+			);
 		} else {
-			console.log('🐛 WebSocket Debug Mode DISABLED');
+			console.log("🐛 WebSocket Debug Mode DISABLED");
 		}
 	}
 
@@ -514,7 +594,7 @@ export class ChatWebSocketService {
 
 		// Also log to console in debug mode
 		const emoji = this.getDebugEmoji(type);
-		console.log(`${emoji} [${type}] ${message}`, data || '');
+		console.log(`${emoji} [${type}] ${message}`, data || "");
 	}
 
 	/**
@@ -522,24 +602,29 @@ export class ChatWebSocketService {
 	 */
 	private getDebugEmoji(type: string): string {
 		const emojiMap: Record<string, string> = {
-			'connection': '🔌',
-			'message': '💬',
-			'error': '❌',
-			'warning': '⚠️',
-			'info': 'ℹ️',
-			'success': '✅',
-			'send': '📤',
-			'receive': '📥',
-			'queue': '📦',
-			'conversation': '🗨️',
+			connection: "🔌",
+			message: "💬",
+			error: "❌",
+			warning: "⚠️",
+			info: "ℹ️",
+			success: "✅",
+			send: "📤",
+			receive: "📥",
+			queue: "📦",
+			conversation: "🗨️",
 		};
-		return emojiMap[type] || '📝';
+		return emojiMap[type] || "📝";
 	}
 
 	/**
 	 * Get debug log
 	 */
-	public getDebugLog(): Array<{ timestamp: string; type: string; message: string; data?: any }> {
+	public getDebugLog(): Array<{
+		timestamp: string;
+		type: string;
+		message: string;
+		data?: any;
+	}> {
 		return [...this.debugLog];
 	}
 
@@ -548,7 +633,7 @@ export class ChatWebSocketService {
 	 */
 	public clearDebugLog(): void {
 		this.debugLog = [];
-		console.log('🧹 Debug log cleared');
+		console.log("🧹 Debug log cleared");
 	}
 
 	/**
@@ -560,7 +645,7 @@ export class ChatWebSocketService {
 		currentConversation: number | null;
 		queuedMessages: number;
 		reconnectAttempts: number;
-		mode: 'websocket' | 'rest' | 'disconnected';
+		mode: "websocket" | "rest" | "disconnected";
 	} {
 		const connected = this.webSocketService?.isConnected() || false;
 		return {
@@ -569,7 +654,11 @@ export class ChatWebSocketService {
 			currentConversation: this.currentConversationId,
 			queuedMessages: this.messageQueue.length,
 			reconnectAttempts: this.reconnectAttempts,
-			mode: connected ? 'websocket' : (this.isInitialized ? 'rest' : 'disconnected'),
+			mode: connected
+				? "websocket"
+				: this.isInitialized
+					? "rest"
+					: "disconnected",
 		};
 	}
 
@@ -578,15 +667,17 @@ export class ChatWebSocketService {
 	 */
 	public printStatus(): void {
 		const status = this.getStatus();
-		console.log('🔍 WebSocket Chat Service Status');
-		console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+		console.log("🔍 WebSocket Chat Service Status");
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 		console.log(`📊 Mode: ${status.mode.toUpperCase()}`);
-		console.log(`🔌 Initialized: ${status.initialized ? 'Yes' : 'No'}`);
-		console.log(`📡 Connected: ${status.connected ? 'Yes' : 'No'}`);
-		console.log(`🗨️  Current Conversation: ${status.currentConversation || 'None'}`);
+		console.log(`🔌 Initialized: ${status.initialized ? "Yes" : "No"}`);
+		console.log(`📡 Connected: ${status.connected ? "Yes" : "No"}`);
+		console.log(
+			`🗨️  Current Conversation: ${status.currentConversation || "None"}`
+		);
 		console.log(`📦 Queued Messages: ${status.queuedMessages}`);
 		console.log(`🔄 Reconnect Attempts: ${status.reconnectAttempts}`);
-		console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+		console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 	}
 }
 
@@ -594,7 +685,10 @@ export class ChatWebSocketService {
 export const chatWebSocketService = ChatWebSocketService.getInstance();
 
 // Add to window for debugging in browser console
-if (typeof window !== 'undefined' && process.env['NODE_ENV'] === 'development') {
+if (
+	typeof window !== "undefined" &&
+	process.env["NODE_ENV"] === "development"
+) {
 	(window as any).chatWebSocketService = chatWebSocketService;
 	(window as any).wsDebug = {
 		enable: () => chatWebSocketService.setDebugMode(true),
@@ -603,11 +697,11 @@ if (typeof window !== 'undefined' && process.env['NODE_ENV'] === 'development') 
 		log: () => chatWebSocketService.getDebugLog(),
 		clear: () => chatWebSocketService.clearDebugLog(),
 	};
-	
-	console.log('💡 WebSocket debugging available in console:');
-	console.log('   wsDebug.enable()  - Enable debug mode');
-	console.log('   wsDebug.disable() - Disable debug mode');
-	console.log('   wsDebug.status()  - Show current status');
-	console.log('   wsDebug.log()     - Get debug log');
-	console.log('   wsDebug.clear()   - Clear debug log');
+
+	console.log("💡 WebSocket debugging available in console:");
+	console.log("   wsDebug.enable()  - Enable debug mode");
+	console.log("   wsDebug.disable() - Disable debug mode");
+	console.log("   wsDebug.status()  - Show current status");
+	console.log("   wsDebug.log()     - Get debug log");
+	console.log("   wsDebug.clear()   - Clear debug log");
 }

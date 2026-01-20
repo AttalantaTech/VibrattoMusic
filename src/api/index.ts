@@ -18,7 +18,6 @@ export { ImageUploadService } from "./services/imageUploadService";
 // WebSocket Integration
 export {
 	WebSocketClient,
-	VibrattoWebSocketService,
 	getWebSocketService,
 	WEBSOCKET_EVENTS,
 } from "./websocket/client";
@@ -143,7 +142,7 @@ export const eventService = new EventService(apiClient);
 export const imageUploadService = new ImageUploadService(apiClient);
 
 // WebSocket service instance
-export const webSocketService = getWebSocketService();
+export const webSocketService = getWebSocketService({ url: "chatHub" });
 
 // Monitoring service instances
 export const performanceMonitor = getPerformanceMonitor();

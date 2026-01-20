@@ -10,6 +10,7 @@ import type {
 	UserStatus,
 	ConversationUpdate,
 } from "../types";
+import { VibrattoWebSocketService } from "./vibrattoWebSocketService";
 
 // Minimal EventEmitter for browser compatibility
 class BrowserEventEmitter {
@@ -80,16 +81,19 @@ export class WebSocketClient extends BrowserEventEmitter {
 		super();
 
 		const envConfig = getEnvironmentConfig();
-		const baseUrl = envConfig.apiBaseUrl.replace(/^http/, "ws");
+		const baseUrl = envConfig.apiBaseUrl.replace(/^https/, "ws");
+		const endpoint = config?.url || "chat/mensagem";
 
 		this.config = {
-			url: `${baseUrl}/chat/mensagem`,
+			...config,
 			reconnectInterval: 5000,
 			maxReconnectAttempts: 10,
 			heartbeatInterval: 30000,
 			enableHeartbeat: true,
-			...config,
+			url: `${baseUrl}/${endpoint}`,
 		};
+
+		return;
 	}
 	/**
 	 * Connect to WebSocket server
@@ -123,7 +127,11 @@ export class WebSocketClient extends BrowserEventEmitter {
 						this.ws = null;
 					}
 					this.isConnecting = false;
-					reject(new Error("WebSocket connection timeout - server may not support WebSocket"));
+					reject(
+						new Error(
+							"WebSocket connection timeout - server may not support WebSocket"
+						)
+					);
 				}, 5000); // Reduced timeout to fail faster
 
 				this.ws!.onopen = () => {
@@ -148,11 +156,14 @@ export class WebSocketClient extends BrowserEventEmitter {
 					console.log("📵 WebSocket not available - using REST API mode");
 					// Don't emit error event for expected connection failures
 					// this.emit("error", error);
-					reject(new Error("WebSocket not available - using REST API fallback"));
+					reject(
+						new Error("WebSocket not available - using REST API fallback")
+					);
 				};
 			});
 			return;
 		} catch (error) {
+			console.error(error);
 			this.isConnecting = false;
 			// Expected when WebSocket endpoint doesn't exist - not an error
 			// Application will use REST API fallback
@@ -220,6 +231,7 @@ export class WebSocketClient extends BrowserEventEmitter {
 	 * Check if WebSocket is connected
 	 */
 	public isConnected(): boolean {
+		console.log(this.ws);
 		return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
 	}
 
@@ -332,7 +344,9 @@ export class WebSocketClient extends BrowserEventEmitter {
 			) {
 				this.scheduleReconnect();
 			} else if (event.code === 1006) {
-				console.log("📵 WebSocket endpoint not available, staying in REST mode");
+				console.log(
+					"📵 WebSocket endpoint not available, staying in REST mode"
+				);
 			}
 		};
 
@@ -418,7 +432,10 @@ export class WebSocketClient extends BrowserEventEmitter {
 					this.emit("reconnected");
 				} catch (error) {
 					// If still failing, don't log errors for expected unavailability
-					if (this.reconnectAttempts < this.config.maxReconnectAttempts && !this.serverUnavailable) {
+					if (
+						this.reconnectAttempts < this.config.maxReconnectAttempts &&
+						!this.serverUnavailable
+					) {
 						this.scheduleReconnect();
 					}
 				}
@@ -443,141 +460,6 @@ export class WebSocketClient extends BrowserEventEmitter {
 	}
 	private generateId(): string {
 		return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-	}
-}
-
-/**
- * High-level WebSocket service for Vibratto features
- */
-export class VibrattoWebSocketService {
-	private readonly client: WebSocketClient;
-	private currentUserId: string | null = null;
-
-	public constructor(config?: Partial<WebSocketConfig>) {
-		this.client = new WebSocketClient(config);
-		this.setupEventHandlers();
-	}
-
-	/**
-	 * Initialize WebSocket connection for a user
-	 */
-	public async initialize(userId: string, authToken: string): Promise<void> {
-		this.currentUserId = userId;
-
-		try {
-			await this.client.connect(authToken);
-
-			// Only subscribe if connected
-			if (this.client.isConnected()) {
-				// Subscribe to user-specific channels
-				this.client.subscribeToNotifications(userId);
-				this.client.subscribeToBookingUpdates(userId);
-				this.client.updateUserStatus("online");
-			}
-		} catch (error) {
-			// WebSocket unavailability is expected and handled gracefully
-			// Don't re-throw - allow application to continue without WebSocket
-		}
-	}
-
-	/**
-	 * Disconnect WebSocket
-	 */
-	public disconnect(): void {
-		if (this.currentUserId) {
-			this.client.updateUserStatus("offline");
-		}
-		this.client.disconnect();
-		this.currentUserId = null;
-	}
-
-	/**
-	 * Join a conversation for real-time messaging
-	 */
-	public joinConversation(conversationId: string): void {
-		this.client.joinConversation(conversationId);
-	}
-
-	/**
-	 * Leave a conversation
-	 */
-	public leaveConversation(conversationId: string): void {
-		this.client.leaveConversation(conversationId);
-	}
-
-	/**
-	 * Send a message in a conversation
-	 */
-	public sendMessage(
-		conversationId: string,
-		content: string,
-		type: "text" | "image" | "audio" = "text"
-	): void {
-		this.client.sendMessage(conversationId, content, type);
-	}
-
-	/**
-	 * Mark message as read
-	 */
-	public markMessageAsRead(messageId: string): void {
-		this.client.markMessageAsRead(messageId);
-	}
-
-	/**
-	 * Update user status
-	 */
-	public updateStatus(status: "online" | "away" | "busy" | "offline"): void {
-		this.client.updateUserStatus(status);
-	}
-
-	/**
-	 * Subscribe to events
-	 */
-	public on(
-		event: WebSocketEventType,
-		listener: (...args: Array<unknown>) => void
-	): void {
-		this.client.on(event, listener);
-	}
-
-	/**
-	 * Unsubscribe from events
-	 */
-	public off(
-		event: WebSocketEventType,
-		listener: (...args: Array<unknown>) => void
-	): void {
-		this.client.off(event, listener);
-	}
-
-	/**
-	 * Check if connected
-	 */
-	public isConnected(): boolean {
-		return this.client.isConnected();
-	}
-
-	/**
-	 * Get connection state
-	 */
-	public getConnectionState(): string {
-		return this.client.getState();
-	}
-
-	private setupEventHandlers(): void {
-		this.client.on("disconnected", () => {
-			// Handle disconnection, maybe show notification to user
-		});
-
-		this.client.on("error", (error) => {
-			console.error("WebSocket error:", error);
-		});
-
-		this.client.on("reconnecting", () => {});
-
-		this.client.on("reconnected", () => {
-			// WebSocket reconnected successfully
-		});
 	}
 }
 
