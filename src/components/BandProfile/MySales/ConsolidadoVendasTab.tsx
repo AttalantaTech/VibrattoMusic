@@ -23,7 +23,7 @@ import { Button } from "../../ui/Button/Button";
 import { Reports } from "./Reports";
 import { FilterSelector } from "../../ui/FilterSelector/FilterSelector";
 import { LineChartComponent } from "../../charts/line/LineChart";
-import { SendProposalModal } from "../Messages/SendProposalModal";
+import { SendProposalModal } from "../Messages/components/SendProposalModal";
 import { ProposalRejectionModal } from "../Proposals/ProposalRejectionModal";
 import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
 import {
@@ -124,14 +124,13 @@ const ProposalDetailsModal = ({
 	const statusKey = (
 		typeof proposal.status === "object" ? proposal.status.nome : proposal.status
 	)?.toLowerCase() as keyof typeof unifiedStatusConfig;
-	
+
 	const isWaitingForResponse = statusKey === "pendente";
 
 	const showSignaturePending =
-		isAcceptedStatus(statusKey) && (
-			(isContractor && !proposal.assinaturaContratante) ||
-			(!isContractor && !proposal.assinaturaContratado)
-		);
+		isAcceptedStatus(statusKey) &&
+		((isContractor && !proposal.assinaturaContratante) ||
+			(!isContractor && !proposal.assinaturaContratado));
 
 	const needsContractorSignature =
 		isContractor &&
@@ -181,9 +180,11 @@ const ProposalDetailsModal = ({
 					<div className="mb-6">
 						<Badge
 							variant={
-								isWaitingForResponse ? "warning" : 
-								showSignaturePending ? "secondary" : 
-								status.variant
+								isWaitingForResponse
+									? "warning"
+									: showSignaturePending
+										? "secondary"
+										: status.variant
 							}
 							className="inline-flex items-center gap-1"
 						>
@@ -297,86 +298,86 @@ const ProposalDetailsModal = ({
 						</div>
 					</div>
 
-				{/* Actions */}
-				<div className="mt-6 flex justify-end gap-3">
-					{/* Band actions when proposal is pending */}
-					{isWaitingForResponse && !isContractor && (
-						<>
+					{/* Actions */}
+					<div className="mt-6 flex justify-end gap-3">
+						{/* Band actions when proposal is pending */}
+						{isWaitingForResponse && !isContractor && (
+							<>
+								<Button
+									variant="outline"
+									className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
+									onClick={() => {
+										onReject(proposal);
+										onClose();
+									}}
+								>
+									<XCircle className="h-4 w-4 mr-2" />
+									Rejeitar
+								</Button>
+								<Button
+									className="bg-green-600 hover:bg-green-700"
+									onClick={() => {
+										onAccept(proposal);
+										onClose();
+									}}
+								>
+									<CheckCircle className="h-4 w-4 mr-2" />
+									Aceitar
+								</Button>
+							</>
+						)}
+
+						{/* Contractor signature button */}
+						{needsContractorSignature && (
+							<Button
+								className="bg-blue-600 hover:bg-blue-700"
+								onClick={() => {
+									onSignContract(proposal);
+									onClose();
+								}}
+							>
+								<PenLine className="h-4 w-4 mr-2" />
+								Ver e Assinar Contrato
+							</Button>
+						)}
+
+						{/* Band (contracted) signature button */}
+						{needsContractedSignature && (
+							<Button
+								className="bg-blue-600 hover:bg-blue-700"
+								onClick={() => {
+									onSignContract(proposal);
+									onClose();
+								}}
+							>
+								<PenLine className="h-4 w-4 mr-2" />
+								Ver e Assinar Contrato
+							</Button>
+						)}
+
+						{/* Cancel/Reject button - available for both contractor and band */}
+						{(statusKey === "pendente" || isAcceptedStatus(statusKey)) && (
 							<Button
 								variant="outline"
 								className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
 								onClick={() => {
-									onReject(proposal);
+									if (isContractor) {
+										onStatusUpdate(proposal.id, "rejeitado");
+									} else {
+										onReject(proposal);
+									}
 									onClose();
 								}}
 							>
 								<XCircle className="h-4 w-4 mr-2" />
-								Rejeitar
+								{isContractor ? "Cancelar Proposta" : "Rejeitar Proposta"}
 							</Button>
-							<Button
-								className="bg-green-600 hover:bg-green-700"
-								onClick={() => {
-									onAccept(proposal);
-									onClose();
-								}}
-							>
-								<CheckCircle className="h-4 w-4 mr-2" />
-								Aceitar
-							</Button>
-						</>
-					)}
+						)}
 
-					{/* Contractor signature button */}
-					{needsContractorSignature && (
-						<Button
-							className="bg-blue-600 hover:bg-blue-700"
-							onClick={() => {
-								onSignContract(proposal);
-								onClose();
-							}}
-						>
-							<PenLine className="h-4 w-4 mr-2" />
-							Ver e Assinar Contrato
+						<Button variant="outline" onClick={onClose}>
+							Fechar
 						</Button>
-					)}
-
-					{/* Band (contracted) signature button */}
-					{needsContractedSignature && (
-						<Button
-							className="bg-blue-600 hover:bg-blue-700"
-							onClick={() => {
-								onSignContract(proposal);
-								onClose();
-							}}
-						>
-							<PenLine className="h-4 w-4 mr-2" />
-							Ver e Assinar Contrato
-						</Button>
-					)}
-
-					{/* Cancel/Reject button - available for both contractor and band */}
-					{(statusKey === "pendente" || isAcceptedStatus(statusKey)) && (
-						<Button
-							variant="outline"
-							className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
-							onClick={() => {
-								if (isContractor) {
-									onStatusUpdate(proposal.id, "rejeitado");
-								} else {
-									onReject(proposal);
-								}
-								onClose();
-							}}
-						>
-							<XCircle className="h-4 w-4 mr-2" />
-							{isContractor ? "Cancelar Proposta" : "Rejeitar Proposta"}
-						</Button>
-					)}
-
-					<Button variant="outline" onClick={onClose}>
-						Fechar
-					</Button>
-				</div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -506,7 +507,9 @@ export const ConsolidadoVendasTab = ({
 				params: { id: proposal.identificadorUnico },
 			});
 		} else {
-			toast.error("Não foi possível acessar o contrato. Identificador da proposta não encontrado.");
+			toast.error(
+				"Não foi possível acessar o contrato. Identificador da proposta não encontrado."
+			);
 		}
 	};
 
@@ -738,41 +741,40 @@ export const ConsolidadoVendasTab = ({
 			{/* Unified Table */}
 			{!isLoading && !error && proposals.length > 0 && (
 				<div className="space-y-4">
-				{proposals.map((proposal) => {
-					const isContractor = currentUser?.id === proposal.contratante.id;
-					const statusKey = (
-						typeof proposal.status === "object"
-							? proposal.status.nome
-							: proposal.status
-					)?.toLowerCase() as keyof typeof unifiedStatusConfig;
-					
-					// User (contractor or band) waiting for response (proposal is pending)
-					const isWaitingForResponse = statusKey === "pendente";
-					
-				// Show "Assinatura Pendente" when:
-				// 1. Proposal is accepted AND user is contractor and hasn't signed
-				// 2. Proposal is accepted AND user is NOT contractor (is the band)
-				const showSignaturePending =
-					isAcceptedStatus(statusKey) && (
-						(isContractor && !proposal.assinaturaContratante) ||
-						(!isContractor && !proposal.assinaturaContratado)
-					);
-				
-				// Only show sign button for contractor who hasn't signed
-				const needsContractorSignature =
-					isContractor && 
-					isAcceptedStatus(statusKey) && 
-					!proposal.assinaturaContratante;
-				
-				// Only show sign button for band (contracted) who hasn't signed
-				const needsContractedSignature =
-					!isContractor &&
-					isAcceptedStatus(statusKey) &&
-					!proposal.assinaturaContratado;
+					{proposals.map((proposal) => {
+						const isContractor = currentUser?.id === proposal.contratante.id;
+						const statusKey = (
+							typeof proposal.status === "object"
+								? proposal.status.nome
+								: proposal.status
+						)?.toLowerCase() as keyof typeof unifiedStatusConfig;
 
-					const status =
-						unifiedStatusConfig[statusKey] || unifiedStatusConfig.pendente;
-					const StatusIcon = status.icon;
+						// User (contractor or band) waiting for response (proposal is pending)
+						const isWaitingForResponse = statusKey === "pendente";
+
+						// Show "Assinatura Pendente" when:
+						// 1. Proposal is accepted AND user is contractor and hasn't signed
+						// 2. Proposal is accepted AND user is NOT contractor (is the band)
+						const showSignaturePending =
+							isAcceptedStatus(statusKey) &&
+							((isContractor && !proposal.assinaturaContratante) ||
+								(!isContractor && !proposal.assinaturaContratado));
+
+						// Only show sign button for contractor who hasn't signed
+						const needsContractorSignature =
+							isContractor &&
+							isAcceptedStatus(statusKey) &&
+							!proposal.assinaturaContratante;
+
+						// Only show sign button for band (contracted) who hasn't signed
+						const needsContractedSignature =
+							!isContractor &&
+							isAcceptedStatus(statusKey) &&
+							!proposal.assinaturaContratado;
+
+						const status =
+							unifiedStatusConfig[statusKey] || unifiedStatusConfig.pendente;
+						const StatusIcon = status.icon;
 
 						return (
 							<div
@@ -783,34 +785,36 @@ export const ConsolidadoVendasTab = ({
 								<div className="flex flex-col lg:flex-row justify-between gap-4">
 									{/* Main Content */}
 									<div className="flex-1 space-y-3">
-									{/* Header with Event Type, Client and Status */}
-									<div className="flex items-start justify-between gap-4">
-										<Badge
-											variant={
-												isWaitingForResponse ? "warning" : 
-												showSignaturePending ? "secondary" : 
-												status.variant
-											}
-											className="flex items-center gap-1"
-										>
-											{isWaitingForResponse ? (
-												<>
-													<Clock3 className="h-3 w-3" />
-													Aguardando Resposta
-												</>
-											) : showSignaturePending ? (
-												<>
-													<PenLine className="h-3 w-3" />
-													Assinatura Pendente
-												</>
-											) : (
-												<>
-													<StatusIcon className="h-3 w-3" />
-													{status.label}
-												</>
-											)}
-										</Badge>
-									</div>
+										{/* Header with Event Type, Client and Status */}
+										<div className="flex items-start justify-between gap-4">
+											<Badge
+												variant={
+													isWaitingForResponse
+														? "warning"
+														: showSignaturePending
+															? "secondary"
+															: status.variant
+												}
+												className="flex items-center gap-1"
+											>
+												{isWaitingForResponse ? (
+													<>
+														<Clock3 className="h-3 w-3" />
+														Aguardando Resposta
+													</>
+												) : showSignaturePending ? (
+													<>
+														<PenLine className="h-3 w-3" />
+														Assinatura Pendente
+													</>
+												) : (
+													<>
+														<StatusIcon className="h-3 w-3" />
+														{status.label}
+													</>
+												)}
+											</Badge>
+										</div>
 
 										{/* Description */}
 										<p className="text-gray-700 line-clamp-2">
@@ -856,43 +860,44 @@ export const ConsolidadoVendasTab = ({
 										</div>
 									</div>
 
-								{/* Actions */}
-								<div className="flex flex-row lg:flex-col gap-2 lg:justify-center">
-									{(needsContractorSignature || needsContractedSignature) && (
-										<Button
-											size="sm"
-											className="bg-blue-600 hover:bg-blue-700"
-											onClick={(event) => {
-												event.stopPropagation();
-												handleSignContract(proposal);
-											}}
-										>
-											<PenLine className="h-4 w-4 mr-1" />
-											Assinar
-										</Button>
-									)}
-								{/* Cancel/Reject button - available for both contractor and band */}
-								{(statusKey === "pendente" || isAcceptedStatus(statusKey)) && (
-									<Button
-										size="sm"
-										variant="outline"
-										className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
-										onClick={(event) => {
-											event.stopPropagation();
-											if (isContractor) {
-												// Contractor cancels their own proposal
-												void handleStatusUpdate(proposal.id, "rejeitado");
-											} else {
-												// Band rejects the proposal
-												handleRejectProposal(proposal);
-											}
-										}}
-									>
-										<XCircle className="h-4 w-4 mr-1" />
-										{isContractor ? "Cancelar" : "Rejeitar"}
-									</Button>
-								)}
-								</div>
+									{/* Actions */}
+									<div className="flex flex-row lg:flex-col gap-2 lg:justify-center">
+										{(needsContractorSignature || needsContractedSignature) && (
+											<Button
+												size="sm"
+												className="bg-blue-600 hover:bg-blue-700"
+												onClick={(event) => {
+													event.stopPropagation();
+													handleSignContract(proposal);
+												}}
+											>
+												<PenLine className="h-4 w-4 mr-1" />
+												Assinar
+											</Button>
+										)}
+										{/* Cancel/Reject button - available for both contractor and band */}
+										{(statusKey === "pendente" ||
+											isAcceptedStatus(statusKey)) && (
+											<Button
+												size="sm"
+												variant="outline"
+												className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
+												onClick={(event) => {
+													event.stopPropagation();
+													if (isContractor) {
+														// Contractor cancels their own proposal
+														void handleStatusUpdate(proposal.id, "rejeitado");
+													} else {
+														// Band rejects the proposal
+														handleRejectProposal(proposal);
+													}
+												}}
+											>
+												<XCircle className="h-4 w-4 mr-1" />
+												{isContractor ? "Cancelar" : "Rejeitar"}
+											</Button>
+										)}
+									</div>
 								</div>
 							</div>
 						);

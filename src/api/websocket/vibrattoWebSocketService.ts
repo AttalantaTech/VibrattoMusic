@@ -20,7 +20,6 @@ export class VibrattoWebSocketService {
 
 		try {
 			await this.client.connect(authToken);
-			console.log("isConnected", this.client.isConnected());
 
 			// Only subscribe if connected
 			if (this.client.isConnected()) {

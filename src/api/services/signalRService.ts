@@ -15,13 +15,13 @@ export class SignalRService {
 			.build();
 
 		this.signalRConnection.start().catch((error) => console.error(error));
-	}
-    
-    on = (event: string, action: (...args: any[]) => any): void => {
-        this.signalRConnection?.on(event, action);
-    }
+	};
 
-    invoke = (event: string, ...args: any[]): void => {
-        this.signalRConnection?.invoke(event, args);
-    }
+	on = (event: string, action: (...args: any[]) => any): void => {
+		this.signalRConnection?.on(event, action);
+	};
+
+	invoke = (event: string, ...args: any[]): void => {
+		this.signalRConnection?.invoke(event, args);
+	};
 }

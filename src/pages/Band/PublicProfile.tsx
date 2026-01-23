@@ -27,7 +27,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useToggleFavorite, useFavorites } from "../../hooks/useUser";
 import { extractYouTubeId } from "../../lib/utils/cn";
 import type { MusicalProductApiResponse } from "../../api/types";
-import { StartConversationModal } from "../../components/BandProfile/Messages/StartConversationModal";
+import { StartConversationModal } from "../../components/BandProfile/Messages/components/StartConversationModal";
 import { useStartConversation } from "../../hooks/useMessaging";
 import { toast } from "sonner";
 

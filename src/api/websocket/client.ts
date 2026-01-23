@@ -231,7 +231,6 @@ export class WebSocketClient extends BrowserEventEmitter {
 	 * Check if WebSocket is connected
 	 */
 	public isConnected(): boolean {
-		console.log(this.ws);
 		return this.ws !== null && this.ws.readyState === WebSocket.OPEN;
 	}
 

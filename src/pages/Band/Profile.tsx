@@ -27,9 +27,10 @@ import { MyHiresTab } from "../../components/BandProfile/Hires/MyHiresTab";
 import { useQuery } from "@tanstack/react-query";
 import { musicalProductService } from "../../api";
 import { useActiveMusicalProduct } from "../../hooks/useActiveMusicalProduct";
-import MessagesTab from "../../components/BandProfile/Messages/MessagesTab";
+import MessagesTab from "../../components/BandProfile/Messages";
 import { ProposalsTab } from "../../components/BandProfile/Proposals/ProposalsTab";
 import { ContractsTab } from "../../components/BandProfile/Contracts/ContractsTab";
+import { MessagesContextProvider } from "@/components/BandProfile/Messages/contexts/MessagesContext/provider";
 
 const styles = {
 	genre: "font-medium text-[#085EC5] bg-[#D6F2FF] py-[2x] px-2 rounded-2xl",
@@ -106,9 +107,15 @@ export const BandProfile = () => {
 					</OnboardingProvider>
 				);
 			case "messages":
-				return <MessagesTab />;
+				return (
+					<MessagesContextProvider>
+						<MessagesTab />
+					</MessagesContextProvider>
+				);
 			case "sales":
-				return hasMusicalProducts ? <ConsolidadoVendasTab productId={activeProductId} /> : null;
+				return hasMusicalProducts ? (
+					<ConsolidadoVendasTab productId={activeProductId} />
+				) : null;
 			case "hires":
 				return <MyHiresTab />;
 			case "proposals":

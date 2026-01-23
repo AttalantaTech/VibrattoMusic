@@ -7,7 +7,7 @@ import {
 	FileTextIcon,
 	CheckCircleIcon,
 } from "lucide-react";
-import { Button } from "../../ui/Button/Button";
+import { Button } from "../../../../ui/Button/Button";
 import {
 	Dialog,
 	DialogContent,
@@ -15,27 +15,27 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from "../../ui/dialog";
-import { Input } from "../../ui/Input/Input";
-import { Label } from "../../ui/Label/Label";
-import { Textarea } from "../../ui/Textarea/Textarea";
-import { Switch } from "../../ui/switch";
-import { SingleSelect } from "../../forms/SingleSelect/SingleSelect";
-import { useCreateProposal } from "../../../hooks/useProposals";
-import { filterService } from "../../../api";
-import type { CreateProposalRequest, FilterOption } from "../../../api/types";
-import { useAuthStore } from "../../../store/authStore";
+} from "../../../../ui/dialog";
+import { Input } from "../../../../ui/Input/Input";
+import { Label } from "../../../../ui/Label/Label";
+import { Textarea } from "../../../../ui/Textarea/Textarea";
+import { Switch } from "../../../../ui/switch";
+import { SingleSelect } from "../../../../forms/SingleSelect/SingleSelect";
+import { useCreateProposal } from "../../../../../hooks/useProposals";
+import { filterService } from "../../../../../api";
+import type { CreateProposalRequest, FilterOption } from "../../../../../api/types";
+import { useAuthStore } from "../../../../../store/authStore";
 import { useQueryClient } from "@tanstack/react-query";
-import { messagingKeys } from "../../../hooks/useMessaging";
+import { messagingKeys } from "../../../../../hooks/useMessaging";
 import {
 	createProposalSchema,
 	validateProposalDates,
 	validateProposalTimes,
-} from "../../../schemas/proposalSchema";
+} from "../../../../../schemas/proposalSchema";
 import { toast } from "sonner";
-import { useProfileStatus } from "../../../hooks/useProfileStatus";
-import { ProfileIncompleteModal } from "../../ui/ProfileIncompleteModal/ProfileIncompleteModal";
-import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
+import { useProfileStatus } from "../../../../../hooks/useProfileStatus";
+import { ProfileIncompleteModal } from "../../../../ui/ProfileIncompleteModal/ProfileIncompleteModal";
+import { useActiveMusicalProduct } from "../../../../../hooks/useActiveMusicalProduct";
 
 type AccordionSectionProps = {
 	title: string;
