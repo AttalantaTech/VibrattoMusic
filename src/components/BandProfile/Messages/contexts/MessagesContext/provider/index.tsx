@@ -212,7 +212,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 				console.log("mensagem", mensagem);
 			});
 		}
-	}, [signalRService]);
+	}, [signalRService, token]);
 
 	return (
 		<MessagesContext.Provider

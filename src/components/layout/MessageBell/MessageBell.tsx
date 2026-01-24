@@ -1,7 +1,7 @@
 import { MessageSquare } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "../../../store/authStore";
-import { useUnreadMessagesCount } from "../../../hooks/useUnreadMessagesCount";
+import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 
 export const MessageBell = () => {
 	const { isAuthenticated } = useAuthStore();
