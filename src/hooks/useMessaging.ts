@@ -1,5 +1,10 @@
 // Messaging hooks
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+	useQuery,
+	useMutation,
+	useQueryClient,
+	useInfiniteQuery,
+} from "@tanstack/react-query";
 import { messagingService } from "../api";
 import type {
 	Message,
@@ -63,13 +68,15 @@ export const useConversationMessages = (
 	parameters?: PaginationParameters,
 	enabled: boolean = true
 ) => {
-	return useQuery<PaginatedResponse<Message>, Error>({
+	return useInfiniteQuery({
 		queryKey: messagingKeys.conversationMessages(conversationId),
 		queryFn: () =>
 			messagingService.getConversationMessages(conversationId, parameters),
+		getNextPageParam: () => 0,
+		initialPageParam: 0,
+		staleTime: 30 * 1000, // 30 seconds
+		refetchInterval: 3 * 1000, // Refetch every 3 seconds
 		enabled: enabled && conversationId > 0,
-		staleTime: 5 * 1000, // 5 seconds
-		refetchInterval: 3 * 1000, // Refetch every 3 seconds for real-time messages
 	});
 };
 

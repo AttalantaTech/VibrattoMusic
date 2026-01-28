@@ -10,11 +10,13 @@ import {
 	ChatHeaderContainer,
 	ChatInputContainer,
 	ChatMessagesContainer,
-	Message,
+	MessageElement,
 	MessageLine,
-	OwnMessage,
+	OwnMessageElement,
 } from "./styles";
 import { useMessages } from "../../hooks/useMessages";
+import { Message } from "@/api/types";
+import { getParticipantInitials } from "../../utils/Message";
 
 export const Chat = () => {
 	const { user } = useAuthStore();
@@ -25,20 +27,21 @@ export const Chat = () => {
 	const { isProfileComplete } = useProfileStatus();
 
 	const {
-		messages,
-		error,
-		isLoading,
-		messagesContainerRef,
-		selectedConversation,
-		setIsProposalModalOpen,
-		setIsProfileIncompleteModalOpen,
-		messagesEndRef,
 		messageInput,
 		setMessageInput,
+		messages,
+		messagesError,
+		isLoading,
+		selectedConversation,
 		handleSendMessage,
 	} = useMessagesContext();
 
-	const { getParticipantInitials } = useMessages();
+	const {
+		messagesContainerRef,
+		setIsProposalModalOpen,
+		setIsProfileIncompleteModalOpen,
+		messagesEndRef,
+	} = useMessages();
 
 	return (
 		<div className="flex-1 flex flex-col">
@@ -73,8 +76,8 @@ export const Chat = () => {
 							</div>
 							<h2 className="text-lg font-semibold text-gray-900">
 								{currentProductId
-									? selectedConversation.contratanteName
-									: selectedConversation.participantName}
+									? selectedConversation.contratanteNome
+									: selectedConversation.participanteNome}
 							</h2>
 						</div>
 						{activeProduct && !isProfileComplete && (
@@ -104,10 +107,10 @@ export const Chat = () => {
 
 					<ChatMessagesContainer messagesContainerRef={messagesContainerRef}>
 						{isLoading && <Loading />}
-						{error && (
+						{messagesError && (
 							<div className="flex flex-col items-center justify-center h-full text-center">
 								<MessageSquare className="w-12 h-12 text-red-300 mb-3" />
-								<p className="text-red-500">{error}</p>
+								<p className="text-red-500">{messagesError}</p>
 								<button
 									onClick={() => {
 										window.location.reload();
@@ -118,17 +121,18 @@ export const Chat = () => {
 								</button>
 							</div>
 						)}
-						{messages.length === 0 && !isLoading && !error && (
-							<div className="flex flex-col items-center justify-center h-full text-center">
-								<MessageSquare className="w-12 h-12 text-gray-300 mb-3" />
-								<p className="text-gray-500">
-									Inicie a conversa enviando uma mensagem
-								</p>
-							</div>
-						)}
-						{!isLoading && !error && (
+						{!messages ||
+							(messages.length === 0 && !isLoading && !messagesError && (
+								<div className="flex flex-col items-center justify-center h-full text-center">
+									<MessageSquare className="w-12 h-12 text-gray-300 mb-3" />
+									<p className="text-gray-500">
+										Inicie a conversa enviando uma mensagem
+									</p>
+								</div>
+							))}
+						{!isLoading && !messagesError && (
 							<>
-								{messages.map((message) => {
+								{messages?.map((message: Message) => {
 									const isOwn = currentUserId
 										? message.idRemetente === currentUserId
 										: false;
@@ -139,11 +143,15 @@ export const Chat = () => {
 											isOwn={isOwn}
 										>
 											{isOwn ? (
-												<OwnMessage message={message} />
+												<OwnMessageElement message={message} />
 											) : (
-												<Message
+												<MessageElement
 													message={message}
-													participantName={selectedConversation.participantName}
+													userName={
+														currentUserId === selectedConversation.contratanteId
+															? selectedConversation.participanteNome
+															: selectedConversation.contratanteNome
+													}
 												/>
 											)}
 										</MessageLine>

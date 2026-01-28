@@ -601,20 +601,18 @@ export interface Message {
 	idConversa: number;
 	idRemetente: number;
 	conteudo: string;
-	type: "text" | "image" | "audio" | "file";
+	type?: "text" | "image" | "audio" | "file";
 	lida: boolean;
 	dataEnvio: string;
 }
 
 // SignalR specific types for chat
 export interface SignalRMessage {
-	id: number;
+	idMensagem: number;
 	idConversa: number;
 	idRemetente: number;
-	nomeRemetente?: string;
+	idDestinatario?: number;
 	conteudo: string;
-	dataEnvio: string;
-	lida: boolean;
 }
 
 export interface SendMessageRequest {

@@ -1,247 +1,246 @@
-import { PropsWithChildren } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { PropsWithChildren, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/authStore";
 import { useActiveMusicalProduct } from "@/hooks/useActiveMusicalProduct";
-import { useProfileStatus } from "@/hooks/useProfileStatus";
-import { useConversations } from "@/hooks/useMessaging";
-import { Conversation } from "../../../types";
-import { useSignalRChat } from "@/hooks/useSignalRChat";
-import { SignalRMessage } from "@/api/types";
-import { SignalRService } from "@/api/services/signalRService";
+import {
+	messagingKeys,
+	useConversationMessages,
+	useConversations,
+} from "@/hooks/useMessaging";
+import { Conversation, Message } from "@/api/types";
 import { MessagesContext } from "../context";
-import { useMessages } from "../../../hooks/useMessages";
+import { useChat } from "@/api/services/chat/useChat";
+import { playNotificationSound } from "../../../utils/Message";
 
 export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
-	const { playNotificationSound } = useMessages();
-
 	const queryClient = useQueryClient();
-	const { user, token } = useAuthStore();
-	const currentUserId = user?.id;
+	const { user } = useAuthStore();
 	const { activeProduct } = useActiveMusicalProduct();
 	const currentProductId = activeProduct?.id
 		? Number(activeProduct.id)
 		: undefined;
 
-	// Check if user profile is complete for proposal functionality
-	const { isProfileComplete } = useProfileStatus();
+	const [messageInput, setMessageInput] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
-	const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
-	const [isNewConversationModalOpen, setIsNewConversationModalOpen] =
-		useState(false);
-
 	const [selectedConversation, setSelectedConversation] =
 		useState<Conversation | null>(null);
 	const [newConversationParticipant, setNewConversationParticipant] = useState<{
 		id: number;
 		name: string;
 	} | null>(null);
-	const [isProfileIncompleteModalOpen, setIsProfileIncompleteModalOpen] =
-		useState(false);
-	const [messageInput, setMessageInput] = useState("");
-	const messagesEndRef = useRef<HTMLDivElement>(null);
-	const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-	// Get conversations from API
-	const { data: conversationsData, isLoading: conversationsLoading } =
-		useConversations(currentProductId);
+	const [shouldLoadCurrentConversation, setShouldLoadCurrentConversation] =
+		useState<boolean>(false);
+	const [currentConversationId, setCurrentConversationId] = useState<
+		number | null
+	>(null);
 
-	// Transform API data to component format
-	const conversations: Array<Conversation> =
-		conversationsData?.data?.map((conv: any) => ({
-			id: parseInt(conv.id, 0),
-			contratanteName: conv.metadata?.contratanteNome || "Usuario Desconhecido",
-			contratanteId: conv.metadata?.contratanteId || "Usuario Desconhecido",
-			participantName: conv.metadata?.participantName || "Usuario Desconhecido",
-			participantId: conv.metadata?.participantId || 0,
-			lastMessage: conv.lastMessage?.content || "",
-			lastMessageTime: conv.lastMessage?.createdAt || conv.updatedAt,
-			unreadCount: conv.unreadCount || 0,
-			isOnline: false, // This would need to be determined from online status API
-		})) || [];
+	const [shouldLoadConversations, setShouldLoadConversations] =
+		useState<boolean>(false);
+	const [newMessages, setNewMessages] = useState<Message[]>([]);
 
-	// SignalR Chat Hook
+	const { data: conversationsData, isLoading: isConversationsLoading } =
+		useConversations(currentProductId, undefined, shouldLoadConversations);
+
+	const filteredConversations: Conversation[] = useMemo(() => {
+		return (
+			conversationsData?.data?.map((conv) => {
+				return {
+					id: conv.id,
+					contratanteId: conv.contratanteId || 0,
+					contratanteNome: conv.contratanteNome || "Usuario Desconhecido",
+					participanteId: conv.participanteId || 0,
+					participanteNome: conv.participanteNome || "Usuario Desconhecido",
+					ultimaMensagem: conv.ultimaMensagem,
+					dataEnvio: conv.ultimaMensagem?.dataEnvio || "",
+					numeroNaoLidas: conv.numeroNaoLidas || 0,
+					isOnline: false, // This would need to be determined from online status API
+				};
+			}) || ([] as Conversation[])
+		).filter((conversation) => {
+			if (!searchQuery) return true;
+			const searchLower = searchQuery.toLowerCase();
+			return (
+				conversation.participanteNome.toLowerCase().includes(searchLower) ||
+				conversation.ultimaMensagem?.conteudo
+					.toLowerCase()
+					.includes(searchLower)
+			);
+		});
+	}, [conversationsData, searchQuery]);
+
 	const {
-		messages,
-		isLoading,
-		error,
-		currentConversaId,
+		data: historyMessages,
+		isLoading: isMessagesLoading,
+		error: messagesError,
+	} = useConversationMessages(
+		currentConversationId || 0,
+		undefined,
+		shouldLoadCurrentConversation
+	);
+
+	const [messages, setMessages] = useState<Array<Message>>([]);
+
+	const {
+		connect,
 		sendMessage,
-		markAsRead,
 		enterConversation,
-	} = useSignalRChat({
-		onMessageReceived: (message) => {
-			// Play notification sound
-			playNotificationSound();
+		markMessageAsRead,
+		addReceiveMessageHandler,
+		addMessageReadHandler,
+		addNotificationHandler,
+	} = useChat(
+		currentConversationId || 0,
+		setCurrentConversationId,
+		setShouldLoadCurrentConversation,
+		setShouldLoadConversations
+	);
+	const [connected, setConnected] = useState<boolean>(false);
 
-			// Update conversation list
-			updateConversationWithNewMessage(message);
+	useEffect(() => {
+		if (connected) {
+			console.log("Setting up WebSocket handlers");
+			addReceiveMessageHandler(handleReceiveMessage);
 
-			// Show toast notification if not in focus
-			if (document.hidden) {
-				toast.info(
-					`Nova mensagem de ${message.nomeRemetente || "Usuário desconhecido"}`,
-					{
-						description: message.conteudo.substring(0, 50) + "...",
-					}
-				);
+			addMessageReadHandler(handleMessageRead);
+
+			addNotificationHandler((notification: string) => {
+				toast.info(notification);
+			});
+		}
+	}, [connected, user, currentProductId]);
+
+	useEffect(() => {
+		handleConnect();
+	}, []);
+
+	const handleConnect = async () => {
+		await connect();
+		setConnected(true);
+	};
+
+	const handleEnterConversation = async (conversationId: number) => {
+		if (conversationId === currentConversationId) return;
+		setCurrentConversationId(conversationId);
+		enterConversation(conversationId);
+	};
+
+	const handleSendMessage = async (content: string) => {
+		if (!content.trim() || !currentConversationId) return;
+		try {
+			await sendMessage(content);
+			setMessageInput("");
+		} catch (error) {
+			toast.error("Erro ao enviar mensagem");
+		}
+	};
+
+	const handleReceiveMessage = (message: Message) => {
+		// Play notification sound
+		playNotificationSound();
+
+		// Update conversation data in cache
+		if (!messages.find((m) => m.id === message.id)) {
+			setNewMessages((prevMessages) => [...prevMessages, message]);
+		}
+
+		// Update conversation list
+		// updateConversationWithNewMessage(message);
+
+		// Show toast notification if not in focus
+		if (document.hidden) {
+			toast.info(
+				`Nova mensagem de ${message.idRemetente || "Usuário desconhecido"}`,
+				{
+					description: message.conteudo.substring(0, 50) + "...",
+				}
+			);
+		}
+	};
+
+	const handleMarkMessageAsRead = async (messageId: number) => {
+		if (messages.find((m) => m.id === messageId && m.lida)) return;
+		try {
+			await markMessageAsRead(messageId);
+		} catch (error) {
+			console.error("Erro ao marcar mensagem como lida:", error);
+		}
+	};
+
+	const handleMessageRead = (messageId: number) => {
+		messages.forEach((message) => {
+			if (message.id === messageId) {
+				message.lida = true;
 			}
-		},
-		onMessageRead: () => {
-			// Message read event handled
-		},
-		onNotification: (notification) => {
-			toast.info(notification);
-		},
-	});
+		});
+	};
 
 	// Enter existing conversation when selected
 	useEffect(() => {
-		if (selectedConversation && user) {
-			console.log("🚀 Entering conversation:", selectedConversation.id);
-			// For existing conversations, use enterConversation instead of initializeChat
-			enterConversation(selectedConversation.id).catch((error) => {
-				console.error("❌ Failed to enter conversation:", error);
-			});
-		} else {
-			console.log(
-				"⏸️ Not entering conversation - missing selectedConversation or user"
-			);
+		if (
+			selectedConversation &&
+			user &&
+			selectedConversation.id !== currentConversationId
+		) {
+			handleEnterConversation(selectedConversation.id);
+			setShouldLoadCurrentConversation(true);
 		}
-	}, [selectedConversation, user, enterConversation]);
-
-	// Auto-scroll to bottom when new messages arrive
-	useEffect(() => {
-		scrollToBottom();
-	}, [messages]);
-
-	// Mark messages as read when they become visible
-	useEffect(() => {
-		if (!messages.length || !user) return;
-
-		const observer = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						const messageElement = entry.target as HTMLElement;
-						const messageId = parseInt(
-							messageElement.dataset["messageId"] || "0"
-						);
-						const message = messages.find((m) => m.id === messageId);
-
-						if (
-							message &&
-							currentUserId &&
-							message.idRemetente !== currentUserId &&
-							!message.lida
-						) {
-							markAsRead(messageId);
-						}
-					}
-				});
-			},
-			{ threshold: 0.5 }
-		);
-
-		// Observe all message elements
-		const messageElements =
-			messagesContainerRef.current?.querySelectorAll("[data-message-id]");
-		messageElements?.forEach((element) => {
-			observer.observe(element);
-		});
-
-		return () => {
-			observer.disconnect();
-		};
-	}, [messages, user, markAsRead]);
-
-	// Filter conversations based on search
-	const filteredConversations = conversations.filter((conversation) => {
-		if (!searchQuery) return true;
-		const searchLower = searchQuery.toLowerCase();
-		return (
-			conversation.participantName.toLowerCase().includes(searchLower) ||
-			conversation.lastMessage?.toLowerCase().includes(searchLower)
-		);
-	});
-
-	// Handle sending message
-	const handleSendMessage = useCallback(
-		async (content: string) => {
-			if (!content.trim() || !currentConversaId) return;
-
-			try {
-				await sendMessage(content);
-				setMessageInput("");
-			} catch (error) {
-				toast.error("Erro ao enviar mensagem");
-			}
-		},
-		[currentConversaId, sendMessage]
-	);
+	}, [selectedConversation, user, handleEnterConversation]);
 
 	// Update conversation list with new message
-	const updateConversationWithNewMessage = (_message: SignalRMessage) => {
+	const updateConversationWithNewMessage = (_message: Message) => {
 		// Invalidate conversations query to refetch updated data
 		queryClient.invalidateQueries({ queryKey: ["messaging", "conversations"] });
 	};
 
-	const scrollToBottom = () => {
-		try {
-			messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-		} catch (error) {
-			// Fallback for test environments where scrollIntoView might not be available
-			if (messagesEndRef.current) {
-				messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
-			}
-		}
+	const syncCache = () => {
+		if (newMessages.length === 0) return;
+
+		queryClient.setQueryData(
+			messagingKeys.conversationMessages(currentConversationId || 0),
+			(oldData: any) => ({
+				...oldData,
+				pages: [...newMessages, ...oldData.pages.slice(0, -1)],
+			})
+		);
+
+		setNewMessages([]);
 	};
 
-	const [signalRService, setSignalRService] = useState<SignalRService | null>(
-		null
-	);
-
 	useEffect(() => {
-		if (signalRService === null) {
-			setSignalRService(new SignalRService());
-		} else {
-			signalRService?.createConnection("chatHub", token!);
-
-			signalRService?.on("ReceberMensagem", (mensagem) => {
-				console.log("mensagem", mensagem);
-			});
-		}
-	}, [signalRService, token]);
+		if (!historyMessages) return;
+		const mappedHistory =
+			historyMessages.pages.flatMap((page) => page.flatMap((msg) => msg)) ?? [];
+		const combinedMessages = [
+			...mappedHistory,
+			...newMessages.filter(
+				(nm) => !mappedHistory.some((hm) => hm.id === nm.id)
+			),
+		];
+		combinedMessages.sort((a, b) => a.id - b.id);
+		setMessages(combinedMessages);
+	}, [historyMessages, newMessages]);
 
 	return (
 		<MessagesContext.Provider
 			value={{
-				error,
+				messageInput,
+				setMessageInput,
+				messagesError,
 				messages,
-				conversations,
 				searchQuery,
 				setSearchQuery,
 				filteredConversations,
-				isLoading,
-				conversationsLoading,
+				isMessagesLoading,
+				isConversationsLoading,
 				selectedConversation,
 				setSelectedConversation,
-				messageInput,
-				setMessageInput,
 				handleSendMessage,
-				sendMessage,
-				isProfileComplete,
-				isProposalModalOpen,
-				setIsProposalModalOpen,
-				isNewConversationModalOpen,
-				setIsNewConversationModalOpen,
+				handleMarkMessageAsRead,
 				newConversationParticipant,
 				setNewConversationParticipant,
-				isProfileIncompleteModalOpen,
-				setIsProfileIncompleteModalOpen,
-				messagesContainerRef,
-				messagesEndRef,
 			}}
 		>
 			{children}

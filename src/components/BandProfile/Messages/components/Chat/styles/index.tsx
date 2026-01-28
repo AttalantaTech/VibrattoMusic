@@ -1,6 +1,12 @@
 import { PropsWithChildren } from "react";
 import { Check, CheckCheck } from "lucide-react";
-import { useMessages } from "../../../hooks/useMessages";
+import {
+	formatMessageTime,
+	getParticipantInitials,
+	isMessageRead,
+} from "../../../utils/Message";
+import { useAuthStore } from "@/store/authStore";
+import { Message } from "@/api/types";
 
 export const ChatHeaderContainer = ({ children }: PropsWithChildren) => {
 	return (
@@ -42,11 +48,11 @@ export const MessageLine = ({
 	);
 };
 
-export const OwnMessage = ({
+export const OwnMessageElement = ({
 	message,
-}: PropsWithChildren & { message: any }) => {
-	const { formatMessageTime, isMessageRead } = useMessages();
-	const isRead = isMessageRead(message);
+}: PropsWithChildren & { message: Message }) => {
+	const { user } = useAuthStore();
+	const isRead = isMessageRead(message, user?.id);
 	const messageReadElement =
 		isRead === null ? null : isRead ? (
 			<CheckCheck className="w-4 h-4 text-blue-500" />
@@ -71,25 +77,23 @@ export const OwnMessage = ({
 	);
 };
 
-export const Message = ({
+export const MessageElement = ({
 	message,
-	participantName,
+	userName,
 }: {
-	message: any;
-	participantName: string;
+	message: Message;
+	userName: string;
 }) => {
-	const { getParticipantInitials, formatMessageTime } = useMessages();
-
 	return (
 		<div className="flex items-start space-x-3 max-w-xs lg:max-w-md">
 			<div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
 				<span className="text-xs font-semibold text-white">
-					{getParticipantInitials(message.nomeRemetente || participantName)}
+					{getParticipantInitials(userName)}
 				</span>
 			</div>
 			<div className="flex flex-col">
 				<p className="text-xs font-medium text-gray-700 mb-1 px-1">
-					{message.nomeRemetente || participantName}
+					{userName}
 				</p>
 				<div className="bg-white border border-gray-200 px-4 py-3 rounded-r-2xl rounded-tl-2xl rounded-bl-md shadow-lg">
 					<p className="text-sm text-gray-800 leading-relaxed">
@@ -98,7 +102,7 @@ export const Message = ({
 				</div>
 				<div className="flex items-center space-x-1 mt-1 px-1">
 					<p className="text-xs text-gray-500">
-						{formatMessageTime(message.dataEnvio)}
+						{formatMessageTime(message.dataEnvio, { long: true })}
 					</p>
 				</div>
 			</div>

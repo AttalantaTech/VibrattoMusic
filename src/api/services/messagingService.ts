@@ -195,9 +195,9 @@ export class MessagingService {
 						);
 
 						// Update conversation with messages if we got them
-						if (messagesResponse.data && messagesResponse.data.length > 0) {
+						if (messagesResponse && messagesResponse.length > 0) {
 							// Sort messages by creation date to ensure proper order
-							const sortedMessages = messagesResponse.data.sort(
+							const sortedMessages = messagesResponse.sort(
 								(a, b) =>
 									new Date(a.dataEnvio).getTime() -
 									new Date(b.dataEnvio).getTime()
@@ -323,11 +323,13 @@ export class MessagingService {
 	public async getConversationMessages(
 		conversationId: number,
 		parameters?: PaginationParameters
-	): Promise<PaginatedResponse<Message>> {
+	): Promise<Message[]> {
 		try {
-			// Use the correct Vibratto API endpoint
+			const limit = parameters?.limit || 20;
+			const cursorQuery = parameters?.page ? `&_t=${parameters.page}` : "";
+
 			const response = await this.apiClient.get<Array<any>>(
-				`chat/${conversationId}`
+				`chat/${conversationId}?limit=${limit}${cursorQuery}`
 			);
 
 			// Ensure response is an array
@@ -346,43 +348,13 @@ export class MessagingService {
 				})
 			);
 
-			// Apply basic pagination (since API doesn't support it yet)
-			const page = parameters?.page || 1;
-			const limit = parameters?.limit || 20;
-			const startIndex = (page - 1) * limit;
-			const endIndex = startIndex + limit;
-
-			const paginatedMessages = transformedMessages.slice(startIndex, endIndex);
-			const totalItems = transformedMessages.length;
-			const totalPages = Math.ceil(totalItems / limit);
-
-			return {
-				data: paginatedMessages,
-				pagination: {
-					currentPage: page,
-					totalPages,
-					totalItems,
-					itemsPerPage: limit,
-					hasNextPage: page < totalPages,
-					hasPreviousPage: page > 1,
-				},
-			};
+			return transformedMessages;
 		} catch (error) {
 			console.error("Error fetching conversation messages:", error);
 			// Return empty response on error
-			return {
-				data: [],
-				pagination: {
-					currentPage: 1,
-					totalPages: 0,
-					totalItems: 0,
-					itemsPerPage: parameters?.limit || 20,
-					hasNextPage: false,
-					hasPreviousPage: false,
-				},
-			};
+			return [];
 		}
-	}
+	};
 
 	/**
 	 * Mark conversation as read
