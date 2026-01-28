@@ -32,12 +32,12 @@ export class MessagingService {
 			if (!isNaN(conversationId)) {
 				ConversationStorage.updateLastActivity(conversationId);
 			}
-		} else if (response.conversationId) {
+		} else if (response.idConversa) {
 			// Try to parse conversation ID from response as fallback
 			const conversationId =
-				typeof response.conversationId === "string"
-					? parseInt(response.conversationId, 10)
-					: Number(response.conversationId);
+				typeof response.idConversa === "string"
+					? parseInt(response.idConversa, 10)
+					: Number(response.idConversa);
 			if (!isNaN(conversationId)) {
 				ConversationStorage.updateLastActivity(conversationId);
 			}
@@ -159,39 +159,27 @@ export class MessagingService {
 					let lastMessage: Message | undefined;
 					if (item.ultimaMensagem) {
 						lastMessage = {
-							id: item.ultimaMensagem.id?.toString() || "0",
-							conversationId: item.idConversa.toString(),
-							senderId: item.ultimaMensagem.remetente?.id?.toString() || "0",
-							receiverId: "0", // Not provided by this endpoint
-							content: item.ultimaMensagem.conteudo || "",
+							id: item.ultimaMensagem.id || 0,
+							idConversa: item.idConversa,
+							idRemetente: item.ultimaMensagem.remetente.id || 0,
+							conteudo: item.ultimaMensagem.conteudo || "",
 							type: "text" as const,
-							status: item.ultimaMensagem.lida
-								? ("read" as const)
-								: ("delivered" as const),
-							createdAt:
+							lida: item.ultimaMensagem.lida,
+							dataEnvio:
 								item.ultimaMensagem.dataEnvio || new Date().toISOString(),
-							updatedAt:
-								item.ultimaMensagem.dataEnvio || new Date().toISOString(),
-							metadata: {
-								senderName: item.ultimaMensagem.remetente?.nome || "Usuário",
-							},
 						};
 					}
 
 					// Build conversation object
 					return {
-						id: item.idConversa.toString(),
-						participants: [item.contratante.nome, item.produtoMusical.nome],
-						lastMessage: lastMessage,
-						unreadCount: 0, // This endpoint doesn't provide unread count
-						createdAt: lastMessage?.createdAt || new Date().toISOString(),
-						updatedAt: lastMessage?.updatedAt || new Date().toISOString(),
-						metadata: {
-							participantId: item.produtoMusical.id,
-							participantName: item.produtoMusical.nome,
-							contratanteId: item.contratante.id,
-							contratanteNome: item.contratante.nome,
-						},
+						id: item.idConversa,
+						participanteId: item.produtoMusical.id,
+						participanteNome: item.produtoMusical.nome,
+						contratanteId: item.contratante.id,
+						contratanteNome: item.contratante.nome,
+						ultimaMensagem: lastMessage,
+						numeroNaoLidas: 0, // This endpoint doesn't provide unread count
+						online: false, // This would need to be determined from online status API
 					};
 				});
 
@@ -202,7 +190,7 @@ export class MessagingService {
 					try {
 						// Get all messages for this conversation
 						const messagesResponse = await this.getConversationMessages(
-							parseInt(conversation.id, 10),
+							conversation.id,
 							{ page: 1, limit: 100 } // Get up to 100 messages per conversation
 						);
 
@@ -211,8 +199,8 @@ export class MessagingService {
 							// Sort messages by creation date to ensure proper order
 							const sortedMessages = messagesResponse.data.sort(
 								(a, b) =>
-									new Date(a.createdAt).getTime() -
-									new Date(b.createdAt).getTime()
+									new Date(a.dataEnvio).getTime() -
+									new Date(b.dataEnvio).getTime()
 							);
 
 							// Update last message if we have messages
@@ -220,13 +208,9 @@ export class MessagingService {
 
 							return {
 								...conversation,
-								lastMessage: lastMessage || conversation.lastMessage,
-								updatedAt: lastMessage?.updatedAt || conversation.updatedAt,
-								metadata: {
-									...conversation.metadata,
-									messages: sortedMessages,
-									totalMessages: sortedMessages.length,
-								},
+								ultimaMensagem: lastMessage || conversation.ultimaMensagem,
+								mensagens: sortedMessages,
+								totalMensagens: sortedMessages.length,
 							};
 						}
 
@@ -320,15 +304,15 @@ export class MessagingService {
 
 		// Return a minimal conversation object for compatibility
 		return {
-			id: conversationId.toString(),
-			participants: [],
-			unreadCount: 0,
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
-			metadata: {
-				participantId: participanteId,
-				assunto: assunto,
-			},
+			id: conversationId,
+			participanteId,
+			participanteNome: "",
+			contratanteId: 0,
+			contratanteNome: "",
+			ultimaMensagem: undefined,
+			numeroNaoLidas: 0,
+			mensagens: undefined,
+			totalMensagens: undefined,
 		};
 	}
 
@@ -352,19 +336,13 @@ export class MessagingService {
 			// Transform API response to Message format
 			const transformedMessages: Array<Message> = messages.map(
 				(message: any) => ({
-					id: message.id?.toString() || "0",
-					conversationId:
-						message.idConversa?.toString() || conversationId.toString(),
-					senderId: message.remetente?.id?.toString() || "0",
-					receiverId: "0", // Not provided by this endpoint
-					content: message.conteudo || "",
-					type: "text" as const,
-					status: message.lida ? ("read" as const) : ("delivered" as const),
-					createdAt: message.dataEnvio || new Date().toISOString(),
-					updatedAt: message.dataEnvio || new Date().toISOString(),
-					metadata: {
-						senderName: message.remetente?.nome || "Usuário",
-					},
+					id: message.id || 0,
+					idConversa: message.idConversa || conversationId,
+					idRemetente: message.idRemetente || 0,
+					conteudo: message.conteudo || "",
+					lida: message.lida,
+					dataEnvio: message.dataEnvio || new Date().toISOString(),
+					type: "text",
 				})
 			);
 

@@ -597,16 +597,13 @@ export interface WebSocketConnectionConfig {
 // ===== Additional Message Types =====
 
 export interface Message {
-	id: string;
-	conversationId: string;
-	senderId: string;
-	receiverId: string;
-	content: string;
+	id: number;
+	idConversa: number;
+	idRemetente: number;
+	conteudo: string;
 	type: "text" | "image" | "audio" | "file";
-	status: "sent" | "delivered" | "read";
-	createdAt: string;
-	updatedAt: string;
-	metadata?: Record<string, unknown>;
+	lida: boolean;
+	dataEnvio: string;
 }
 
 // SignalR specific types for chat
@@ -629,13 +626,16 @@ export interface SendMessageRequest {
 }
 
 export interface Conversation {
-	id: string;
-	participants: Array<string>;
-	lastMessage?: Message;
-	unreadCount: number;
-	createdAt: string;
-	updatedAt: string;
-	metadata?: Record<string, unknown>;
+	id: number;
+	contratanteNome: string;
+	contratanteId: number;
+	participanteNome: string;
+	participanteId: number;
+	ultimaMensagem?: Message;
+	mensagens?: Message[];
+	totalMensagens?: number;
+	numeroNaoLidas?: number;
+	online?: boolean;
 }
 
 export interface Notification {

@@ -99,9 +99,9 @@ export const useSendMessage = () => {
 		onSuccess: (data) => {
 			// Parse conversationId safely
 			const conversationId =
-				typeof data.conversationId === "string"
-					? parseInt(data.conversationId.replace(/\D/g, ""), 10)
-					: Number(data.conversationId);
+				typeof data.idConversa === "string"
+					? parseInt(data.idConversa, 10)
+					: Number(data.idConversa);
 
 			// Only invalidate if we have a valid conversation ID
 			if (!isNaN(conversationId) && conversationId > 0) {
