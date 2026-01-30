@@ -1,20 +1,6 @@
 import { Message } from "@/api/services/messages/types";
-import { WebSocketMessage } from "@/api/websocket/types";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-
-export const webSocketMessageToMessage = (message: WebSocketMessage) => {
-	const convertedMessage: Message = {
-		id: message.idMensagem,
-		idConversa: message.idConversa,
-		idRemetente: message.idRemetente,
-		nomeRemetente: "",
-		conteudo: message.conteudo,
-		dataEnvio: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
-		lida: false,
-	};
-	return convertedMessage;
-};
 
 export const playNotificationSound = () => {
 	try {

@@ -6,8 +6,8 @@ import { Dispatch, SetStateAction, useRef } from "react";
 import {
 	WebSocketEvent,
 	WebSocketEventHandler,
-	WebSocketMessage,
 } from "@/api/websocket/types";
+import { Message } from "../messages/types";
 
 export const useChat = (
 	currentConversationIdRef: React.MutableRefObject<number | null>,
@@ -85,7 +85,7 @@ export const useChat = (
 	};
 
 	const addReceiveMessageHandler = (
-		handler: (message: WebSocketMessage) => void
+		handler: (message: Message) => void
 	): void => {
 		handlers.current.set("ReceberMensagem", handler);
 		connection.current?.on("ReceberMensagem", handler);

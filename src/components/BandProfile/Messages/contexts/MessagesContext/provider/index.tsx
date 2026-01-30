@@ -11,12 +11,8 @@ import {
 } from "@/hooks/useMessaging";
 import { MessagesContext } from "../context";
 import { useChat } from "@/api/services/chat/useChat";
-import {
-	playNotificationSound,
-	webSocketMessageToMessage,
-} from "../../../utils/Message";
+import { playNotificationSound } from "../../../utils/Message";
 import { Conversation, Message } from "@/api/services/messages/types";
-import { WebSocketMessage } from "@/api/websocket/types";
 
 export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 	const queryClient = useQueryClient();
@@ -125,26 +121,25 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 	};
 
 	const handleReceiveMessage = useCallback(
-		(message: WebSocketMessage) => {
+		(message: Message) => {
 			if (message.idConversa === currentConversationId.current) {
 				// Play notification sound
 				playNotificationSound();
 
 				// Update conversation data in cache
-				const convertedMessage = webSocketMessageToMessage(message);
-				if (!newMessages.find((m) => m.id === convertedMessage.id)) {
-					setNewMessages((prevMessages) => [...prevMessages, convertedMessage]);
+				if (!newMessages.find((m) => m.id === message.id)) {
+					setNewMessages((prevMessages) => [...prevMessages, message]);
 				}
 
 				// Update conversation list
-				updateConversationWithNewMessage(convertedMessage);
+				updateConversationWithNewMessage(message);
 
 				// Show toast notification if not in focus
 				if (document.hidden) {
 					toast.info(
-						`Nova mensagem de ${convertedMessage.idRemetente || "Usuário desconhecido"}`,
+						`Nova mensagem de ${message.idRemetente || "Usuário desconhecido"}`,
 						{
-							description: convertedMessage.conteudo.substring(0, 50) + "...",
+							description: message.conteudo.substring(0, 50) + "...",
 						}
 					);
 				}
