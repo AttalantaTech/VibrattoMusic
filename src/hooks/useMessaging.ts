@@ -7,13 +7,12 @@ import {
 } from "@tanstack/react-query";
 import { messagingService } from "../api";
 import type {
-	Message,
-	Conversation,
 	Notification,
 	SendMessageRequest,
 	PaginationParameters,
 	PaginatedResponse,
 } from "../api/types";
+import { Conversation, Message } from "@/api/services/messages/types";
 
 // Query Keys
 export const messagingKeys = {
