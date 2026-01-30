@@ -35,8 +35,8 @@ export const useConversations = (
 	parameters?: PaginationParameters,
 	enabled: boolean = true
 ) => {
-	return useQuery<PaginatedResponse<Conversation>, Error>({
-		queryKey: [...messagingKeys.conversations(), IdProdutoMusical, parameters],
+	return useQuery<Conversation[]>({
+		queryKey: [...messagingKeys.conversations(), IdProdutoMusical],
 		queryFn: () =>
 			messagingService.getConversations(IdProdutoMusical, parameters),
 		enabled,

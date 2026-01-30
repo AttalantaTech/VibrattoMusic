@@ -6,7 +6,7 @@ import {
 	isMessageRead,
 } from "../../../utils/Message";
 import { useAuthStore } from "@/store/authStore";
-import { Message } from "@/api/types";
+import { Message } from "@/api/services/messages/types";
 
 export const ChatHeaderContainer = ({ children }: PropsWithChildren) => {
 	return (

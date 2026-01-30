@@ -15,8 +15,8 @@ import {
 	OwnMessageElement,
 } from "./styles";
 import { useMessages } from "../../hooks/useMessages";
-import { Message } from "@/api/types";
 import { getParticipantInitials } from "../../utils/Message";
+import { Message } from "@/api/services/messages/types";
 
 export const Chat = () => {
 	const { user } = useAuthStore();

@@ -17,12 +17,26 @@ export class SignalRService implements WebSocketI {
 			})
 			.withAutomaticReconnect()
 			.build();
+	};
 
-		await this.signalRConnection.start().catch((error) => console.error(error));
+	start(): Promise<void> {
+		return this.signalRConnection?.start() || Promise.resolve();
+	}
+
+	stop(): Promise<void> {
+		return this.signalRConnection?.stop() || Promise.resolve();
+	}
+
+	onclose = (handler: (error?: Error) => void): void => {
+		this.signalRConnection?.onclose(handler);
 	};
 
 	on = (event: string, action: (...args: any[]) => any): void => {
 		this.signalRConnection?.on(event, action);
+	};
+
+	off = (event: string, action: (...args: any[]) => any): void => {
+		this.signalRConnection?.off(event, action);
 	};
 
 	invoke = async (event: string, ...args: any[]): Promise<void> => {

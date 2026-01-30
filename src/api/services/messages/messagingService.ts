@@ -1,13 +1,12 @@
-import type { ApiClient } from "../core/client";
+import type { ApiClient } from "../../core/client";
 import type {
-	Message,
 	SendMessageRequest,
-	Conversation,
 	Notification,
 	PaginationParameters,
 	PaginatedResponse,
-} from "../types";
-import { ConversationStorage } from "../../utils/conversationStorage";
+} from "../../types";
+import { ConversationStorage } from "../../../utils/conversationStorage";
+import { Conversation, Message } from "./types";
 
 export class MessagingService {
 	public constructor(private readonly apiClient: ApiClient) {}
@@ -118,9 +117,11 @@ export class MessagingService {
 	public async getConversations(
 		IdProdutoMusical: number | null | undefined,
 		parameters?: PaginationParameters
-	): Promise<PaginatedResponse<Conversation>> {
+	): Promise<Conversation[]> {
 		try {
-			// Call the direct API endpoint
+			const limit = parameters?.limit || 20;
+			const cursorQuery = parameters?.page ? `&_t=${parameters.page}` : "";
+
 			const response = await this.apiClient.get<
 				Array<{
 					idConversa: number;
@@ -132,18 +133,9 @@ export class MessagingService {
 						id: number;
 						nome: string;
 					};
-					ultimaMensagem: {
-						id: number;
-						conteudo: string;
-						dataEnvio: string;
-						lida: boolean;
-						remetente: {
-							id: number;
-							nome: string;
-						};
-					} | null;
+					ultimaConversa: Message | null;
 				}>
-			>("chat/listaConversas", {
+			>(`chat/listaConversas?limit=${limit}${cursorQuery}`, {
 				params: {
 					IdProdutoMusical,
 				},
@@ -157,16 +149,17 @@ export class MessagingService {
 				conversationsData.map((item) => {
 					// Transform last message if it exists
 					let lastMessage: Message | undefined;
-					if (item.ultimaMensagem) {
+					if (item.ultimaConversa) {
 						lastMessage = {
-							id: item.ultimaMensagem.id || 0,
+							id: item.ultimaConversa.id || 0,
 							idConversa: item.idConversa,
-							idRemetente: item.ultimaMensagem.remetente.id || 0,
-							conteudo: item.ultimaMensagem.conteudo || "",
+							idRemetente: item.ultimaConversa.idRemetente || 0,
+							nomeRemetente: item.ultimaConversa.nomeRemetente || "",
+							conteudo: item.ultimaConversa.conteudo || "",
 							type: "text" as const,
-							lida: item.ultimaMensagem.lida,
+							lida: item.ultimaConversa.lida,
 							dataEnvio:
-								item.ultimaMensagem.dataEnvio || new Date().toISOString(),
+								item.ultimaConversa.dataEnvio || new Date().toISOString(),
 						};
 					}
 
@@ -183,88 +176,11 @@ export class MessagingService {
 					};
 				});
 
-			// Populate conversations with full message history
-			// Fetch messages for each conversation to ensure they have complete message data
-			const conversationsWithMessages = await Promise.all(
-				transformedConversations.map(async (conversation) => {
-					try {
-						// Get all messages for this conversation
-						const messagesResponse = await this.getConversationMessages(
-							conversation.id,
-							{ page: 1, limit: 100 } // Get up to 100 messages per conversation
-						);
-
-						// Update conversation with messages if we got them
-						if (messagesResponse && messagesResponse.length > 0) {
-							// Sort messages by creation date to ensure proper order
-							const sortedMessages = messagesResponse.sort(
-								(a, b) =>
-									new Date(a.dataEnvio).getTime() -
-									new Date(b.dataEnvio).getTime()
-							);
-
-							// Update last message if we have messages
-							const lastMessage = sortedMessages[sortedMessages.length - 1];
-
-							return {
-								...conversation,
-								ultimaMensagem: lastMessage || conversation.ultimaMensagem,
-								mensagens: sortedMessages,
-								totalMensagens: sortedMessages.length,
-							};
-						}
-
-						// Return conversation as-is if no messages were found
-						return conversation;
-					} catch (error) {
-						console.warn(
-							`Failed to fetch messages for conversation ${conversation.id}:`,
-							error
-						);
-						// Return conversation without messages if fetching fails
-						return conversation;
-					}
-				})
-			);
-
-			// Apply client-side pagination if needed
-			const page = parameters?.page || 1;
-			const limit = parameters?.limit || 10;
-			const startIndex = (page - 1) * limit;
-			const endIndex = startIndex + limit;
-
-			const paginatedData = conversationsWithMessages.slice(
-				startIndex,
-				endIndex
-			);
-			const totalItems = conversationsWithMessages.length;
-			const totalPages = Math.ceil(totalItems / limit);
-
-			return {
-				data: paginatedData,
-				pagination: {
-					currentPage: page,
-					totalPages,
-					totalItems,
-					itemsPerPage: limit,
-					hasNextPage: page < totalPages,
-					hasPreviousPage: page > 1,
-				},
-			};
+			return transformedConversations;
 		} catch (error) {
 			console.error("Error fetching conversations:", error);
 			// Return empty list on error
-			return {
-				data: [],
-				pagination: {
-					currentPage: 1,
-					totalPages: 0,
-					totalItems: 0,
-					itemsPerPage: parameters?.limit || 10,
-					hasNextPage: false,
-					hasPreviousPage: false,
-				},
-			};
+			return [];
 		}
 	}
 
@@ -340,6 +256,7 @@ export class MessagingService {
 				(message: any) => ({
 					id: message.id || 0,
 					idConversa: message.idConversa || conversationId,
+					nomeRemetente: message.nomeRemetente || "",
 					idRemetente: message.idRemetente || 0,
 					conteudo: message.conteudo || "",
 					lida: message.lida,
@@ -354,7 +271,7 @@ export class MessagingService {
 			// Return empty response on error
 			return [];
 		}
-	};
+	}
 
 	/**
 	 * Mark conversation as read

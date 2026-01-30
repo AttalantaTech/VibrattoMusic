@@ -1,6 +1,20 @@
-import { SignalRMessage } from "@/api/types";
+import { Message } from "@/api/services/messages/types";
+import { WebSocketMessage } from "@/api/websocket/types";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
+export const webSocketMessageToMessage = (message: WebSocketMessage) => {
+	const convertedMessage: Message = {
+		id: message.idMensagem,
+		idConversa: message.idConversa,
+		idRemetente: message.idRemetente,
+		nomeRemetente: "",
+		conteudo: message.conteudo,
+		dataEnvio: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
+		lida: false,
+	};
+	return convertedMessage;
+};
 
 export const playNotificationSound = () => {
 	try {
@@ -45,7 +59,7 @@ export const getParticipantInitials = (name: string): string => {
 };
 
 export const isMessageRead = (
-	message: SignalRMessage,
+	message: Message,
 	currentUserId?: number | null
 ): boolean | null => {
 	if (!currentUserId || message.idRemetente !== currentUserId) return null;
