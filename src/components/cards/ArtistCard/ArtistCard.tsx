@@ -32,8 +32,8 @@ export const ArtistCard = ({
 }: ArtistCardProps) => {
 	const { requireAuth } = useAuthCheck();
 
-	const handleFavoriteClick = (e: React.MouseEvent) => {
-		e.stopPropagation();
+	const handleFavoriteClick = (event: React.MouseEvent) => {
+		event.stopPropagation();
 		requireAuth(() => {
 			onFavoriteClick?.();
 		});
@@ -45,14 +45,14 @@ export const ArtistCard = ({
 
 	return (
 		<div
-			className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-100 cursor-pointer"
+			className="flex flex-col w-full max-w-[420px] h-[480px] group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 cursor-pointer"
 			onClick={handleCardClick}
 		>
 			{/* Image Section */}
-			<div className="relative overflow-hidden">
+			<div className="h-[180px] w-full relative overflow-hidden">
 				<LazyImage
 					alt={`Foto de ${name}`}
-					className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+					className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
 					src={imgSrc}
 				/>
 				<div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
@@ -73,6 +73,7 @@ export const ArtistCard = ({
 						/>
 					</button>
 				)}
+
 				{/* Rating Badge */}
 				{rating && (
 					<div className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 sm:px-3 sm:py-1 shadow-lg">
@@ -87,10 +88,10 @@ export const ArtistCard = ({
 			</div>
 
 			{/* Content Section */}
-			<div className="p-4 sm:p-5">
+			<div className="flex flex-col flex-1 w-full p-4 sm:p-5">
 				{/* Title and Verification */}
 				<div className="flex items-start gap-2 mb-3">
-					<h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors leading-tight">
+					<h3 className="text-lg sm:text-xl font-bold line-clamp-2 text-gray-900 group-hover:text-blue-600 transition-colors leading-tight">
 						{name}
 					</h3>
 					{verified && (
@@ -101,7 +102,7 @@ export const ArtistCard = ({
 				{/* Location */}
 				<div className="flex items-center gap-2 mb-3 text-gray-600">
 					<MapPin className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-					<span className="text-xs sm:text-sm font-medium truncate">
+					<span className="text-xs sm:text-sm font-medium truncate line-clamp-1">
 						{location}
 					</span>
 				</div>
@@ -124,17 +125,19 @@ export const ArtistCard = ({
 				</div>
 
 				{/* Description */}
-				<p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 line-clamp-2 leading-relaxed">
+				<p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 line-clamp-3 leading-relaxed">
 					{description}
 				</p>
 
 				{/* Action Button */}
-				<Button
-					className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl text-sm sm:text-base"
-					variant="primary"
-				>
-					Ver Perfil
-				</Button>
+				<div className="mt-auto w-full">
+					<Button
+						className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2.5 sm:py-3 rounded-xl transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl text-sm sm:text-base"
+						variant="primary"
+					>
+						Ver Perfil
+					</Button>
+				</div>
 			</div>
 		</div>
 	);

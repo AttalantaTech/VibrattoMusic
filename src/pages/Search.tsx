@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Search, MapPin, Filter, X, ArrowLeft } from "lucide-react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { Button } from "../components/ui/Button/Button";
@@ -43,34 +43,33 @@ export const SearchPage = () => {
 	const debouncedSearchTerm = useDebounce(searchInput, 500);
 	const [showFilters, setShowFilters] = useState(false);
 
-	// Sync searchInput with filters.NomeOuDescricao when it changes from URL
-	React.useEffect(() => {
-		if (filters.NomeOuDescricao !== searchInput) {
-			setSearchInput(filters.NomeOuDescricao ?? "");
-		}
-	}, [filters.NomeOuDescricao, searchInput]);
+	const handleClearFilters = () => {
+		clearFilters();
+		setSearchInput("");
+	};
 
 	// API hooks
 	const { data: cidades } = useCidades();
 	const { data: categorias } = useCategorias();
 	const { data: tiposEvento } = useTiposEvento();
 	const { data: generos } = useGenerosMusicais();
+
 	// Show filters automatically if user comes with pre-applied filters (only once on mount)
-	React.useEffect(() => {
+	useEffect(() => {
 		if (hasActiveFilters && !showFilters) {
 			setShowFilters(true);
 		}
 	}, [hasActiveFilters, showFilters]); // Empty dependency array to run only on mount
 
 	// Focar no input de busca quando o componente for montado
-	React.useEffect(() => {
+	useEffect(() => {
 		if (searchInputRef.current) {
 			searchInputRef.current.focus();
 		}
 	}, []);
 
 	// Update search term when debounced value changes
-	React.useEffect(() => {
+	useEffect(() => {
 		updateFilters({
 			NomeOuDescricao: debouncedSearchTerm || undefined,
 			pagina: 1,
@@ -86,7 +85,7 @@ export const SearchPage = () => {
 	);
 
 	// Force initial search for São Paulo when no filters are active
-	React.useEffect(() => {
+	useEffect(() => {
 		if (
 			!isLoading &&
 			!searchResults &&
@@ -125,11 +124,9 @@ export const SearchPage = () => {
 	return (
 		<MainLayout>
 			<div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-				{" "}
 				{/* Search Section */}
 				<div className="bg-white shadow-sm">
 					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-						{" "}
 						{/* Back Button */}
 						<div className="mb-4 sm:mb-6">
 							<Button
@@ -227,6 +224,7 @@ export const SearchPage = () => {
 								</div>
 							</div>
 						</div>
+
 						{/* Advanced Filters - Responsive Layout */}
 						{showFilters && (
 							<div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -320,7 +318,7 @@ export const SearchPage = () => {
 												className="flex items-center gap-2 w-full sm:w-auto"
 												size="sm"
 												variant="outline"
-												onClick={clearFilters}
+												onClick={handleClearFilters}
 											>
 												<X size={16} />
 												Limpar filtros
@@ -331,7 +329,8 @@ export const SearchPage = () => {
 							</div>
 						)}
 					</div>
-				</div>{" "}
+				</div>
+
 				{/* Results */}
 				<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
 					{/* Results Header */}
@@ -385,7 +384,7 @@ export const SearchPage = () => {
 						searchResults?.data &&
 						searchResults.data.length > 0 && (
 							<>
-								<div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
+								<div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
 									{searchResults.data.map(
 										(product: MusicalProductApiResponse) => (
 											<div key={product.id} className="relative">
@@ -402,6 +401,7 @@ export const SearchPage = () => {
 										)
 									)}
 								</div>
+
 								{/* Pagination - Mobile Responsive */}
 								{searchResults?.pagination &&
 									searchResults.pagination.totalPages > 1 && (
