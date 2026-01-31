@@ -28,6 +28,7 @@ import {
 	useTiposEvento,
 } from "../hooks/useFilters";
 import { useSearchMusicalProducts } from "../hooks/useMusicalProducts";
+import type { MusicalProductSearchRequest } from "@/api/types";
 
 const promos = [
 	{
@@ -104,7 +105,7 @@ export const Home = (): FunctionComponent => {
 
 	// Build search filters based on dropdown selections
 	const searchFilters = useMemo(() => {
-		const filters: any = {
+		const filters: MusicalProductSearchRequest = {
 			limite: 5,
 			ordenarPorAvaliacao: true,
 			tamanhoPagina: 5,
@@ -202,10 +203,10 @@ export const Home = (): FunctionComponent => {
 						options={categoriasOptions}
 						selected={category}
 						setOpenDropdown={setOpenDropdown}
-						onChange={(value) => {
+						onChange={async (value) => {
 							setCategory(value);
 							if (value) {
-								navigate({
+								await navigate({
 									to: "/search",
 									search: { categorias: [value] },
 								});
@@ -219,10 +220,10 @@ export const Home = (): FunctionComponent => {
 						options={tiposEventoOptions}
 						selected={type}
 						setOpenDropdown={setOpenDropdown}
-						onChange={(value) => {
+						onChange={async (value) => {
 							setType(value);
 							if (value) {
-								navigate({
+								await navigate({
 									to: "/search",
 									search: { tipos: [value] },
 								});
@@ -236,10 +237,10 @@ export const Home = (): FunctionComponent => {
 						options={generosMusicaisOptions}
 						selected={genre}
 						setOpenDropdown={setOpenDropdown}
-						onChange={(value) => {
+						onChange={async (value) => {
 							setGenre(value);
 							if (value) {
-								navigate({
+								await navigate({
 									to: "/search",
 									search: { generos: [value] },
 								});
@@ -258,8 +259,6 @@ export const Home = (): FunctionComponent => {
 							src="" // Teste: string vazia deve mostrar fallback
 						/>
 					</div>
-
-
 					{/* Best Rated */}
 					<div className="w-full flex flex-col justify-center items-center py-8 px-4 sm:px-8 lg:px-12 xl:px-16 gap-7 max-w-9xl mx-auto">
 						<div className="flex w-full justify-between items-center flex-col sm:flex-row gap-4 sm:gap-0">
@@ -336,8 +335,8 @@ export const Home = (): FunctionComponent => {
 											</div>
 										))}
 									</div>
-									{/* Extra Large: Grid layout with 5 columns */}
-									<div className="hidden xl:grid xl:grid-cols-5 gap-4 2xl:gap-6 max-w-7xl mx-auto">
+									{/* Extra Large: Grid layout with 4 columns */}
+									<div className="hidden xl:grid xl:grid-cols-4 gap-4 2xl:gap-6 max-w-7xl mx-auto">
 										{(featuredBands?.data ?? []).map((band) => (
 											<div key={`desktop-${band.id}`} className="w-full">
 												<ArtistCardWithFavorites
@@ -779,4 +778,3 @@ export const Home = (): FunctionComponent => {
 		</MainLayout>
 	);
 };
-
