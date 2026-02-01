@@ -59,6 +59,7 @@ export const TabNavigation = ({
 
 				return (
 					<Dropdown
+						key={tab.value}
 						align="left"
 						trigger={
 							<>
