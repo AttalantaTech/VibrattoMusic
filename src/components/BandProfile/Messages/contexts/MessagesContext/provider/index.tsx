@@ -131,9 +131,6 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 					setNewMessages((prevMessages) => [...prevMessages, message]);
 				}
 
-				// Update conversation list
-				updateConversationWithNewMessage(message);
-
 				// Show toast notification if not in focus
 				if (document.hidden) {
 					toast.info(
@@ -144,6 +141,9 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 					);
 				}
 			}
+
+			// Update conversation list
+			updateConversationWithNewMessage(message);
 		},
 		[newMessages, setNewMessages, currentConversationId.current]
 	);
@@ -170,17 +170,41 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 					return message;
 				})
 			);
+			updateConversationWithNewMessage(messages.);
 		},
 		[setMessages]
 	);
 
 	// Update conversation list with new message
-	const updateConversationWithNewMessage = (_message: Message) => {
-		// Invalidate conversations query to refetch updated data
-		queryClient.invalidateQueries({
-			queryKey: [...messagingKeys.conversations(), currentProductId],
-		});
-	};
+	const updateConversationWithNewMessage = useCallback(
+		(message: Partial<Message>) => {
+			// Invalidate conversations query to refetch updated data
+			queryClient.setQueryData(
+				[...messagingKeys.conversations(), currentProductId],
+				(oldData: any) => {
+					if (!oldData) return oldData;
+					const updatedConversations = oldData.map(
+						(conversation: Conversation) => {
+							if (conversation.id === message.idConversa) {
+								return {
+									...conversation,
+									ultimaMensagem: {
+										...message,
+										numeroNaoLidas: conversation.numeroNaoLidas
+											? conversation.numeroNaoLidas + 1
+											: 1,
+									},
+								};
+							}
+							return conversation;
+						}
+					);
+					return updatedConversations;
+				}
+			);
+		},
+		[queryClient, currentProductId]
+	);
 
 	const syncCache = () => {
 		if (newMessages.length === 0) return;
@@ -231,6 +255,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 
 		return () => {
 			removeHandlers();
+			syncCache();
 		};
 	}, []);
 
