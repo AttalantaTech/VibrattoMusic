@@ -159,7 +159,7 @@ export const ContractCreate = () => {
 			);
 
 			await updateSections.mutateAsync({
-				identificadorUnico: activeProduct.id,
+				identificadorUnico: String(activeProduct.id),
 				sections: apiSections,
 			});
 
@@ -201,7 +201,11 @@ export const ContractCreate = () => {
 			<div className="w-full max-w-5xl mx-auto p-6">
 				{/* Header */}
 				<div className="mb-8">
-					<Button variant="outline" onClick={handleCancel} className="mb-4 -ml-2">
+					<Button
+						variant="outline"
+						onClick={handleCancel}
+						className="mb-4 -ml-2"
+					>
 						<ArrowLeft className="h-4 w-4 mr-2" />
 						Voltar para Contratos
 					</Button>
@@ -213,7 +217,7 @@ export const ContractCreate = () => {
 							</h1>
 							<p className="text-gray-600">
 								Crie um modelo de contrato padrão para{" "}
-								<span className="font-semibold">{activeProduct.name}</span>
+								<span className="font-semibold">{activeProduct.nome}</span>
 							</p>
 						</div>
 

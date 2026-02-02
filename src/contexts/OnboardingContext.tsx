@@ -82,7 +82,7 @@ export function OnboardingProvider({ children }: OnboardingProviderProps) {
 
 			setProdutoMusicalId(id);
 		},
-		[setProdutoMusicalId, produtoMusicalId, providerId]
+		[setProdutoMusicalId]
 	);
 	const value = useMemo(() => {
 		const contextValue = {

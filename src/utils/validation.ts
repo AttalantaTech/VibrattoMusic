@@ -3,31 +3,31 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 // Utility functions for CPF/CNPJ validation
-// const validateCPF = (cpf: string): boolean => {
-// 	const cleaned = cpf.replace(/\D/g, "");
+const validateCPF = (cpf: string): boolean => {
+	const cleaned = cpf.replace(/\D/g, "");
 
-// 	if (cleaned.length !== 11) return false;
-// 	if (/^(\d)\1{10}$/.test(cleaned)) return false; // All same digits
-// 	// Validate first check digit
-// 	let sum = 0;
-// 	for (let index = 0; index < 9; index++) {
-// 		sum += parseInt(cleaned.charAt(index)) * (10 - index);
-// 	}
-// 	let remainder = 11 - (sum % 11);
-// 	if (remainder === 10 || remainder === 11) remainder = 0;
-// 	if (remainder !== parseInt(cleaned.charAt(9))) return false;
+	if (cleaned.length !== 11) return false;
+	if (/^(\d)\1{10}$/.test(cleaned)) return false; // All same digits
+	// Validate first check digit
+	let sum = 0;
+	for (let index = 0; index < 9; index++) {
+		sum += parseInt(cleaned.charAt(index)) * (10 - index);
+	}
+	let remainder = 11 - (sum % 11);
+	if (remainder === 10 || remainder === 11) remainder = 0;
+	if (remainder !== parseInt(cleaned.charAt(9))) return false;
 
-// 	// Validate second check digit
-// 	sum = 0;
-// 	for (let index = 0; index < 10; index++) {
-// 		sum += parseInt(cleaned.charAt(index)) * (11 - index);
-// 	}
-// 	remainder = 11 - (sum % 11);
-// 	if (remainder === 10 || remainder === 11) remainder = 0;
-// 	if (remainder !== parseInt(cleaned.charAt(10))) return false;
+	// Validate second check digit
+	sum = 0;
+	for (let index = 0; index < 10; index++) {
+		sum += parseInt(cleaned.charAt(index)) * (11 - index);
+	}
+	remainder = 11 - (sum % 11);
+	if (remainder === 10 || remainder === 11) remainder = 0;
+	if (remainder !== parseInt(cleaned.charAt(10))) return false;
 
-// 	return true;
-// };
+	return true;
+};
 
 const validateCNPJ = (cnpj: string): boolean => {
 	const cleaned = cnpj.replace(/\D/g, "");
@@ -71,6 +71,14 @@ export const ContactValidationSchema = z
 				if (!value) return true;
 				return validateCNPJ(value);
 			}, "CNPJ inválido"),
+
+		cpf: z
+			.string()
+			.optional()
+			.refine((value) => {
+				if (!value) return true;
+				return validateCPF(value);
+			}, "CPF inválido"),
 
 		razaoSocial: z.string().optional(),
 
@@ -358,5 +366,5 @@ export const parseCurrency = (value: string): number => {
 
 export type OnboardingContactData = z.infer<typeof ContactValidationSchema> & {
 	id: number;
-	email: string;
+	email?: string;
 };
