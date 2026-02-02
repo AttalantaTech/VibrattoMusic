@@ -3,11 +3,11 @@ import { musicalProductService, onboardingService } from "../api";
 import type {
 	MusicalProductSearchRequest,
 	MusicalProductListApiResponse,
-	OnboardingDetails,
-	OnboardingMedia,
-	OnboardingImages,
-	OnboardingTechnicalConfig,
-	OnboardingSchedule,
+	MusicalProductDetails,
+	MusicalProductMedia,
+	MusicalProductImages,
+	MusicalProductTechnicalConfig,
+	MusicalProductSchedule,
 } from "../api/types";
 import type { OnboardingContactData } from "@/utils/validation";
 
@@ -140,7 +140,7 @@ export const useSaveOnboardingDetails = () => {
 			detailsData,
 		}: {
 			productId: number;
-			detailsData: OnboardingDetails;
+			detailsData: MusicalProductDetails;
 		}) => musicalProductService.saveOnboardingDetails(productId, detailsData),
 		onSuccess: () => {
 			// Invalidate onboarding queries
@@ -162,7 +162,7 @@ export const useSaveOnboardingMedia = () => {
 			mediaData,
 		}: {
 			productId: number;
-			mediaData: OnboardingMedia;
+			mediaData: MusicalProductMedia;
 		}) => musicalProductService.saveOnboardingMedia(productId, mediaData),
 		onSuccess: () => {
 			// Invalidate onboarding queries
@@ -184,7 +184,7 @@ export const useSaveOnboardingImages = () => {
 			imagesData,
 		}: {
 			productId: number;
-			imagesData: OnboardingImages;
+			imagesData: MusicalProductImages;
 		}) => musicalProductService.saveOnboardingImages(productId, imagesData),
 		onSuccess: () => {
 			// Invalidate onboarding queries
@@ -206,7 +206,7 @@ export const useSaveOnboardingTechnicalConfig = () => {
 			technicalData,
 		}: {
 			productId: number;
-			technicalData: OnboardingTechnicalConfig;
+			technicalData: MusicalProductTechnicalConfig;
 		}) =>
 			musicalProductService.saveOnboardingTechnicalConfig(
 				productId,
@@ -232,7 +232,7 @@ export const useSaveOnboardingSchedule = () => {
 			scheduleData,
 		}: {
 			productId: number;
-			scheduleData: OnboardingSchedule;
+			scheduleData: MusicalProductSchedule;
 		}) => musicalProductService.saveOnboardingSchedule(productId, scheduleData),
 		onSuccess: () => {
 			// Invalidate onboarding queries
