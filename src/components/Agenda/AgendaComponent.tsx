@@ -68,7 +68,7 @@
 // import { Input } from "../ui/Input/Input";
 // import { Label } from "../ui/Label/Label";
 // import { onboardingService } from "../../api";
-// import type { ScheduleApiResponse, OnboardingSchedule } from "../../api/types";
+// import type { ScheduleApiResponse, MusicalProductSchedule } from "../../api/types";
 
 // // Props interface for the unified component
 // export interface AgendaComponentProps {
@@ -385,7 +385,7 @@
 // 		}
 
 // 		// Fallback to onboarding service
-// 		const scheduleData: OnboardingSchedule = {
+// 		const scheduleData: MusicalProductSchedule = {
 // 			compromissos: eventsToSave.map((event) => {
 // 				const formattedDate = format(event.date, "yyyy-MM-dd");
 
