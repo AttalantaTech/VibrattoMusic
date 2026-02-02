@@ -23,10 +23,13 @@ import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
 import { Button } from "../../ui/Button/Button";
 import { IconTabNavigation } from "../../ui/IconTabNavigation/IconTabNavigation";
 import { FileUploadBox } from "../../forms/FileUploadBox/FileUploadBox";
-import StageMapBuilder from "../StageMapBuilder/StageMapBuilder";
+import { StageMapBuilder } from "@/components/StageMap/StageMapBuilder";
 import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
-import type { StageMapData, StageElement } from "../StageMapBuilder/types";
-import { STAGE_COLORS } from "../StageMapBuilder/types";
+import {
+	type StageMapData,
+	type StageElement,
+	STAGE_COLORS,
+} from "@/components/StageMap/types";
 import { TooltipCustom } from "@/components/ui/TooltipCustom/TooltipCustom";
 import { useOnboardingData } from "@/hooks/useMusicalProducts";
 import { SimpleEditor } from "@/components/forms/SimpleEditor/SimpleEditor";
