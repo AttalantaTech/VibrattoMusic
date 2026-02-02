@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { MapIcon, Edit } from "lucide-react";
-import StageMapBuilder from "../../BandOnboarding/StageMapBuilder/StageMapBuilder";
-import { Button } from "../../ui/Button/Button";
+import { Button } from "@/components/ui/Button/Button";
 import type {
 	StageElement,
 	StageMapViewerProps,
-} from "../../BandOnboarding/StageMapBuilder/types";
+} from "@/components/StageMap/types";
+import { StageMapBuilder } from "@/components/StageMap/StageMapBuilder";
 
 export const StageMapViewer = ({
 	stageData = [],
