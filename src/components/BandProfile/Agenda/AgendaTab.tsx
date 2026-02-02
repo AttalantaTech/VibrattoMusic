@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AgendaComponent } from "../../Agenda/AgendaComponent";
 import type { AgendaEvent } from "./types";
-import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 interface AgendaTabProps {
 	productId?: number;
@@ -11,10 +11,11 @@ export const AgendaTab = ({ productId }: AgendaTabProps) => {
 	const [events, setEvents] = useState<Array<AgendaEvent>>([]);
 
 	// Get active product from centralized hook
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	// Use prop productId if provided, otherwise use active product
-	const produtoMusicalId = productId || (activeProduct?.id ? Number(activeProduct.id) : null);
+	const produtoMusicalId =
+		productId || (activeProduct?.id ? Number(activeProduct.id) : null);
 
 	// produtoMusicalId is ready for use when needed
 
