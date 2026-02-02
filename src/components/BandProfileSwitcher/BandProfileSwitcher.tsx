@@ -1,17 +1,15 @@
-import React, { useState, useRef, useEffect } from "react";
+import type React from "react";
+import { useState, useRef, useEffect } from "react";
 import { ChevronDown, Check } from "lucide-react";
 import { Avatar } from "../Avatar/Avatar";
 import { cn } from "../../lib/utils/cn";
+import type { ActiveMusicalProduct } from "@/hooks/useActiveMusicalProduct";
 
-export interface MusicalProduct {
-	id: string;
-	name: string;
-	avatarUrl?: string;
-}
+export type MusicalProduct = ActiveMusicalProduct;
 
 export interface BandProfileSwitcherProps {
 	activeMusicalProduct: MusicalProduct;
-	musicalProducts: MusicalProduct[];
+	musicalProducts: Array<MusicalProduct>;
 	onProductChange: (product: MusicalProduct) => void;
 	className?: string;
 }
@@ -57,13 +55,13 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 				className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
 			>
 				<Avatar
-					src={activeMusicalProduct.avatarUrl}
-					alt={activeMusicalProduct.name}
+					src={activeMusicalProduct.fotoPerfil ?? ""}
+					alt={activeMusicalProduct.nome}
 					size={32}
 				/>
 				<div className="flex flex-col">
 					<span className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
-						{activeMusicalProduct.name}
+						{activeMusicalProduct.nome}
 					</span>
 				</div>
 				<ChevronDown
@@ -87,11 +85,19 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 						{musicalProducts.map((product) => (
 							<button
 								key={product.id}
-								onClick={() => handleProductSelect(product)}
+								onClick={() => {
+									handleProductSelect(product);
+								}}
 								className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors"
 							>
-								<Avatar src={product.avatarUrl} alt={product.name} size={24} />
-								<span className="text-sm text-gray-700 truncate">{product.name}</span>
+								<Avatar
+									src={product.fotoPerfil ?? ""}
+									alt={product.nome}
+									size={24}
+								/>
+								<span className="text-sm text-gray-700 truncate">
+									{product.nome}
+								</span>
 								{product.id === activeMusicalProduct.id && (
 									<Check className="h-4 w-4 text-blue-600 ml-auto" />
 								)}
