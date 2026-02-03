@@ -241,6 +241,8 @@ export class MessagingService {
 		parameters?: PaginationParameters
 	): Promise<Message[]> {
 		try {
+			if (conversationId <= 0) return [];
+
 			const limit = parameters?.limit || 20;
 			const cursorQuery = parameters?.page ? `&_t=${parameters.page}` : "";
 
