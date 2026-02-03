@@ -2,10 +2,10 @@ import { useAuthStore } from "../../../store/authStore";
 import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
 import { ProfileIncompleteModal } from "../../ui/ProfileIncompleteModal/ProfileIncompleteModal";
 import { SideBar } from "./components/SideBar";
-import { useMessagesContext } from "./contexts/MessagesContext";
 import { Chat } from "./components/Chat";
 import { SendProposalModal } from "./components/SendProposalModal";
 import { StartConversationModal } from "./components/StartConversationModal";
+import { useMessagesContext } from "@/contexts/MessagesContext";
 
 const MessagesTab = () => {
 	// Auth store - using same approach as BandProfile account tab

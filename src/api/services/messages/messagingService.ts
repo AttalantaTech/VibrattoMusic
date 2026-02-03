@@ -140,7 +140,6 @@ export class MessagingService {
 					IdProdutoMusical,
 				},
 			});
-
 			// Ensure response is an array
 			const conversationsData = Array.isArray(response) ? response : [];
 

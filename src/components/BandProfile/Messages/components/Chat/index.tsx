@@ -4,7 +4,6 @@ import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { Loading } from "@/shared/components/Loading";
 import { useAuthStore } from "@/store/authStore";
 import { ChatInput } from "@/components/forms/ChatInput/ChatInput";
-import { useMessagesContext } from "../../contexts/MessagesContext";
 import { UserImageContainer } from "../SideBar/styles";
 import {
 	ChatHeaderContainer,
@@ -16,6 +15,7 @@ import {
 } from "./styles";
 import { getParticipantInitials } from "../../utils/Message";
 import { Message } from "@/api/services/messages/types";
+import { useMessagesContext } from "@/contexts/MessagesContext";
 
 export const Chat = () => {
 	const { user } = useAuthStore();

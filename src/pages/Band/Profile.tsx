@@ -108,9 +108,7 @@ export const BandProfile = () => {
 				);
 			case "messages":
 				return (
-					<MessagesContextProvider>
 						<MessagesTab />
-					</MessagesContextProvider>
 				);
 			case "sales":
 				return hasMusicalProducts ? (

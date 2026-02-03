@@ -1,4 +1,4 @@
-import { PropsWithChildren, useCallback, useRef } from "react";
+import { PropsWithChildren, useCallback, useMemo, useRef } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -11,9 +11,9 @@ import {
 } from "@/hooks/useMessaging";
 import { MessagesContext } from "../context";
 import { useChat } from "@/api/services/chat/useChat";
-import { playNotificationSound } from "../../../utils/Message";
 import { Conversation, Message } from "@/api/services/messages/types";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
+import { playNotificationSound } from "@/components/BandProfile/Messages/utils/Message";
 
 export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 	const queryClient = useQueryClient();
@@ -44,7 +44,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 	const currentConversationId = useRef<number | null>(null);
 
 	const [shouldLoadConversations, setShouldLoadConversations] =
-		useState<boolean>(false);
+		useState<boolean>(true);
 	const [newMessages, setNewMessages] = useState<Message[]>([]);
 
 	const {
@@ -56,9 +56,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		Conversation[]
 	>([]);
 
-	const [filteredConversations, setFilteredConversations] = useState<
-		Conversation[]
-	>([]);
+	const [conversations, setConversations] = useState<Conversation[]>([]);
 
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -68,19 +66,8 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 			...(conversationsData || []),
 			...newConversationData,
 		];
-		setFilteredConversations(
-			(
-				allConversations.filter((conversation) => {
-					if (!searchQuery) return true;
-					const searchLower = searchQuery.toLowerCase();
-					return (
-						conversation.participanteNome.toLowerCase().includes(searchLower) ||
-						conversation.ultimaMensagem?.conteudo
-							.toLowerCase()
-							.includes(searchLower)
-					);
-				}) || []
-			).sort((a, b) => {
+		setConversations(
+			allConversations.sort((a, b) => {
 				const dateA = a.ultimaMensagem?.dataEnvio
 					? new Date(a.ultimaMensagem.dataEnvio).getTime()
 					: 0;
@@ -90,12 +77,22 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 				return dateB - dateA;
 			})
 		);
-	}, [
-		setFilteredConversations,
-		conversationsData,
-		newConversationData,
-		searchQuery,
-	]);
+	}, [setConversations, conversationsData, newConversationData]);
+
+	const filteredConversations = useMemo(() => {
+		return (
+			conversations.filter((conversation) => {
+				if (!searchQuery) return true;
+				const searchLower = searchQuery.toLowerCase();
+				return (
+					conversation.participanteNome.toLowerCase().includes(searchLower) ||
+					conversation.ultimaMensagem?.conteudo
+						.toLowerCase()
+						.includes(searchLower)
+				);
+			}) || []
+		);
+	}, [conversations, searchQuery]);
 
 	const {
 		data: historyMessages,
@@ -220,7 +217,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 
 	const setLastMessageAsRead = useCallback(
 		(messageId: number) => {
-			setFilteredConversations((prevConversations) =>
+			setConversations((prevConversations) =>
 				prevConversations.map((conversation) => {
 					if (conversation.ultimaMensagem?.id === messageId) {
 						conversation.ultimaMensagem.lida = true;
@@ -229,7 +226,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 				})
 			);
 		},
-		[setFilteredConversations]
+		[setConversations]
 	);
 
 	// Update conversation list with new message
@@ -413,6 +410,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 				searchQuery,
 				setSearchQuery,
 				filteredConversations,
+				conversations,
 				isMessagesLoading,
 				isConversationsLoading,
 				selectedConversation,

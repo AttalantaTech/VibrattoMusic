@@ -10,9 +10,9 @@ import {
 	UserImageContainer,
 	UserInfoContainer,
 } from "./styles";
-import { useMessagesContext } from "../../contexts/MessagesContext";
 import { formatMessageTime, getParticipantInitials } from "../../utils/Message";
 import { Conversation } from "@/api/services/messages/types";
+import { useMessagesContext } from "@/contexts/MessagesContext";
 
 export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 	const {
@@ -132,8 +132,10 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 								)}
 							</ConversationInfoContainer>
 							{hasUnread && (
-								<div className="bg-blue-500 text-white text-xs rounded-full px-2 py-1 animate-pulse">
-									{conversation.numeroNaoLidas || 1}
+								<div
+									className={`bg-blue-500 text-white text-xs rounded-full ${conversation.numeroNaoLidas ? "px-2 py-1" : "w-3 h-3"} animate-pulse`}
+								>
+									{conversation.numeroNaoLidas || ""}
 								</div>
 							)}
 						</ConversationTabContainer>
