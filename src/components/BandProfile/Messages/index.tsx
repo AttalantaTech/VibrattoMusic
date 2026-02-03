@@ -6,7 +6,6 @@ import { useMessagesContext } from "./contexts/MessagesContext";
 import { Chat } from "./components/Chat";
 import { SendProposalModal } from "./components/SendProposalModal";
 import { StartConversationModal } from "./components/StartConversationModal";
-import { useMessages } from "./hooks/useMessages";
 
 const MessagesTab = () => {
 	// Auth store - using same approach as BandProfile account tab
@@ -23,22 +22,16 @@ const MessagesTab = () => {
 		newConversationParticipant,
 		setNewConversationParticipant,
 		sendMessage,
-	} = useMessagesContext();
-
-	const {
 		isProposalModalOpen,
 		setIsProposalModalOpen,
 		isNewConversationModalOpen,
 		setIsNewConversationModalOpen,
 		isProfileIncompleteModalOpen,
 		setIsProfileIncompleteModalOpen,
-	} = useMessages();
+	} = useMessagesContext();
 
 	return (
 		<div className="flex h-[75vh] w-full border bg-gray-50">
-			<SideBar user={user} currentProductId={currentProductId} />
-			<Chat />
-
 			{selectedConversation && (
 				<SendProposalModal
 					isOpen={isProposalModalOpen}
@@ -77,6 +70,9 @@ const MessagesTab = () => {
 				isOpen={isProfileIncompleteModalOpen}
 				onClose={() => setIsProfileIncompleteModalOpen(false)}
 			/>
+
+			<SideBar user={user} currentProductId={currentProductId} />
+			<Chat />
 		</div>
 	);
 };

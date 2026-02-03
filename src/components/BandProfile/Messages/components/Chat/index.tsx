@@ -14,7 +14,6 @@ import {
 	MessageLine,
 	OwnMessageElement,
 } from "./styles";
-import { useMessages } from "../../hooks/useMessages";
 import { getParticipantInitials } from "../../utils/Message";
 import { Message } from "@/api/services/messages/types";
 
@@ -34,14 +33,11 @@ export const Chat = () => {
 		isLoading,
 		selectedConversation,
 		handleSendMessage,
-	} = useMessagesContext();
-
-	const {
-		messagesContainerRef,
 		setIsProposalModalOpen,
 		setIsProfileIncompleteModalOpen,
+		messagesContainerRef,
 		messagesEndRef,
-	} = useMessages();
+	} = useMessagesContext();
 
 	return (
 		<div className="flex-1 flex flex-col">
