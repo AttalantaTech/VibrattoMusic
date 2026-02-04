@@ -18,6 +18,7 @@ export interface Conversation {
 	ultimaMensagem?: Message;
 	mensagens?: Message[];
 	totalMensagens?: number;
-	numeroNaoLidas?: number;
+	numeroMensagensNãoLidasContratante?: number;
+	numeroMensagensNãoLidasContratado?: number;
 	online?: boolean;
 }

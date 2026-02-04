@@ -134,6 +134,8 @@ export class MessagingService {
 						nome: string;
 					};
 					ultimaConversa: Message | null;
+					numeroMensagensNãoLidasContratado: number;
+					numeroMensagensNãoLidasContratante: number;
 				}>
 			>(`chat/listaConversas?limit=${limit}${cursorQuery}`, {
 				params: {
@@ -170,7 +172,8 @@ export class MessagingService {
 						contratanteId: item.contratante.id,
 						contratanteNome: item.contratante.nome,
 						ultimaMensagem: lastMessage,
-						numeroNaoLidas: 0, // This endpoint doesn't provide unread count
+						numeroMensagensNãoLidasContratante: item.numeroMensagensNãoLidasContratante,
+						numeroMensagensNãoLidasContratado: item.numeroMensagensNãoLidasContratado,
 						online: false, // This would need to be determined from online status API
 					};
 				});
@@ -225,7 +228,9 @@ export class MessagingService {
 			contratanteId: 0,
 			contratanteNome: "",
 			ultimaMensagem: undefined,
-			numeroNaoLidas: 0,
+			numeroMensagensNãoLidasContratado: 0,
+			numeroMensagensNãoLidasContratante: 0,
+			online: false,
 			mensagens: undefined,
 			totalMensagens: undefined,
 		};

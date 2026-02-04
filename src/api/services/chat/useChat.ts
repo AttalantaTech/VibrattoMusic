@@ -3,21 +3,14 @@ import { apiClient } from "../../core/client";
 import { SignalRService } from "../../websocket/SignalRService";
 import { WebSocketI } from "@/api/websocket/WebSocketI";
 import { Dispatch, SetStateAction, useRef } from "react";
-import {
-	WebSocketEvent,
-	WebSocketEventHandler,
-} from "@/api/websocket/types";
+import { WebSocketEvent, WebSocketEventHandler } from "@/api/websocket/types";
 import { Message } from "../messages/types";
 
 export const useChat = (
 	currentConversationIdRef: React.MutableRefObject<number | null>,
-	setShouldLoadCurrentConversation: Dispatch<SetStateAction<boolean>>,
 	setShouldLoadConversations: Dispatch<SetStateAction<boolean>>
 ) => {
 	const { token } = useAuthStore();
-	if (!token) {
-		throw new Error("User is not authenticated");
-	}
 	const connection = useRef<WebSocketI | null>(null);
 
 	const handlers = useRef<Map<WebSocketEvent, WebSocketEventHandler>>(
@@ -25,7 +18,7 @@ export const useChat = (
 	);
 
 	const connect = () => {
-		if (!connection.current) {
+		if (!connection.current && token) {
 			const newConnection = new SignalRService();
 			newConnection.createConnection("chatHub", token);
 			connection.current = newConnection;
@@ -53,13 +46,8 @@ export const useChat = (
 	};
 
 	const enterConversation = async (conversationId: number): Promise<void> => {
-		currentConversationIdRef.current = conversationId;
-
 		if (connection.current?.isConnected()) {
 			await connection.current.invoke("EntrarConversa", conversationId);
-			setShouldLoadCurrentConversation(false);
-		} else {
-			setShouldLoadCurrentConversation(true);
 		}
 	};
 

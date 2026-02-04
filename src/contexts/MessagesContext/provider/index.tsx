@@ -17,7 +17,7 @@ import { playNotificationSound } from "@/components/BandProfile/Messages/utils/M
 
 export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 	const queryClient = useQueryClient();
-	const { user } = useAuthStore();
+	const { user, token } = useAuthStore();
 	const currentUserId = user?.id;
 	const { activeProduct } = useActiveMusicalProduct();
 	const currentProductId = activeProduct?.id
@@ -51,7 +51,11 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		data: conversationsData,
 		isLoading: isConversationsLoading,
 		refetch: refetchConversations,
-	} = useConversations(currentProductId, undefined, shouldLoadConversations);
+	} = useConversations(
+		currentProductId,
+		undefined,
+		shouldLoadConversations && !!token
+	);
 	const [newConversationData, setNewConversationData] = useState<
 		Conversation[]
 	>([]);
@@ -118,11 +122,17 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		addNotificationHandler,
 		addOnCloseHandler,
 		removeHandlers,
-	} = useChat(
-		currentConversationId,
-		setShouldLoadCurrentConversation,
-		setShouldLoadConversations
-	);
+	} = useChat(currentConversationId, setShouldLoadConversations);
+
+	const handleEnterConversation = async (conversationId: number) => {
+		enterConversation(conversationId);
+	};
+
+	const conversationsRef = useRef<Conversation[]>(conversations);
+
+	useEffect(() => {
+		conversationsRef.current = conversations;
+	}, [conversations]);
 
 	const handleConnect = useCallback(async () => {
 		connect();
@@ -140,13 +150,11 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		});
 
 		await start();
-	}, [connect, start]);
 
-	const handleEnterConversation = async (conversationId: number) => {
-		if (conversationId === currentConversationId.current) return;
-		currentConversationId.current = conversationId;
-		enterConversation(conversationId);
-	};
+		conversationsRef.current.forEach(async (conversation) => {
+			await enterConversation(conversation.id);
+		});
+	}, [connect, start]);
 
 	const handleSendMessage = async (content: string) => {
 		if (!content.trim() || !currentConversationId.current) return;
@@ -221,6 +229,11 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 				prevConversations.map((conversation) => {
 					if (conversation.ultimaMensagem?.id === messageId) {
 						conversation.ultimaMensagem.lida = true;
+						if (conversation.contratanteId === currentUserId) {
+							conversation.numeroMensagensNãoLidasContratante = 0;
+						} else {
+							conversation.numeroMensagensNãoLidasContratado = 0;
+						}
 					}
 					return conversation;
 				})
@@ -365,7 +378,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 			user &&
 			selectedConversation.id !== currentConversationId.current
 		) {
-			handleEnterConversation(selectedConversation.id);
+			currentConversationId.current = selectedConversation.id;
 			setShouldLoadCurrentConversation(true);
 			queryClient.invalidateQueries({
 				queryKey: messagingKeys.conversationMessages(selectedConversation.id),
@@ -393,12 +406,16 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 	}, [currentConversationId.current]);
 
 	useEffect(() => {
-		handleConnect();
+		if (token && !isConversationsLoading) {
+			handleConnect();
+		}
 
 		return () => {
-			removeHandlers();
+			if (token) {
+				removeHandlers();
+			}
 		};
-	}, []);
+	}, [token, isConversationsLoading]);
 
 	return (
 		<MessagesContext.Provider

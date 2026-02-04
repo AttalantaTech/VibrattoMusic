@@ -13,15 +13,12 @@ export const MessageBell = () => {
 	const totalUnreadMessages: number = useMemo(() => {
 		return (conversations as Conversation[])?.reduce(
 			(total: number, conversation: Conversation) => {
-				console.log(conversation.ultimaMensagem?.lida);
 				return (
 					total +
-					(conversation.numeroNaoLidas
-						? conversation.numeroNaoLidas
-						: !conversation.ultimaMensagem?.lida &&
-							  conversation.ultimaMensagem?.idRemetente !== user?.id
-							? 1
-							: 0)
+					(!conversation.ultimaMensagem?.lida &&
+					conversation.ultimaMensagem?.idRemetente !== user?.id
+						? 1
+						: 0)
 				);
 			},
 			0

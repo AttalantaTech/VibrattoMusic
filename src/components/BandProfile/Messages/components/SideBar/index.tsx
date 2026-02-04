@@ -83,11 +83,10 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 				)}
 				{filteredConversations.map((conversation: Conversation) => {
 					const isSelected = selectedConversation?.id === conversation.id;
-					const hasUnread = !!(
-						(conversation.numeroNaoLidas && conversation.numeroNaoLidas > 0) ||
-						(conversation.ultimaMensagem?.lida === false &&
-							conversation.ultimaMensagem.idRemetente !== user?.id)
-					);
+					const unreadCount =
+						(currentProductId || user?.id) === conversation.contratanteId
+							? conversation.numeroMensagensNãoLidasContratante || 0
+							: conversation.numeroMensagensNãoLidasContratado || 0;
 
 					return (
 						<ConversationTabContainer
@@ -105,7 +104,7 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 											: conversation.participanteNome
 									)}
 								</UserImageContainer>
-								{hasUnread && (
+								{unreadCount > 0 && (
 									<div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
 								)}
 								{conversation.online && (
@@ -131,11 +130,11 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 									</p>
 								)}
 							</ConversationInfoContainer>
-							{hasUnread && (
+							{unreadCount > 0 && (
 								<div
-									className={`bg-blue-500 text-white text-xs rounded-full ${conversation.numeroNaoLidas ? "px-2 py-1" : "w-3 h-3"} animate-pulse`}
+									className={`bg-blue-500 text-white text-xs rounded-full ${unreadCount ? "px-2 py-1" : "w-3 h-3"} animate-pulse`}
 								>
-									{conversation.numeroNaoLidas || ""}
+									{unreadCount || ""}
 								</div>
 							)}
 						</ConversationTabContainer>
