@@ -18,7 +18,8 @@ const statusConfig = {
 		color: "text-green-600",
 		bgColor: "bg-green-50",
 	},
-	sinalpago: {
+	// eslint-disable-next-line camelcase
+	sinal_pago: {
 		label: "Sinal Pago",
 		icon: CheckCircle,
 		variant: "success" as const,
@@ -55,9 +56,9 @@ export const ContractsTab = () => {
 
 		const acceptedProposals = proposals.filter(
 			(p) =>
-				p.status.nome === "Aceita" ||
-				p.status.nome === "SinalPago" ||
-				p.status.nome === "Concluido"
+				p.status.nome === "aceito" ||
+				p.status.nome === "sinal_pago" ||
+				p.status.nome === "concluido"
 		);
 
 		return acceptedProposals[0] || null;
@@ -145,7 +146,7 @@ export const ContractsTab = () => {
 				)}
 			</div>
 
-			{!contractProposal ? (
+			{!contract ? (
 				<div className="flex flex-col items-center justify-center min-h-[400px] bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
 					<FileText className="h-12 w-12 text-gray-400 mb-4" />
 					<h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -162,29 +163,29 @@ export const ContractsTab = () => {
 						<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 							<div>
 								<h3 className="text-lg font-semibold text-gray-900">
-									{contractProposal.descricao ||
-										`Contrato - ${contractProposal.tipoEvento.nome || "Evento"}`}
+									{contract.titulo ||
+										`Contrato - ${contract.tipoEvento?.nome || "Evento"}`}
 								</h3>
 								<div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-600">
-									<span>Cliente: {contractProposal?.contratante?.nome}</span>
+									<span>Cliente: {contract.contratante?.nome}</span>
 									<span>•</span>
-									<span>{formatCurrency(contractProposal?.valor || 0)}</span>
+									<span>{formatCurrency(contract.valor || 0)}</span>
 									<span>•</span>
-									<span>{formatDate(contractProposal?.dataInicio)}</span>
+									<span>{formatDate(contract.dataInicio)}</span>
 								</div>
 							</div>
 							<Badge
 								variant={
 									statusConfig[
-										contractProposal.status.nome as keyof typeof statusConfig
+										contract.status?.nome as keyof typeof statusConfig
 									]?.variant || "default"
 								}
 								className="flex items-center gap-1"
 							>
 								<CheckCircle className="h-3 w-3" />
 								{statusConfig[
-									contractProposal.status.nome as keyof typeof statusConfig
-								]?.label || contractProposal.status.nome}
+									contract.status?.nome as keyof typeof statusConfig
+								]?.label || contract.status?.nome}
 							</Badge>
 						</div>
 					</div>
@@ -222,7 +223,8 @@ export const ContractsTab = () => {
 								<Eye className="h-4 w-4 mr-1" />
 								Visualizar em Tela Cheia
 							</Button>
-							{contractProposal.status.nome === "Aceita" && (
+							{(contract.status?.nome === "aceito" ||
+								contract.status?.nome === "Aceita") && (
 								<>
 									<Button
 										size="sm"
@@ -236,11 +238,10 @@ export const ContractsTab = () => {
 									<Button
 										size="sm"
 										className="bg-green-600 hover:bg-green-700 text-white"
-										onClick={() => {
-											if (contractProposal?.identificadorUnico) {
-												// eslint-disable-next-line @typescript-eslint/no-floating-promises
-												navigate({
-													to: `/band/contract/${contractProposal.identificadorUnico}`,
+										onClick={async () => {
+											if (contract?.identificadorUnico) {
+												await navigate({
+													to: `/band/contract/${contract.identificadorUnico}`,
 												});
 											}
 										}}
@@ -257,7 +258,7 @@ export const ContractsTab = () => {
 									onClick={() => {
 										const link = document.createElement("a");
 										link.href = contractPdfUrl;
-										link.download = `contrato-${contractProposal.id}.pdf`;
+										link.download = `contrato-${contract.id}.pdf`;
 										document.body.appendChild(link);
 										link.click();
 										document.body.removeChild(link);
@@ -276,7 +277,7 @@ export const ContractsTab = () => {
 				onClose={() => {
 					setIsViewerOpen(false);
 				}}
-				identificadorUnico={contractProposal?.identificadorUnico ?? null}
+				identificadorUnico={contract?.identificadorUnico ?? null}
 			/>
 
 			<ContractEditor
@@ -284,7 +285,7 @@ export const ContractsTab = () => {
 				onClose={() => {
 					setIsEditorOpen(false);
 				}}
-				identificadorUnico={contractProposal?.identificadorUnico ?? null}
+				identificadorUnico={contract?.identificadorUnico ?? null}
 			/>
 		</div>
 	);

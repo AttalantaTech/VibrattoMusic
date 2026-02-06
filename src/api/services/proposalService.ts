@@ -64,28 +64,6 @@ export const proposalService = {
 		return response;
 	},
 
-	/**	 * Get proposal by ID
-	 * @param proposalId - The ID of the proposal
-	 * @returns Promise with the proposal
-	 */
-	async getProposalById(
-		identificadorUnico: string
-	): Promise<ProposalResponse | undefined> {
-		return this.listProposals({
-			Id: null,
-			IdContratante: null,
-			IdentificadorUnico: identificadorUnico,
-			IdProdutoMusical: null,
-			DataDe: null,
-			DataAte: null,
-		}).then((proposals) => {
-			if (proposals.length === 0) {
-				throw new Error("Proposal not found");
-			}
-			return proposals[0];
-		});
-	},
-
 	/**
 	 * Get all proposals for the authenticated user (as contractor)
 	 * @returns Promise with list of proposals
