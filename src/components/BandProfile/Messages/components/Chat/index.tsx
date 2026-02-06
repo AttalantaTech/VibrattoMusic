@@ -89,7 +89,7 @@ export const Chat = () => {
 						)}
 						{isProfileComplete && (
 							<button
-								disabled={!!activeProduct}
+								disabled={!activeProduct}
 								onClick={() => {
 									setIsProposalModalOpen(true);
 								}}
