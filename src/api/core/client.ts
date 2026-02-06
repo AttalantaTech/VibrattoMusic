@@ -266,13 +266,13 @@ export class ApiClient {
 		this.clearAuth();
 
 		// Redirecionar para login com URL atual como redirect
-		const currentPath = window.location.pathname + window.location.search;
-		const redirectUrl =
-			currentPath !== "/login"
-				? `?redirect=${encodeURIComponent(currentPath)}`
-				: "";
+		// const currentPath = window.location.pathname + window.location.search;
+		// const redirectUrl =
+		// 	currentPath !== "/login"
+		// 		? `?redirect=${encodeURIComponent(currentPath)}`
+		// 		: "";
 
-		window.location.href = `/login${redirectUrl}`;
+		// window.location.href = `/login${redirectUrl}`;
 	}
 	private clearAuth(): void {
 		// Limpar token dos cookies
