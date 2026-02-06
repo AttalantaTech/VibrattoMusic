@@ -7,7 +7,7 @@ import { LineChartComponent } from "../../charts/line/LineChart";
 import { useState } from "react";
 import { UpdateButton } from "../../ui/UpdateButton/UpdateButton";
 import { dates, values, myEvents } from "./data";
-import { SendProposalModal } from "../Messages/components/SendProposalModal";
+import { SendProposalModal } from "../Messages/SendProposalModal";
 import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
 
 interface MySalesTabProps {
@@ -25,8 +25,7 @@ export const MySalesTab = ({ productId }: MySalesTabProps) => {
 	const { activeProduct } = useActiveMusicalProduct();
 
 	// Use prop productId if provided, otherwise use active product
-	const currentProductId =
-		productId || (activeProduct?.id ? Number(activeProduct.id) : undefined);
+	const currentProductId = productId || (activeProduct?.id ? Number(activeProduct.id) : undefined);
 
 	return (
 		<div className="w-full h-full flex flex-col gap-4">

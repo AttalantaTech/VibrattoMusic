@@ -8,17 +8,25 @@ export { MusicalProductService } from "./services/musicalProductService";
 export { DocumentService } from "./services/documentService";
 export { BookingService } from "./services/bookingService";
 export { HiringService } from "./services/hiringService";
-export { MessagingService } from "./services/messages/messagingService";
+export { MessagingService } from "./services/messagingService";
 export { UtilityService } from "./services/utilityService";
 export { OnboardingService } from "./services/onboardingService";
 export { EventService } from "./services/eventService";
 export { proposalService } from "./services/proposalService";
 export { ImageUploadService } from "./services/imageUploadService";
 
+// WebSocket Integration
+export {
+	WebSocketClient,
+	VibrattoWebSocketService,
+	getWebSocketService,
+	WEBSOCKET_EVENTS,
+} from "./websocket/client";
 export type {
+	WebSocketMessage,
 	WebSocketConfig,
 	WebSocketEventType,
-} from "./websocket/old/client";
+} from "./websocket/client";
 
 // Validation Schemas
 export {
@@ -105,12 +113,12 @@ import { MusicalProductService } from "./services/musicalProductService";
 import { DocumentService } from "./services/documentService";
 import { BookingService } from "./services/bookingService";
 import { HiringService } from "./services/hiringService";
-import { MessagingService } from "./services/messages/messagingService";
+import { MessagingService } from "./services/messagingService";
 import { UtilityService } from "./services/utilityService";
 import { OnboardingService } from "./services/onboardingService";
 import { EventService } from "./services/eventService";
 import { ImageUploadService } from "./services/imageUploadService";
-import { getWebSocketService } from "./websocket/old/client";
+import { getWebSocketService } from "./websocket/client";
 import {
 	getPerformanceMonitor,
 	getErrorReporter,
@@ -135,7 +143,7 @@ export const eventService = new EventService(apiClient);
 export const imageUploadService = new ImageUploadService(apiClient);
 
 // WebSocket service instance
-export const webSocketService = getWebSocketService({ url: "chatHub" });
+export const webSocketService = getWebSocketService();
 
 // Monitoring service instances
 export const performanceMonitor = getPerformanceMonitor();

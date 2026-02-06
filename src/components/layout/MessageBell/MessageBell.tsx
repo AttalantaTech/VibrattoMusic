@@ -1,29 +1,12 @@
 import { MessageSquare } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "../../../store/authStore";
-import { useMessagesContext } from "@/contexts/MessagesContext";
-import { useMemo } from "react";
-import { Conversation } from "@/api/services/messages/types";
+import { useUnreadMessagesCount } from "../../../hooks/useUnreadMessagesCount";
 
 export const MessageBell = () => {
-	const { user, isAuthenticated } = useAuthStore();
+	const { isAuthenticated } = useAuthStore();
 	const navigate = useNavigate();
-	const { conversations } = useMessagesContext();
-
-	const totalUnreadMessages: number = useMemo(() => {
-		return (conversations as Conversation[])?.reduce(
-			(total: number, conversation: Conversation) => {
-				return (
-					total +
-					(!conversation.ultimaMensagem?.lida &&
-					conversation.ultimaMensagem?.idRemetente !== user?.id
-						? 1
-						: 0)
-				);
-			},
-			0
-		);
-	}, [conversations]);
+	const { totalUnreadMessages } = useUnreadMessagesCount();
 
 	// Don't render if not authenticated
 	if (!isAuthenticated) {

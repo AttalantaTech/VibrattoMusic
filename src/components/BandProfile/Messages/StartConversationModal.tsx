@@ -1,7 +1,7 @@
 import type React from "react";
 import { useState } from "react";
 import { X } from "lucide-react";
-import { useStartConversation } from "../../../../../hooks/useMessaging";
+import { useStartConversation } from "../../../hooks/useMessaging";
 import { toast } from "sonner";
 
 interface StartConversationModalProps {

@@ -23,7 +23,7 @@ import {
 } from "../../../hooks/useProposals";
 import { useAuthStore } from "../../../store/authStore";
 import { Button } from "../../ui/Button/Button";
-import { SendProposalModal } from "../Messages/components/SendProposalModal";
+import { SendProposalModal } from "../Messages/SendProposalModal";
 import { Badge } from "../../ui/Badge/Badge";
 import type { ProposalResponse } from "../../../api/types";
 import { Input } from "../../ui/Input/Input";
@@ -200,21 +200,19 @@ const ProposalDetailsModal = ({
 					{/* Actions */}
 					<div className="mt-6 flex justify-end gap-3">
 						{/* Botão de cancelar para o criador da proposta - sempre disponível */}
-						{isProposalCreator(proposal) &&
-							proposal.status.nome !== "cancelado" &&
-							proposal.status.nome !== "rejeitado" && (
-								<Button
-									variant="outline"
-									className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
-									onClick={() => {
-										onStatusUpdate(proposal.id, "cancelado");
-										onClose();
-									}}
-								>
-									<X className="h-4 w-4 mr-2" />
-									Cancelar Minha Proposta
-								</Button>
-							)}
+						{isProposalCreator(proposal) && proposal.status.nome !== "cancelado" && proposal.status.nome !== "rejeitado" && (
+							<Button
+								variant="outline"
+								className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+								onClick={() => {
+									onStatusUpdate(proposal.id, "cancelado");
+									onClose();
+								}}
+							>
+								<X className="h-4 w-4 mr-2" />
+								Cancelar Minha Proposta
+							</Button>
+						)}
 						{proposal.status.nome === "pendente" && (
 							<>
 								<Button
@@ -369,9 +367,7 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 					comparison = a.valor - b.valor;
 					break;
 				case "status":
-					comparison = (a.status?.nome || "").localeCompare(
-						b.status?.nome || ""
-					);
+					comparison = (a.status?.nome || "").localeCompare(b.status?.nome || "");
 					break;
 				case "eventType":
 					comparison = (a.nomeTipoEvento || "").localeCompare(
@@ -394,6 +390,7 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 			setSortOrder("desc");
 		}
 	};
+
 
 	if (isLoading) {
 		return (
@@ -766,24 +763,22 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 										</div>
 									)}
 									{/* Botão de cancelar para o criador da proposta - sempre visível */}
-									{isProposalCreator(proposal) &&
-										proposal.status.nome !== "cancelado" &&
-										proposal.status.nome !== "rejeitado" && (
-											<div className="flex lg:justify-center">
-												<Button
-													size="sm"
-													variant="outline"
-													className="text-gray-600 hover:text-gray-700 hover:bg-gray-50 border-gray-300"
-													onClick={(event) => {
-														event.stopPropagation();
-														void handleStatusUpdate(proposal.id, "cancelado");
-													}}
-												>
-													<X className="h-4 w-4 mr-1" />
-													Cancelar Minha Proposta
-												</Button>
-											</div>
-										)}
+									{isProposalCreator(proposal) && proposal.status.nome !== "cancelado" && proposal.status.nome !== "rejeitado" && (
+										<div className="flex lg:justify-center">
+											<Button
+												size="sm"
+												variant="outline"
+												className="text-gray-600 hover:text-gray-700 hover:bg-gray-50 border-gray-300"
+												onClick={(event) => {
+													event.stopPropagation();
+													void handleStatusUpdate(proposal.id, "cancelado");
+												}}
+											>
+												<X className="h-4 w-4 mr-1" />
+												Cancelar Minha Proposta
+											</Button>
+										</div>
+									)}
 								</div>
 							</div>
 						);
