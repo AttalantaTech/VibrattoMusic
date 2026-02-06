@@ -1,15 +1,32 @@
 import { useState, useEffect, useCallback } from "react";
-import { X, Save, FileText, Edit3, Check, AlertCircle, Loader2 } from "lucide-react";
+import {
+	Save,
+	FileText,
+	Edit3,
+	Check,
+	AlertCircle,
+	Loader2,
+} from "lucide-react";
 import { Button } from "../../ui/Button/Button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "../../ui/dialog";
 import { Textarea } from "../../ui/Textarea/Textarea";
 import { Input } from "../../ui/Input/Input";
 import { LoadingSpinner } from "../../ui/LoadingSpinner/LoadingSpinner";
 import { Badge } from "../../ui/Badge/Badge";
-import { useContractSections, useUpdateContractSections, useContractPermissions } from "../../../hooks/useContracts";
+import {
+	useContractSections,
+	useUpdateContractSections,
+	useContractPermissions,
+} from "../../../hooks/useContracts";
 import { contractSectionSchema } from "../../../schemas/contractSchemas";
 import type { ContractSectionUpdateInput } from "../../../schemas/contractSchemas";
 import { toast } from "sonner";
+import { useProposalById } from "../../../hooks/useProposals";
 
 interface ContractEditorProps {
 	isOpen: boolean;
@@ -26,11 +43,29 @@ interface EditingSection {
 	hasChanges: boolean;
 }
 
-export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: ContractEditorProps) => {
-	const [editingSections, setEditingSections] = useState<Array<EditingSection>>([]);
-	const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
+export const ContractEditor = ({
+	isOpen,
+	onClose,
+	identificadorUnico,
+}: ContractEditorProps) => {
+	const [editingSections, setEditingSections] = useState<Array<EditingSection>>(
+		[]
+	);
+	const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(
+		null
+	);
 
-	const { data: sections, isLoading, error } = useContractSections(identificadorUnico || "");
+	const {
+		data: proposal,
+		// isLoading: isLoadingProposal,
+		// error: errorProposal,
+	} = useProposalById(identificadorUnico || "");
+
+	const {
+		data: sections,
+		isLoading,
+		error,
+	} = useContractSections(proposal?.produtoMusical.id || 0);
 	const permissionsQuery = useContractPermissions(identificadorUnico || "");
 	const permissions = permissionsQuery.data;
 	const updateSectionsMutation = useUpdateContractSections();
@@ -39,8 +74,8 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 		if (!identificadorUnico) return;
 
 		const changedSections: Array<ContractSectionUpdateInput> = editingSections
-			.filter(section => section.hasChanges)
-			.map(section => ({
+			.filter((section) => section.hasChanges)
+			.map((section) => ({
 				numero: section.numero,
 				titulo: section.titulo,
 				texto: section.texto,
@@ -55,33 +90,37 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 			});
 
 			// Clear hasChanges flag for saved sections
-			setEditingSections(previous =>
-				previous.map(section =>
-					changedSections.some(cs => cs.numero === section.numero)
+			setEditingSections((previous) =>
+				previous.map((section) =>
+					changedSections.some((cs) => cs.numero === section.numero)
 						? { ...section, hasChanges: false }
 						: section
 				)
 			);
 		} catch (error) {
-			console.error('Error saving sections:', error);
+			console.error("Error saving sections:", error);
 		}
 	}, [identificadorUnico, editingSections, updateSectionsMutation]);
 
 	// Initialize editing sections when data loads
 	useEffect(() => {
 		if (sections) {
-			const initialSections: Array<EditingSection> = sections.map(section => ({
-				...section,
-				isEditing: false,
-				hasChanges: false,
-			}));
+			const initialSections: Array<EditingSection> = sections.map(
+				(section) => ({
+					...section,
+					isEditing: false,
+					hasChanges: false,
+				})
+			);
 			setEditingSections(initialSections);
 		}
 	}, [sections]);
 
 	// Auto-save functionality
 	useEffect(() => {
-		const hasUnsavedChanges = editingSections.some(section => section.hasChanges);
+		const hasUnsavedChanges = editingSections.some(
+			(section) => section.hasChanges
+		);
 
 		if (hasUnsavedChanges && !autoSaveTimer) {
 			// Start auto-save timer (5 seconds)
@@ -103,8 +142,8 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 	}, [editingSections, autoSaveTimer, handleSaveAll]);
 
 	const handleEditSection = (sectionNumero: number) => {
-		setEditingSections(previous =>
-			previous.map(section =>
+		setEditingSections((previous) =>
+			previous.map((section) =>
 				section.numero === sectionNumero
 					? { ...section, isEditing: true }
 					: section
@@ -113,7 +152,7 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 	};
 
 	const handleSaveSection = (sectionNumero: number) => {
-		const section = editingSections.find(s => s.numero === sectionNumero);
+		const section = editingSections.find((s) => s.numero === sectionNumero);
 		if (!section) return;
 
 		// Validate section
@@ -124,12 +163,14 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 		});
 
 		if (!validation.success) {
-			toast.error(`Erro na seção ${section.numero}: ${validation.error.issues[0]?.message || "Erro de validação"}`);
+			toast.error(
+				`Erro na seção ${section.numero}: ${validation.error.issues[0]?.message || "Erro de validação"}`
+			);
 			return;
 		}
 
-		setEditingSections(previous =>
-			previous.map(s =>
+		setEditingSections((previous) =>
+			previous.map((s) =>
 				s.numero === sectionNumero
 					? { ...s, isEditing: false, hasChanges: false }
 					: s
@@ -140,25 +181,29 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 	};
 
 	const handleCancelEdit = (sectionNumero: number) => {
-		const originalSection = sections?.find(s => s.numero === sectionNumero);
+		const originalSection = sections?.find((s) => s.numero === sectionNumero);
 		if (!originalSection) return;
 
-		setEditingSections(previous =>
-			previous.map(section =>
+		setEditingSections((previous) =>
+			previous.map((section) =>
 				section.numero === sectionNumero
 					? {
 							...originalSection,
 							isEditing: false,
-							hasChanges: false
+							hasChanges: false,
 						}
 					: section
 			)
 		);
 	};
 
-	const handleFieldChange = (sectionNumero: number, field: 'titulo' | 'texto', value: string) => {
-		setEditingSections(previous =>
-			previous.map(section =>
+	const handleFieldChange = (
+		sectionNumero: number,
+		field: "titulo" | "texto",
+		value: string
+	) => {
+		setEditingSections((previous) =>
+			previous.map((section) =>
 				section.numero === sectionNumero
 					? { ...section, [field]: value, hasChanges: true }
 					: section
@@ -167,11 +212,13 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 	};
 
 	const handleClose = () => {
-		const hasUnsavedChanges = editingSections.some(section => section.hasChanges);
+		const hasUnsavedChanges = editingSections.some(
+			(section) => section.hasChanges
+		);
 
 		if (hasUnsavedChanges) {
 			const confirmClose = window.confirm(
-				'Você tem alterações não salvas. Deseja sair mesmo assim?'
+				"Você tem alterações não salvas. Deseja sair mesmo assim?"
 			);
 			if (!confirmClose) return;
 		}
@@ -179,10 +226,12 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 		onClose();
 	};
 
-	const hasUnsavedChanges = editingSections.some(section => section.hasChanges);
+	const hasUnsavedChanges = editingSections.some(
+		(section) => section.hasChanges
+	);
 	const isSaving = updateSectionsMutation.isPending;
 
-	if (!permissions?.canEdit && identificadorUnico) {
+	if (!permissions?.canEdit || !identificadorUnico) {
 		return (
 			<Dialog open={isOpen} onOpenChange={onClose}>
 				<DialogContent>
@@ -206,7 +255,7 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 						<div className="flex items-center gap-3">
 							<Edit3 className="w-6 h-6 text-blue-600" />
 							<DialogTitle className="text-xl font-semibold">
-								Editar Contrato #{identificadorUnico?.slice(0, 8) || 'N/A'}
+								Editar Contrato #{identificadorUnico?.slice(0, 8) || "N/A"}
 							</DialogTitle>
 							{hasUnsavedChanges && (
 								<Badge className="bg-orange-100 text-orange-800">
@@ -214,14 +263,6 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 								</Badge>
 							)}
 						</div>
-						<Button
-							variant="transparent"
-							size="sm"
-							onClick={handleClose}
-							className="p-2"
-						>
-							<X className="w-4 h-4" />
-						</Button>
 					</div>
 				</DialogHeader>
 
@@ -255,13 +296,23 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 						{/* Sections */}
 						<div className="space-y-4">
 							{editingSections.map((section) => (
-								<div key={section.numero} className="border rounded-lg p-6 bg-white">
+								<div
+									key={section.numero}
+									className="border rounded-lg p-6 bg-white"
+								>
 									<div className="flex items-center justify-between mb-4">
 										<h4 className="text-lg font-semibold">
-											{section.numero}. {section.isEditing ? (
+											{section.numero}.{" "}
+											{section.isEditing ? (
 												<Input
 													value={section.titulo}
-													onChange={(event) => { handleFieldChange(section.numero, 'titulo', event.target.value); }}
+													onChange={(event) => {
+														handleFieldChange(
+															section.numero,
+															"titulo",
+															event.target.value
+														);
+													}}
 													className="text-lg font-semibold border-none p-0 h-auto focus:ring-0"
 													placeholder="Título da seção"
 												/>
@@ -277,14 +328,18 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 														<Button
 															variant="outline"
 															size="sm"
-															onClick={() => { handleCancelEdit(section.numero); }}
+															onClick={() => {
+																handleCancelEdit(section.numero);
+															}}
 															disabled={isSaving}
 														>
 															Cancelar
 														</Button>
 														<Button
 															size="sm"
-															onClick={() => { handleSaveSection(section.numero); }}
+															onClick={() => {
+																handleSaveSection(section.numero);
+															}}
 															disabled={isSaving}
 															className="flex items-center gap-1"
 														>
@@ -296,7 +351,9 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 													<Button
 														variant="outline"
 														size="sm"
-														onClick={() => { handleEditSection(section.numero); }}
+														onClick={() => {
+															handleEditSection(section.numero);
+														}}
 														disabled={isSaving}
 														className="flex items-center gap-1"
 													>
@@ -311,7 +368,13 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 									{section.isEditing ? (
 										<Textarea
 											value={section.texto}
-											onChange={(event) => { handleFieldChange(section.numero, 'texto', event.target.value); }}
+											onChange={(event) => {
+												handleFieldChange(
+													section.numero,
+													"texto",
+													event.target.value
+												);
+											}}
 											className="min-h-32 resize-none"
 											placeholder="Conteúdo da seção..."
 										/>
@@ -331,7 +394,8 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 							<div className="text-sm text-gray-500">
 								{hasUnsavedChanges ? (
 									<span className="text-orange-600">
-										{editingSections.filter(s => s.hasChanges).length} seção(ões) com alterações
+										{editingSections.filter((s) => s.hasChanges).length}{" "}
+										seção(ões) com alterações
 									</span>
 								) : (
 									<span>Todas as alterações foram salvas</span>
@@ -353,7 +417,7 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 										) : (
 											<Save className="w-4 h-4" />
 										)}
-										{isSaving ? 'Salvando...' : 'Salvar Tudo'}
+										{isSaving ? "Salvando..." : "Salvar Tudo"}
 									</Button>
 								)}
 							</div>
@@ -364,4 +428,3 @@ export const ContractEditor = ({ isOpen, onClose, identificadorUnico }: Contract
 		</Dialog>
 	);
 };
-

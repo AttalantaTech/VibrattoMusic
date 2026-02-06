@@ -1,11 +1,24 @@
 import { useState } from "react";
-import { X, Download, FileText, Calendar, User, DollarSign, Clock } from "lucide-react";
+import {
+	Download,
+	FileText,
+	Calendar,
+	User,
+	DollarSign,
+	Clock,
+} from "lucide-react";
 import { Button } from "../../ui/Button/Button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
-import { useContract } from "../../../hooks/useContracts";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "../../ui/dialog";
 import { LoadingSpinner } from "../../ui/LoadingSpinner/LoadingSpinner";
 import { Badge } from "../../ui/Badge/Badge";
 import { useNavigate } from "@tanstack/react-router";
+import { useProposalById } from "../../../hooks/useProposals";
+import { useContractSections } from "../../../hooks/useContracts";
 
 interface ContractViewerProps {
 	isOpen: boolean;
@@ -47,14 +60,28 @@ const getStatusLabel = (status: string) => {
 	}
 };
 
-export const ContractViewer = ({ isOpen, onClose, identificadorUnico }: ContractViewerProps) => {
+export const ContractViewer = ({
+	isOpen,
+	onClose,
+	identificadorUnico,
+}: ContractViewerProps) => {
 	const [downloading, setDownloading] = useState(false);
 	const navigate = useNavigate();
 
-	const { data: contract, isLoading, error } = useContract(identificadorUnico || "");
+	const {
+		data: proposal,
+		isLoading,
+		error,
+	} = useProposalById(identificadorUnico || "");
+
+	const {
+		data: contractSections,
+		isLoading: isLoadingSections,
+		error: errorSections,
+	} = useContractSections(proposal?.produtoMusical.id || 0);
 
 	const handleDownload = () => {
-		if (!contract) return;
+		if (!proposal) return;
 
 		setDownloading(true);
 		try {
@@ -63,29 +90,36 @@ export const ContractViewer = ({ isOpen, onClose, identificadorUnico }: Contract
 			const contractText = `
 CONTRATO DE PRESTAÇÃO DE SERVIÇOS ARTÍSTICOS
 
-Contrato ID: ${contract.id}
-Proposta ID: ${contract.idProposta}
-Título: ${contract.titulo}
-Status: ${getStatusLabel(contract.status?.nome || "")}
-Valor Total: R$ ${contract.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-Data de Criação: ${new Date(contract.dataCriacao).toLocaleDateString('pt-BR')}
+Contrato ID: ${proposal.idContrato}
+Proposta ID: ${proposal.id}
+Título: ${proposal.descricao}
+Status: ${getStatusLabel(proposal.status?.nome || "")}
+Valor Total: R$ ${proposal.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+Data de Criação: ${new Date(proposal.dataCriacao).toLocaleDateString("pt-BR")}
 
-${contract.secoes?.map(section =>
+${
+	contractSections
+		?.map(
+			(section) =>
 				`${section.numero}. ${section.titulo}\n\n${section.texto}\n\n`
-			).join('') || 'Nenhuma seção disponível.'}
+		)
+		.join("") || "Nenhuma seção disponível."
+}
 			`;
 
-			const blob = new Blob([contractText], { type: 'text/plain;charset=utf-8' });
+			const blob = new Blob([contractText], {
+				type: "text/plain;charset=utf-8",
+			});
 			const url = URL.createObjectURL(blob);
-			const a = document.createElement('a');
+			const a = document.createElement("a");
 			a.href = url;
-			a.download = `contrato-${contract.id}.txt`;
+			a.download = `contrato-${proposal.id}.txt`;
 			document.body.appendChild(a);
 			a.click();
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
 		} catch (error) {
-			console.error('Erro ao baixar contrato:', error);
+			console.error("Erro ao baixar contrato:", error);
 		} finally {
 			setDownloading(false);
 		}
@@ -99,17 +133,9 @@ ${contract.secoes?.map(section =>
 						<div className="flex items-center gap-3">
 							<FileText className="w-6 h-6 text-blue-600" />
 							<DialogTitle className="text-xl font-semibold">
-								{contract ? `Contrato #${contract.id}` : 'Contrato'}
+								{proposal ? `Contrato #${proposal.id}` : "Contrato"}
 							</DialogTitle>
 						</div>
-						<Button
-							variant="transparent"
-							size="sm"
-							onClick={onClose}
-							className="p-2"
-						>
-							<X className="w-4 h-4" />
-						</Button>
 					</div>
 				</DialogHeader>
 
@@ -123,7 +149,7 @@ ${contract.secoes?.map(section =>
 						<p>Erro ao carregar contrato</p>
 						<p className="text-sm text-gray-400 mt-2">{error.message}</p>
 					</div>
-				) : contract ? (
+				) : proposal ? (
 					<div className="space-y-6">
 						{/* Informações do contrato */}
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
@@ -132,7 +158,7 @@ ${contract.secoes?.map(section =>
 								<div>
 									<p className="text-sm text-gray-500">Criado em</p>
 									<p className="font-medium">
-										{new Date(contract.dataCriacao).toLocaleDateString('pt-BR')}
+										{new Date(proposal.dataCriacao).toLocaleDateString("pt-BR")}
 									</p>
 								</div>
 							</div>
@@ -141,8 +167,10 @@ ${contract.secoes?.map(section =>
 								<User className="w-4 h-4 text-gray-500" />
 								<div>
 									<p className="text-sm text-gray-500">Status</p>
-									<Badge className={getStatusColor(contract.status?.nome || "")}>
-										{getStatusLabel(contract.status?.nome || "")}
+									<Badge
+										className={getStatusColor(proposal.status?.nome || "")}
+									>
+										{getStatusLabel(proposal.status?.nome || "")}
 									</Badge>
 								</div>
 							</div>
@@ -152,7 +180,10 @@ ${contract.secoes?.map(section =>
 								<div>
 									<p className="text-sm text-gray-500">Valor Total</p>
 									<p className="font-medium">
-										R$ {contract.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+										R${" "}
+										{proposal.valor.toLocaleString("pt-BR", {
+											minimumFractionDigits: 2,
+										})}
 									</p>
 								</div>
 							</div>
@@ -161,7 +192,7 @@ ${contract.secoes?.map(section =>
 								<Clock className="w-4 h-4 text-gray-500" />
 								<div>
 									<p className="text-sm text-gray-500">Proposta</p>
-									<p className="font-medium">#{contract.idProposta}</p>
+									<p className="font-medium">#{proposal.id}</p>
 								</div>
 							</div>
 						</div>
@@ -170,10 +201,13 @@ ${contract.secoes?.map(section =>
 						<div className="space-y-4">
 							<h3 className="text-lg font-semibold">Conteúdo do Contrato</h3>
 
-							{contract.secoes && contract.secoes.length > 0 ? (
+							{contractSections && contractSections.length > 0 ? (
 								<div className="space-y-6">
-									{contract.secoes.map((section) => (
-										<div key={section.numero} className="border rounded-lg p-6 bg-white">
+									{contractSections.map((section) => (
+										<div
+											key={section.numero}
+											className="border rounded-lg p-6 bg-white"
+										>
 											<h4 className="text-md font-semibold mb-3">
 												{section.numero}. {section.titulo}
 											</h4>
@@ -187,7 +221,9 @@ ${contract.secoes?.map(section =>
 								</div>
 							) : (
 								<div className="border rounded-lg p-6 bg-gray-50 text-center">
-									<p className="text-gray-500">Nenhuma seção disponível para este contrato.</p>
+									<p className="text-gray-500">
+										Nenhuma seção disponível para este contrato.
+									</p>
 								</div>
 							)}
 						</div>
@@ -201,19 +237,22 @@ ${contract.secoes?.map(section =>
 								className="flex items-center gap-2"
 							>
 								<Download className="w-4 h-4" />
-								{downloading ? 'Baixando...' : 'Baixar Contrato'}
+								{downloading ? "Baixando..." : "Baixar Contrato"}
 							</Button>
 
 							<div className="flex gap-3">
 								<Button variant="outline" onClick={onClose}>
 									Fechar
 								</Button>
-								{contract.status?.nome === 'Aceita' && (
-									<Button 
+								{proposal.status?.nome === "Aceita" && (
+									<Button
 										className="bg-green-600 hover:bg-green-700"
 										onClick={() => {
 											if (identificadorUnico) {
-												navigate({ to: `/band/contract/${identificadorUnico}` });
+												// eslint-disable-next-line @typescript-eslint/no-floating-promises
+												navigate({
+													to: `/band/contract/${identificadorUnico}`,
+												});
 												onClose();
 											}
 										}}
@@ -234,4 +273,3 @@ ${contract.secoes?.map(section =>
 		</Dialog>
 	);
 };
-

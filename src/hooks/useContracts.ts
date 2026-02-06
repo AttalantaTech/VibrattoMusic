@@ -49,12 +49,12 @@ export const useContractPDF = (identificadorUnico: string) => {
 /**
  * Hook to load contract sections for editing
  */
-export const useContractSections = (identificadorUnico: string) => {
+export const useContractSections = (idProdutoMusical: number) => {
 	return useQuery({
-		queryKey: CONTRACT_QUERY_KEYS.sections(identificadorUnico),
+		queryKey: CONTRACT_QUERY_KEYS.sections(idProdutoMusical.toString()),
 		queryFn: () =>
-			contractService.listContractSectionsByIdentificador(identificadorUnico),
-		enabled: !!identificadorUnico && identificadorUnico.length > 0,
+			contractService.listContractSectionsByMusicalProductId(idProdutoMusical),
+		enabled: !!idProdutoMusical,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 		retry: 2,
 		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
@@ -107,6 +107,12 @@ export const useMyContracts = (): ReturnType<
 	const user = useAuthStore((state) => state.user);
 	const { activeProduct } = useActiveMusicalProduct();
 
+	console.log("🔍 Debug - useMyContracts called with:", {
+		user: user?.id,
+		activeProduct: activeProduct?.id,
+		activeProductName: activeProduct?.name,
+	});
+
 	return useQuery({
 		queryKey: CONTRACT_QUERY_KEYS.mine(),
 		queryFn: async (): Promise<Array<ContractResponse>> => {
@@ -115,6 +121,11 @@ export const useMyContracts = (): ReturnType<
 			}
 
 			try {
+				console.log(
+					"🔍 Debug - Loading proposals for product:",
+					activeProduct.id
+				);
+
 				const productId = Number(activeProduct.id);
 				if (isNaN(productId)) {
 					return [];
@@ -130,6 +141,8 @@ export const useMyContracts = (): ReturnType<
 					DataAte: null,
 				});
 
+				console.log("🔍 Debug - Found proposals:", proposals?.length || 0);
+
 				if (!Array.isArray(proposals) || proposals.length === 0) {
 					return [];
 				}
@@ -138,14 +151,24 @@ export const useMyContracts = (): ReturnType<
 				const proposal = proposals[0];
 
 				if (!proposal || !proposal.identificadorUnico) {
+					console.log(
+						"🔍 Debug - No valid proposal with identificadorUnico found"
+					);
 					return [];
 				}
+
+				console.log("🔍 Debug - Using proposal:", {
+					id: proposal.id,
+					identificadorUnico: proposal.identificadorUnico,
+					status: proposal.status?.nome,
+				});
 
 				// Load the contract using the proposal's identificadorUnico
 				const contract = await contractService.loadContract(
 					proposal.identificadorUnico
 				);
 
+				console.log("🔍 Debug - Contract loaded successfully");
 				return [contract];
 			} catch (error) {
 				console.log("🔍 Debug - No contract found or error occurred:", error);
@@ -215,12 +238,20 @@ export const useContractPermissions = (identificadorUnico: string) => {
 
 			// This would check contract ownership and status
 			// For now, return basic permissions
-			const contract = await contractService.loadContract(identificadorUnico);
+			const proposal = await proposalService
+				.listProposals({
+					IdentificadorUnico: identificadorUnico,
+				})
+				.then((proposals) => proposals[0]);
+
+			if (!proposal) {
+				return { canEdit: false, canView: false };
+			}
 
 			return {
 				canEdit:
-					contract.status.nome === "Assinado" ||
-					contract.status.nome === "Aceita",
+					proposal.status.nome === "Assinado" ||
+					proposal.status.nome === "Aceita",
 				canView: true,
 				isOwner: true, // TODO: Check actual ownership
 			};
