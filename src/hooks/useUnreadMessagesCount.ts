@@ -1,16 +1,12 @@
 import { useMemo } from "react";
 import { useConversations } from "./useMessaging";
-import { useActiveMusicalProduct } from "./useActiveMusicalProduct";
 
 /**
  * Hook to get the total count of unread messages across all conversations
  * Updates every 5 seconds for real-time feel
  */
 export const useUnreadMessagesCount = () => {
-	const { activeProduct } = useActiveMusicalProduct();
-	const conversations = useConversations(
-		activeProduct?.id ? Number(activeProduct?.id) : undefined
-	);
+	const conversations = useConversations(undefined, true);
 
 	const totalUnreadMessages = useMemo(() => {
 		if (!conversations.data?.data) return 0;

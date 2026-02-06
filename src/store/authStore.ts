@@ -71,15 +71,13 @@ export const useAuthStore = create<AuthState>()(
 						];
 
 						// Remove ALL keys except the ones we want to keep
-						keys.forEach((key) => {
+						keys.forEach(key => {
 							if (!keysToKeep.includes(key)) {
 								localStorage.removeItem(key);
 							}
 						});
 
-						console.log(
-							`🧹 Cleared ${keys.length - keysToKeep.length} items from localStorage on logout`
-						);
+						console.log(`🧹 Cleared ${keys.length - keysToKeep.length} items from localStorage on logout`);
 					}
 				} catch (error) {
 					console.warn("Failed to clear user data from localStorage:", error);
