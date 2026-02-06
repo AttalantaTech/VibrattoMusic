@@ -126,11 +126,15 @@ export const Login = () => {
 					error instanceof Error
 						? error.message
 						: "Erro ao entrar na conta. Tente novamente.";
-				
+
 				// Don't prefix with "Erro de conexão:" for authentication-related errors
-				if (errorMessage.includes("Invalid") || errorMessage.includes("request")) {
+				if (
+					errorMessage.includes("Invalid") ||
+					errorMessage.includes("request")
+				) {
 					setError("root", {
-						message: "Erro ao entrar na conta. Verifique seus dados e tente novamente.",
+						message:
+							"Erro ao entrar na conta. Verifique seus dados e tente novamente.",
 					});
 				} else {
 					setError("root", {

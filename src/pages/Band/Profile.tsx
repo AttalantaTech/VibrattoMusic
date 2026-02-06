@@ -7,9 +7,10 @@ import { OnboardingProvider } from "../../contexts/OnboardingContext";
 import { useTabWithUrl } from "../../hooks/useTabWithUrl";
 import { MyHiresTab } from "../../components/BandProfile/Hires/MyHiresTab";
 import { useActiveMusicalProduct } from "../../hooks/useActiveMusicalProduct";
-import MessagesTab from "../../components/BandProfile/Messages/MessagesTab";
+import MessagesTab from "../../components/BandProfile/Messages";
 import { ProposalsTab } from "../../components/BandProfile/Proposals/ProposalsTab";
 import { ContractsTab } from "../../components/BandProfile/Contracts/ContractsTab";
+import { MessagesContextProvider } from "@/components/BandProfile/Messages/contexts/MessagesContext/provider";
 import { SalesTab } from "../../components/BandProfile/Sales/SalesTab";
 import { ProfileTab } from "@/components/BandProfile/Account/ProfileTab";
 
@@ -59,7 +60,9 @@ export const BandProfile = () => {
 					</OnboardingProvider>
 				);
 			case "messages":
-				return <MessagesTab />;
+				return (
+						<MessagesTab />
+				);
 			case "sales":
 				return (
 					<div className="flex flex-col w-full h-full gap-6">

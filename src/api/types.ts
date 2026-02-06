@@ -562,13 +562,6 @@ export interface PerformanceMetrics {
 
 // ===== WebSocket Types =====
 
-export interface WebSocketMessage {
-	type: string;
-	data: unknown;
-	timestamp: string;
-	id?: string;
-}
-
 export interface WebSocketConnectionConfig {
 	url: string;
 	protocols?: Array<string>;
@@ -577,47 +570,11 @@ export interface WebSocketConnectionConfig {
 	reconnectInterval?: number;
 }
 
-// ===== Additional Message Types =====
-
-export interface Message {
-	id: string;
-	conversationId: string;
-	senderId: string;
-	receiverId: string;
-	content: string;
-	type: "text" | "image" | "audio" | "file";
-	status: "sent" | "delivered" | "read";
-	createdAt: string;
-	updatedAt: string;
-	metadata?: Record<string, unknown>;
-}
-
-// SignalR specific types for chat
-export interface SignalRMessage {
-	id: number;
-	idConversa: number;
-	idRemetente: number;
-	nomeRemetente?: string;
-	conteudo: string;
-	dataEnvio: string;
-	lida: boolean;
-}
-
 export interface SendMessageRequest {
 	conversationId: string;
 	receiverId: string;
 	content: string;
 	type?: "text" | "image" | "audio" | "file";
-	metadata?: Record<string, unknown>;
-}
-
-export interface Conversation {
-	id: string;
-	participants: Array<string>;
-	lastMessage?: Message;
-	unreadCount: number;
-	createdAt: string;
-	updatedAt: string;
 	metadata?: Record<string, unknown>;
 }
 
