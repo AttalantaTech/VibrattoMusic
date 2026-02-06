@@ -411,7 +411,7 @@ export default function DetailsStep() {
 					placeholder="Ex: 3"
 					type="number"
 					name="numberBandMembers"
-					value={watch("numeroIntegrantes") || 0}
+					value={String(watch("numeroIntegrantes")) || ""}
 					onChange={(event) => {
 						setValue("numeroIntegrantes", Number(event.target.value));
 					}}

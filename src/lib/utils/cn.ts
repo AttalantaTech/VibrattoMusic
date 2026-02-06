@@ -53,5 +53,29 @@ export const extractYouTubeId = (url: string): string | null => {
 		// }
 	}
 
-	return null;
+	try {
+		const parsedUrl = new URL(url);
+
+		// youtube.com/watch?v=ID
+		const v = parsedUrl.searchParams.get("v");
+		if (v) return v;
+
+		// youtu.be/ID
+		if (parsedUrl.hostname === "youtu.be") {
+			const id = parsedUrl.pathname.slice(1);
+
+			return id || null;
+		}
+
+		// youtube.com/embed/ID
+		if (parsedUrl.pathname.startsWith("/embed/")) {
+			const id = parsedUrl.pathname.split("/embed/")[1];
+
+			return id || null;
+		}
+
+		return null;
+	} catch {
+		return null;
+	}
 };

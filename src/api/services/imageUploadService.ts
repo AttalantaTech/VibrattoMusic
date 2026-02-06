@@ -1,5 +1,5 @@
 import type { ApiClient } from "../core/client";
-import type { FileEventType } from "../types";
+import type { FileEventType, ImageDeleteRequest } from "../types";
 
 interface GenerateImageUrlRequest {
 	Evento: string;
@@ -109,7 +109,7 @@ export class ImageUploadService {
 	/**
 	 * Delete an uploaded image
 	 */
-	async deleteImage(url: string): Promise<void> {
-		await this.apiClient.delete("/imagem", { data: { url } });
+	public async deleteImage(data: ImageDeleteRequest): Promise<void> {
+		return this.apiClient.delete<void>("/imagem", { data });
 	}
 }

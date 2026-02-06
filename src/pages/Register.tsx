@@ -297,7 +297,7 @@ export const Register = () => {
 													placeholder={
 														isCPF ? "000.000.000-00" : "00.000.000/0000-00"
 													}
-													mask={isCPF ? "999.999.999-99" : "99.999.999/9999-99"}
+													mask={isCPF ? "000.000.000-00" : "00.000.000/0000-00"}
 													maskPlaceholder=""
 													type="text"
 													required

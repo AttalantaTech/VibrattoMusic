@@ -14,7 +14,7 @@ import { Button } from "../../ui/Button/Button";
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
 import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
 import type {
-	OnboardingSchedule,
+	MusicalProductSchedule,
 	ScheduleApiResponse,
 } from "../../../api/types";
 import type { AgendaEvent } from "../../BandProfile/Agenda/types";
@@ -132,7 +132,7 @@ export default function ScheduleStep() {
 				}));
 
 			// Convert events to API format
-			const scheduleData: OnboardingSchedule = {
+			const scheduleData: MusicalProductSchedule = {
 				id: Number(produtoMusicalId),
 				inicioCalendario:
 					compromissos.length > 0

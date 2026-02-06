@@ -38,34 +38,46 @@ const statusConfig = {
 export const ContractsTab = () => {
 	const [isViewerOpen, setIsViewerOpen] = useState(false);
 	const [isEditorOpen, setIsEditorOpen] = useState(false);
-	
+
 	const navigate = useNavigate();
 	const { activeProduct } = useActiveMusicalProduct();
-	const activeProductId = activeProduct?.id ? Number(activeProduct.id) : undefined;
+	const activeProductId = activeProduct?.id
+		? Number(activeProduct.id)
+		: undefined;
 
-	const { data: proposals, isLoading: proposalsLoading, error: proposalsError } = useProductProposals(activeProductId || 0);
-	
+	const {
+		data: proposals,
+		isLoading: proposalsLoading,
+		error: proposalsError,
+	} = useProductProposals(activeProductId || 0);
+
 	const contractProposal = useMemo(() => {
 		if (!proposals) return null;
 
-		const acceptedProposals = proposals.filter(p =>
-			p.status.nome === "aceito" || p.status.nome === "sinal_pago" || p.status.nome === "concluido"
+		const acceptedProposals = proposals.filter(
+			(p) =>
+				p.status.nome === "aceito" ||
+				p.status.nome === "sinal_pago" ||
+				p.status.nome === "concluido"
 		);
 
 		return acceptedProposals[0] || null;
 	}, [proposals]);
 
-	const { data: contract, isLoading: contractLoading, error: contractError } = useContract(
-		contractProposal?.identificadorUnico || ""
-	);
+	const {
+		data: contract,
+		isLoading: contractLoading,
+		error: contractError,
+	} = useContract(contractProposal?.identificadorUnico || "");
 
-	const { data: contractPdfUrl, isLoading: pdfLoading, error: pdfError } = useContractPDF(
-		contractProposal?.identificadorUnico || ""
-	);
+	const {
+		data: contractPdfUrl,
+		isLoading: pdfLoading,
+		error: pdfError,
+	} = useContractPDF(contractProposal?.identificadorUnico || "");
 
 	const isLoading = proposalsLoading || contractLoading || pdfLoading;
 	const error = proposalsError || contractError || pdfError;
-
 
 	const handleViewContract = () => {
 		setIsViewerOpen(true);
@@ -96,10 +108,13 @@ export const ContractsTab = () => {
 					Erro ao Carregar Contratos
 				</h3>
 				<p className="text-gray-600 max-w-md mb-4">
-					Não foi possível carregar informações do contrato. Tente recarregar a página.
+					Não foi possível carregar informações do contrato. Tente recarregar a
+					página.
 				</p>
 				<Button
-					onClick={() => { window.location.reload(); }}
+					onClick={() => {
+						window.location.reload();
+					}}
 					variant="outline"
 				>
 					Recarregar Página
@@ -117,7 +132,7 @@ export const ContractsTab = () => {
 						Visualize o contrato do seu produto musical
 					</p>
 				</div>
-				
+
 				{!contract && activeProduct && (
 					<Button
 						onClick={() => {
@@ -138,7 +153,8 @@ export const ContractsTab = () => {
 						Nenhum contrato encontrado
 					</h3>
 					<p className="text-gray-600 text-center max-w-md mb-4">
-						Você ainda não possui um contrato ativo. Os contratos são criados automaticamente quando uma proposta é aceita.
+						Você ainda não possui um contrato ativo. Os contratos são criados
+						automaticamente quando uma proposta é aceita.
 					</p>
 				</div>
 			) : (
@@ -147,7 +163,8 @@ export const ContractsTab = () => {
 						<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 							<div>
 								<h3 className="text-lg font-semibold text-gray-900">
-									{contract.titulo || `Contrato - ${contract.tipoEvento?.nome || 'Evento'}`}
+									{contract.titulo ||
+										`Contrato - ${contract.tipoEvento?.nome || "Evento"}`}
 								</h3>
 								<div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-600">
 									<span>Cliente: {contract.contratante?.nome}</span>
@@ -158,11 +175,17 @@ export const ContractsTab = () => {
 								</div>
 							</div>
 							<Badge
-								variant={statusConfig[contract.status?.nome as keyof typeof statusConfig]?.variant || "default"}
+								variant={
+									statusConfig[
+										contract.status?.nome as keyof typeof statusConfig
+									]?.variant || "default"
+								}
 								className="flex items-center gap-1"
 							>
 								<CheckCircle className="h-3 w-3" />
-								{statusConfig[contract.status?.nome as keyof typeof statusConfig]?.label || contract.status?.nome}
+								{statusConfig[
+									contract.status?.nome as keyof typeof statusConfig
+								]?.label || contract.status?.nome}
 							</Badge>
 						</div>
 					</div>
@@ -200,7 +223,8 @@ export const ContractsTab = () => {
 								<Eye className="h-4 w-4 mr-1" />
 								Visualizar em Tela Cheia
 							</Button>
-							{(contract.status?.nome === "aceito" || contract.status?.nome === "Aceita") && (
+							{(contract.status?.nome === "aceito" ||
+								contract.status?.nome === "Aceita") && (
 								<>
 									<Button
 										size="sm"
@@ -214,9 +238,11 @@ export const ContractsTab = () => {
 									<Button
 										size="sm"
 										className="bg-green-600 hover:bg-green-700 text-white"
-										onClick={() => {
+										onClick={async () => {
 											if (contract?.identificadorUnico) {
-												navigate({ to: `/band/contract/${contract.identificadorUnico}` });
+												await navigate({
+													to: `/band/contract/${contract.identificadorUnico}`,
+												});
 											}
 										}}
 									>
@@ -230,7 +256,7 @@ export const ContractsTab = () => {
 									size="sm"
 									variant="outline"
 									onClick={() => {
-										const link = document.createElement('a');
+										const link = document.createElement("a");
 										link.href = contractPdfUrl;
 										link.download = `contrato-${contract.id}.pdf`;
 										document.body.appendChild(link);

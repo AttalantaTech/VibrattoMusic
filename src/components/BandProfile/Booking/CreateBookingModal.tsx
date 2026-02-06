@@ -122,8 +122,8 @@ export const CreateBookingModal = ({
 		}
 	};
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const handleSubmit = async (event: React.FormEvent) => {
+		event.preventDefault();
 
 		if (!availability?.disponivel) {
 			alert("Por favor, verifique a disponibilidade primeiro.");
@@ -184,7 +184,7 @@ export const CreateBookingModal = ({
 							</div>
 							<div className="flex items-center gap-2 text-sm text-gray-600">
 								<MapPin className="w-4 h-4" />
-								<span>{musicalProduct.cidade.Nome}</span>
+								<span>{musicalProduct.cidade.nome}</span>
 							</div>
 						</div>
 					</div>
@@ -203,8 +203,8 @@ export const CreateBookingModal = ({
 									id="dataEvento"
 									type="date"
 									value={formData.dataEvento}
-									onChange={(e) => {
-										handleInputChange("dataEvento", e.target.value);
+									onChange={(event) => {
+										handleInputChange("dataEvento", event.target.value);
 									}}
 									required
 								/>
@@ -215,8 +215,8 @@ export const CreateBookingModal = ({
 									id="local"
 									placeholder="Ex: Salão de Festas Villa Rosa"
 									value={formData.local}
-									onChange={(e) => {
-										handleInputChange("local", e.target.value);
+									onChange={(event) => {
+										handleInputChange("local", event.target.value);
 									}}
 									required
 								/>
@@ -230,8 +230,8 @@ export const CreateBookingModal = ({
 									id="horaInicio"
 									type="time"
 									value={formData.horaInicio}
-									onChange={(e) => {
-										handleInputChange("horaInicio", e.target.value);
+									onChange={(event) => {
+										handleInputChange("horaInicio", event.target.value);
 									}}
 									required
 								/>
@@ -242,8 +242,8 @@ export const CreateBookingModal = ({
 									id="horaFim"
 									type="time"
 									value={formData.horaFim}
-									onChange={(e) => {
-										handleInputChange("horaFim", e.target.value);
+									onChange={(event) => {
+										handleInputChange("horaFim", event.target.value);
 									}}
 									required
 								/>
@@ -322,8 +322,8 @@ export const CreateBookingModal = ({
 									id="cep"
 									placeholder="00000-000"
 									value={formData.endereco?.cep}
-									onChange={(e) => {
-										handleInputChange("endereco.cep", e.target.value);
+									onChange={(event) => {
+										handleInputChange("endereco.cep", event.target.value);
 									}}
 									required
 								/>
@@ -334,8 +334,8 @@ export const CreateBookingModal = ({
 									id="numero"
 									placeholder="123"
 									value={formData.endereco?.numero}
-									onChange={(e) => {
-										handleInputChange("endereco.numero", e.target.value);
+									onChange={(event) => {
+										handleInputChange("endereco.numero", event.target.value);
 									}}
 									required
 								/>
@@ -348,8 +348,8 @@ export const CreateBookingModal = ({
 								id="logradouro"
 								placeholder="Rua das Flores"
 								value={formData.endereco?.logradouro}
-								onChange={(e) => {
-									handleInputChange("endereco.logradouro", e.target.value);
+								onChange={(event) => {
+									handleInputChange("endereco.logradouro", event.target.value);
 								}}
 								required
 							/>
@@ -362,8 +362,8 @@ export const CreateBookingModal = ({
 									id="bairro"
 									placeholder="Centro"
 									value={formData.endereco?.bairro}
-									onChange={(e) => {
-										handleInputChange("endereco.bairro", e.target.value);
+									onChange={(event) => {
+										handleInputChange("endereco.bairro", event.target.value);
 									}}
 									required
 								/>
@@ -374,8 +374,8 @@ export const CreateBookingModal = ({
 									id="cidade"
 									placeholder="São Paulo"
 									value={formData.endereco?.cidade}
-									onChange={(e) => {
-										handleInputChange("endereco.cidade", e.target.value);
+									onChange={(event) => {
+										handleInputChange("endereco.cidade", event.target.value);
 									}}
 									required
 								/>
@@ -389,10 +389,10 @@ export const CreateBookingModal = ({
 								placeholder="SP"
 								maxLength={2}
 								value={formData.endereco?.estado}
-								onChange={(e) => {
+								onChange={(event) => {
 									handleInputChange(
 										"endereco.estado",
-										e.target.value.toUpperCase()
+										event.target.value.toUpperCase()
 									);
 								}}
 								required
@@ -415,8 +415,8 @@ export const CreateBookingModal = ({
 								step="0.01"
 								min="0"
 								value={formData.valor}
-								onChange={(e) => {
-									handleInputChange("valor", parseFloat(e.target.value));
+								onChange={(event) => {
+									handleInputChange("valor", parseFloat(event.target.value));
 								}}
 							/>
 						</div>
@@ -431,8 +431,8 @@ export const CreateBookingModal = ({
 								placeholder="Adicione detalhes sobre o evento, requisitos especiais, etc."
 								rows={3}
 								value={formData.observacoes}
-								onChange={(e) => {
-									handleInputChange("observacoes", e.target.value);
+								onChange={(event) => {
+									handleInputChange("observacoes", event.target.value);
 								}}
 							/>
 						</div>

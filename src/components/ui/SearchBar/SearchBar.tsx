@@ -91,15 +91,15 @@ export const SearchBar = ({
 		};
 	}, []);
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
+	const handleSubmit = (event: React.FormEvent) => {
+		event.preventDefault();
 		if (searchQuery.trim()) {
 			saveToHistory(searchQuery.trim());
 			setShowSuggestions(false);
 			if (onSearch) {
 				onSearch(searchQuery.trim());
 			} else {
-				navigate({
+				void navigate({
 					to: "/search",
 					search: { q: searchQuery.trim() },
 				});
@@ -114,7 +114,7 @@ export const SearchBar = ({
 		if (onSearch) {
 			onSearch(suggestion);
 		} else {
-			navigate({
+			void navigate({
 				to: "/search",
 				search: { q: suggestion },
 			});
@@ -128,10 +128,10 @@ export const SearchBar = ({
 		}
 	};
 
-	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setSearchQuery(e.target.value);
+	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setSearchQuery(event.target.value);
 		// Show suggestions if there's input or history
-		if (e.target.value.length > 0 || searchHistory.length > 0) {
+		if (event.target.value.length > 0 || searchHistory.length > 0) {
 			setShowSuggestions(true);
 		}
 	};
@@ -146,7 +146,7 @@ export const SearchBar = ({
 	const handleArtistSelect = (artistId: number, artistName: string) => {
 		saveToHistory(artistName);
 		setShowSuggestions(false);
-		navigate({
+		void navigate({
 			to: "/band/profile/$id",
 			params: { id: artistId.toString() },
 		});
