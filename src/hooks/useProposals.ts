@@ -100,7 +100,9 @@ export const useUpdateProposalStatus = () => {
 				case "rejeitado":
 					// If reasonId is provided, use it; otherwise default to 1 (Outro motivo)
 					if (reasonId) {
-						return proposalService.rejectProposalWithReason(proposalId, { IdMotivoRejeicao: reasonId });
+						return proposalService.rejectProposalWithReason(proposalId, {
+							IdMotivoRejeicao: reasonId,
+						});
 					}
 					return proposalService.rejectProposal(proposalId);
 				case "cancelado":
@@ -135,14 +137,7 @@ export const useUpdateProposalStatus = () => {
  * Hook to fetch filtered proposals with local filtering/sorting/pagination
  */
 export const useFilteredProposals = (filters: {
-	status?: Array<
-		| "pendente"
-		| "aguardando_pagamento"
-		| "aceito"
-		| "concluido"
-		| "rejeitado"
-		| "cancelado"
-	>;
+	status?: Array<string>;
 	searchTerm?: string;
 	ordenacao?: {
 		campo: "data" | "valor" | "status" | "cliente" | "evento";
@@ -164,7 +159,7 @@ export const useFilteredProposals = (filters: {
 		queryFn: async () => {
 			if (!productId) {
 				return {
-					data: [] as ProposalResponse[],
+					data: [] as Array<ProposalResponse>,
 					pagination: {
 						total: 0,
 						pagina: 1,
@@ -188,12 +183,13 @@ export const useFilteredProposals = (filters: {
 
 			const results = await proposalService.listProposals(payload);
 
-			let filtered: ProposalResponse[] = results;
+			let filtered: Array<ProposalResponse> = results;
 			// Local filtering by status
 			if (filters.status && filters.status.length > 0) {
-				const set = new Set(filters.status);
-				filtered = filtered.filter((p) => set.has(p.status as any));
+				const set = new Set(filters.status.map((s) => s.toLowerCase()));
+				filtered = filtered.filter((p) => set.has(p.status.nome.toLowerCase()));
 			}
+
 			// Local search by term (in descricao, local, nomes)
 			if (filters.searchTerm && filters.searchTerm.trim().length > 0) {
 				const term = filters.searchTerm.trim().toLowerCase();
@@ -220,8 +216,10 @@ export const useFilteredProposals = (filters: {
 						case "valor":
 							return ((a.valor ?? 0) - (b.valor ?? 0)) * factor;
 						case "status": {
-							const statusA = typeof a.status === "object" ? a.status.nome : a.status;
-							const statusB = typeof b.status === "object" ? b.status.nome : b.status;
+							const statusA =
+								typeof a.status === "object" ? a.status.nome : a.status;
+							const statusB =
+								typeof b.status === "object" ? b.status.nome : b.status;
 							return statusA.localeCompare(statusB) * factor;
 						}
 						case "cliente":

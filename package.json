@@ -21,7 +21,7 @@
 		"format": "prettier \"src/**/*.{ts,tsx}\" --write",
 		"lint": "eslint --max-warnings 0",
 		"lint:fix": "eslint --max-warnings 0 --fix",
-		"dev": "vite",
+		"dev": "vite --mode development",
 		"storybook": "storybook dev -p 6006",
 		"storybook:setup": "node node_modules/@storybook/addon-styling/bin/postinstall.js",
 		"storybook:build": "storybook build",

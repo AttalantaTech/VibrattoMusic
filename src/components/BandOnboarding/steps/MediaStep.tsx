@@ -37,6 +37,7 @@ import {
 	FaTwitter,
 	FaLinkedin,
 	FaSpotify,
+	FaBandcamp,
 } from "react-icons/fa";
 import { SiApplemusic } from "react-icons/si";
 import { Button } from "../../ui/Button/Button";
@@ -48,6 +49,7 @@ import { FileUploadBox } from "@/components/forms/FileUploadBox/FileUploadBox";
 import { MediaPlayer } from "@/components/MediaPlayer/MediaPlayer";
 import { ImageUploadArea } from "@/components/ImageUploadArea/ImageUploadArea";
 import { toast } from "sonner";
+import { useSocialNetworks } from "@/hooks/useFilters";
 
 // Define media schema types
 const mediaSchema = z.object({
@@ -93,6 +95,21 @@ interface MediaData {
 	imagensCarrossel?: Array<{ id: number | null; link: string }>;
 }
 
+interface SocialNetworkList {
+	idRedeSocial: number;
+	name: string;
+	icon: ReactNode;
+	placeholder: string;
+	link: string;
+}
+
+// Define social networks with their respective icons
+interface SocialNetwork {
+	name: string;
+	placeholder: string;
+	icon: ReactNode;
+}
+
 const styles = {
 	titleText: "text-sm font-medium text-gray-700",
 	sectionContainer: "bg-gray-50 py-6 border-b-2 border-gray-200",
@@ -101,62 +118,61 @@ const styles = {
 	subtitle: "block text-gray-500 text-sm my-4",
 };
 
-// Define social networks with their respective icons
-interface SocialNetwork {
-	id: number;
-	name: string;
-	placeholder: string;
-	icon: ReactNode;
-}
-
-const socialNetworks: Array<SocialNetwork> = [
+const socialNetworkCatalog: Array<SocialNetwork> = [
 	{
-		id: 1,
 		name: "Instagram",
 		placeholder: "https://instagram.com/seuperfil",
 		icon: <FaInstagram color="#E4405F" size={24} />,
 	},
 	{
-		id: 2,
 		name: "Facebook",
 		placeholder: "https://facebook.com/suapagina",
 		icon: <FaFacebook color="#1877F2" size={24} />,
 	},
 	{
-		id: 3,
-		name: "Twitter",
+		name: "Twitter/X",
 		placeholder: "https://twitter.com/seuperfil",
 		icon: <FaTwitter color="#1DA1F2" size={24} />,
 	},
 	{
-		id: 4,
 		name: "TikTok",
 		placeholder: "https://tiktok.com/@seuperfil",
 		icon: <FaTiktok color="#000000" size={24} />,
 	},
 	{
-		id: 5,
 		name: "LinkedIn",
 		placeholder: "https://linkedin.com/in/seuperfil",
 		icon: <FaLinkedin color="#0A66C2" size={24} />,
 	},
 	{
-		id: 6,
 		name: "Spotify",
 		placeholder: "https://open.spotify.com/artist/...",
 		icon: <FaSpotify color="#1DB954" size={24} />,
 	},
 	{
-		id: 7,
 		name: "Apple Music",
 		placeholder: "https://music.apple.com/artist/...",
 		icon: <SiApplemusic color="#FA243C" size={24} />,
 	},
 	{
-		id: 8,
 		name: "Deezer",
 		placeholder: "https://deezer.com/artist/...",
 		icon: <Music color="#FF6D42" size={24} />,
+	},
+	{
+		name: "YouTube",
+		placeholder: "https://youtube.com/artist/...",
+		icon: <FaYoutube color="#FA243C" size={24} />,
+	},
+	{
+		name: "SoundCloud",
+		placeholder: "https://soundcloud.com/artist/...",
+		icon: <FaSoundcloud color="#FF5500" size={24} />,
+	},
+	{
+		name: "Bandcamp",
+		placeholder: "https://bandcamp.com/artist/...",
+		icon: <FaBandcamp color="#1DA1F2" size={24} />,
 	},
 ];
 
@@ -166,6 +182,7 @@ export default function MediaStep() {
 
 	const { updateData, markStepComplete } = useOnboarding();
 
+	const { data: socialNetworksData } = useSocialNetworks(true);
 	const { data: onboardingData } = useOnboardingData();
 	const produtoMusicalId = onboardingData ? onboardingData.id : 0;
 
@@ -203,6 +220,10 @@ export default function MediaStep() {
 	>(onboardingData?.imagens || []);
 
 	const [uploadingImage, setUploadingImage] = useState<string | null>(null);
+
+	const [socialNetworkList, setSocialNetworkList] = useState<
+		Array<SocialNetworkList>
+	>([]);
 
 	const form = useForm<MediaData>({
 		resolver: zodResolver(mediaSchema),
@@ -496,6 +517,40 @@ export default function MediaStep() {
 		}
 	}, [spotifyUrl, setValue]);
 
+	useEffect(() => {
+		const mergedNetworks = socialNetworksData
+			? socialNetworksData
+					.map((apiItem) => {
+						const catalogItem = socialNetworkCatalog.find(
+							(c) =>
+								c.name.toLowerCase().trim() ===
+								apiItem.Nome.toLowerCase().trim()
+						);
+
+						if (!catalogItem) {
+							return {
+								idRedeSocial: apiItem.Id,
+								name: apiItem.Nome,
+								icon: "",
+								placeholder: "",
+								link: "",
+							};
+						}
+
+						return {
+							idRedeSocial: apiItem.Id,
+							name: catalogItem.name,
+							icon: catalogItem.icon,
+							placeholder: catalogItem.placeholder,
+							link: "",
+						};
+					})
+					.filter(Boolean)
+			: [];
+
+		setSocialNetworkList(mergedNetworks);
+	}, [socialNetworksData]);
+
 	return (
 		<StepLayout
 			currentStep={3}
@@ -565,8 +620,8 @@ export default function MediaStep() {
 
 							<div className="space-y-3">
 								{socialFields.map((field, index) => {
-									const network = socialNetworks.find(
-										(n) => n.id === field.idRedeSocial
+									const network = socialNetworkList.find(
+										(n) => n.idRedeSocial === field.idRedeSocial
 									);
 
 									return (
@@ -613,19 +668,22 @@ export default function MediaStep() {
 								})}
 
 								<div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
-									{socialNetworks
+									{socialNetworkList
 										.filter(
-											(n) => !socialFields.some((f) => f.idRedeSocial === n.id)
+											(n) =>
+												!socialFields.some(
+													(f) => f.idRedeSocial === n.idRedeSocial
+												)
 										)
 										.map((network) => (
 											<Button
-												key={network.id}
+												key={network.idRedeSocial}
 												type="button"
 												variant="secondary"
 												className="flex items-center gap-2 text-xs sm:text-sm"
 												onClick={() => {
 													appeendSocial({
-														idRedeSocial: network.id,
+														idRedeSocial: network.idRedeSocial,
 														link: "",
 														idProdutoMusical: produtoMusicalId,
 														nomeRedeSocial: network.name,

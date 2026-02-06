@@ -3,13 +3,13 @@ import { musicalProductService, onboardingService } from "../api";
 import type {
 	MusicalProductSearchRequest,
 	MusicalProductListApiResponse,
-	OnboardingContact,
 	OnboardingDetails,
 	OnboardingMedia,
 	OnboardingImages,
 	OnboardingTechnicalConfig,
 	OnboardingSchedule,
 } from "../api/types";
+import type { OnboardingContactData } from "@/utils/validation";
 
 // Query Keys
 export const musicalProductKeys = {
@@ -21,6 +21,7 @@ export const musicalProductKeys = {
 	onboarding: (id: number) =>
 		[...musicalProductKeys.all, "onboarding", id] as const,
 	pending: () => [...musicalProductKeys.all, "pending"] as const,
+	schedule: () => [...musicalProductKeys.all, "schedule"] as const,
 };
 
 /**
@@ -76,6 +77,23 @@ export const useMusicalProduct = (
 };
 
 /**
+ * Hook to GET schedule
+ */
+export const useMusicalProductSchedule = (
+	productId: number,
+	enabled: boolean = true
+) => {
+	return useQuery({
+		queryKey: musicalProductKeys.schedule(),
+		queryFn: () => {
+			return onboardingService.getSchedule(productId);
+		},
+		enabled: enabled && productId > 0,
+		staleTime: 5 * 60 * 1000, // 5 minutes
+	});
+};
+
+/**
  * Hook to get onboarding data
  */
 export const useOnboardingData = (enabled: boolean = true) => {
@@ -99,7 +117,7 @@ export const useOnboardingData = (enabled: boolean = true) => {
 export const useSaveOnboardingContact = () => {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: (contactData: OnboardingContact) =>
+		mutationFn: (contactData: OnboardingContactData) =>
 			musicalProductService.saveOnboardingContact(contactData),
 
 		onSuccess: () => {

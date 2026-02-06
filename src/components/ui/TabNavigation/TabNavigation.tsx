@@ -1,7 +1,10 @@
 import clsx from "clsx";
+import { Dropdown } from "../Dropdown/Dropdown";
+import { ChevronDown, FileText } from "lucide-react";
 
 type Tab = {
 	label: string;
+	subTabs?: Array<Tab>;
 	value: string;
 	badgeCount?: number;
 	mobileLabel?: string;
@@ -43,36 +46,69 @@ export const TabNavigation = ({
 }: TabNavigationProps) => {
 	return (
 		<div
-			className={`flex w-full items-center ${variant === "pills" ? "justify-start gap-3" : "justify-start lg:justify-center gap-2 lg:gap-4"} px-3 sm:px-4 py-2 overflow-x-auto scrollbar-hide`}
+			className={`
+				flex w-full items-center
+				${variant === "pills" ? "justify-start gap-3" : "justify-start lg:justify-center gap-2 lg:gap-4"} 
+				px-3 sm:px-4 py-2 overflow-visible scrollbar-hide`}
 		>
 			{tabs.map((tab) => {
 				const isActive = tab.value === currentTab;
+				const currentSubTab = tab.subTabs?.find(
+					(subTab) => subTab.value === currentTab
+				);
 
 				return (
-					<button
-						key={tab.value}
-						className={clsx(
-							variant === "pills"
-								? "flex items-center justify-center"
-								: "relative px-3 sm:px-4 py-2 font-medium h-12 min-w-[100px] sm:min-w-[120px] text-center flex items-center justify-center whitespace-nowrap",
-							styles[variant].button,
-							isActive ? styles[variant].active : styles[variant].inactive
-						)}
-						onClick={() => {
-							onChange(tab.value);
-						}}
+					<Dropdown
+						align="left"
+						trigger={
+							<>
+								<button
+									key={tab.value}
+									className={clsx(
+										variant === "pills"
+											? "flex items-center justify-center"
+											: "h-16 relative px-3 sm:px-4 py-2 font-medium min-w-[100px] sm:min-w-[120px] text-center flex items-center justify-center whitespace-nowrap",
+										styles[variant].button,
+										isActive || currentSubTab
+											? styles[variant].active
+											: styles[variant].inactive
+									)}
+									onClick={() => {
+										if (!tab.subTabs) {
+											onChange(tab.value);
+										}
+									}}
+								>
+									{tab.label}
+									{tab.subTabs && <ChevronDown className="ml-1 h-4 w-4" />}
+								</button>
+								{tab.badgeCount !== undefined && (
+									<span className="ml-1 sm:ml-2 text-xs text-gray-600 bg-gray-100 px-1.5 sm:px-2 py-0.5 rounded-full font-semibold">
+										{tab.badgeCount}
+									</span>
+								)}
+								{variant === "underline" && (isActive || currentSubTab) && (
+									<div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
+								)}
+							</>
+						}
+						className="text-sm"
 					>
-						{tab.label}
-
-						{tab.badgeCount !== undefined && (
-							<span className="ml-1 sm:ml-2 text-xs text-gray-600 bg-gray-100 px-1.5 sm:px-2 py-0.5 rounded-full font-semibold">
-								{tab.badgeCount}
-							</span>
-						)}
-						{variant === "underline" && isActive && (
-							<div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
-						)}
-					</button>
+						{tab.subTabs &&
+							tab.subTabs.map((subTab) => (
+								<button
+									onClick={() => {
+										onChange(subTab.value);
+									}}
+									className={`flex gap-2 items-center m-0.5 p-2 rounded-md hover:bg-gray-200
+										${subTab.value === currentTab && "bg-gray-200"}`}
+									key={"subtab" + subTab.value}
+								>
+									<FileText color="gray" size={16} />
+									{subTab.label}
+								</button>
+							))}
+					</Dropdown>
 				);
 			})}
 		</div>

@@ -41,7 +41,7 @@ export interface EnvironmentConfig {
 // Development Environment
 export const developmentConfig: EnvironmentConfig = {
 	apiBaseUrl:
-		"https://apivibratto-api-ctdqdacrascbhzcz.brazilsouth-01.azurewebsites.net/api",
+		import.meta.env["VITE_VIBRATTO_API_BASE_URL"] || "http://localhost:3001",
 	timeout: 10000,
 	retryConfig: {
 		maxRetries: 2,
