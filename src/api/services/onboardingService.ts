@@ -1,11 +1,11 @@
 import type { ApiClient } from "../core/client";
 import type {
-	OnboardingContact,
-	OnboardingDetails,
-	OnboardingMedia,
-	OnboardingImages,
-	OnboardingTechnicalConfig,
-	OnboardingSchedule,
+	MusicalProductContact,
+	MusicalProductDetails,
+	MusicalProductMedia,
+	MusicalProductImages,
+	MusicalProductTechnicalConfig,
+	MusicalProductSchedule,
 	ScheduleApiResponse,
 	OnboardingApiResponse,
 	ImageDeleteRequest,
@@ -34,7 +34,7 @@ export class OnboardingService {
 	 * Step 1: Save contact information
 	 */
 	public async createAndUpdateContact(
-		data: OnboardingContact
+		data: MusicalProductContact
 	): Promise<{ id: number }> {
 		return this.apiClient.post<{ id: number }>(
 			"/produtomusical/onboarding/contato",
@@ -47,7 +47,7 @@ export class OnboardingService {
 	 */
 	public async updateDetails(
 		productId: number,
-		data: OnboardingDetails
+		data: MusicalProductDetails
 	): Promise<void> {
 		return this.apiClient.post<void>(
 			`/produtomusical/onboarding/${productId}/detalhes`,
@@ -60,7 +60,7 @@ export class OnboardingService {
 	 */
 	public async updateMedia(
 		productId: number,
-		data: OnboardingMedia
+		data: MusicalProductMedia
 	): Promise<void> {
 		return this.apiClient.post<void>(
 			`/produtomusical/onboarding/${productId}/midias`,
@@ -73,7 +73,7 @@ export class OnboardingService {
 	 */
 	public async updateImages(
 		productId: number,
-		data: OnboardingImages
+		data: MusicalProductImages
 	): Promise<void> {
 		return this.apiClient.post<void>(
 			`/produtomusical/onboarding/${productId}/imagens`,
@@ -105,7 +105,7 @@ export class OnboardingService {
 	 */
 	public async updateTechnical(
 		productId: number,
-		data: OnboardingTechnicalConfig
+		data: MusicalProductTechnicalConfig
 	): Promise<void> {
 		return this.apiClient.post<void>(
 			`/produtomusical/onboarding/${productId}/configuracaoTecnica`,
@@ -118,7 +118,7 @@ export class OnboardingService {
 	 */
 	public async updateSchedule(
 		productId: number,
-		data: OnboardingSchedule
+		data: MusicalProductSchedule
 	): Promise<void> {
 		return this.apiClient.post<void>(
 			`/produtomusical/onboarding/${productId}/agenda`,

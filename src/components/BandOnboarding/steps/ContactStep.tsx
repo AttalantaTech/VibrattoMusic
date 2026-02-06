@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	Loader2,
 	Briefcase,
-	User,
 	Phone,
 	MapPin,
 	UserIcon,
@@ -13,8 +12,9 @@ import {
 
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
 import { useNavigate } from "@tanstack/react-router";
-import { useAuthStore } from "../../../store/authStore";
+import { useAuthStore } from "@/store/authStore";
 import type { z } from "zod";
+import type { OnboardingContactData } from "../../../utils/validation";
 import { ContactValidationSchema } from "../../../utils/validation";
 import { Button } from "../../ui/Button/Button";
 import { InputField } from "../../forms/InputField/InputField";
@@ -24,7 +24,6 @@ import {
 	useOnboardingData,
 	useSaveOnboardingContact,
 } from "../../../hooks/useMusicalProducts";
-import type { OnboardingContact } from "@/api/types";
 import { toast } from "sonner";
 
 // helper text matching Step1
@@ -71,7 +70,7 @@ export default function ContactStep() {
 	}, [onboardingData]);
 
 	const { user } = useAuthStore();
-	const { register, handleSubmit, watch, setValue, formState, reset } =
+	const { register, handleSubmit, watch, setValue, formState, reset, control } =
 		useForm<ContactFormData>({
 			resolver: zodResolver(ContactValidationSchema),
 			defaultValues: { ...values },
@@ -94,7 +93,7 @@ export default function ContactStep() {
 			// Remove email field since it's not collected in this form, but add user's email
 			const { ...contactData } = data;
 
-			const payload: OnboardingContact = {
+			const payload: OnboardingContactData = {
 				id: onboardingData?.id ?? 0,
 				...contactData,
 				cnpj: contactData.cnpj?.replace(/\D/g, ""),
@@ -154,16 +153,6 @@ export default function ContactStep() {
 				onSubmit={handleSubmit(onSubmit)}
 				className="flex flex-col w-full h-full gap-6"
 			>
-				<InputField
-					required
-					helperText={helperText}
-					icon={<User size={20} />}
-					label="Nome Completo"
-					disabled
-					value={onboardingData?.usuario.nome || user?.nome || ""}
-					placeholder="Ex: Marcio Almeida Pereira"
-				/>
-
 				<ToggleSwitch
 					name="usaCnpj"
 					checked={watchUsaCnpj}
@@ -175,14 +164,20 @@ export default function ContactStep() {
 
 				{watchUsaCnpj && (
 					<>
-						<InputField
-							required
-							helperText={helperText}
-							icon={<Briefcase size={20} />}
-							label="CNPJ"
-							mask="99.999.999/0001-99"
-							placeholder="XX.XXX.XXX/0001-XX"
-							{...register("cnpj")}
+						<Controller
+							name="cnpj"
+							control={control}
+							render={({ field }) => (
+								<InputField
+									{...field}
+									required={watchUsaCnpj}
+									helperText={helperText}
+									icon={<Briefcase size={20} />}
+									label="CNPJ"
+									mask="00.000.000/0000-00"
+									placeholder="00.000.000/0000-00"
+								/>
+							)}
 						/>
 						{errors.cnpj?.message && (
 							<div className="text-red-500 text-sm">{errors.cnpj.message}</div>
@@ -191,7 +186,7 @@ export default function ContactStep() {
 				)}
 
 				<InputField
-					required
+					required={watchUsaCnpj}
 					helperText={helperText}
 					icon={<Briefcase size={20} />}
 					label="Nome Jurídico (Razão Social)"
@@ -204,20 +199,26 @@ export default function ContactStep() {
 					</div>
 				)}
 
-				<InputField
-					required
-					icon={<Phone size={20} />}
-					label="Telefone"
-					mask="(99) 99999-9999"
-					placeholder="(00) 00000-0000"
-					{...register("telefone")}
+				<Controller
+					name="telefone"
+					control={control}
+					render={({ field }) => (
+						<InputField
+							{...field}
+							required={watchUsaCnpj}
+							icon={<Phone size={20} />}
+							label="Telefone"
+							mask="(00) 00000-0000"
+							placeholder="(00) 00000-0000"
+						/>
+					)}
 				/>
 				{errors.telefone?.message && (
 					<div className="text-red-500 text-sm">{errors.telefone.message}</div>
 				)}
 
 				<InputField
-					required
+					required={watchUsaCnpj}
 					helperText={helperText}
 					icon={<MapPin size={20} />}
 					label="CEP"
@@ -235,7 +236,7 @@ export default function ContactStep() {
 				)}
 
 				<InputField
-					required
+					required={watchUsaCnpj}
 					helperText={`${helperText} ${helpTextContact}`}
 					icon={<MapPin size={20} />}
 					label="Endereço da Sede"
@@ -249,7 +250,7 @@ export default function ContactStep() {
 				)}
 
 				<InputField
-					required
+					required={watchUsaCnpj}
 					label="Número"
 					placeholder="123"
 					{...register("numeroContato")}
@@ -267,7 +268,7 @@ export default function ContactStep() {
 				/>
 
 				<InputField
-					required
+					required={watchUsaCnpj}
 					label="Bairro"
 					placeholder="Centro"
 					{...register("bairroContato")}
@@ -279,7 +280,7 @@ export default function ContactStep() {
 				)}
 
 				<InputField
-					required
+					required={watchUsaCnpj}
 					label="Cidade"
 					placeholder="São Paulo"
 					{...register("cidadeContato")}
@@ -291,7 +292,7 @@ export default function ContactStep() {
 				)}
 
 				<InputField
-					required
+					required={watchUsaCnpj}
 					label="Estado"
 					placeholder="SP"
 					maxLength={2}

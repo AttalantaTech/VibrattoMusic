@@ -38,7 +38,6 @@ import { CreateEventModal } from "./CreateEventModal";
 import { EventDetailsModal } from "./EventDetailsModal";
 import { Button } from "../../ui/Button/Button";
 import { onboardingService } from "../../../api";
-import type { ScheduleApiResponse } from "../../../api/types";
 
 // Calendar utilities
 const getEventHeight = (event: AgendaEvent) => {
@@ -117,7 +116,7 @@ export const AgendaView = ({
 			if (response && Array.isArray(response)) {
 				const apiEvents: Array<AgendaEvent> = [];
 
-				(response as Array<ScheduleApiResponse>).forEach((dayData) => {
+				response.forEach((dayData) => {
 					if (dayData.compromissos && dayData.compromissos.length > 0) {
 						dayData.compromissos.forEach((compromisso) => {
 							// Map API event to AgendaEvent format
@@ -138,6 +137,7 @@ export const AgendaView = ({
 				setEvents(apiEvents);
 			}
 		} catch (error) {
+			console.error(error);
 			toast.error("Erro ao carregar eventos");
 		} finally {
 			setLoading(false);
@@ -147,7 +147,7 @@ export const AgendaView = ({
 	// Load events on mount and when produtoMusicalId changes
 	useEffect(() => {
 		if (produtoMusicalId && (!propEvents || propEvents.length === 0)) {
-			loadEvents();
+			void loadEvents();
 		}
 	}, [produtoMusicalId, loadEvents, propEvents]);
 
@@ -196,6 +196,25 @@ export const AgendaView = ({
 		}
 	};
 
+	// Save events to API
+	const saveEventsToAPI = async (eventsToSave: Array<AgendaEvent>) => {
+		if (!produtoMusicalId) return;
+
+		const scheduleData = {
+			id: produtoMusicalId,
+			compromissos: eventsToSave.map((event) => ({
+				titulo: event.title,
+				descricao: event.description || "",
+				data: format(event.date, "yyyy-MM-dd"),
+				horaInicio: event.startTime,
+				horaFim: event.endTime,
+				disponibilidadeOutrosEventos: event.type !== "show",
+			})),
+		};
+
+		await onboardingService.updateSchedule(produtoMusicalId, scheduleData);
+	};
+
 	const handleDragEnd = async (event: DragEndEvent) => {
 		const { active, over } = event;
 		setDraggedEvent(null);
@@ -236,7 +255,9 @@ export const AgendaView = ({
 
 			// Update local state immediately
 			setEvents((previousEvents) =>
-				previousEvents.map((e) => (e.id === updatedEvent.id ? updatedEvent : e))
+				previousEvents.map((event) =>
+					event.id === updatedEvent.id ? updatedEvent : event
+				)
 			);
 
 			// Call parent handler
@@ -246,35 +267,18 @@ export const AgendaView = ({
 			if (produtoMusicalId) {
 				try {
 					await saveEventsToAPI([
-						...events.filter((e) => e.id !== updatedEvent.id),
+						...events.filter((event) => event.id !== updatedEvent.id),
 						updatedEvent,
 					]);
 					toast.success("Evento movido com sucesso");
 				} catch (error) {
+					console.error(error);
 					// Revert on error
 					setEvents(events);
 					toast.error("Erro ao mover evento");
 				}
 			}
 		}
-	};
-
-	// Save events to API
-	const saveEventsToAPI = async (eventsToSave: Array<AgendaEvent>) => {
-		if (!produtoMusicalId) return;
-
-		const scheduleData = {
-			compromissos: eventsToSave.map((event) => ({
-				titulo: event.title,
-				descricao: event.description || "",
-				data: format(event.date, "yyyy-MM-dd"),
-				horaInicio: event.startTime,
-				horaFim: event.endTime,
-				disponibilidadeOutrosEventos: event.type !== "show",
-			})),
-		};
-
-		await onboardingService.updateSchedule(produtoMusicalId, scheduleData);
 	};
 
 	// Event handlers
@@ -330,6 +334,7 @@ export const AgendaView = ({
 				await saveEventsToAPI(updatedEvents);
 				toast.success("Evento criado com sucesso");
 			} catch (error) {
+				console.error(error);
 				// Revert on error
 				setEvents(events);
 				toast.error("Erro ao criar evento");
@@ -340,8 +345,8 @@ export const AgendaView = ({
 	};
 
 	const handleEventUpdate = async (updatedEvent: AgendaEvent) => {
-		const updatedEvents = events.map((e) =>
-			e.id === updatedEvent.id ? updatedEvent : e
+		const updatedEvents = events.map((event) =>
+			event.id === updatedEvent.id ? updatedEvent : event
 		);
 		setEvents(updatedEvents);
 
@@ -352,6 +357,7 @@ export const AgendaView = ({
 				await saveEventsToAPI(updatedEvents);
 				toast.success("Evento atualizado com sucesso");
 			} catch (error) {
+				console.error(error);
 				setEvents(events);
 				toast.error("Erro ao atualizar evento");
 			}
@@ -362,7 +368,7 @@ export const AgendaView = ({
 	};
 
 	const handleEventDelete = async (eventId: string | number) => {
-		const updatedEvents = events.filter((e) => e.id !== eventId);
+		const updatedEvents = events.filter((event) => event.id !== eventId);
 		setEvents(updatedEvents);
 
 		onEventDelete?.(eventId);
@@ -372,6 +378,7 @@ export const AgendaView = ({
 				await saveEventsToAPI(updatedEvents);
 				toast.success("Evento removido com sucesso");
 			} catch (error) {
+				console.error(error);
 				setEvents(events);
 				toast.error("Erro ao remover evento");
 			}
@@ -469,11 +476,7 @@ export const AgendaView = ({
 							</button>
 
 							{showCreateButton && !readOnly && (
-								<Button
-									onClick={handleCreateEvent}
-									variant="primary"
-									size="sm"
-								>
+								<Button onClick={handleCreateEvent} variant="primary" size="sm">
 									<Plus size={20} />
 								</Button>
 							)}

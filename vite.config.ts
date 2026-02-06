@@ -13,6 +13,7 @@ export default defineConfig({
 	},
 	server: {
 		host: true,
+		port: 8000,
 		strictPort: true,
 		proxy: {
 			"/api": {
@@ -35,6 +36,9 @@ export default defineConfig({
 		"process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
 		"process.env.VITE_VIBRATTO_API_BASE_URL": JSON.stringify(
 			process.env.VITE_VIBRATTO_API_BASE_URL
+		),
+		"process.env.VITE_VIBRATTO_FRONT_BASE_URL": JSON.stringify(
+			process.env.VITE_VIBRATTO_FRONT_BASE_URL
 		),
 	},
 });

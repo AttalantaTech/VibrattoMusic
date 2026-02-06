@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Children } from "react";
 import { cn } from "../../../lib/utils/cn";
 
 interface DropdownProps {
@@ -44,7 +44,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
 		<div ref={dropdownRef} className="relative inline-block">
 			<div
 				onClick={() => {
-					setIsOpen(!isOpen);
+					if (Children.count(children) > 0) setIsOpen(!isOpen);
 				}}
 				className="cursor-pointer"
 			>
@@ -53,8 +53,11 @@ export const Dropdown: React.FC<DropdownProps> = ({
 
 			{isOpen && (
 				<div
+					onClick={() => {
+						if (Children.count(children) > 0) setIsOpen(!isOpen);
+					}}
 					className={cn(
-						"absolute z-50 mt-1 min-w-[8rem] overflow-hidden rounded-md border bg-white shadow-md",
+						"absolute z-50 mt-1 min-w-[8rem] rounded-md border bg-white flex flex-col shadow-md w-max",
 						alignmentClasses[align],
 						className
 					)}

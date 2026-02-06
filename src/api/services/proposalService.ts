@@ -186,7 +186,9 @@ export const proposalService = {
 	async cancelProposal(proposalId: number, reasonId: number = 1): Promise<any> {
 		// Using reject endpoint as there's no specific cancel endpoint in the API
 		// According to Postman collection, "Cancelar Proposta" uses propostaRejeitada with IdMotivoRejeicao
-		return this.rejectProposalWithReason(proposalId, { IdMotivoRejeicao: reasonId });
+		return this.rejectProposalWithReason(proposalId, {
+			IdMotivoRejeicao: reasonId,
+		});
 	},
 
 	/**

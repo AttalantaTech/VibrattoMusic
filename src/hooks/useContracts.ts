@@ -117,7 +117,6 @@ export const useMyContracts = (): ReturnType<
 		queryKey: CONTRACT_QUERY_KEYS.mine(),
 		queryFn: async (): Promise<Array<ContractResponse>> => {
 			if (!user?.id || !activeProduct?.id) {
-				console.log("🔍 Debug - No user ID or active product available");
 				return [];
 			}
 
@@ -129,7 +128,6 @@ export const useMyContracts = (): ReturnType<
 
 				const productId = Number(activeProduct.id);
 				if (isNaN(productId)) {
-					console.error("🔍 Debug - Invalid product ID:", activeProduct.id);
 					return [];
 				}
 
@@ -146,7 +144,6 @@ export const useMyContracts = (): ReturnType<
 				console.log("🔍 Debug - Found proposals:", proposals?.length || 0);
 
 				if (!Array.isArray(proposals) || proposals.length === 0) {
-					console.log("🔍 Debug - No proposals found for this product");
 					return [];
 				}
 

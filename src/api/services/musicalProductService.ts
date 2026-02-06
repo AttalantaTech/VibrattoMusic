@@ -1,14 +1,14 @@
+import type { OnboardingContactData } from "@/utils/validation";
 import type { ApiClient } from "../core/client";
 import type {
 	MusicalProductSearchRequest,
 	MusicalProductListApiResponse,
 	MusicalProductApiResponse,
-	OnboardingContact,
-	OnboardingDetails,
-	OnboardingMedia,
-	OnboardingImages,
-	OnboardingTechnicalConfig,
-	OnboardingSchedule,
+	MusicalProductDetails,
+	MusicalProductMedia,
+	MusicalProductImages,
+	MusicalProductTechnicalConfig,
+	MusicalProductSchedule,
 	OnboardingApiResponse,
 } from "../types";
 
@@ -54,7 +54,8 @@ export class MusicalProductService {
 	/**
 	 * Search musical products with filters
 	 */ public async searchProducts(
-		searchRequest: MusicalProductSearchRequest
+		searchRequest: MusicalProductSearchRequest,
+		ativo: null | true | false = true
 	): Promise<MusicalProductListApiResponse> {
 		try {
 			const cleanedRequest = this.cleanSearchRequest(searchRequest);
@@ -62,7 +63,7 @@ export class MusicalProductService {
 			// API returns array directly, not wrapped in pagination object
 			const apiResponse = await this.apiClient.post<
 				Array<MusicalProductApiResponse>
-			>("produtomusical/listar", cleanedRequest);
+			>("produtomusical/listar", { ...cleanedRequest, ativo });
 
 			// Transform API response to expected frontend format
 			const response: MusicalProductListApiResponse = {
@@ -92,9 +93,13 @@ export class MusicalProductService {
 	 * Get public data for a musical product by ID
 	 */
 	public async getProductById(
-		productId: number
+		productId: number,
+		ativo = true
 	): Promise<MusicalProductApiResponse> {
-		return this.apiClient.post("produtomusical/listar", { Id: productId });
+		return this.apiClient.post("produtomusical/listar", {
+			Id: productId,
+			ativo,
+		});
 	}
 
 	/**
@@ -110,7 +115,7 @@ export class MusicalProductService {
 	 * Save onboarding contact information (Step 1)
 	 */
 	public async saveOnboardingContact(
-		contactData: OnboardingContact
+		contactData: OnboardingContactData
 	): Promise<{ id: number }> {
 		return this.apiClient.post<{ id: number }>(
 			"produtomusical/onboarding/contato",
@@ -123,7 +128,7 @@ export class MusicalProductService {
 	 */
 	public async saveOnboardingDetails(
 		productId: number,
-		detailsData: OnboardingDetails
+		detailsData: MusicalProductDetails
 	): Promise<void> {
 		return this.apiClient.post<void>(
 			`produtomusical/onboarding/${productId}/detalhes`,
@@ -136,7 +141,7 @@ export class MusicalProductService {
 	 */
 	public async saveOnboardingMedia(
 		productId: number,
-		mediaData: OnboardingMedia
+		mediaData: MusicalProductMedia
 	): Promise<void> {
 		return this.apiClient.post<void>(
 			`produtomusical/onboarding/${productId}/media`,
@@ -149,7 +154,7 @@ export class MusicalProductService {
 	 */
 	public async saveOnboardingImages(
 		productId: number,
-		imagesData: OnboardingImages
+		imagesData: MusicalProductImages
 	): Promise<void> {
 		return this.apiClient.post<void>(
 			`produtomusical/onboarding/${productId}/imagens`,
@@ -162,7 +167,7 @@ export class MusicalProductService {
 	 */
 	public async saveOnboardingTechnicalConfig(
 		productId: number,
-		technicalData: OnboardingTechnicalConfig
+		technicalData: MusicalProductTechnicalConfig
 	): Promise<void> {
 		return this.apiClient.post<void>(
 			`produtomusical/onboarding/${productId}/configuracao-tecnica`,
@@ -174,7 +179,7 @@ export class MusicalProductService {
 	 */
 	public async saveOnboardingSchedule(
 		productId: number,
-		scheduleData: OnboardingSchedule
+		scheduleData: MusicalProductSchedule
 	): Promise<void> {
 		return this.apiClient.post<void>(
 			`produtomusical/onboarding/${productId}/agenda`,
@@ -236,5 +241,11 @@ export class MusicalProductService {
 			});
 			throw error;
 		}
+	}
+
+	public async updateMusicalProduct(musicalProduct: {
+		[key: string]: unknown;
+	}): Promise<void> {
+		return this.apiClient.post<void>("/produtomusical/altera", musicalProduct);
 	}
 }

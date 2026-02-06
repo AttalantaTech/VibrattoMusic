@@ -14,13 +14,16 @@ import { Button } from "../../ui/Button/Button";
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
 import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
 import type {
-	OnboardingSchedule,
+	MusicalProductSchedule,
 	ScheduleApiResponse,
 } from "../../../api/types";
 import type { AgendaEvent } from "../../BandProfile/Agenda/types";
 import CalendarCustom from "@/components/CalendarCustom/CalendarCustom";
 import { CreateEventModal } from "@/components/BandProfile/Agenda";
-import { useOnboardingData } from "@/hooks/useMusicalProducts";
+import {
+	useMusicalProductSchedule,
+	useOnboardingData,
+} from "@/hooks/useMusicalProducts";
 import { ptBR } from "date-fns/locale";
 
 // Define styles consistent with modern interface pattern
@@ -34,6 +37,8 @@ const styles = {
 export default function ScheduleStep() {
 	const { data: onboardingData } = useOnboardingData();
 	const produtoMusicalId = onboardingData ? onboardingData.id : 0;
+
+	const { data: dataSchedule } = useMusicalProductSchedule(produtoMusicalId);
 
 	const navigate = useNavigate();
 	const { updateData, markStepComplete } = useOnboarding();
@@ -52,12 +57,12 @@ export default function ScheduleStep() {
 	const mapScheduleFromApi = (
 		data: Array<ScheduleApiResponse>
 	): Array<AgendaEvent> => {
-		return data.flatMap((dayData) =>
-			dayData.compromissos.map((comp) => ({
+		return data.flatMap((day) =>
+			day.compromissos.map((comp) => ({
 				id: comp.id,
 				title: comp.titulo,
 				description: comp.descricao || "",
-				date: parseISO(dayData.data),
+				date: parseISO(day.data),
 				startTime: comp.horaInicio,
 				endTime: comp.horaFim,
 				type: comp.disponibilidadeOutrosEventos ? "personal" : "show",
@@ -66,17 +71,14 @@ export default function ScheduleStep() {
 		);
 	};
 
-	const loadSchedule = useCallback(async () => {
+	const loadSchedule = useCallback(() => {
 		if (!produtoMusicalId) return;
 
 		try {
 			setLoading(true);
-			const response = await onboardingService.getSchedule(
-				Number(produtoMusicalId)
-			);
 
-			if (Array.isArray(response)) {
-				setEvents(mapScheduleFromApi(response));
+			if (Array.isArray(dataSchedule)) {
+				setEvents(mapScheduleFromApi(dataSchedule));
 			} else {
 				setEvents([]);
 			}
@@ -86,55 +88,7 @@ export default function ScheduleStep() {
 		} finally {
 			setLoading(false);
 		}
-	}, [produtoMusicalId]);
-
-	// Load existing schedule from API
-	const loadExistingSchedule = useCallback(async () => {
-		if (!produtoMusicalId) {
-			return;
-		}
-
-		try {
-			setLoading(true);
-			const response = await onboardingService.getSchedule(
-				Number(produtoMusicalId)
-			);
-
-			// Handle the API format
-			if (response && Array.isArray(response)) {
-				const apiEvents: Array<AgendaEvent> = [];
-
-				// Extract events from each day's compromissos
-				response.forEach((dayData) => {
-					if (dayData.compromissos && dayData.compromissos.length > 0) {
-						dayData.compromissos.forEach((compromisso) => {
-							apiEvents.push({
-								id: compromisso.id || Date.now(),
-								title: compromisso.titulo,
-								description: compromisso.descricao || "",
-								date: parseISO(dayData.data),
-								startTime: compromisso.horaInicio,
-								endTime: compromisso.horaFim,
-								type: compromisso.disponibilidadeOutrosEventos
-									? "personal"
-									: "show",
-								status: "confirmed",
-							});
-						});
-					}
-				});
-
-				setEvents(apiEvents);
-			} else {
-				setEvents([]);
-			}
-		} catch (error) {
-			console.error("Erro ao carregar agenda:", error);
-			setEvents([]);
-		} finally {
-			setLoading(false);
-		}
-	}, [produtoMusicalId]);
+	}, [dataSchedule, produtoMusicalId]);
 
 	const formatDate = (date: Date) => {
 		return format(date, "dd/MM/yyyy", { locale: ptBR });
@@ -166,17 +120,29 @@ export default function ScheduleStep() {
 
 		setLoading(true);
 		try {
-			// Convert events to API format
-			const scheduleData: OnboardingSchedule = {
-				id: Number(produtoMusicalId),
-				compromissos: events.map((event) => ({
+			const compromissos = events
+				.sort((a, b) => a.date.getTime() - b.date.getTime())
+				.map((event) => ({
 					titulo: event.title.trim(),
 					descricao: event.description?.trim() || "",
 					data: format(event.date, "yyyy-MM-dd"),
 					horaInicio: event.startTime,
 					horaFim: event.endTime,
 					disponibilidadeOutrosEventos: event.type !== "show",
-				})),
+				}));
+
+			// Convert events to API format
+			const scheduleData: MusicalProductSchedule = {
+				id: Number(produtoMusicalId),
+				inicioCalendario:
+					compromissos.length > 0
+						? compromissos.at(0)?.data
+						: format(new Date(), "yyyy-MM-dd"),
+				finalCalendario:
+					compromissos.length > 0
+						? compromissos.at(-1)?.data
+						: format(new Date(), "yyyy-MM-dd"),
+				compromissos,
 			};
 
 			await onboardingService.updateSchedule(
@@ -198,63 +164,9 @@ export default function ScheduleStep() {
 		}
 	};
 
-	// Load from onboarding context OR API
 	useEffect(() => {
-		async function getSchedule() {
-			const onboardingSchedule = await onboardingService.getSchedule(
-				Number(produtoMusicalId)
-			);
-
-			if (onboardingSchedule?.length > 0) {
-				const mapped: Array<AgendaEvent> = onboardingSchedule.flatMap(
-					(dayData) =>
-						dayData.compromissos.map((c, index) => ({
-							id: index + 1,
-							title: c.titulo,
-							description: c.descricao || "",
-							date: parseISO(dayData.data),
-							startTime: c.horaInicio,
-							endTime: c.horaFim,
-							type: c.disponibilidadeOutrosEventos ? "personal" : "show",
-							status: "confirmed",
-						}))
-				);
-
-				setEvents(mapped);
-			} else {
-				void loadSchedule();
-			}
-		}
-
-		void getSchedule();
-	}, [loadSchedule, onboardingData, produtoMusicalId]);
-
-	// Load existing data from context or API
-	useEffect(() => {
-		const existingData = onboardingData as OnboardingSchedule | undefined;
-
-		if (
-			existingData &&
-			existingData.compromissos &&
-			existingData.compromissos.length > 0
-		) {
-			const agendaEvents: Array<AgendaEvent> = existingData.compromissos.map(
-				(item, index) => ({
-					id: index + 1,
-					title: item.titulo,
-					description: item.descricao || "",
-					date: parseISO(item.data),
-					startTime: item.horaInicio,
-					endTime: item.horaFim,
-					type: item.disponibilidadeOutrosEventos ? "personal" : "show",
-					status: "confirmed",
-				})
-			);
-			setEvents(agendaEvents);
-		} else {
-			void loadExistingSchedule();
-		}
-	}, [loadExistingSchedule, onboardingData]);
+		loadSchedule();
+	}, [loadSchedule]);
 
 	return (
 		<>

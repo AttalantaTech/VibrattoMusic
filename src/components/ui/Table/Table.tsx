@@ -37,7 +37,7 @@ export const GenericTable = <T,>({
 
 	return (
 		<div className="py-4">
-			<div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+			<div className="overflow-visible shadow ring-1 ring-black ring-opacity-5 rounded-lg">
 				<table className="min-w-full divide-y divide-gray-300">
 					<thead className="bg-gray-50">
 						{table.getHeaderGroups().map((headerGroup) => (
@@ -59,11 +59,11 @@ export const GenericTable = <T,>({
 					</thead>
 					<tbody className="divide-y divide-gray-200 bg-white">
 						{table.getRowModel().rows.map((row) => (
-							<tr key={row.id}>
+							<tr key={row.id} className="hover:bg-gray-50 transition-colors">
 								{row.getVisibleCells().map((cell) => (
 									<td
 										key={cell.id}
-										className="whitespace-nowrap px-3 py-4 text-sm text-gray-500"
+										className="whitespace-nowrap px-3 py-4 text-sm text-black"
 									>
 										{flexRender(cell.column.columnDef.cell, cell.getContext())}
 									</td>
