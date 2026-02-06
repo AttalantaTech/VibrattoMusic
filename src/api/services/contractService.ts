@@ -27,20 +27,31 @@ export const contractService = {
 	 * @returns Promise with PDF URL or blob
 	 */
 	async loadContractPDF(identificadorUnico: string): Promise<string> {
-		const response = await apiClient.get<string>(
-			`produtomusical/${identificadorUnico}/carregaContrato`,
-			{
-				method: "GET",
-				headers: {
-					Accept: "application/pdf",
-				},
-				responseType: "blob",
-			}
-		);
-
-		const blob = new Blob([response], { type: "application/pdf" });
-
+		const response = await fetch(`${process.env['REACT_APP_API_BASE_URL'] || 'https://api.vibratto.com.br/'}produtomusical/${identificadorUnico}/carregaContrato`, {
+			method: 'GET',
+			headers: {
+				'Accept': 'application/pdf',
+			},
+		});
+		
+		if (!response.ok) {
+			throw new Error('Failed to load contract PDF');
+		}
+		
+		const blob = await response.blob();
 		return URL.createObjectURL(blob);
+	},
+
+	/**
+	 * List contract sections for editing
+	 * @param contractId - The ID of the contract
+	 * @returns Promise with array of contract sections
+	 */
+	async listContractSections(contractId: number): Promise<Array<ContractSection>> {
+		const response = await apiClient.get<Array<ContractSection>>(
+			`produtomusical/${contractId}/listarSecoesContrato`
+		);
+		return response;
 	},
 
 	/**
@@ -48,11 +59,9 @@ export const contractService = {
 	 * @param identificadorUnico - The unique identifier of the contract
 	 * @returns Promise with array of contract sections
 	 */
-	async listContractSectionsByMusicalProductId(
-		idProdutoMusical: number
-	): Promise<Array<ContractSection>> {
+	async listContractSectionsByIdentificador(identificadorUnico: string): Promise<Array<ContractSection>> {
 		const response = await apiClient.get<Array<ContractSection>>(
-			`produtomusical/${idProdutoMusical}/listarSecoesContrato`
+			`produtomusical/${identificadorUnico}/listarSecoesContrato`
 		);
 		return response;
 	},
@@ -82,12 +91,9 @@ export const contractService = {
 		identificadorUnico: string,
 		sections: Array<ContractSectionUpdateRequest>
 	): Promise<void> {
-		await apiClient.post(
-			`produtomusical/${identificadorUnico}/gravarSecoesContrato`,
-			{
-				SecoesContrato: sections,
-			}
-		);
+		await apiClient.post(`produtomusical/${identificadorUnico}/gravarSecoesContrato`, {
+			SecoesContrato: sections,
+		});
 	},
 
 	/**
@@ -145,3 +151,4 @@ export const contractService = {
 		return response;
 	},
 };
+

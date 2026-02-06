@@ -4,7 +4,7 @@ import { AuthGuard } from "../../../components/auth/AuthGuard";
 
 const ProtectedContractSignaturePage = () => {
 	const { id } = Route.useParams();
-
+	
 	return (
 		<AuthGuard>
 			<ContractSignaturePage identificadorUnico={id} />
