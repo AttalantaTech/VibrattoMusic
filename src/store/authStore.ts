@@ -65,7 +65,7 @@ export const useAuthStore = create<AuthState>()(
 						const keys = Object.keys(localStorage);
 
 						// Keys to KEEP (global app settings, not user-specific)
-						const keysToKeep: string[] = [
+						const keysToKeep: Array<string> = [
 							// Add any truly global keys here that should persist across users
 							// Currently none, as all data should be user-specific
 						];
