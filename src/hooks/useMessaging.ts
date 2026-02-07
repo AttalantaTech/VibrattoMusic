@@ -34,7 +34,7 @@ export const useConversations = (
 	parameters?: PaginationParameters,
 	enabled: boolean = true
 ) => {
-	return useQuery<Conversation[]>({
+	return useQuery<Array<Conversation>>({
 		queryKey: [...messagingKeys.conversations(), IdProdutoMusical],
 		queryFn: () =>
 			messagingService.getConversations(IdProdutoMusical, parameters),

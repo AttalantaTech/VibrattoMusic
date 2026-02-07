@@ -13,13 +13,17 @@ export const useUnreadMessagesCount = () => {
 	);
 
 	const totalUnreadMessages = useMemo(() => {
-		if (!conversations.data?.data) return 0;
+		if (!conversations.data) return 0;
 
-		return conversations.data.data.reduce(
-			(total, conversation) => total + (conversation.unreadCount || 0),
+		return conversations.data.reduce(
+			(total, conversation) =>
+				total +
+				(activeProduct?.id
+					? conversation.numeroMensagensNãoLidasContratado || 0
+					: conversation.numeroMensagensNãoLidasContratante || 0),
 			0
 		);
-	}, [conversations.data?.data]);
+	}, [conversations.data, activeProduct]);
 
 	return {
 		totalUnreadMessages,

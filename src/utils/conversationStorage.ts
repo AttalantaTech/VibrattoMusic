@@ -18,7 +18,7 @@ export class ConversationStorage {
 		try {
 			const key = this.getStorageKey(userId);
 			const stored = localStorage.getItem(key);
-			const conversations: StoredConversation[] = stored ? JSON.parse(stored) as StoredConversation[] : [];
+			const conversations: Array<StoredConversation> = stored ? JSON.parse(stored) as Array<StoredConversation> : [];
 			
 			const existingIndex = conversations.findIndex((c: StoredConversation) => c.id === conversationId);
 			
@@ -42,14 +42,14 @@ export class ConversationStorage {
 		}
 	}
 
-	static getConversationIds(userId?: string | number): number[] {
+	static getConversationIds(userId?: string | number): Array<number> {
 		try {
 			const key = this.getStorageKey(userId);
 			const stored = localStorage.getItem(key);
 			
 			if (!stored) return [];
 			
-			const conversations: StoredConversation[] = JSON.parse(stored) as StoredConversation[];
+			const conversations: Array<StoredConversation> = JSON.parse(stored) as Array<StoredConversation>;
 			return conversations.map(c => c.id);
 		} catch (error) {
 			console.error('Error reading conversations from localStorage:', error);
@@ -57,14 +57,14 @@ export class ConversationStorage {
 		}
 	}
 
-	static getConversations(userId?: string | number): StoredConversation[] {
+	static getConversations(userId?: string | number): Array<StoredConversation> {
 		try {
 			const key = this.getStorageKey(userId);
 			const stored = localStorage.getItem(key);
 			
 			if (!stored) return [];
 			
-			return JSON.parse(stored) as StoredConversation[];
+			return JSON.parse(stored) as Array<StoredConversation>;
 		} catch (error) {
 			console.error('Error reading conversations from localStorage:', error);
 			return [];
@@ -78,7 +78,7 @@ export class ConversationStorage {
 			
 			if (!stored) return;
 			
-			const conversations: StoredConversation[] = JSON.parse(stored) as StoredConversation[];
+			const conversations: Array<StoredConversation> = JSON.parse(stored) as Array<StoredConversation>;
 			const filtered = conversations.filter(c => c.id !== conversationId);
 			
 			localStorage.setItem(key, JSON.stringify(filtered));
@@ -103,7 +103,7 @@ export class ConversationStorage {
 			
 			if (!stored) return;
 			
-			const conversations: StoredConversation[] = JSON.parse(stored) as StoredConversation[];
+			const conversations: Array<StoredConversation> = JSON.parse(stored) as Array<StoredConversation>;
 			const conversation = conversations.find(c => c.id === conversationId);
 			
 			if (conversation) {
@@ -129,7 +129,7 @@ export class ConversationStorage {
 			
 			if (!stored) return;
 			
-			const conversations: StoredConversation[] = JSON.parse(stored) as StoredConversation[];
+			const conversations: Array<StoredConversation> = JSON.parse(stored) as Array<StoredConversation>;
 			const conversation = conversations.find(c => c.id === conversationId);
 			
 			if (conversation) {
