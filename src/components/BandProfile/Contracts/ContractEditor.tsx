@@ -27,6 +27,7 @@ import { contractSectionSchema } from "../../../schemas/contractSchemas";
 import type { ContractSectionUpdateInput } from "../../../schemas/contractSchemas";
 import { toast } from "sonner";
 import { useProposalById } from "../../../hooks/useProposals";
+import type { ContractSection } from "@/api/types";
 
 interface ContractEditorProps {
 	isOpen: boolean;
@@ -65,7 +66,7 @@ export const ContractEditor = ({
 		data: sections,
 		isLoading,
 		error,
-	} = useContractSections(proposal?.produtoMusical.id || 0);
+	} = useContractSections(Number(proposal?.produtoMusical.id) || 0);
 	const permissionsQuery = useContractPermissions(identificadorUnico || "");
 	const permissions = permissionsQuery.data;
 	const updateSectionsMutation = useUpdateContractSections();
@@ -106,10 +107,11 @@ export const ContractEditor = ({
 	useEffect(() => {
 		if (sections) {
 			const initialSections: Array<EditingSection> = sections.map(
-				(section) => ({
+				(section: ContractSection) => ({
 					...section,
 					isEditing: false,
 					hasChanges: false,
+					editavel: true,
 				})
 			);
 			setEditingSections(initialSections);
@@ -152,7 +154,9 @@ export const ContractEditor = ({
 	};
 
 	const handleSaveSection = (sectionNumero: number) => {
-		const section = editingSections.find((s) => s.numero === sectionNumero);
+		const section = editingSections.find(
+			(s: EditingSection) => s.numero === sectionNumero
+		);
 		if (!section) return;
 
 		// Validate section
@@ -181,14 +185,16 @@ export const ContractEditor = ({
 	};
 
 	const handleCancelEdit = (sectionNumero: number) => {
-		const originalSection = sections?.find((s) => s.numero === sectionNumero);
+		const originalSection = sections?.find(
+			(s: ContractSection) => s.numero === sectionNumero
+		);
 		if (!originalSection) return;
 
-		setEditingSections((previous) =>
-			previous.map((section) =>
+		setEditingSections((previous: Array<EditingSection>) =>
+			previous.map((section: EditingSection) =>
 				section.numero === sectionNumero
 					? {
-							...originalSection,
+							...section,
 							isEditing: false,
 							hasChanges: false,
 						}
@@ -202,8 +208,8 @@ export const ContractEditor = ({
 		field: "titulo" | "texto",
 		value: string
 	) => {
-		setEditingSections((previous) =>
-			previous.map((section) =>
+		setEditingSections((previous: Array<EditingSection>) =>
+			previous.map((section: EditingSection) =>
 				section.numero === sectionNumero
 					? { ...section, [field]: value, hasChanges: true }
 					: section
