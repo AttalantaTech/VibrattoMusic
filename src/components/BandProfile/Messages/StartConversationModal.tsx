@@ -42,7 +42,7 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 			{
 				onSuccess: (data) => {
 					toast.success("Conversa iniciada com sucesso!");
-					onConversationStarted?.(data.id);
+					onConversationStarted?.(parseInt(data.id));
 					onClose();
 					setSubject("");
 					setMessage("");

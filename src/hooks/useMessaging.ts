@@ -29,10 +29,9 @@ export const useConversations = (
 	parameters?: PaginationParameters,
 	enabled: boolean = true
 ) => {
-	return useQuery<Array<Conversation>>({
-		queryKey: [...messagingKeys.conversations(), IdProdutoMusical],
-		queryFn: () =>
-			messagingService.getConversations(IdProdutoMusical, parameters),
+	return useQuery<PaginatedResponse<Conversation>, Error>({
+		queryKey: messagingKeys.conversations(),
+		queryFn: () => messagingService.getConversations(parameters),
 		enabled,
 		staleTime: 30 * 1000, // 30 seconds
 		refetchInterval: 10 * 1000, // Refetch every 10 seconds for real-time feel
