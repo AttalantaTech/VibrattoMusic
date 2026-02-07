@@ -14,7 +14,7 @@ import {
 	OwnMessageElement,
 } from "./styles";
 import { getParticipantInitials } from "../../utils/Message";
-import { Message } from "@/api/services/messages/types";
+import type { Message } from "@/api/services/messages/types";
 import { useMessagesContext } from "@/contexts/MessagesContext";
 
 export const Chat = () => {
@@ -25,19 +25,20 @@ export const Chat = () => {
 	const currentProductId = activeProduct?.id;
 	const { isProfileComplete } = useProfileStatus();
 
+	const messagesContext = useMessagesContext();
 	const {
 		messageInput,
 		setMessageInput,
 		messages,
 		messagesError,
-		isLoading,
+		isMessagesLoading,
 		selectedConversation,
 		handleSendMessage,
 		setIsProposalModalOpen,
 		setIsProfileIncompleteModalOpen,
 		messagesContainerRef,
 		messagesEndRef,
-	} = useMessagesContext();
+	} = messagesContext || {};
 
 	return (
 		<div className="flex-1 flex flex-col">
@@ -62,11 +63,11 @@ export const Chat = () => {
 								<UserImageContainer>
 									{getParticipantInitials(
 										currentProductId
-											? selectedConversation.contratanteName
-											: selectedConversation.participantName
+											? selectedConversation.contratanteNome
+											: selectedConversation.participanteNome
 									)}
 								</UserImageContainer>
-								{selectedConversation.isOnline && (
+								{selectedConversation.online && (
 									<Circle className="absolute bottom-0 right-0 w-3 h-3 text-green-500 fill-current" />
 								)}
 							</div>
@@ -78,9 +79,9 @@ export const Chat = () => {
 						</div>
 						{activeProduct && !isProfileComplete && (
 							<button
-								onClick={() => {
+								onClick={setIsProfileIncompleteModalOpen ? () => {
 									setIsProfileIncompleteModalOpen(true);
-								}}
+								} : () => {}}
 								className="flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
 							>
 								<DollarSign className="w-4 h-4" />
@@ -90,9 +91,9 @@ export const Chat = () => {
 						{isProfileComplete && (
 							<button
 								disabled={!activeProduct}
-								onClick={() => {
+								onClick={setIsProposalModalOpen ? () => {
 									setIsProposalModalOpen(true);
-								}}
+								} : () => {}}
 								className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
 							>
 								<DollarSign className="w-4 h-4" />
@@ -102,7 +103,7 @@ export const Chat = () => {
 					</ChatHeaderContainer>
 
 					<ChatMessagesContainer messagesContainerRef={messagesContainerRef}>
-						{isLoading && <Loading />}
+						{isMessagesLoading && <Loading />}
 						{messagesError && (
 							<div className="flex flex-col items-center justify-center h-full text-center">
 								<MessageSquare className="w-12 h-12 text-red-300 mb-3" />
@@ -118,15 +119,17 @@ export const Chat = () => {
 							</div>
 						)}
 						{!messages ||
-							(messages.length === 0 && !isLoading && !messagesError && (
-								<div className="flex flex-col items-center justify-center h-full text-center">
-									<MessageSquare className="w-12 h-12 text-gray-300 mb-3" />
-									<p className="text-gray-500">
-										Inicie a conversa enviando uma mensagem
-									</p>
-								</div>
-							))}
-						{!isLoading && !messagesError && (
+							(messages.length === 0 &&
+								!isMessagesLoading &&
+								!messagesError && (
+									<div className="flex flex-col items-center justify-center h-full text-center">
+										<MessageSquare className="w-12 h-12 text-gray-300 mb-3" />
+										<p className="text-gray-500">
+											Inicie a conversa enviando uma mensagem
+										</p>
+									</div>
+								))}
+						{!isMessagesLoading && !messagesError && (
 							<>
 								{messages?.map((message: Message) => {
 									const isOwn = currentUserId
@@ -161,13 +164,17 @@ export const Chat = () => {
 					<ChatInputContainer>
 						<ChatInput
 							value={messageInput}
-							onChange={(e) => {
-								setMessageInput(e.target.value);
-							}}
-							onSend={handleSendMessage}
-							disabled={isLoading}
+							onChange={
+								setMessageInput
+									? (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+											setMessageInput(event.target.value);
+										}
+									: () => {}
+							}
+							onSend={handleSendMessage ? handleSendMessage : () => {}}
+							disabled={isMessagesLoading}
 							placeholder={
-								isLoading ? "Carregando..." : "Digite sua mensagem..."
+								isMessagesLoading ? "Carregando..." : "Digite sua mensagem..."
 							}
 						/>
 					</ChatInputContainer>

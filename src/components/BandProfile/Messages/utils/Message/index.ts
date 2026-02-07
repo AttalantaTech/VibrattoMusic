@@ -1,4 +1,4 @@
-import { Message } from "@/api/services/messages/types";
+import type { Message } from "@/api/services/messages/types";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -7,7 +7,9 @@ export const playNotificationSound = () => {
 		const audio = new Audio("/notification.mp3");
 		audio.volume = 0.3;
 		audio.play().catch(() => {});
-	} catch {}
+	} catch {
+		return;
+	}
 };
 
 export const formatMessageTime = (

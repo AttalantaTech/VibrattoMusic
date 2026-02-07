@@ -1,5 +1,5 @@
 import { Circle, MessageSquare, Search } from "lucide-react";
-import { SideBarProps } from "./types";
+import type { SideBarProps } from "./types";
 import { Loading } from "@/shared/components/Loading";
 import {
 	ConversationInfoContainer,
@@ -11,18 +11,19 @@ import {
 	UserInfoContainer,
 } from "./styles";
 import { formatMessageTime, getParticipantInitials } from "../../utils/Message";
-import { Conversation } from "@/api/services/messages/types";
+import type { Conversation } from "@/api/services/messages/types";
 import { useMessagesContext } from "@/contexts/MessagesContext";
 
 export const SideBar = ({ user, currentProductId }: SideBarProps) => {
+	const messagesContext = useMessagesContext();
 	const {
 		searchQuery,
 		setSearchQuery,
-		conversationsLoading,
+		isConversationsLoading,
 		filteredConversations,
 		selectedConversation,
 		setSelectedConversation,
-	} = useMessagesContext();
+	} = messagesContext || {};
 
 	return (
 		<div className="w-80 bg-white border-r border-gray-200 flex flex-col">
@@ -42,9 +43,13 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 						type="text"
 						placeholder="Buscar no chat"
 						value={searchQuery}
-						onChange={(e) => {
-							setSearchQuery(e.target.value);
-						}}
+						onChange={
+							setSearchQuery
+								? (event: React.ChangeEvent<HTMLInputElement>) => {
+										setSearchQuery(event.target.value);
+									}
+								: () => {}
+						}
 						className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
 					/>
 				</SearchBarContainer>
@@ -70,8 +75,8 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 				</div> */}
 
 			<ConversationsListContainer>
-				{conversationsLoading && <Loading />}
-				{filteredConversations.length === 0 && (
+				{isConversationsLoading && <Loading />}
+				{filteredConversations?.length === 0 && (
 					<div className="flex flex-col items-center justify-center p-8 text-center">
 						<MessageSquare className="w-12 h-12 text-gray-300 mb-3" />
 						<p className="text-gray-500 text-sm">
@@ -81,7 +86,7 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 						</p>
 					</div>
 				)}
-				{filteredConversations.map((conversation: Conversation) => {
+				{filteredConversations?.map((conversation: Conversation) => {
 					const isSelected = selectedConversation?.id === conversation.id;
 					const unreadCount =
 						(currentProductId || user?.id) === conversation.contratanteId
@@ -91,9 +96,13 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 					return (
 						<ConversationTabContainer
 							key={conversation.id}
-							onClick={() => {
-								setSelectedConversation(conversation);
-							}}
+							onClick={
+								setSelectedConversation
+									? () => {
+											setSelectedConversation(conversation);
+										}
+									: () => {}
+							}
 							isSelected={isSelected}
 						>
 							<div className="relative">

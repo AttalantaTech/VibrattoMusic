@@ -1,4 +1,4 @@
-import { PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 
 export const SideBarHeaderContainer = ({ children }: PropsWithChildren) => {
 	return <div className="p-4 border-b border-gray-200">{children}</div>;
@@ -39,7 +39,7 @@ export const ConversationTabContainer = ({
 	onClick,
 }: PropsWithChildren & {
 	isSelected: boolean;
-	onClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+	onClick: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }) => {
 	return (
 		<div

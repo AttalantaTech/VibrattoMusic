@@ -6,6 +6,7 @@ import { Chat } from "./components/Chat";
 import { SendProposalModal } from "./components/SendProposalModal";
 import { StartConversationModal } from "./components/StartConversationModal";
 import { useMessagesContext } from "@/contexts/MessagesContext";
+import { useEffect } from "react";
 
 const MessagesTab = () => {
 	// Auth store - using same approach as BandProfile account tab
@@ -17,33 +18,45 @@ const MessagesTab = () => {
 		? Number(activeProduct.id)
 		: undefined;
 
+	const messagesContext = useMessagesContext();
 	const {
 		selectedConversation,
+		setSelectedConversation,
 		newConversationParticipant,
 		setNewConversationParticipant,
-		sendMessage,
+		handleSendMessage,
 		isProposalModalOpen,
 		setIsProposalModalOpen,
 		isNewConversationModalOpen,
 		setIsNewConversationModalOpen,
 		isProfileIncompleteModalOpen,
 		setIsProfileIncompleteModalOpen,
-	} = useMessagesContext();
+		scrollToBottom,
+	} = messagesContext || {};
+
+	useEffect(() => {
+		scrollToBottom?.();
+	}, [selectedConversation, scrollToBottom]);
+
+	useEffect(() => {
+		return () => {
+			setSelectedConversation?.(null);
+			setNewConversationParticipant?.(null);
+		};
+	}, []);
 
 	return (
 		<div className="flex h-[75vh] w-full border bg-gray-50">
 			{selectedConversation && (
 				<SendProposalModal
-					isOpen={isProposalModalOpen}
-					onClose={() => {
-						setIsProposalModalOpen(false);
-					}}
-					recipientId={selectedConversation.participantId}
+					isOpen={!!isProposalModalOpen}
+					onClose={() => setIsProposalModalOpen?.(false)}
+					recipientId={selectedConversation.participanteId}
 					conversationId={selectedConversation.id}
 					onProposalSent={async (proposalDetails: string) => {
 						// Send the proposal notification message to the chat
-						if (sendMessage) {
-							await sendMessage(proposalDetails);
+						if (handleSendMessage) {
+							await handleSendMessage(proposalDetails);
 						}
 					}}
 				/>
@@ -51,10 +64,10 @@ const MessagesTab = () => {
 
 			{newConversationParticipant && (
 				<StartConversationModal
-					isOpen={isNewConversationModalOpen}
+					isOpen={!!isNewConversationModalOpen}
 					onClose={() => {
-						setIsNewConversationModalOpen(false);
-						setNewConversationParticipant(null);
+						setIsNewConversationModalOpen?.(false);
+						setNewConversationParticipant?.(null);
 					}}
 					participantId={newConversationParticipant.id}
 					participantName={newConversationParticipant.name}
@@ -67,8 +80,8 @@ const MessagesTab = () => {
 			)}
 
 			<ProfileIncompleteModal
-				isOpen={isProfileIncompleteModalOpen}
-				onClose={() => setIsProfileIncompleteModalOpen(false)}
+				isOpen={!!isProfileIncompleteModalOpen}
+				onClose={() => setIsProfileIncompleteModalOpen?.(false)}
 			/>
 
 			<SideBar user={user} currentProductId={currentProductId} />

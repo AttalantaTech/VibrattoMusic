@@ -1,4 +1,4 @@
-import { PropsWithChildren, useCallback, useMemo, useRef } from "react";
+import { type PropsWithChildren, useCallback, useMemo, useRef } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -11,7 +11,7 @@ import {
 } from "@/hooks/useMessaging";
 import { MessagesContext } from "../context";
 import { useChat } from "@/api/services/chat/useChat";
-import { Conversation, Message } from "@/api/services/messages/types";
+import type { Conversation, Message } from "@/api/services/messages/types";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { playNotificationSound } from "@/components/BandProfile/Messages/utils/Message";
 
@@ -45,7 +45,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 
 	const [shouldLoadConversations, setShouldLoadConversations] =
 		useState<boolean>(true);
-	const [newMessages, setNewMessages] = useState<Message[]>([]);
+	const [newMessages, setNewMessages] = useState<Array<Message>>([]);
 
 	const {
 		data: conversationsData,
@@ -57,10 +57,10 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		shouldLoadConversations && !!token
 	);
 	const [newConversationData, setNewConversationData] = useState<
-		Conversation[]
+		Array<Conversation>
 	>([]);
 
-	const [conversations, setConversations] = useState<Conversation[]>([]);
+	const [conversations, setConversations] = useState<Array<Conversation>>([]);
 
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -70,22 +70,28 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 			...(conversationsData || []),
 			...newConversationData,
 		];
-		setConversations(
-			allConversations.sort((a, b) => {
-				const dateA = a.ultimaMensagem?.dataEnvio
-					? new Date(a.ultimaMensagem.dataEnvio).getTime()
-					: 0;
-				const dateB = b.ultimaMensagem?.dataEnvio
-					? new Date(b.ultimaMensagem.dataEnvio).getTime()
-					: 0;
-				return dateB - dateA;
-			})
-		);
+
+		try {
+			setConversations(
+				allConversations.sort((a: Conversation, b: Conversation) => {
+					const dateA = a.ultimaMensagem?.dataEnvio
+						? new Date(a.ultimaMensagem.dataEnvio).getTime()
+						: 0;
+					const dateB = b.ultimaMensagem?.dataEnvio
+						? new Date(b.ultimaMensagem.dataEnvio).getTime()
+						: 0;
+					return dateB - dateA;
+				})
+			);
+		} catch (error) {
+			console.error("Erro ao ordenar conversas:", error);
+			setConversations(allConversations);
+		}
 	}, [setConversations, conversationsData, newConversationData]);
 
 	const filteredConversations = useMemo(() => {
 		return (
-			conversations.filter((conversation) => {
+			conversations.filter((conversation: Conversation) => {
 				if (!searchQuery) return true;
 				const searchLower = searchQuery.toLowerCase();
 				return (
@@ -125,36 +131,16 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 	} = useChat(currentConversationId, setShouldLoadConversations);
 
 	const handleEnterConversation = async (conversationId: number) => {
-		enterConversation(conversationId);
+		await enterConversation(conversationId).catch((error) => {
+			console.error("Erro ao entrar na conversa:", error);
+		});
 	};
 
-	const conversationsRef = useRef<Conversation[]>(conversations);
+	const conversationsRef = useRef<Array<Conversation>>(conversations);
 
 	useEffect(() => {
 		conversationsRef.current = conversations;
 	}, [conversations]);
-
-	const handleConnect = useCallback(async () => {
-		connect();
-
-		addReceiveMessageHandler(handleReceiveMessage);
-
-		addMessageReadHandler(handleMessageRead);
-
-		addNotificationHandler((notification: string) => {
-			toast.info(notification);
-		});
-
-		addOnCloseHandler((error?: Error) => {
-			console.error("Conexão do chat fechada:", error);
-		});
-
-		await start();
-
-		conversationsRef.current.forEach(async (conversation) => {
-			await enterConversation(conversation.id);
-		});
-	}, [connect, start]);
 
 	const handleSendMessage = async (content: string) => {
 		if (!content.trim() || !currentConversationId.current) return;
@@ -162,9 +148,44 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 			await sendMessage(content);
 			setMessageInput("");
 		} catch (error) {
+			console.error("Erro ao enviar mensagem:", error);
 			toast.error("Erro ao enviar mensagem");
 		}
 	};
+
+	const updateConversationWithNewMessage = useCallback(
+		(message: Message) => {
+			setNewConversationData((previousConversations) => {
+				const conversationIndex = previousConversations.findIndex(
+					(c) => c.id === message.idConversa
+				);
+
+				if (conversationIndex !== -1) {
+					const conversationToUpdate = previousConversations.find(
+						(c) => c.id === message.idConversa
+					);
+					if (!conversationToUpdate) return previousConversations;
+
+					const updatedConversation = {
+						...conversationToUpdate,
+						ultimaMensagem: message,
+					};
+					console.log([
+						...previousConversations.splice(conversationIndex, 1),
+						updatedConversation,
+					]);
+					return [
+						...previousConversations.splice(conversationIndex, 1),
+						updatedConversation,
+					];
+				} else {
+					refetchConversations();
+				}
+				return previousConversations;
+			});
+		},
+		[setNewConversationData, currentUserId]
+	);
 
 	const handleReceiveMessage = useCallback(
 		(message: Message) => {
@@ -174,15 +195,17 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 
 				// Update conversation data in cache
 				if (!newMessages.find((m) => m.id === message.id)) {
-					setNewMessages((prevMessages) => [...prevMessages, message]);
+					setNewMessages((previousMessages) => [...previousMessages, message]);
 				}
 
 				// Show toast notification if not in focus
 				if (document.hidden) {
 					toast.info(
-						`Nova mensagem de ${message.idRemetente || "Usuário desconhecido"}`,
+						`Nova mensagem de ${message.nomeRemetente || message.idRemetente || "Usuário desconhecido"}`,
 						{
-							description: message.conteudo.substring(0, 50) + "...",
+							description:
+								message.conteudo.substring(0, 50) +
+								(message.conteudo.length > 50 ? "..." : ""),
 						}
 					);
 				}
@@ -206,27 +229,10 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		[messages, markMessageAsRead]
 	);
 
-	const handleMessageRead = useCallback(
-		(messageId: number) => {
-			setMessages((prev) =>
-				prev.map((message) => {
-					if (message.id === messageId) {
-						message.lida = true;
-					}
-
-					return message;
-				})
-			);
-
-			setLastMessageAsRead(messageId);
-		},
-		[messages, setMessages]
-	);
-
 	const setLastMessageAsRead = useCallback(
 		(messageId: number) => {
-			setConversations((prevConversations) =>
-				prevConversations.map((conversation) => {
+			setConversations((previousConversations) =>
+				previousConversations.map((conversation) => {
 					if (conversation.ultimaMensagem?.id === messageId) {
 						conversation.ultimaMensagem.lida = true;
 						if (conversation.contratanteId === currentUserId) {
@@ -242,83 +248,89 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		[setConversations]
 	);
 
-	// Update conversation list with new message
-	const updateConversationWithNewMessage = useCallback(
-		(message: Message) => {
-			setNewConversationData((prevConversations) => {
-				const conversationIndex = prevConversations.findIndex(
-					(c) => c.id === message.idConversa
-				);
+	const handleMessageRead = useCallback(
+		(messageId: number) => {
+			setMessages((previous) =>
+				previous.map((message) => {
+					if (message.id === messageId) {
+						message.lida = true;
+					}
 
-				if (conversationIndex !== -1) {
-					const conversationToUpdate = prevConversations.find(
-						(c) => c.id === message.idConversa
-					);
-					if (!conversationToUpdate) return prevConversations;
+					return message;
+				})
+			);
 
-					const updatedConversation = {
-						...conversationToUpdate,
-						ultimaMensagem: message,
-					};
-					console.log([
-						...prevConversations.splice(conversationIndex, 1),
-						updatedConversation,
-					]);
-					return [
-						...prevConversations.splice(conversationIndex, 1),
-						updatedConversation,
-					];
-				} else {
-					refetchConversations();
-				}
-				return prevConversations;
-			});
+			setLastMessageAsRead(messageId);
 		},
-		[setNewConversationData, currentUserId]
+		[messages, setMessages]
 	);
 
-	const syncCache = () => {
-		if (newMessages.length === 0 && newConversationData.length === 0) return;
+	const handleConnect = useCallback(async () => {
+		connect();
 
-		// queryClient.setQueryData(
-		// 	[...messagingKeys.conversations(), currentProductId],
-		// 	(oldData: any) => {
-		// 		if (!oldData) return oldData;
-		// 		const updatedConversations = oldData.map(
-		// 			(conversation: Conversation) => {
-		// 				if (conversation.id === message.idConversa) {
-		// 					return {
-		// 						...conversation,
-		// 						ultimaMensagem: {
-		// 							...message,
-		// 							numeroNaoLidas: conversation.numeroNaoLidas
-		// 								? conversation.numeroNaoLidas + 1
-		// 								: 1,
-		// 						},
-		// 					};
-		// 				}
-		// 				return conversation;
-		// 			}
-		// 		);
-		// 		return updatedConversations;
-		// 	}
-		// );
-		// setNewConversations([]);
+		addReceiveMessageHandler(handleReceiveMessage);
 
-		queryClient.setQueryData(
-			messagingKeys.conversationMessages(currentConversationId.current || 0),
-			(oldData: any) => ({
-				...oldData,
-				pages: [...newMessages, ...oldData.pages.slice(0, -1)],
-			})
-		);
-		setNewMessages([]);
-	};
+		addMessageReadHandler(handleMessageRead);
+
+		addNotificationHandler((notification: string) => {
+			toast.info(notification);
+		});
+
+		addOnCloseHandler((error?: Error) => {
+			console.error("Conexão do chat fechada:", error);
+		});
+
+		await start();
+
+		for (const conversation of conversationsRef.current) {
+			enterConversation(conversation.id).catch((error) => {
+				console.error(`Erro ao entrar na conversa ${conversation.id}:`, error);
+			});
+		}
+	}, [connect, start]);
+
+	// const syncCache = () => {
+	// 	if (newMessages.length === 0 && newConversationData.length === 0) return;
+
+	// 	// queryClient.setQueryData(
+	// 	// 	[...messagingKeys.conversations(), currentProductId],
+	// 	// 	(oldData: any) => {
+	// 	// 		if (!oldData) return oldData;
+	// 	// 		const updatedConversations = oldData.map(
+	// 	// 			(conversation: Conversation) => {
+	// 	// 				if (conversation.id === message.idConversa) {
+	// 	// 					return {
+	// 	// 						...conversation,
+	// 	// 						ultimaMensagem: {
+	// 	// 							...message,
+	// 	// 							numeroNaoLidas: conversation.numeroNaoLidas
+	// 	// 								? conversation.numeroNaoLidas + 1
+	// 	// 								: 1,
+	// 	// 						},
+	// 	// 					};
+	// 	// 				}
+	// 	// 				return conversation;
+	// 	// 			}
+	// 	// 		);
+	// 	// 		return updatedConversations;
+	// 	// 	}
+	// 	// );
+	// 	// setNewConversations([]);
+
+	// 	queryClient.setQueryData(
+	// 		messagingKeys.conversationMessages(currentConversationId.current || 0),
+	// 		(oldData: any) => ({
+	// 			...oldData,
+	// 			pages: [...newMessages, ...oldData.pages.slice(0, -1)],
+	// 		})
+	// 	);
+	// 	setNewMessages([]);
+	// };
 
 	const scrollToBottom = () => {
 		try {
 			messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-		} catch (error) {
+		} catch {
 			// Fallback for test environments where scrollIntoView might not be available
 			if (messagesEndRef.current) {
 				messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
@@ -346,7 +358,9 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 							message.idRemetente !== currentUserId &&
 							!message.lida
 						) {
-							handleMarkMessageAsRead(messageId);
+							handleMarkMessageAsRead(messageId).catch((error) => {
+								console.error("Erro ao marcar mensagem como lida:", error);
+							});
 						}
 					}
 				});
@@ -390,11 +404,13 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 	useEffect(() => {
 		if (!historyMessages) return;
 		const mappedHistory =
-			historyMessages.pages.flatMap((page) => page.flatMap((msg) => msg)) ?? [];
+			historyMessages.pages.flatMap((page: Array<Message>) =>
+				page.flatMap((message: Message) => message)
+			) ?? [];
 		const combinedMessages = [
 			...mappedHistory,
 			...newMessages.filter(
-				(nm) => !mappedHistory.some((hm) => hm.id === nm.id)
+				(nm) => !mappedHistory.some((hm: Message) => hm.id === nm.id)
 			),
 		];
 		combinedMessages.sort((a, b) => a.id - b.id);
@@ -407,7 +423,9 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 
 	useEffect(() => {
 		if (token && !isConversationsLoading) {
-			handleConnect();
+			handleConnect().catch((error) => {
+				console.error("Erro ao conectar ao chat:", error);
+			});
 		}
 
 		return () => {
@@ -445,6 +463,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 				setIsProfileIncompleteModalOpen,
 				messagesContainerRef,
 				messagesEndRef,
+				scrollToBottom,
 			}}
 		>
 			{children}

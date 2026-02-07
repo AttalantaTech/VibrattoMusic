@@ -1,4 +1,4 @@
-import { PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 import { Check, CheckCheck } from "lucide-react";
 import {
 	formatMessageTime,
@@ -6,7 +6,7 @@ import {
 	isMessageRead,
 } from "../../../utils/Message";
 import { useAuthStore } from "@/store/authStore";
-import { Message } from "@/api/services/messages/types";
+import type { Message } from "@/api/services/messages/types";
 
 export const ChatHeaderContainer = ({ children }: PropsWithChildren) => {
 	return (
@@ -20,7 +20,7 @@ export const ChatMessagesContainer = ({
 	children,
 	messagesContainerRef,
 }: PropsWithChildren & {
-	messagesContainerRef: React.ForwardedRef<HTMLDivElement>;
+	messagesContainerRef?: React.ForwardedRef<HTMLDivElement>;
 }) => {
 	return (
 		<div

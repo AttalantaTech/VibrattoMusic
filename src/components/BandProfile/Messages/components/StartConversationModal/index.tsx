@@ -3,6 +3,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { useStartConversation } from "../../../../../hooks/useMessaging";
 import { toast } from "sonner";
+import type { Message } from "@/api/services/messages/types";
 
 interface StartConversationModalProps {
 	isOpen: boolean;
@@ -25,8 +26,8 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 
 	if (!isOpen) return null;
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
+	const handleSubmit = (event: React.FormEvent) => {
+		event.preventDefault();
 
 		if (!subject.trim() || !message.trim()) {
 			toast.error("Por favor, preencha todos os campos");
@@ -40,9 +41,9 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 				conteudo: message,
 			},
 			{
-				onSuccess: (data) => {
+				onSuccess: (data: Message) => {
 					toast.success("Conversa iniciada com sucesso!");
-					onConversationStarted?.(parseInt(data.id));
+					onConversationStarted?.(data.id);
 					onClose();
 					setSubject("");
 					setMessage("");
@@ -81,7 +82,7 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 							id="subject"
 							type="text"
 							value={subject}
-							onChange={(e) => { setSubject(e.target.value); }}
+							onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setSubject(event.target.value); }}
 							className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
 							placeholder="Sobre o que você quer conversar?"
 							disabled={isPending}
@@ -98,7 +99,7 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 						<textarea
 							id="message"
 							value={message}
-							onChange={(e) => { setMessage(e.target.value); }}
+							onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => { setMessage(event.target.value); }}
 							className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none"
 							placeholder="Digite sua mensagem..."
 							disabled={isPending}
