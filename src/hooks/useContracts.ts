@@ -49,12 +49,12 @@ export const useContractPDF = (identificadorUnico: string) => {
 /**
  * Hook to load contract sections for editing
  */
-export const useContractSections = (identificadorUnico: string) => {
+export const useContractSections = (idProdutoMusical: number) => {
 	return useQuery({
-		queryKey: CONTRACT_QUERY_KEYS.sections(identificadorUnico),
+		queryKey: CONTRACT_QUERY_KEYS.sections(idProdutoMusical.toString()),
 		queryFn: () =>
-			contractService.listContractSectionsByIdentificador(identificadorUnico),
-		enabled: !!identificadorUnico && identificadorUnico.length > 0,
+			contractService.listContractSectionsByMusicalProductId(idProdutoMusical),
+		enabled: !!idProdutoMusical,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 		retry: 2,
 		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
@@ -215,12 +215,20 @@ export const useContractPermissions = (identificadorUnico: string) => {
 
 			// This would check contract ownership and status
 			// For now, return basic permissions
-			const contract = await contractService.loadContract(identificadorUnico);
+			const proposal = await proposalService
+				.listProposals({
+					IdentificadorUnico: identificadorUnico,
+				})
+				.then((proposals) => proposals[0]);
+
+			if (!proposal) {
+				return { canEdit: false, canView: false };
+			}
 
 			return {
 				canEdit:
-					contract.status.nome === "Assinado" ||
-					contract.status.nome === "Aceita",
+					proposal.status.nome === "Assinado" ||
+					proposal.status.nome === "Aceita",
 				canView: true,
 				isOwner: true, // TODO: Check actual ownership
 			};

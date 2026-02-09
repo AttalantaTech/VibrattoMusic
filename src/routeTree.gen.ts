@@ -170,7 +170,7 @@ export interface FileRoutesByFullPath {
   '/band/me': typeof BandMeRoute
   '/band/profile-type': typeof BandProfileTypeRoute
   '/band/register': typeof BandRegisterRouteWithChildren
-  '/register': typeof RegisterIndexRoute
+  '/register/': typeof RegisterIndexRoute
   '/band/contract/$id': typeof BandContractIdRoute
   '/band/contract/create': typeof BandContractCreateRoute
   '/band/profile/$id': typeof BandProfileIdRoute
@@ -251,7 +251,7 @@ export interface FileRouteTypes {
     | '/band/me'
     | '/band/profile-type'
     | '/band/register'
-    | '/register'
+    | '/register/'
     | '/band/contract/$id'
     | '/band/contract/create'
     | '/band/profile/$id'
@@ -398,7 +398,7 @@ declare module '@tanstack/react-router' {
     '/register/': {
       id: '/register/'
       path: '/register'
-      fullPath: '/register'
+      fullPath: '/register/'
       preLoaderRoute: typeof RegisterIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
