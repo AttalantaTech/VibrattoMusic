@@ -23,7 +23,7 @@ import { Button } from "../../ui/Button/Button";
 import { Reports } from "./Reports";
 import { FilterSelector } from "../../ui/FilterSelector/FilterSelector";
 import { LineChartComponent } from "../../charts/line/LineChart";
-import { SendProposalModal } from "../Messages/SendProposalModal";
+import { SendProposalModal } from "../Messages/components/SendProposalModal";
 import { ProposalRejectionModal } from "../Proposals/ProposalRejectionModal";
 import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
 import {

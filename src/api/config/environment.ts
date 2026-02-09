@@ -90,7 +90,8 @@ export const developmentConfig: EnvironmentConfig = {
 
 // Staging Environment
 export const stagingConfig: EnvironmentConfig = {
-	apiBaseUrl: "https://staging-api.vibratto.com",
+	apiBaseUrl:
+		"https://apivibratto-api-ctdqdacrascbhzcz.brazilsouth-01.azurewebsites.net/api",
 	timeout: 15000,
 	retryConfig: {
 		maxRetries: 3,
@@ -141,7 +142,8 @@ export const stagingConfig: EnvironmentConfig = {
 
 // Production Environment
 export const productionConfig: EnvironmentConfig = {
-	apiBaseUrl: "https://api.vibratto.com",
+	apiBaseUrl:
+		"https://apivibratto-api-ctdqdacrascbhzcz.brazilsouth-01.azurewebsites.net/api",
 	timeout: 20000,
 	retryConfig: {
 		maxRetries: 5,

@@ -1,14 +1,18 @@
 // Messaging hooks
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+	useQuery,
+	useMutation,
+	useQueryClient,
+	useInfiniteQuery,
+} from "@tanstack/react-query";
 import { messagingService } from "../api";
 import type {
-	Message,
-	Conversation,
 	Notification,
 	SendMessageRequest,
 	PaginationParameters,
 	PaginatedResponse,
 } from "../api/types";
+import { Conversation, Message } from "@/api/services/messages/types";
 
 // Query Keys
 export const messagingKeys = {
@@ -26,15 +30,16 @@ export const messagingKeys = {
  * Hook to get conversations
  */
 export const useConversations = (
+	IdProdutoMusical: number | null | undefined,
 	parameters?: PaginationParameters,
 	enabled: boolean = true
 ) => {
-	return useQuery<PaginatedResponse<Conversation>, Error>({
-		queryKey: messagingKeys.conversations(),
-		queryFn: () => messagingService.getConversations(parameters),
+	return useQuery<Conversation[]>({
+		queryKey: [...messagingKeys.conversations(), IdProdutoMusical],
+		queryFn: () =>
+			messagingService.getConversations(IdProdutoMusical, parameters),
 		enabled,
 		staleTime: 30 * 1000, // 30 seconds
-		refetchInterval: 10 * 1000, // Refetch every 10 seconds for real-time feel
 	});
 };
 
@@ -61,13 +66,15 @@ export const useConversationMessages = (
 	parameters?: PaginationParameters,
 	enabled: boolean = true
 ) => {
-	return useQuery<PaginatedResponse<Message>, Error>({
+	return useInfiniteQuery({
 		queryKey: messagingKeys.conversationMessages(conversationId),
 		queryFn: () =>
 			messagingService.getConversationMessages(conversationId, parameters),
+		getNextPageParam: () => 0,
+		initialPageParam: 0,
+		staleTime: 30 * 1000, // 30 seconds
+		refetchInterval: 3 * 1000, // Refetch every 3 seconds
 		enabled: enabled && conversationId > 0,
-		staleTime: 5 * 1000, // 5 seconds
-		refetchInterval: 3 * 1000, // Refetch every 3 seconds for real-time messages
 	});
 };
 
@@ -96,10 +103,11 @@ export const useSendMessage = () => {
 			messagingService.sendMessage(messageData),
 		onSuccess: (data) => {
 			// Parse conversationId safely
-			const conversationId = typeof data.conversationId === 'string' 
-				? parseInt(data.conversationId.replace(/\D/g, ''), 10) 
-				: Number(data.conversationId);
-				
+			const conversationId =
+				typeof data.idConversa === "string"
+					? parseInt(data.idConversa, 10)
+					: Number(data.idConversa);
+
 			// Only invalidate if we have a valid conversation ID
 			if (!isNaN(conversationId) && conversationId > 0) {
 				// Invalidate conversation messages
@@ -107,7 +115,7 @@ export const useSendMessage = () => {
 					queryKey: messagingKeys.conversationMessages(conversationId),
 				});
 			}
-			
+
 			// Invalidate conversations list
 			void queryClient.invalidateQueries({
 				queryKey: messagingKeys.conversations(),

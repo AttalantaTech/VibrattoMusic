@@ -1,7 +1,6 @@
 import { Bell } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useAuthStore } from "../../../store/authStore";
-import { WebSocketClient } from "../../../api/websocket/client";
 
 interface Notification {
 	id: string;
@@ -12,7 +11,7 @@ interface Notification {
 }
 
 export const NotificationBell = () => {
-	const { isAuthenticated, user, token } = useAuthStore();
+	const { isAuthenticated } = useAuthStore();
 	const [unreadCount, setUnreadCount] = useState(0);
 	const [notifications, setNotifications] = useState<Array<Notification>>([]);
 	const [showNotificationDropdown, setShowNotificationDropdown] =
@@ -38,89 +37,6 @@ export const NotificationBell = () => {
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
 	}, [showNotificationDropdown]);
-
-	// WebSocket integration for real-time features
-	useEffect(() => {
-		if (!isAuthenticated || !user || !token) return;
-
-		const wsClient = new WebSocketClient();
-		const handleNotificationReceived = (data: unknown) => {
-			const notification = data as {
-				id: string;
-				type: string;
-				message: string;
-				timestamp: string;
-			};
-			setNotifications((previous) => [
-				{
-					...notification,
-					read: false,
-				},
-				...previous.slice(0, 9),
-			]); // Keep last 10
-			setUnreadCount((previous) => previous + 1);
-		};
-
-		const handleBookingUpdated = (data: unknown) => {
-			const bookingData = data as { status: string; clientName: string };
-			const message = `Booking ${bookingData.status} from ${bookingData.clientName}`;
-			setNotifications((previous) => [
-				{
-					id: Date.now().toString(),
-					type: "booking",
-					message,
-					timestamp: new Date().toISOString(),
-					read: false,
-				},
-				...previous.slice(0, 9),
-			]);
-			setUnreadCount((previous) => previous + 1);
-		};
-
-		const handleMessageReceived = (data: unknown) => {
-			const messageData = data as { from: string; content: string };
-			const message = `New message from ${messageData.from}`;
-			setNotifications((previous) => [
-				{
-					id: Date.now().toString(),
-					type: "message",
-					message,
-					timestamp: new Date().toISOString(),
-					read: false,
-				},
-				...previous.slice(0, 9),
-			]);
-			setUnreadCount((previous) => previous + 1);
-		};
-
-		const connectWebSocket = async () => {
-			try {
-				await wsClient.connect(token);
-
-				// Subscribe to relevant channels
-				wsClient.subscribe("notifications");
-				wsClient.subscribe("bookings");
-				wsClient.subscribe("messages");
-
-				// Listen for real-time events
-				wsClient.on("notificationReceived", handleNotificationReceived);
-				wsClient.on("bookingUpdated", handleBookingUpdated);
-				wsClient.on("messageReceived", handleMessageReceived);
-
-				return wsClient;
-			} catch (error) {
-				// WebSocket not available is normal and expected
-				// Don't log as error, just continue without real-time notifications
-				return wsClient;
-			}
-		};
-
-		void connectWebSocket();
-
-		return () => {
-			wsClient.disconnect();
-		};
-	}, [isAuthenticated, user, token]);
 
 	// Handle notification actions
 	const markAsRead = (notificationId: string) => {

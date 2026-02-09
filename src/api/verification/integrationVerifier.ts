@@ -10,7 +10,6 @@ import {
 	bookingService,
 	messagingService,
 	utilityService,
-	webSocketService,
 	performanceMonitor,
 	errorReporter,
 	analyticsTracker,
@@ -51,7 +50,6 @@ class ApiIntegrationVerifier {
 		await this.verifyConfiguration();
 		await this.verifyServices();
 		await this.verifyMiddleware();
-		await this.verifyWebSocket();
 		await this.verifyMonitoring();
 		await this.verifyValidation();
 		await this.verifyVersioning();
@@ -195,57 +193,6 @@ class ApiIntegrationVerifier {
 				"Middleware",
 				"error",
 				`Middleware verification failed: ${String(error)}`
-			);
-		}
-	}
-	/**
-	 * Verify WebSocket integration
-	 */
-	private async verifyWebSocket(): Promise<void> {
-		try {
-			if (
-				webSocketService &&
-				typeof webSocketService.initialize === "function"
-			) {
-				this.addResult("WebSocket", "success", "WebSocket service initialized"); // Check WebSocket methods
-				const methods = [
-					"initialize",
-					"disconnect",
-					"sendMessage",
-					"isConnected",
-				];
-				const availableMethods = methods.filter(
-					(method) =>
-						typeof (webSocketService as unknown as Record<string, unknown>)[
-							method
-						] === "function"
-				);
-
-				if (availableMethods.length === methods.length) {
-					this.addResult(
-						"WebSocket Methods",
-						"success",
-						"All WebSocket methods available"
-					);
-				} else {
-					this.addResult(
-						"WebSocket Methods",
-						"warning",
-						`Some WebSocket methods missing: ${methods.filter((m) => !availableMethods.includes(m)).join(", ")}`
-					);
-				}
-			} else {
-				this.addResult(
-					"WebSocket",
-					"error",
-					"WebSocket service not properly initialized"
-				);
-			}
-		} catch (error) {
-			this.addResult(
-				"WebSocket",
-				"error",
-				`WebSocket verification failed: ${String(error)}`
 			);
 		}
 	}

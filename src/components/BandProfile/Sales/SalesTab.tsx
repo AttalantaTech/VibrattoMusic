@@ -9,7 +9,6 @@ import { Button } from "../../ui/Button/Button";
 import { FilterSelector } from "../../ui/FilterSelector/FilterSelector";
 import { useCallback, useMemo, useState } from "react";
 import { UpdateButton } from "../../ui/UpdateButton/UpdateButton";
-import { SendProposalModal } from "../Messages/SendProposalModal";
 import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
 import { Reports } from "./Reports";
 import { EventsTable } from "./components/EventsTable";
@@ -29,6 +28,7 @@ import { toast } from "sonner";
 import type { ProposalResponse } from "../../../api/types";
 import { ProposalDetailsModal } from "./components/ProposalDetailsModal";
 import { ProposalRejectionModal } from "../Proposals/ProposalRejectionModal";
+import { SendProposalModal } from "../Messages/components/SendProposalModal";
 
 interface AbaVendasProps {
 	productId?: number;
