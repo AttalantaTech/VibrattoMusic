@@ -1,11 +1,12 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, type ReactNode } from "react";
 import type { Option } from "../components/forms/Select/Select";
 import type {
-	OnboardingDetails,
-	OnboardingMedia,
-	OnboardingImages,
-	OnboardingTechnicalConfig,
-	OnboardingSchedule,
+	MusicalProductDetails,
+	MusicalProductMedia,
+	MusicalProductImages,
+	MusicalProductTechnicalConfig,
+	MusicalProductSchedule,
 } from "../api/types";
 
 export interface BandRegistrationState {
@@ -19,16 +20,19 @@ export interface BandRegistrationState {
 	step1Data?: { id: number };
 
 	// Step 2 - Band Information
-	step2Data?: OnboardingDetails;
+	step2Data?: MusicalProductDetails;
 
 	// Step 3 - Media Kit (returns combined media and images data)
-	step3Data?: { mediaData: OnboardingMedia; imagesData: OnboardingImages };
+	step3Data?: {
+		mediaData: MusicalProductMedia;
+		imagesData: MusicalProductImages;
+	};
 
 	// Step 4 - Technical Configuration
-	step4Data?: OnboardingTechnicalConfig;
+	step4Data?: MusicalProductTechnicalConfig;
 
 	// Step 5 - Schedule
-	step5Data?: OnboardingSchedule;
+	step5Data?: MusicalProductSchedule;
 
 	// Current step tracking
 	currentStep: string;
@@ -42,13 +46,13 @@ interface BandRegistrationContextType {
 	updateProfileTypes: (types: Array<Option>) => void;
 	updateProductId: (id: number) => void;
 	updateStep1Data: (data: { id: number }) => void;
-	updateStep2Data: (data: OnboardingDetails) => void;
+	updateStep2Data: (data: MusicalProductDetails) => void;
 	updateStep3Data: (data: {
-		mediaData: OnboardingMedia;
-		imagesData: OnboardingImages;
+		mediaData: MusicalProductMedia;
+		imagesData: MusicalProductImages;
 	}) => void;
-	updateStep4Data: (data: OnboardingTechnicalConfig) => void;
-	updateStep5Data: (data: OnboardingSchedule) => void;
+	updateStep4Data: (data: MusicalProductTechnicalConfig) => void;
+	updateStep5Data: (data: MusicalProductSchedule) => void;
 	setCurrentStep: (step: string) => void;
 	markStepCompleted: (step: string) => void;
 	isStepCompleted: (step: string) => boolean;
@@ -78,8 +82,8 @@ const loadPersistedState = (): BandRegistrationState => {
 		if (saved) {
 			const parsed = JSON.parse(saved) as Partial<BandRegistrationState> & {
 				completedSteps?: Array<string>;
-			}; 
-			
+			};
+
 			// Convert completedSteps back to Set and merge with initial state
 			const loadedState = {
 				...initialState,
@@ -163,25 +167,25 @@ export const BandRegistrationProvider = ({
 		updateStateAndPersist(newState);
 	};
 
-	const updateStep2Data = (data: OnboardingDetails) => {
+	const updateStep2Data = (data: MusicalProductDetails) => {
 		const newState = { ...state, step2Data: data };
 		updateStateAndPersist(newState);
 	};
 
 	const updateStep3Data = (data: {
-		mediaData: OnboardingMedia;
-		imagesData: OnboardingImages;
+		mediaData: MusicalProductMedia;
+		imagesData: MusicalProductImages;
 	}) => {
 		const newState = { ...state, step3Data: data };
 		updateStateAndPersist(newState);
 	};
 
-	const updateStep4Data = (data: OnboardingTechnicalConfig) => {
+	const updateStep4Data = (data: MusicalProductTechnicalConfig) => {
 		const newState = { ...state, step4Data: data };
 		updateStateAndPersist(newState);
 	};
 
-	const updateStep5Data = (data: OnboardingSchedule) => {
+	const updateStep5Data = (data: MusicalProductSchedule) => {
 		const newState = { ...state, step5Data: data };
 		updateStateAndPersist(newState);
 	};

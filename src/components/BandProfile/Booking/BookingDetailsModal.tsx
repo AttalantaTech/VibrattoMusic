@@ -113,7 +113,7 @@ export const BookingDetailsModal = ({
 								<span>
 									{typeof booking.produtoMusical?.cidade === "string"
 										? booking.produtoMusical.cidade
-										: (booking.produtoMusical?.cidade?.Nome ??
+										: (booking.produtoMusical?.cidade?.nome ??
 											"Cidade não informada")}
 								</span>
 							</div>

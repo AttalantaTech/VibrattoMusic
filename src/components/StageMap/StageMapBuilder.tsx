@@ -35,7 +35,7 @@ import {
 	STAGE_CONFIG,
 } from "./types";
 
-import { useInstrumentos } from "../../../hooks/useFilters";
+import { useInstrumentos } from "@/hooks/useFilters";
 
 // Custom hooks
 const useStageHistory = (
@@ -153,7 +153,7 @@ const useStageInteractions = (
 	};
 };
 
-export default function StageMapBuilder({
+export function StageMapBuilder({
 	isOpen,
 	onClose,
 	onSave,

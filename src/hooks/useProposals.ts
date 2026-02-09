@@ -133,6 +133,15 @@ export const useUpdateProposalStatus = () => {
 	});
 };
 
+export const useProposalById = (identificadorUnico: string) => {
+	return useQuery({
+		queryKey: ["proposal", identificadorUnico],
+		queryFn: () => proposalService.getProposalById(identificadorUnico),
+		enabled: !!identificadorUnico,
+		staleTime: 5 * 60 * 1000, // 5 minutes
+	});
+};
+
 /**
  * Hook to fetch filtered proposals with local filtering/sorting/pagination
  */

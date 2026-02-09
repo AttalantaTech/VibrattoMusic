@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	Loader2,
@@ -70,7 +70,7 @@ export default function ContactStep() {
 	}, [onboardingData]);
 
 	const { user } = useAuthStore();
-	const { register, handleSubmit, watch, setValue, formState, reset } =
+	const { register, handleSubmit, watch, setValue, formState, reset, control } =
 		useForm<ContactFormData>({
 			resolver: zodResolver(ContactValidationSchema),
 			defaultValues: { ...values },
@@ -164,14 +164,20 @@ export default function ContactStep() {
 
 				{watchUsaCnpj && (
 					<>
-						<InputField
-							required={watchUsaCnpj}
-							helperText={helperText}
-							icon={<Briefcase size={20} />}
-							label="CNPJ"
-							mask="99.999.999/0001-99"
-							placeholder="XX.XXX.XXX/0001-XX"
-							{...register("cnpj")}
+						<Controller
+							name="cnpj"
+							control={control}
+							render={({ field }) => (
+								<InputField
+									{...field}
+									required={watchUsaCnpj}
+									helperText={helperText}
+									icon={<Briefcase size={20} />}
+									label="CNPJ"
+									mask="00.000.000/0000-00"
+									placeholder="00.000.000/0000-00"
+								/>
+							)}
 						/>
 						{errors.cnpj?.message && (
 							<div className="text-red-500 text-sm">{errors.cnpj.message}</div>
@@ -193,13 +199,19 @@ export default function ContactStep() {
 					</div>
 				)}
 
-				<InputField
-					required={watchUsaCnpj}
-					icon={<Phone size={20} />}
-					label="Telefone"
-					mask="(99) 99999-9999"
-					placeholder="(00) 00000-0000"
-					{...register("telefone")}
+				<Controller
+					name="telefone"
+					control={control}
+					render={({ field }) => (
+						<InputField
+							{...field}
+							required={watchUsaCnpj}
+							icon={<Phone size={20} />}
+							label="Telefone"
+							mask="(00) 00000-0000"
+							placeholder="(00) 00000-0000"
+						/>
+					)}
 				/>
 				{errors.telefone?.message && (
 					<div className="text-red-500 text-sm">{errors.telefone.message}</div>
