@@ -10,7 +10,6 @@ import { useActiveMusicalProduct } from "../../hooks/useActiveMusicalProduct";
 import MessagesTab from "../../components/BandProfile/Messages";
 import { ProposalsTab } from "../../components/BandProfile/Proposals/ProposalsTab";
 import { ContractsTab } from "../../components/BandProfile/Contracts/ContractsTab";
-import { MessagesContextProvider } from "@/components/BandProfile/Messages/contexts/MessagesContext/provider";
 import { SalesTab } from "../../components/BandProfile/Sales/SalesTab";
 import { ProfileTab } from "@/components/BandProfile/Account/ProfileTab";
 

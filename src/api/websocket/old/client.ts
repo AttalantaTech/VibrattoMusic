@@ -2,12 +2,14 @@
  * WebSocket integration for real-time features in Vibratto API
  */
 
+import { getEnvironmentConfig } from "@/api/config/environment";
 import type {
 	BookingUpdate,
 	NotificationData,
 	UserStatus,
 	ConversationUpdate,
 } from "../../types";
+import { Message } from "@/api/services/messages/types";
 
 // Minimal EventEmitter for browser compatibility
 class BrowserEventEmitter {
@@ -77,20 +79,20 @@ export class WebSocketClient extends BrowserEventEmitter {
 	public constructor(config?: Partial<WebSocketConfig>) {
 		super();
 
-		// const envConfig = getEnvironmentConfig();
-		// const baseUrl = envConfig.apiBaseUrl.endsWith("/api")
-		// 	? envConfig.apiBaseUrl.slice(0, -4)
-		// 	: envConfig.apiBaseUrl;
-		// const endpoint = config?.url || "chat/mensagem";
+		const envConfig = getEnvironmentConfig();
+		const baseUrl = envConfig.apiBaseUrl.endsWith("/api")
+			? envConfig.apiBaseUrl.slice(0, -4)
+			: envConfig.apiBaseUrl;
+		const endpoint = config?.url || "chat/mensagem";
 
-		// this.config = {
-		// 	...config,
-		// 	reconnectInterval: 5000,
-		// 	maxReconnectAttempts: 10,
-		// 	heartbeatInterval: 30000,
-		// 	enableHeartbeat: true,
-		// 	url: `${baseUrl}/${endpoint}`,
-		// };
+		this.config = {
+			...config,
+			reconnectInterval: 5000,
+			maxReconnectAttempts: 10,
+			heartbeatInterval: 30000,
+			enableHeartbeat: true,
+			url: `${baseUrl}/${endpoint}`,
+		};
 
 		return;
 	}
@@ -98,77 +100,76 @@ export class WebSocketClient extends BrowserEventEmitter {
 	 * Connect to WebSocket server
 	 */
 	public async connect(authToken?: string): Promise<void> {
-		return;
-		// if (
-		// 	this.isConnecting ||
-		// 	(this.ws && this.ws.readyState === WebSocket.OPEN)
-		// ) {
-		// 	return;
-		// }
+		if (
+			this.isConnecting ||
+			(this.ws && this.ws.readyState === WebSocket.OPEN)
+		) {
+			return;
+		}
 
-		// this.isConnecting = true;
-		// this.isManualClose = false;
-		// this.authToken = authToken ?? this.authToken;
+		this.isConnecting = true;
+		this.isManualClose = false;
+		this.authToken = authToken ?? this.authToken;
 
-		// try {
-		// 	const url = new URL(this.config.url);
-		// 	if (this.authToken) {
-		// 		url.searchParams.set("token", this.authToken);
-		// 	}
+		try {
+			const url = new URL(this.config.url);
+			if (this.authToken) {
+				url.searchParams.set("token", this.authToken);
+			}
 
-		// 	// Check if WebSocket endpoint exists by trying to connect
-		// 	this.ws = new WebSocket(url.toString(), this.config.protocols);
-		// 	this.setupEventHandlers();
+			// Check if WebSocket endpoint exists by trying to connect
+			this.ws = new WebSocket(url.toString(), this.config.protocols);
+			this.setupEventHandlers();
 
-		// 	await new Promise<void>((resolve, reject) => {
-		// 		const timeout = setTimeout(() => {
-		// 			if (this.ws) {
-		// 				this.ws.close();
-		// 				this.ws = null;
-		// 			}
-		// 			this.isConnecting = false;
-		// 			reject(
-		// 				new Error(
-		// 					"WebSocket connection timeout - server may not support WebSocket"
-		// 				)
-		// 			);
-		// 		}, 5000); // Reduced timeout to fail faster
+			await new Promise<void>((resolve, reject) => {
+				const timeout = setTimeout(() => {
+					if (this.ws) {
+						this.ws.close();
+						this.ws = null;
+					}
+					this.isConnecting = false;
+					reject(
+						new Error(
+							"WebSocket connection timeout - server may not support WebSocket"
+						)
+					);
+				}, 5000); // Reduced timeout to fail faster
 
-		// 		this.ws!.onopen = () => {
-		// 			clearTimeout(timeout);
-		// 			this.isConnecting = false;
-		// 			this.reconnectAttempts = 0;
-		// 			this.startHeartbeat();
-		// 			this.resubscribe();
-		// 			this.emit("connected");
-		// 			console.log("✅ WebSocket connected successfully");
-		// 			resolve();
-		// 		};
-		// 		this.ws!.onerror = (_error) => {
-		// 			clearTimeout(timeout);
-		// 			this.isConnecting = false;
-		// 			this.serverUnavailable = true; // Mark server as unavailable
-		// 			if (this.ws) {
-		// 				this.ws.close();
-		// 				this.ws = null;
-		// 			}
-		// 			// Don't log as error - WebSocket unavailability is expected and handled
-		// 			console.log("📵 WebSocket not available - using REST API mode");
-		// 			// Don't emit error event for expected connection failures
-		// 			// this.emit("error", error);
-		// 			reject(
-		// 				new Error("WebSocket not available - using REST API fallback")
-		// 			);
-		// 		};
-		// 	});
-		// 	return;
-		// } catch (error) {
-		// 	console.error(error);
-		// 	this.isConnecting = false;
-		// 	// Expected when WebSocket endpoint doesn't exist - not an error
-		// 	// Application will use REST API fallback
-		// 	return;
-		// }
+				this.ws!.onopen = () => {
+					clearTimeout(timeout);
+					this.isConnecting = false;
+					this.reconnectAttempts = 0;
+					this.startHeartbeat();
+					this.resubscribe();
+					this.emit("connected");
+					console.log("✅ WebSocket connected successfully");
+					resolve();
+				};
+				this.ws!.onerror = (_error) => {
+					clearTimeout(timeout);
+					this.isConnecting = false;
+					this.serverUnavailable = true; // Mark server as unavailable
+					if (this.ws) {
+						this.ws.close();
+						this.ws = null;
+					}
+					// Don't log as error - WebSocket unavailability is expected and handled
+					console.log("📵 WebSocket not available - using REST API mode");
+					// Don't emit error event for expected connection failures
+					// this.emit("error", error);
+					reject(
+						new Error("WebSocket not available - using REST API fallback")
+					);
+				};
+			});
+			return;
+		} catch (error) {
+			console.error(error);
+			this.isConnecting = false;
+			// Expected when WebSocket endpoint doesn't exist - not an error
+			// Application will use REST API fallback
+			return;
+		}
 	}
 	/**
 	 * Disconnect from WebSocket server
@@ -463,9 +464,10 @@ export class WebSocketClient extends BrowserEventEmitter {
 }
 
 // Export singleton instance
-let webSocketService: null = null;
+let webSocketService: WebSocketClient | null = null;
 
-export function getWebSocketService(config?: Partial<WebSocketConfig>): null {
+export function getWebSocketService(config?: Partial<WebSocketConfig>): WebSocketClient | null {
+	webSocketService = new WebSocketClient(config);
 	webSocketService = null;
 	return webSocketService;
 }

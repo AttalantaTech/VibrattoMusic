@@ -26,7 +26,7 @@ import type {
 	MusicalProduct,
 	MusicalProductListApiResponse,
 } from "@/api/types";
-import { StartConversationModal } from "@/components/BandProfile/Messages/StartConversationModal";
+import { StartConversationModal } from "@/components/BandProfile/Messages/components/StartConversationModal";
 import { useStartConversation } from "@/hooks/useMessaging";
 import { toast } from "sonner";
 import { RatingBars } from "@/components/RatingBars/RatingBars";

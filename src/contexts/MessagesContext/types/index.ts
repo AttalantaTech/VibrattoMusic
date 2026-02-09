@@ -3,7 +3,7 @@ import type { Conversation, Message } from "@/api/services/messages/types";
 export type MessagesContextType = {
 	messageInput: string;
 	setMessageInput: (value: string) => void;
-	messagesError: string | null;
+	messagesError: Error | null;
 	messages: Array<Message>;
 	searchQuery: string;
 	setSearchQuery: (value: string) => void;

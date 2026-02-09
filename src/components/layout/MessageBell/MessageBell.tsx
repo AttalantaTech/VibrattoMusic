@@ -8,7 +8,8 @@ import { Conversation } from "@/api/services/messages/types";
 export const MessageBell = () => {
 	const { user, isAuthenticated } = useAuthStore();
 	const navigate = useNavigate();
-	const { conversations } = useMessagesContext();
+	const messagesContext = useMessagesContext();
+	const { conversations } = messagesContext || {};
 
 	const totalUnreadMessages: number = useMemo(() => {
 		return (conversations as Conversation[])?.reduce(

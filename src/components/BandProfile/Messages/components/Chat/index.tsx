@@ -107,7 +107,7 @@ export const Chat = () => {
 						{messagesError && (
 							<div className="flex flex-col items-center justify-center h-full text-center">
 								<MessageSquare className="w-12 h-12 text-red-300 mb-3" />
-								<p className="text-red-500">{messagesError}</p>
+								<p className="text-red-500">{messagesError.message}</p>
 								<button
 									onClick={() => {
 										window.location.reload();

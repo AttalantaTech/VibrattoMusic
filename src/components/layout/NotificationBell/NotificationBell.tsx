@@ -11,7 +11,7 @@ interface Notification {
 }
 
 export const NotificationBell = () => {
-	const { isAuthenticated, user, token } = useAuthStore();
+	const { isAuthenticated } = useAuthStore();
 	const [unreadCount, setUnreadCount] = useState(0);
 	const [notifications, setNotifications] = useState<Array<Notification>>([]);
 	const [showNotificationDropdown, setShowNotificationDropdown] =

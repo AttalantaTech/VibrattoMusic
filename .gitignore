@@ -35,3 +35,6 @@ storybook-static
 
 *,gen.ts
 .env
+
+# development env
+.env.development

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { useStartConversation } from "../../../../../hooks/useMessaging";
 import { toast } from "sonner";
-import type { Message } from "@/api/services/messages/types";
+import type { Conversation } from "@/api/services/messages/types";
 
 interface StartConversationModalProps {
 	isOpen: boolean;
@@ -41,7 +41,7 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 				conteudo: message,
 			},
 			{
-				onSuccess: (data: Message) => {
+				onSuccess: (data: Conversation) => {
 					toast.success("Conversa iniciada com sucesso!");
 					onConversationStarted?.(data.id);
 					onClose();

@@ -10,7 +10,6 @@ import {
 } from "../../hooks/useMusicalProducts";
 import type { MusicalProductApiResponse } from "../../api/types";
 import { StartConversationModal } from "../../components/BandProfile/Messages/components/StartConversationModal";
-import { useStartConversation } from "../../hooks/useMessaging";
 import { toast } from "sonner";
 import { BandProfile } from "@/components/BandProfile/Account/BandProfile";
 
