@@ -107,29 +107,16 @@ export const useMyContracts = (): ReturnType<
 	const user = useAuthStore((state) => state.user);
 	const { activeProduct } = useActiveMusicalProduct();
 
-	console.log("🔍 Debug - useMyContracts called with:", {
-		user: user?.id,
-		activeProduct: activeProduct?.id,
-		activeProductName: activeProduct?.name,
-	});
-
 	return useQuery({
 		queryKey: CONTRACT_QUERY_KEYS.mine(),
 		queryFn: async (): Promise<Array<ContractResponse>> => {
 			if (!user?.id || !activeProduct?.id) {
-				console.log("🔍 Debug - No user ID or active product available");
 				return [];
 			}
 
 			try {
-				console.log(
-					"🔍 Debug - Loading proposals for product:",
-					activeProduct.id
-				);
-
 				const productId = Number(activeProduct.id);
 				if (isNaN(productId)) {
-					console.error("🔍 Debug - Invalid product ID:", activeProduct.id);
 					return [];
 				}
 
@@ -143,10 +130,7 @@ export const useMyContracts = (): ReturnType<
 					DataAte: null,
 				});
 
-				console.log("🔍 Debug - Found proposals:", proposals?.length || 0);
-
 				if (!Array.isArray(proposals) || proposals.length === 0) {
-					console.log("🔍 Debug - No proposals found for this product");
 					return [];
 				}
 
@@ -154,24 +138,14 @@ export const useMyContracts = (): ReturnType<
 				const proposal = proposals[0];
 
 				if (!proposal || !proposal.identificadorUnico) {
-					console.log(
-						"🔍 Debug - No valid proposal with identificadorUnico found"
-					);
 					return [];
 				}
-
-				console.log("🔍 Debug - Using proposal:", {
-					id: proposal.id,
-					identificadorUnico: proposal.identificadorUnico,
-					status: proposal.status?.nome,
-				});
 
 				// Load the contract using the proposal's identificadorUnico
 				const contract = await contractService.loadContract(
 					proposal.identificadorUnico
 				);
 
-				console.log("🔍 Debug - Contract loaded successfully");
 				return [contract];
 			} catch (error) {
 				console.log("🔍 Debug - No contract found or error occurred:", error);

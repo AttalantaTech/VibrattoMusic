@@ -1,9 +1,27 @@
 import { useState } from "react";
-import { XCircle, AlertCircle, Loader2, FileText, DollarSign, Calendar } from "lucide-react";
+import {
+	XCircle,
+	AlertCircle,
+	Loader2,
+	FileText,
+	DollarSign,
+	Calendar,
+} from "lucide-react";
 import { Button } from "../../ui/Button/Button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "../../ui/dialog";
 import { Badge } from "../../ui/Badge/Badge";
-import { Select, SelectValue } from "../../ui/Select/Select";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../../ui/Select/Select";
 import { Textarea } from "../../ui/Textarea/Textarea";
 import { useUpdateProposalStatus } from "../../../hooks/useProposals";
 import { useMotivosRejeicaoProposta } from "../../../hooks/useFilters";
@@ -18,25 +36,35 @@ interface ProposalRejectionModalProps {
 
 // Component logic moved to function body to use hooks
 
-export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRejectionModalProps) => {
-	const [step, setStep] = useState<'reason' | 'confirm' | 'success' | 'error'>('reason');
+export const ProposalRejectionModal = ({
+	isOpen,
+	onClose,
+	proposal,
+}: ProposalRejectionModalProps) => {
+	const [step, setStep] = useState<"reason" | "confirm" | "success" | "error">(
+		"reason"
+	);
 	const [selectedReasonId, setSelectedReasonId] = useState<number | null>(null);
-	const [additionalComments, setAdditionalComments] = useState('');
+	const [additionalComments, setAdditionalComments] = useState("");
 	const [validationError, setValidationError] = useState<string | null>(null);
 
 	// Fetch rejection reasons from API
-	const { data: rejectionReasons, isLoading: isLoadingReasons, error: reasonsError } = useMotivosRejeicaoProposta(isOpen);
+	const {
+		data: rejectionReasons,
+		isLoading: isLoadingReasons,
+		error: reasonsError,
+	} = useMotivosRejeicaoProposta(isOpen);
 
 	const rejectMutation = useUpdateProposalStatus();
 
 	const handleNext = () => {
 		if (!selectedReasonId) {
-			setValidationError('Por favor, selecione um motivo para rejeição.');
+			setValidationError("Por favor, selecione um motivo para rejeição.");
 			return;
 		}
 
 		setValidationError(null);
-		setStep('confirm');
+		setStep("confirm");
 	};
 
 	const handleReject = async () => {
@@ -48,41 +76,45 @@ export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRe
 		});
 
 		if (!validation.success) {
-			setValidationError(validation.error.issues?.[0]?.message || 'Erro de validação');
-			setStep('reason');
+			setValidationError(
+				validation.error.issues?.[0]?.message || "Erro de validação"
+			);
+			setStep("reason");
 			return;
 		}
 
 		try {
 			await rejectMutation.mutateAsync({
 				proposalId: proposal.id,
-				status: 'rejeitado',
+				status: "rejeitado",
 				reasonId: selectedReasonId,
 			});
-			setStep('success');
+			setStep("success");
 		} catch (error) {
-			console.error('Error rejecting proposal:', error);
-			setStep('error');
+			console.error("Error rejecting proposal:", error);
+			setStep("error");
 		}
 	};
 
 	const handleClose = () => {
-		setStep('reason');
+		setStep("reason");
 		setSelectedReasonId(null);
-		setAdditionalComments('');
+		setAdditionalComments("");
 		setValidationError(null);
 		onClose();
 	};
 
 	const handleSuccessClose = () => {
-		setStep('reason');
+		setStep("reason");
 		setSelectedReasonId(null);
-		setAdditionalComments('');
+		setAdditionalComments("");
 		setValidationError(null);
 		onClose();
 	};
 
-	const selectedReason = rejectionReasons?.find(r => r.Id === selectedReasonId?.toString());
+	const selectedReason = rejectionReasons?.find(
+		(r) => r.Id === selectedReasonId
+	);
 
 	if (!proposal) return null;
 
@@ -91,24 +123,30 @@ export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRe
 			<DialogContent className="max-w-md">
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
-						{step === 'reason' && <XCircle className="w-5 h-5 text-red-600" />}
-						{step === 'confirm' && <AlertCircle className="w-5 h-5 text-orange-600" />}
-						{step === 'success' && <XCircle className="w-5 h-5 text-red-600" />}
-						{step === 'error' && <AlertCircle className="w-5 h-5 text-red-600" />}
-						{step === 'reason' && 'Rejeitar Proposta'}
-						{step === 'confirm' && 'Confirmar Rejeição'}
-						{step === 'success' && 'Proposta Rejeitada'}
-						{step === 'error' && 'Erro na Rejeição'}
+						{step === "reason" && <XCircle className="w-5 h-5 text-red-600" />}
+						{step === "confirm" && (
+							<AlertCircle className="w-5 h-5 text-orange-600" />
+						)}
+						{step === "success" && <XCircle className="w-5 h-5 text-red-600" />}
+						{step === "error" && (
+							<AlertCircle className="w-5 h-5 text-red-600" />
+						)}
+						{step === "reason" && "Rejeitar Proposta"}
+						{step === "confirm" && "Confirmar Rejeição"}
+						{step === "success" && "Proposta Rejeitada"}
+						{step === "error" && "Erro na Rejeição"}
 					</DialogTitle>
 				</DialogHeader>
 
 				<div className="space-y-6">
-					{step === 'reason' && (
+					{step === "reason" && (
 						<>
 							{/* Proposal Summary */}
 							<div className="space-y-3 p-4 bg-gray-50 rounded-lg">
 								<div className="flex items-center justify-between">
-									<span className="text-sm font-medium">Proposta #{proposal.id}</span>
+									<span className="text-sm font-medium">
+										Proposta #{proposal.id}
+									</span>
 									<Badge className="bg-red-100 text-red-800">
 										Será Rejeitada
 									</Badge>
@@ -117,18 +155,26 @@ export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRe
 								<div className="space-y-2 text-sm">
 									<div className="flex items-center gap-2">
 										<FileText className="w-4 h-4 text-gray-500" />
-										<span>{proposal.nomeTipoEvento || 'Evento'}</span>
+										<span>{proposal.nomeTipoEvento || "Evento"}</span>
 									</div>
 
 									<div className="flex items-center gap-2">
 										<DollarSign className="w-4 h-4 text-gray-500" />
-										<span>R$ {proposal.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+										<span>
+											R${" "}
+											{proposal.valor.toLocaleString("pt-BR", {
+												minimumFractionDigits: 2,
+											})}
+										</span>
 									</div>
 
 									<div className="flex items-center gap-2">
 										<Calendar className="w-4 h-4 text-gray-500" />
 										<span>
-											{new Date(proposal.dataInicio).toLocaleDateString('pt-BR')} - {new Date(proposal.dataFim).toLocaleDateString('pt-BR')}
+											{new Date(proposal.dataInicio).toLocaleDateString(
+												"pt-BR"
+											)}{" "}
+											- {new Date(proposal.dataFim).toLocaleDateString("pt-BR")}
 										</span>
 									</div>
 								</div>
@@ -141,22 +187,42 @@ export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRe
 										Motivo da Rejeição *
 									</label>
 									<Select
-										value={selectedReasonId?.toString() || ''}
-										onValueChange={(value) => { setSelectedReasonId(Number(value)); }}
+										value={String(
+											rejectionReasons?.find((r) => r.Id === selectedReasonId)
+												?.Id
+										)}
+										onValueChange={(value) => {
+											console.log(value);
+											setSelectedReasonId(Number(value));
+										}}
 										disabled={isLoadingReasons || !!reasonsError}
 									>
-										<SelectValue placeholder={isLoadingReasons ? "Carregando motivos..." : "Selecione um motivo..."} />
-										{rejectionReasons?.map((reason: FilterOption) => (
-											<option key={reason.Id} value={reason.Id}>
-												{reason.Nome}
-											</option>
-										))}
+										<SelectTrigger>
+											<SelectValue
+												placeholder={
+													isLoadingReasons
+														? "Carregando motivos..."
+														: "Selecione um motivo..."
+												}
+											/>
+										</SelectTrigger>
+										<SelectContent>
+											{rejectionReasons?.map((reason: FilterOption) => (
+												<SelectItem key={reason.Id} value={String(reason.Id)}>
+													{reason.Nome}
+												</SelectItem>
+											))}
+										</SelectContent>
 									</Select>
 									{validationError && (
-										<p className="text-sm text-red-600 mt-1">{validationError}</p>
+										<p className="text-sm text-red-600 mt-1">
+											{validationError}
+										</p>
 									)}
 									{reasonsError && (
-										<p className="text-sm text-red-600 mt-1">Erro ao carregar motivos de rejeição. Tente novamente.</p>
+										<p className="text-sm text-red-600 mt-1">
+											Erro ao carregar motivos de rejeição. Tente novamente.
+										</p>
 									)}
 								</div>
 
@@ -166,7 +232,9 @@ export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRe
 									</label>
 									<Textarea
 										value={additionalComments}
-										onChange={(event) => { setAdditionalComments(event.target.value); }}
+										onChange={(event) => {
+											setAdditionalComments(event.target.value);
+										}}
 										placeholder="Explique brevemente o motivo da rejeição..."
 										rows={3}
 										maxLength={500}
@@ -196,7 +264,7 @@ export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRe
 						</>
 					)}
 
-					{step === 'confirm' && selectedReason && (
+					{step === "confirm" && selectedReason && (
 						<>
 							{/* Confirmation */}
 							<div className="space-y-4">
@@ -204,9 +272,12 @@ export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRe
 									<div className="flex gap-2">
 										<AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
 										<div className="text-sm">
-											<p className="font-medium text-red-800">Confirme a rejeição</p>
+											<p className="font-medium text-red-800">
+												Confirme a rejeição
+											</p>
 											<p className="text-red-700 mt-1">
-												Você está prestes a rejeitar esta proposta. Esta ação não pode ser desfeita.
+												Você está prestes a rejeitar esta proposta. Esta ação
+												não pode ser desfeita.
 											</p>
 										</div>
 									</div>
@@ -214,13 +285,19 @@ export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRe
 
 								<div className="space-y-3">
 									<div>
-										<p className="text-sm font-medium text-gray-700">Motivo selecionado:</p>
-										<p className="text-sm text-gray-600 mt-1">{selectedReason.descricao}</p>
+										<p className="text-sm font-medium text-gray-700">
+											Motivo selecionado:
+										</p>
+										<p className="text-sm text-gray-600 mt-1">
+											{selectedReason.descricao}
+										</p>
 									</div>
 
 									{additionalComments && (
 										<div>
-											<p className="text-sm font-medium text-gray-700">Comentários:</p>
+											<p className="text-sm font-medium text-gray-700">
+												Comentários:
+											</p>
 											<p className="text-sm text-gray-600 mt-1 bg-gray-50 p-2 rounded">
 												{additionalComments}
 											</p>
@@ -233,7 +310,9 @@ export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRe
 							<div className="flex gap-3">
 								<Button
 									variant="outline"
-									onClick={() => { setStep('reason'); }}
+									onClick={() => {
+										setStep("reason");
+									}}
 									className="flex-1"
 									disabled={rejectMutation.isPending}
 								>
@@ -260,7 +339,7 @@ export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRe
 						</>
 					)}
 
-					{step === 'success' && (
+					{step === "success" && (
 						<>
 							<div className="text-center space-y-4">
 								<div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
@@ -272,7 +351,8 @@ export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRe
 										Proposta Rejeitada
 									</h3>
 									<p className="text-sm text-gray-600 mt-2">
-										A proposta foi rejeitada com sucesso. O contratante será notificado sobre sua decisão.
+										A proposta foi rejeitada com sucesso. O contratante será
+										notificado sobre sua decisão.
 									</p>
 								</div>
 							</div>
@@ -283,7 +363,7 @@ export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRe
 						</>
 					)}
 
-					{step === 'error' && (
+					{step === "error" && (
 						<>
 							<div className="text-center space-y-4">
 								<div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
@@ -295,17 +375,26 @@ export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRe
 										Erro na Rejeição
 									</h3>
 									<p className="text-sm text-gray-600 mt-2">
-										Ocorreu um erro ao rejeitar a proposta.
-										Tente novamente ou entre em contato com o suporte.
+										Ocorreu um erro ao rejeitar a proposta. Tente novamente ou
+										entre em contato com o suporte.
 									</p>
 								</div>
 							</div>
 
 							<div className="flex gap-3">
-								<Button variant="outline" onClick={handleClose} className="flex-1">
+								<Button
+									variant="outline"
+									onClick={handleClose}
+									className="flex-1"
+								>
 									Fechar
 								</Button>
-								<Button onClick={() => { setStep('reason'); }} className="flex-1">
+								<Button
+									onClick={() => {
+										setStep("reason");
+									}}
+									className="flex-1"
+								>
 									Tentar Novamente
 								</Button>
 							</div>
@@ -316,4 +405,3 @@ export const ProposalRejectionModal = ({ isOpen, onClose, proposal }: ProposalRe
 		</Dialog>
 	);
 };
-

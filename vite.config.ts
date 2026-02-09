@@ -36,5 +36,8 @@ export default defineConfig({
 		"process.env.VITE_VIBRATTO_API_BASE_URL": JSON.stringify(
 			process.env.VITE_VIBRATTO_API_BASE_URL
 		),
+		"process.env.VITE_VIBRATTO_FRONT_BASE_URL": JSON.stringify(
+			process.env.VITE_VIBRATTO_FRONT_BASE_URL
+		),
 	},
 });

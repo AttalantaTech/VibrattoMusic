@@ -35,7 +35,7 @@ import {
 	STAGE_CONFIG,
 } from "./types";
 
-import { useInstrumentos } from "../../../hooks/useFilters";
+import { useInstrumentos } from "@/hooks/useFilters";
 
 // Custom hooks
 const useStageHistory = (
@@ -153,7 +153,7 @@ const useStageInteractions = (
 	};
 };
 
-export default function StageMapBuilder({
+export function StageMapBuilder({
 	isOpen,
 	onClose,
 	onSave,
@@ -571,7 +571,8 @@ export default function StageMapBuilder({
 									const isSelected = selectedElementId === element.id;
 
 									return (
-										<button
+										<div
+											role="button"
 											key={element.id}
 											className={`absolute rounded-lg flex flex-col items-center justify-center transition-all duration-200 ${
 												isSelected
@@ -645,7 +646,17 @@ export default function StageMapBuilder({
 											<span className="text-xs font-medium text-gray-700 mt-1">
 												{element.name}
 											</span>
-										</button>
+
+											<button
+												type="button"
+												onClick={() => {
+													deleteElement(element.id);
+												}}
+												className="absolute top-0 right-0 text-blue-500 hover:text-blue-700 rounded-full p-1 transition-colors"
+											>
+												<X className="w-5 h-5" />
+											</button>
+										</div>
 									);
 								})}
 

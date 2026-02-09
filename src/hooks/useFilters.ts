@@ -64,3 +64,10 @@ export const useInstrumentos = (enabled: boolean = true) => {
 export const useMotivosRejeicaoProposta = (enabled: boolean = true) => {
 	return useFilterOptions("MotivoRejeicaoProposta", enabled);
 };
+
+/**
+ * Hook to get proposal rejection reasons
+ */
+export const useSocialNetworks = (enabled: boolean = true) => {
+	return useFilterOptions("RedeSocial", enabled);
+};

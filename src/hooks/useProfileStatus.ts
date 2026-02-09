@@ -1,12 +1,15 @@
 import { useAuthStore } from "../store/authStore";
 import type { MusicalProductApiResponse, User } from "../api/types";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { musicalProductService } from "../api";
 
 // Query keys for better organization
 export const profileKeys = {
 	all: ["profile"] as const,
-	musicalProducts: (userId?: number) => [...profileKeys.all, "musicalProducts", userId] as const,
+	musicalProducts: (userId?: number) =>
+		[...profileKeys.all, "musicalProducts", userId] as const,
+	updateActiveProfile: () =>
+		[...profileKeys.all, "updateActiveProfile"] as const,
 };
 
 export type ProfileStatus = "COMPLETE" | "INCOMPLETE";
@@ -16,7 +19,7 @@ export type ProfileStatus = "COMPLETE" | "INCOMPLETE";
  */
 export const isMusicianProfileComplete = (
 	user: User | null,
-	musicalProducts: MusicalProductApiResponse[] | null
+	musicalProducts: Array<MusicalProductApiResponse> | null
 ): boolean => {
 	// Non-musicians are considered complete
 	if (user?.userType !== "produto_musical") {
@@ -50,8 +53,8 @@ export const isMusicianProfileComplete = (
 	];
 
 	// Check if all essential fields are filled
-	const hasAllEssentialFields = essentialFields.every(field =>
-		field !== null && field !== undefined && field.trim() !== ""
+	const hasAllEssentialFields = essentialFields.every(
+		(field) => field !== null && field !== undefined && field.trim() !== ""
 	);
 
 	// Additional checks for arrays
@@ -59,29 +62,37 @@ export const isMusicianProfileComplete = (
 	const hasCity = product.cidade?.id > 0;
 	const hasEventTypes = product.tipoEvento && product.tipoEvento.length > 0;
 	const hasGenres = product.generoMusical && product.generoMusical.length > 0;
-	const hasProductionTypes = product.tiposProducao && product.tiposProducao.length > 0;
+	const hasProductionTypes =
+		product.tiposProducao && product.tiposProducao.length > 0;
 	const hasImages = product.imagens && product.imagens.length > 0;
 
 	// Profile is complete if it has all essential fields AND required related data
-	return hasAllEssentialFields &&
-		   hasCategories &&
-		   hasCity &&
-		   hasEventTypes &&
-		   hasGenres &&
-		   hasProductionTypes &&
-		   hasImages;
+	return (
+		hasAllEssentialFields &&
+		hasCategories &&
+		hasCity &&
+		hasEventTypes &&
+		hasGenres &&
+		hasProductionTypes &&
+		hasImages
+	);
 };
 
 export const useProfileStatus = () => {
 	const { user } = useAuthStore();
 
 	// Fetch user's musical products directly from the API
-	const { data: musicalProductsData, isLoading, refetch } = useQuery({
+	const {
+		data: musicalProductsData,
+		isLoading,
+		refetch,
+	} = useQuery({
 		queryKey: profileKeys.musicalProducts(user?.id),
 		queryFn: async () => {
 			try {
 				return await musicalProductService.getMyProducts();
 			} catch (error) {
+				console.error(error);
 				// Return empty result instead of throwing error
 				return {
 					data: [],
@@ -102,9 +113,12 @@ export const useProfileStatus = () => {
 		retry: 2,
 	});
 
-	const musicalProducts = musicalProductsData?.data || null;
+	const musicalProducts =
+		(musicalProductsData !== undefined && musicalProductsData?.data) || null;
 	const isProfileComplete = isMusicianProfileComplete(user, musicalProducts);
-	const profileStatus: ProfileStatus = isProfileComplete ? "COMPLETE" : "INCOMPLETE";
+	const profileStatus: ProfileStatus = isProfileComplete
+		? "COMPLETE"
+		: "INCOMPLETE";
 
 	return {
 		profileStatus,
@@ -118,6 +132,25 @@ export const useProfileStatus = () => {
 };
 
 /**
+ * Hook to publish musical product after completing onboarding
+ */
+export const useUpdateMusicalProduct = () => {
+	const { user } = useAuthStore();
+
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (musicalProduct: { [key: string]: unknown }) =>
+			musicalProductService.updateMusicalProduct(musicalProduct),
+		onSuccess: () => {
+			// Invalidate related queries
+			void queryClient.invalidateQueries({
+				queryKey: profileKeys.musicalProducts(user?.id),
+			});
+		},
+	});
+};
+
+/**
  * Hook específico para o onboarding que força refresh do perfil
  */
 export const useOnboardingProfileStatus = () => {
@@ -128,6 +161,6 @@ export const useOnboardingProfileStatus = () => {
 		// Método adicional para forçar refresh durante onboarding
 		forceRefresh: async () => {
 			await baseHook.refetch();
-		}
+		},
 	};
 };

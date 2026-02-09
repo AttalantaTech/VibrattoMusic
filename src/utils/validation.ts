@@ -3,31 +3,31 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 // Utility functions for CPF/CNPJ validation
-// const validateCPF = (cpf: string): boolean => {
-// 	const cleaned = cpf.replace(/\D/g, "");
+const validateCPF = (cpf: string): boolean => {
+	const cleaned = cpf.replace(/\D/g, "");
 
-// 	if (cleaned.length !== 11) return false;
-// 	if (/^(\d)\1{10}$/.test(cleaned)) return false; // All same digits
-// 	// Validate first check digit
-// 	let sum = 0;
-// 	for (let index = 0; index < 9; index++) {
-// 		sum += parseInt(cleaned.charAt(index)) * (10 - index);
-// 	}
-// 	let remainder = 11 - (sum % 11);
-// 	if (remainder === 10 || remainder === 11) remainder = 0;
-// 	if (remainder !== parseInt(cleaned.charAt(9))) return false;
+	if (cleaned.length !== 11) return false;
+	if (/^(\d)\1{10}$/.test(cleaned)) return false; // All same digits
+	// Validate first check digit
+	let sum = 0;
+	for (let index = 0; index < 9; index++) {
+		sum += parseInt(cleaned.charAt(index)) * (10 - index);
+	}
+	let remainder = 11 - (sum % 11);
+	if (remainder === 10 || remainder === 11) remainder = 0;
+	if (remainder !== parseInt(cleaned.charAt(9))) return false;
 
-// 	// Validate second check digit
-// 	sum = 0;
-// 	for (let index = 0; index < 10; index++) {
-// 		sum += parseInt(cleaned.charAt(index)) * (11 - index);
-// 	}
-// 	remainder = 11 - (sum % 11);
-// 	if (remainder === 10 || remainder === 11) remainder = 0;
-// 	if (remainder !== parseInt(cleaned.charAt(10))) return false;
+	// Validate second check digit
+	sum = 0;
+	for (let index = 0; index < 10; index++) {
+		sum += parseInt(cleaned.charAt(index)) * (11 - index);
+	}
+	remainder = 11 - (sum % 11);
+	if (remainder === 10 || remainder === 11) remainder = 0;
+	if (remainder !== parseInt(cleaned.charAt(10))) return false;
 
-// 	return true;
-// };
+	return true;
+};
 
 const validateCNPJ = (cnpj: string): boolean => {
 	const cleaned = cnpj.replace(/\D/g, "");
@@ -60,60 +60,88 @@ const validateCNPJ = (cnpj: string): boolean => {
 };
 
 // Enhanced validation schemas
-export const ContactValidationSchema = z.object({
-	usaCnpj: z.boolean().default(false),
-	cnpj: z
-		.string()
-		.optional()
-		.refine((value) => {
-			if (!value) return true; // Optional field
-			return validateCNPJ(value);
-		}, "CNPJ inválido"),
-	razaoSocial: z.string().min(1, "Razão social é obrigatória"),
-	telefone: z
-		.string()
-		.min(10, "Telefone deve ter pelo menos 10 dígitos")
-		.max(20, "Telefone deve ter no máximo 20 dígitos")
-		.refine((value) => {
-			const cleaned = value.replace(/\D/g, "");
-			return cleaned.length >= 10 && cleaned.length <= 11;
-		}, "Telefone inválido"),
-	cepContato: z
-		.string()
-		.refine(
-			(value) => /^\d{8}$/.test(value.replace(/\D/g, "")),
-			"CEP inválido"
-		),
-	logradouroContato: z
-		.string()
-		.min(1, "Logradouro é obrigatório")
-		.max(200, "Logradouro muito longo"),
-	numeroContato: z
-		.string()
-		.min(1, "Número é obrigatório")
-		.max(10, "Número muito longo"),
-	bairroContato: z
-		.string()
-		.min(1, "Bairro é obrigatório")
-		.max(100, "Bairro muito longo"),
-	cidadeContato: z
-		.string()
-		.min(1, "Cidade é obrigatória")
-		.max(100, "Cidade muito longa"),
-	estadoContato: z
-		.string()
-		.length(2, "Estado deve ter 2 caracteres")
-		.refine(
-			(value) => /^[A-Z]{2}$/.test(value),
-			"Estado deve ser em maiúsculas (ex: SP)"
-		),
-	complementoContato: z.string().max(100, "Complemento muito longo").optional(),
-	email: z
-		.string()
-		.email("Email inválido")
-		.max(254, "Email muito longo")
-		.optional(),
-});
+export const ContactValidationSchema = z
+	.object({
+		usaCnpj: z.boolean().default(false),
+
+		cnpj: z
+			.string()
+			.optional()
+			.refine((value) => {
+				if (!value) return true;
+				return validateCNPJ(value);
+			}, "CNPJ inválido"),
+
+		cpf: z
+			.string()
+			.optional()
+			.refine((value) => {
+				if (!value) return true;
+				return validateCPF(value);
+			}, "CPF inválido"),
+
+		razaoSocial: z.string().optional(),
+
+		telefone: z
+			.string()
+			.optional()
+			.refine((value) => {
+				if (!value) return true;
+				const cleaned = value.replace(/\D/g, "");
+				return cleaned.length >= 10 && cleaned.length <= 11;
+			}, "Telefone inválido"),
+
+		cepContato: z
+			.string()
+			.optional()
+			.refine((value) => {
+				if (!value) return true;
+				return /^\d{8}$/.test(value.replace(/\D/g, ""));
+			}, "CEP inválido"),
+
+		logradouroContato: z.string().max(200, "Logradouro muito longo").optional(),
+		numeroContato: z.string().max(10, "Número muito longo").optional(),
+		bairroContato: z.string().max(100, "Bairro muito longo").optional(),
+		cidadeContato: z.string().max(100, "Cidade muito longa").optional(),
+
+		estadoContato: z
+			.string()
+			.optional()
+			.refine((value) => {
+				if (!value) return true;
+				return /^[A-Z]{2}$/.test(value);
+			}, "Estado deve ser em maiúsculas (ex: SP)"),
+
+		complementoContato: z
+			.string()
+			.max(100, "Complemento muito longo")
+			.optional(),
+	})
+	.superRefine((data, context) => {
+		if (!data.usaCnpj) return;
+
+		const requiredFields = [
+			{ key: "cnpj", label: "CNPJ" },
+			{ key: "razaoSocial", label: "Razão social" },
+			{ key: "telefone", label: "Telefone" },
+			{ key: "cepContato", label: "CEP" },
+			{ key: "logradouroContato", label: "Logradouro" },
+			{ key: "numeroContato", label: "Número" },
+			{ key: "bairroContato", label: "Bairro" },
+			{ key: "cidadeContato", label: "Cidade" },
+			{ key: "estadoContato", label: "Estado" },
+		] as const;
+
+		requiredFields.forEach(({ key, label }) => {
+			if (!data[key] || data[key]?.trim() === "") {
+				context.addIssue({
+					path: [key],
+					message: `${label} é obrigatório`,
+					code: z.ZodIssueCode.custom,
+				});
+			}
+		});
+	});
 
 export const DetailsValidationSchema = z.object({
 	nome: z
@@ -334,4 +362,9 @@ export const formatDate = (dateString: string): string => {
 export const parseCurrency = (value: string): number => {
 	const cleaned = value.replace(/[^\d,]/g, "").replace(",", ".");
 	return parseFloat(cleaned) || 0;
+};
+
+export type OnboardingContactData = z.infer<typeof ContactValidationSchema> & {
+	id: number;
+	email?: string;
 };

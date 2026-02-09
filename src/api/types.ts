@@ -199,36 +199,7 @@ export interface UserSettings {
 }
 
 // ===== Musical Product Types =====
-
-export interface MusicalProduct {
-	id: number;
-	nome: string;
-	descricao: string;
-	categoria: Category;
-	cidade: City;
-	tiposEvento: Array<EventType>;
-	generosMusicais: Array<MusicalGenre>;
-	avaliacaoMedia?: number;
-	totalAvaliacoes?: number;
-	valorServico?: number;
-	exibirValorServico: boolean;
-	fotoPerfil?: string;
-	logomarca?: string;
-	imagensCarrossel: Array<string>;
-	videosYouTube: Array<string>;
-	spotifyPlaylistId?: string;
-	redeSocial: Array<SocialNetwork>;
-	podeDeslocamento: boolean;
-	ativo: boolean;
-	publicado: boolean;
-	createdAt: string;
-	updatedAt: string;
-	// Additional properties that appear in search results
-	imagemPrincipal?: string;
-	estado?: string;
-	avaliacao?: number;
-	verificado?: boolean;
-}
+// export interface MusicalProduct extends MusicalProductApiResponse {}
 
 export interface CreateMusicalProductRequest {
 	nome: string;
@@ -333,6 +304,7 @@ export interface RedeSocial {
 // Real API Response Types (based on actual API structure)
 export interface MusicalProductApiResponse {
 	id: number;
+	ativo: boolean;
 	nome: string;
 	descricao: string;
 	usuario: {
@@ -396,6 +368,8 @@ export interface MusicalProductApiResponse {
 	rider: string | null; // Send file link in Azure.
 	riderTexto: string | null; // Send rider text
 	infraCamarim: string | null;
+	infraCamarimTexto: string | null;
+	numeroIntegrantes: number;
 }
 
 export interface MusicalProductListApiResponse {
@@ -410,34 +384,35 @@ export interface MusicalProductListApiResponse {
 	};
 }
 
-// ===== Onboarding Types =====
+// ===== Musical Product Types =====
+export type MusicalProduct = MusicalProductApiResponse;
 
+// ===== Onboarding Types =====
 export interface OnboardingApiResponse extends MusicalProductApiResponse {
 	etapaCadastro: number;
 	idCadastro: number;
-	codigoMunicipio: number;
 	numeroIntegrantes: number;
 }
 
-export interface OnboardingContact {
+export interface MusicalProductContact {
 	id: number;
-	usaCnpj: boolean;
-	cnpj?: string;
-	razaoSocial?: string;
 	cpf?: string;
 	nome?: string;
-	telefone: string;
-	cepContato: string;
-	logradouroContato: string;
-	numeroContato: string;
-	bairroContato: string;
-	cidadeContato: string;
-	estadoContato: string;
-	complementoContato?: string;
 	email?: string;
+	usaCnpj: boolean;
+	cnpj?: string | undefined;
+	razaoSocial?: string | undefined;
+	telefone?: string | undefined;
+	cepContato?: string | undefined;
+	logradouroContato?: string | undefined;
+	numeroContato?: string | undefined;
+	bairroContato?: string | undefined;
+	cidadeContato?: string | undefined;
+	estadoContato?: string | undefined;
+	complementoContato?: string | undefined;
 }
 
-export interface OnboardingDetails {
+export interface MusicalProductDetails {
 	nome: string;
 	idCategoria: number;
 	descricao: string;
@@ -449,7 +424,7 @@ export interface OnboardingDetails {
 	numeroIntegrantes: number;
 }
 
-export interface OnboardingMedia {
+export interface MusicalProductMedia {
 	videosYouTube: Array<string>;
 	spotifyPlaylistId?: string | null;
 	exibirValorServico: boolean;
@@ -460,16 +435,17 @@ export interface OnboardingMedia {
 	}>;
 }
 
-export interface OnboardingImages {
+export interface MusicalProductImages {
 	FotoPerfil?: string | null;
 	Logomarca?: string | null;
 	ImagensCarrossel: Array<string>;
 }
 
-export interface OnboardingTechnicalConfig {
+export interface MusicalProductTechnicalConfig {
 	rider?: string | null;
 	riderText?: string | null;
 	infraCamarim?: string | null;
+	infraCamarimTexto?: string | null;
 	camarimIncluso: boolean;
 	mapaPalco: Array<{
 		idInstrumento: number;
@@ -478,8 +454,10 @@ export interface OnboardingTechnicalConfig {
 	}>;
 }
 
-export interface OnboardingSchedule {
+export interface MusicalProductSchedule {
 	id: number;
+	inicioCalendario?: string | null;
+	finalCalendario?: string | null;
 	compromissos: Array<{
 		data: string;
 		horaInicio: string;
@@ -529,7 +507,12 @@ export type FileEventType =
 	| "ProdutoMusicalOnboardingLogomarca"
 	| "ProdutoMusicalOnboardingCarrossel"
 	| "ProdutoMusicalOnboardingRider"
-	| "ProdutoMusicalOnboardingInfraCamarim";
+	| "ProdutoMusicalOnboardingInfraCamarim"
+	| "ProdutoMusicalFotoPerfil"
+	| "ProdutoMusicalLogomarca"
+	| "ProdutoMusicalCarrossel"
+	| "ProdutoMusicalRider"
+	| "ProdutoMusicalInfraCamarim";
 
 export interface ImageUploadRequest {
 	evento: FileEventType;

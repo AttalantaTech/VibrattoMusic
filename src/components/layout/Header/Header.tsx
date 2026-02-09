@@ -7,9 +7,10 @@ import { MessageBell } from "../MessageBell";
 import { useAuthStore } from "../../../store/authStore";
 import { useState, useRef, useEffect } from "react";
 import { BandProfileSwitcher } from "../../BandProfileSwitcher";
-import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
 import { useOnboardingData } from "@/hooks/useMusicalProducts";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
+import { useSyncMusicalProducts } from "@/hooks/useSyncMusicalProducts";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 export const Header = () => {
 	const { isAuthenticated, logout } = useAuthStore();
@@ -18,10 +19,10 @@ export const Header = () => {
 	const [showDropdown, setShowDropdown] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
-	// Hook para gerenciar o produto musical ativo
-	const { activeProduct, availableProducts, changeActiveProduct } =
-		useActiveMusicalProduct();
+	useSyncMusicalProducts();
 
+	const { activeProduct, availableProducts, setActiveProduct } =
+		useMusicalProductStore();
 	const { data: onboardingData } = useOnboardingData();
 	const { musicalProducts } = useProfileStatus();
 
@@ -90,7 +91,7 @@ export const Header = () => {
 						<BandProfileSwitcher
 							activeMusicalProduct={activeProduct}
 							musicalProducts={availableProducts}
-							onProductChange={changeActiveProduct}
+							onProductChange={setActiveProduct}
 						/>
 					)}
 

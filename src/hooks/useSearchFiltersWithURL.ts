@@ -165,11 +165,11 @@ export const useSearchFiltersWithURL = () => {
 	const arrayToOptions = useCallback(
 		(
 			ids: Array<number>,
-			allOptions: Array<{ Id: string; Nome: string }>
+			allOptions: Array<{ Id: number; Nome: string }>
 		): Array<Option> => {
 			return ids
 				.map((id) => {
-					const option = allOptions.find((opt) => parseInt(opt.Id) === id);
+					const option = allOptions.find((opt) => opt.Id === id);
 					return option ? { value: id.toString(), label: option.Nome } : null;
 				})
 				.filter((option): option is Option => option !== null);

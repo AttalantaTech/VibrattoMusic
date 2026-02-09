@@ -109,38 +109,39 @@ export const useToggleFavorite = () => {
 			const previousFavorites = queryClient.getQueryData(userKeys.favorites());
 
 			// Get current favorites to determine if we're adding or removing
-			const currentFavorites = queryClient.getQueryData<PaginatedResponse<MusicalProductApiResponse>>(
-				userKeys.favorites()
-			);
+			const currentFavorites = queryClient.getQueryData<
+				PaginatedResponse<MusicalProductApiResponse>
+			>(userKeys.favorites());
 			const isCurrentlyFavorited =
 				currentFavorites?.data?.some(
 					(f) => f.id === request.produtoMusicalId
 				) ?? false;
 
 			// Optimistically update the favorites list immediately and persistently
-			queryClient.setQueryData(userKeys.favorites(), (old: PaginatedResponse<MusicalProductApiResponse> | undefined) => {
-				if (!old) {
-					return old;
-				}
+			queryClient.setQueryData(
+				userKeys.favorites(),
+				(old: PaginatedResponse<MusicalProductApiResponse> | undefined) => {
+					if (!old) {
+						return old;
+					}
 
-				if (isCurrentlyFavorited) {
-					// Remove from favorites
-					return {
-						...old,
-						data: old.data.filter(
-							(f) => f.id !== request.produtoMusicalId
-						),
-						pagination: {
-							...old.pagination,
-							totalItems: Math.max(0, old.pagination.totalItems - 1),
-						},
-					};
-				} else {
-					// Adding to favorites - we can't construct the full object without more data
-					// So we'll let the refetch handle this case
-					return old;
+					if (isCurrentlyFavorited) {
+						// Remove from favorites
+						return {
+							...old,
+							data: old.data.filter((f) => f.id !== request.produtoMusicalId),
+							pagination: {
+								...old.pagination,
+								totalItems: Math.max(0, old.pagination.totalItems - 1),
+							},
+						};
+					} else {
+						// Adding to favorites - we can't construct the full object without more data
+						// So we'll let the refetch handle this case
+						return old;
+					}
 				}
-			});
+			);
 
 			// Return a context object with the snapshotted value and current state
 			return {
@@ -168,6 +169,10 @@ export const useToggleFavorite = () => {
 			// Don't automatically invalidate cache - let the optimistic update persist
 			// Only invalidate manually when we're confident the server has processed
 			// This prevents the "flickering" effect where items reappear
+
+			void queryClient.invalidateQueries({
+				queryKey: userKeys.favorites(),
+			});
 		},
 	});
 };

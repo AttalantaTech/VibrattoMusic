@@ -97,7 +97,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 		return () => {
 			window.removeEventListener("storage", checkStoredAuth);
 		};
-	}, [isAuthenticated, setAuth, token]); // Include dependencies
+	}, [isAuthenticated, setAuth, token, logout]); // Include dependencies
 
 	useEffect(() => {
 		// Sync check when auth state changes

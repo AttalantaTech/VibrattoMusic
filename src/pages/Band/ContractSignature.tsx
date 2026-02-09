@@ -89,7 +89,9 @@ Data de Criação: ${new Date(proposal.dataCriacao).toLocaleDateString("pt-BR")}
 ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${section.texto}\n\n`).join("") || "Nenhuma seção disponível."}
 			`;
 
-			const blob = new Blob([contractText], { type: "text/plain;charset=utf-8" });
+			const blob = new Blob([contractText], {
+				type: "text/plain;charset=utf-8",
+			});
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;
@@ -119,7 +121,9 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 				toast.success("Abrindo página de assinatura...");
 			} else {
 				// TODO: Generate D4Sign signature URL if not available
-				toast.error("URL de assinatura não disponível. Aguarde a geração do contrato.");
+				toast.error(
+					"URL de assinatura não disponível. Aguarde a geração do contrato."
+				);
 			}
 		} catch (error) {
 			console.error("Erro ao iniciar assinatura:", error);
@@ -148,12 +152,14 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 	if (error || proposal?.identificadorUnico === undefined) {
 		return (
 			<div className="min-h-screen flex items-center justify-center bg-gray-50">
-				<div className="text-center">
-					<AlertCircle className="h-12 w-12 text-red-600 mx-auto" />
+				<div className="text-center flex flex-col items-center">
+					<AlertCircle className="h-12 w-12 text-red-600" />
 					<h2 className="mt-4 text-xl font-semibold text-gray-900">
 						Erro ao carregar contrato
 					</h2>
-					<p className="mt-2 text-gray-600">{error.message}</p>
+					<p className="mt-2 text-gray-600">
+						{error?.message ?? "Contrato não encontrado."}
+					</p>
 					<Button onClick={handleBack} className="mt-6">
 						<ArrowLeft className="h-4 w-4 mr-2" />
 						Voltar
@@ -338,8 +344,8 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 									<p className="font-medium mb-1">Importante:</p>
 									<p>
 										Ao clicar em "Assinar via D4Sign", você será redirecionado
-										para a plataforma de assinatura digital. Certifique-se de ler
-										todo o contrato antes de assinar.
+										para a plataforma de assinatura digital. Certifique-se de
+										ler todo o contrato antes de assinar.
 									</p>
 								</div>
 							</div>
@@ -350,4 +356,3 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 		</div>
 	);
 };
-
