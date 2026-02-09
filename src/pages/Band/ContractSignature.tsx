@@ -115,16 +115,16 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 		setSigning(true);
 		try {
 			// Check if there's a D4Sign URL
-			if (contract.urlAssinaturaD4Sign) {
-				// Open D4Sign signature page in new tab
-				window.open(contract.urlAssinaturaD4Sign, "_blank");
-				toast.success("Abrindo página de assinatura...");
-			} else {
-				// TODO: Generate D4Sign signature URL if not available
-				toast.error(
-					"URL de assinatura não disponível. Aguarde a geração do contrato."
-				);
-			}
+			// if (contract.urlAssinaturaD4Sign) {
+			// 	// Open D4Sign signature page in new tab
+			// 	window.open(contract.urlAssinaturaD4Sign, "_blank");
+			// 	toast.success("Abrindo página de assinatura...");
+			// } else {
+			// 	// TODO: Generate D4Sign signature URL if not available
+			// 	toast.error(
+			// 		"URL de assinatura não disponível. Aguarde a geração do contrato."
+			// 	);
+			// }
 		} catch (error) {
 			console.error("Erro ao iniciar assinatura:", error);
 			toast.error("Erro ao iniciar processo de assinatura");

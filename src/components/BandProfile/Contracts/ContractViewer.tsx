@@ -76,8 +76,6 @@ export const ContractViewer = ({
 
 	const {
 		data: contractSections,
-		isLoading: isLoadingSections,
-		error: errorSections,
 	} = useContractSections(proposal?.produtoMusical.id || 0);
 
 	const handleDownload = () => {
