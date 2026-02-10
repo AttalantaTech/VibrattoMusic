@@ -9,7 +9,9 @@ export class SignalRService implements WebSocketI {
 		const envConfig = getEnvironmentConfig();
 		const baseUrl = envConfig.apiBaseUrl.endsWith("/api/")
 			? envConfig.apiBaseUrl.slice(0, -4)
-			: envConfig.apiBaseUrl;
+			: envConfig.apiBaseUrl.endsWith("/api")
+				? envConfig.apiBaseUrl.slice(0, -3)
+				: envConfig.apiBaseUrl;
 
 		this.signalRConnection = new HubConnectionBuilder()
 			.withUrl(`${baseUrl}/${endpoint}`, {
