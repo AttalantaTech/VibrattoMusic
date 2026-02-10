@@ -72,8 +72,16 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		];
 
 		try {
+			const uniqueIds = new Set<number>();
+			const uniqueConversations = allConversations.filter((conversation) => {
+				if (uniqueIds.has(conversation.id)) {
+					return false;
+				}
+				uniqueIds.add(conversation.id);
+				return true;
+			});
 			setConversations(
-				allConversations.sort((a: Conversation, b: Conversation) => {
+				uniqueConversations.sort((a: Conversation, b: Conversation) => {
 					const dateA = a.ultimaMensagem?.dataEnvio
 						? new Date(a.ultimaMensagem.dataEnvio).getTime()
 						: 0;
