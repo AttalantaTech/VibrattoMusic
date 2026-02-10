@@ -40,6 +40,7 @@ export const useConversations = (
 			messagingService.getConversations(IdProdutoMusical, parameters),
 		enabled,
 		staleTime: 30 * 1000, // 30 seconds
+		refetchInterval: 10 * 1000, // Refetch every 10 seconds
 	});
 };
 
