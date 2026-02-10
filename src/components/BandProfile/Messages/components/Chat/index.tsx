@@ -62,7 +62,9 @@ export const Chat = () => {
 							<div className="relative">
 								<UserImageContainer>
 									{getParticipantInitials(
-										currentProductId
+										[currentProductId, user?.id].includes(
+											selectedConversation.participanteId
+										)
 											? selectedConversation.contratanteNome
 											: selectedConversation.participanteNome
 									)}
@@ -72,16 +74,16 @@ export const Chat = () => {
 								)}
 							</div>
 							<h2 className="text-lg font-semibold text-gray-900">
-								{currentProductId
+								{[currentProductId, user?.id].includes(
+									selectedConversation.participanteId
+								)
 									? selectedConversation.contratanteNome
 									: selectedConversation.participanteNome}
 							</h2>
 						</div>
 						{activeProduct && !isProfileComplete && (
 							<button
-								onClick={setIsProfileIncompleteModalOpen ? () => {
-									setIsProfileIncompleteModalOpen(true);
-								} : () => {}}
+								onClick={() => setIsProfileIncompleteModalOpen?.(true)}
 								className="flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
 							>
 								<DollarSign className="w-4 h-4" />
@@ -91,9 +93,7 @@ export const Chat = () => {
 						{isProfileComplete && (
 							<button
 								disabled={!activeProduct}
-								onClick={setIsProposalModalOpen ? () => {
-									setIsProposalModalOpen(true);
-								} : () => {}}
+								onClick={() => setIsProposalModalOpen?.(true)}
 								className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
 							>
 								<DollarSign className="w-4 h-4" />
@@ -164,14 +164,10 @@ export const Chat = () => {
 					<ChatInputContainer>
 						<ChatInput
 							value={messageInput}
-							onChange={
-								setMessageInput
-									? (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-											setMessageInput(event.target.value);
-										}
-									: () => {}
-							}
-							onSend={handleSendMessage ? handleSendMessage : () => {}}
+							onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
+								setMessageInput?.(event.target.value);
+							}}
+							onSend={handleSendMessage ?? (() => {})}
 							disabled={isMessagesLoading}
 							placeholder={
 								isMessagesLoading ? "Carregando..." : "Digite sua mensagem..."
