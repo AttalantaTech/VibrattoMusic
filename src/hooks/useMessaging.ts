@@ -36,8 +36,15 @@ export const useConversations = (
 ) => {
 	return useQuery<Conversation[]>({
 		queryKey: [...messagingKeys.conversations(), IdProdutoMusical],
-		queryFn: () =>
-			messagingService.getConversations(IdProdutoMusical, parameters),
+		queryFn: async () => {
+			if (!IdProdutoMusical) {
+				return messagingService.getConversations(undefined, parameters);
+			}
+			return [
+				...(await messagingService.getConversations(IdProdutoMusical, parameters)),
+				...(await messagingService.getConversations(undefined, parameters)),
+			];
+		},
 		enabled,
 		staleTime: 30 * 1000, // 30 seconds
 		refetchInterval: 10 * 1000, // Refetch every 10 seconds

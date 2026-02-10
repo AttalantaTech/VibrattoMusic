@@ -88,10 +88,11 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 				)}
 				{filteredConversations?.map((conversation: Conversation) => {
 					const isSelected = selectedConversation?.id === conversation.id;
-					const unreadCount =
-						(currentProductId || user?.id) === conversation.contratanteId
-							? conversation.numeroMensagensNãoLidasContratante || 0
-							: conversation.numeroMensagensNãoLidasContratado || 0;
+					const unreadCount = [currentProductId, user?.id].includes(
+						conversation.contratanteId
+					)
+						? conversation.numeroMensagensNãoLidasContratante || 0
+						: conversation.numeroMensagensNãoLidasContratado || 0;
 
 					return (
 						<ConversationTabContainer
@@ -108,7 +109,9 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 							<div className="relative">
 								<UserImageContainer size={12}>
 									{getParticipantInitials(
-										currentProductId
+										[currentProductId, user?.id].includes(
+											conversation.participanteId
+										)
 											? conversation.contratanteNome
 											: conversation.participanteNome
 									)}
@@ -122,7 +125,9 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 							</div>
 							<ConversationInfoContainer>
 								<h4 className="font-medium text-gray-900 truncate">
-									{currentProductId
+									{[currentProductId, user?.id].includes(
+										conversation.participanteId
+									)
 										? conversation.contratanteNome
 										: conversation.participanteNome}
 								</h4>
