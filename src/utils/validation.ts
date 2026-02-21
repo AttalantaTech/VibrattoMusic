@@ -64,6 +64,8 @@ export const ContactValidationSchema = z
 	.object({
 		usaCnpj: z.boolean().default(false),
 
+		nome: z.string().optional(),
+
 		cnpj: z
 			.string()
 			.optional()
@@ -122,6 +124,7 @@ export const ContactValidationSchema = z
 
 		const requiredFields = [
 			{ key: "cnpj", label: "CNPJ" },
+			{ key: "nome", label: "Nome" },
 			{ key: "razaoSocial", label: "Razão social" },
 			{ key: "telefone", label: "Telefone" },
 			{ key: "cepContato", label: "CEP" },

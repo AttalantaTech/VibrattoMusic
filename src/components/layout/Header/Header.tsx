@@ -1,16 +1,17 @@
-import { HelpCircle, Search, LogOut, User } from "lucide-react";
+import { HelpCircle, Search, LogOut, User, UserPlus } from "lucide-react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Button } from "../../ui/Button/Button";
 import { VibrattoLogo } from "../../VibrattoLogo/VibrattoLogo";
 import { NotificationBell } from "../NotificationBell";
 import { MessageBell } from "../MessageBell";
 import { useAuthStore } from "../../../store/authStore";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { BandProfileSwitcher } from "../../BandProfileSwitcher";
 import { useOnboardingData } from "@/hooks/useMusicalProducts";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { useSyncMusicalProducts } from "@/hooks/useSyncMusicalProducts";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import type { OnboardingApiResponse } from "@/api/types";
 
 export const Header = () => {
 	const { isAuthenticated, logout } = useAuthStore();
@@ -23,13 +24,24 @@ export const Header = () => {
 
 	const { activeProduct, availableProducts, setActiveProduct } =
 		useMusicalProductStore();
-	const { data: onboardingData } = useOnboardingData();
 	const { musicalProducts } = useProfileStatus();
+
+	const { data } = useOnboardingData();
+	const onboardingData = useMemo<OnboardingApiResponse | undefined>(() => {
+		return data?.find((item) => item);
+	}, [data]);
 
 	const isOnboardingPage = location.pathname.includes("/onboarding");
 	const showNotifications = isAuthenticated && !isOnboardingPage;
 	const showSearchButton =
 		!isOnboardingPage && !location.pathname.includes("/search");
+
+	useEffect(() => {
+		if (!musicalProducts?.length) return;
+
+		const musicalProduct = musicalProducts.find((item) => item);
+		if (musicalProduct) setActiveProduct(musicalProduct);
+	}, [musicalProducts, setActiveProduct]);
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -55,7 +67,12 @@ export const Header = () => {
 	const handleProfile = async () => {
 		setShowDropdown(false);
 
-		if (onboardingData?.etapaCadastro) {
+		if (musicalProducts && musicalProducts.length > 0) {
+			await navigate({
+				to: "/band/me",
+				search: { tab: "account" },
+			});
+		} else if (onboardingData?.etapaCadastro) {
 			const etapaCadastro =
 				onboardingData.etapaCadastro === 6
 					? onboardingData.etapaCadastro
@@ -64,14 +81,9 @@ export const Header = () => {
 			await navigate({
 				to: `/band/register/onboarding/${etapaCadastro}`,
 			});
-		} else if (!musicalProducts || musicalProducts.length === 0) {
-			await navigate({
-				to: `/band/register/onboarding/1`,
-			});
 		} else {
 			await navigate({
-				to: "/band/me",
-				search: { tab: "account" },
+				to: `/band/register/onboarding/1`,
 			});
 		}
 	};
@@ -131,6 +143,20 @@ export const Header = () => {
 									>
 										<User className="w-4 h-4" />
 										<span>Meu Perfil</span>
+									</button>
+									<button
+										onClick={async () => {
+											await navigate({
+												to: `/band/register/onboarding/1`,
+												search: {
+													type: "new-onboarding",
+												},
+											});
+										}}
+										className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+									>
+										<UserPlus className="w-4 h-4" />
+										<span>Criar Novo Perfil</span>
 									</button>
 									{/* Help link */}
 									<a

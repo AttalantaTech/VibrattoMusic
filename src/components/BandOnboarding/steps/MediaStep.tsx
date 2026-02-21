@@ -16,7 +16,7 @@ import {
 	ChevronRight,
 	ChevronLeft,
 } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
 import {
 	FormField,
@@ -41,7 +41,11 @@ import {
 } from "react-icons/fa";
 import { SiApplemusic } from "react-icons/si";
 import { Button } from "../../ui/Button/Button";
-import type { FileEventType, RedeSocial } from "../../../api/types";
+import type {
+	FileEventType,
+	OnboardingApiResponse,
+	RedeSocial,
+} from "../../../api/types";
 import { useOnboardingData } from "@/hooks/useMusicalProducts";
 import { Label } from "@/components/ui/Label/Label";
 import { Input } from "@/components/ui/Input/Input";
@@ -50,6 +54,7 @@ import { MediaPlayer } from "@/components/MediaPlayer/MediaPlayer";
 import { ImageUploadArea } from "@/components/ImageUploadArea/ImageUploadArea";
 import { toast } from "sonner";
 import { useSocialNetworks } from "@/hooks/useFilters";
+import { decryptValue } from "@/utils/encryptValue";
 
 // Define media schema types
 const mediaSchema = z.object({
@@ -183,7 +188,28 @@ export default function MediaStep() {
 	const { updateData, markStepComplete } = useOnboarding();
 
 	const { data: socialNetworksData } = useSocialNetworks(true);
-	const { data: onboardingData } = useOnboardingData();
+	const { data } = useOnboardingData();
+
+	const searchParameters = useSearch({ from: "/band/register/onboarding/3" });
+	const onboardingID = searchParameters.registerId
+		? decryptValue(searchParameters.registerId ?? "")
+		: null;
+	const onboardingType = searchParameters.type
+		? decryptValue(searchParameters.type ?? "")
+		: null;
+
+	const onboardingData = useMemo<OnboardingApiResponse | undefined>(() => {
+		return data?.find((item) => {
+			if (onboardingType === "new-onboarding") {
+				return undefined;
+			} else if (onboardingID && parseInt(onboardingID) === item.id) {
+				return item;
+			}
+
+			return undefined;
+		});
+	}, [data, onboardingType, onboardingID]);
+
 	const produtoMusicalId = onboardingData ? onboardingData.id : 0;
 
 	// Get initial media data from onboarding context

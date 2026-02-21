@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Briefcase, Phone, MapPin, UserIcon } from "lucide-react";
+import {
+	Loader2,
+	Briefcase,
+	Phone,
+	MapPin,
+	UserIcon,
+	User,
+} from "lucide-react";
 
 import { useAuthStore } from "@/store/authStore";
 import type { z } from "zod";
@@ -21,10 +28,7 @@ const helperText =
 
 const helpTextContact = "Caso não tenha sede, utilize o endereço residencial.";
 
-type ContactFormData = Omit<
-	z.infer<typeof ContactValidationSchema>,
-	"nome" | "cpf"
->;
+type ContactFormData = z.infer<typeof ContactValidationSchema>;
 
 interface CepResponse {
 	erro?: boolean;
@@ -53,6 +57,8 @@ export default function ContactSection() {
 			cidadeContato: activeProduct?.cidadeContato ?? "",
 			estadoContato: activeProduct?.estadoContato ?? "",
 			cnpj: activeProduct?.cnpj ?? "",
+			cpf: activeProduct?.cpf ?? "",
+			nome: activeProduct?.nome ?? "",
 			complementoContato: activeProduct?.complementoContato ?? "",
 		};
 	}, [activeProduct]);
@@ -80,10 +86,14 @@ export default function ContactSection() {
 			// Remove email field since it's not collected in this form, but add user's email
 			const { ...contactData } = data;
 
+			const cnpjreplaced = contactData.cnpj
+				? contactData.cnpj?.replace(/\D/g, "")
+				: null;
+
 			const contact: MusicalProductContact = {
 				id: activeProduct?.id ?? 0,
 				...contactData,
-				cnpj: contactData.cnpj?.replace(/\D/g, ""),
+				cnpj: watchUsaCnpj ? cnpjreplaced : null,
 				telefone: cleanedTelefone,
 				cepContato: cleanedCep,
 				email: user?.email || "",
@@ -143,7 +153,7 @@ export default function ContactSection() {
 					label="Usar CNPJ no contrato"
 				/>
 
-				{watchUsaCnpj && (
+				{watchUsaCnpj ? (
 					<>
 						<Controller
 							name="cnpj"
@@ -163,21 +173,53 @@ export default function ContactSection() {
 						{errors.cnpj?.message && (
 							<div className="text-red-500 text-sm">{errors.cnpj.message}</div>
 						)}
-					</>
-				)}
 
-				<InputField
-					required={watchUsaCnpj}
-					helperText={helperText}
-					icon={<Briefcase size={20} />}
-					label="Nome Jurídico (Razão Social)"
-					placeholder="Ex: Banda LTDA"
-					{...register("razaoSocial")}
-				/>
-				{errors.razaoSocial?.message && (
-					<div className="text-red-500 text-sm">
-						{errors.razaoSocial.message}
-					</div>
+						<InputField
+							required={watchUsaCnpj}
+							helperText={helperText}
+							icon={<User size={20} />}
+							label="Nome Jurídico (Razão Social)"
+							placeholder="Ex: Banda LTDA"
+							{...register("razaoSocial")}
+						/>
+						{errors.razaoSocial?.message && (
+							<div className="text-red-500 text-sm">
+								{errors.razaoSocial.message}
+							</div>
+						)}
+					</>
+				) : (
+					<>
+						<Controller
+							name="cpf"
+							control={control}
+							render={({ field }) => (
+								<InputField
+									{...field}
+									required={!watchUsaCnpj}
+									helperText={helperText}
+									icon={<Briefcase size={20} />}
+									label="CPF"
+									mask="000.000.000-00"
+									placeholder="000.000.000-00"
+								/>
+							)}
+						/>
+						{errors.cpf?.message && (
+							<div className="text-red-500 text-sm">{errors.cpf.message}</div>
+						)}
+
+						<InputField
+							required={watchUsaCnpj}
+							helperText={helperText}
+							icon={<User size={20} />}
+							label="Nome Completo"
+							{...register("nome")}
+						/>
+						{errors.nome?.message && (
+							<div className="text-red-500 text-sm">{errors.nome.message}</div>
+						)}
+					</>
 				)}
 
 				<Controller

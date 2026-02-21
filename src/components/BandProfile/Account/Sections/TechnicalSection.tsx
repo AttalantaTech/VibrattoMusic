@@ -480,12 +480,12 @@ export default function TechnicalSection({
 						<ToggleSwitch
 							className="mb-6"
 							checked={hasDressingRoom}
-							label="Camarim incluso"
+							label="Não Necessita de Camarim"
 							name="dressingRoom"
 							setChecked={setHasDressingRoom}
 						/>
 
-						{hasDressingRoom && (
+						{!hasDressingRoom && (
 							<>
 								<div className="w-full overflow-x-auto">
 									<IconTabNavigation
@@ -579,6 +579,24 @@ export default function TechnicalSection({
 										</>
 									)}
 								</Button>
+
+								{stageMapData.length > 0 && (
+									<Button
+										className="w-full text-sm sm:text-base py-2 sm:py-3"
+										type="button"
+										variant="danger"
+										onClick={() => {
+											handleStageMapSave([]);
+										}}
+									>
+										<>
+											<span className="hidden sm:inline">
+												Apagar Mapa de Palco
+											</span>
+											<span className="sm:hidden">Apagar Palco</span>
+										</>
+									</Button>
+								)}
 							</div>
 						</div>
 					</div>

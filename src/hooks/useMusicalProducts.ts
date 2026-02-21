@@ -8,6 +8,7 @@ import type {
 	MusicalProductImages,
 	MusicalProductTechnicalConfig,
 	MusicalProductSchedule,
+	OnboardingApiResponse,
 } from "../api/types";
 import type { OnboardingContactData } from "@/utils/validation";
 
@@ -97,15 +98,11 @@ export const useMusicalProductSchedule = (
  * Hook to get onboarding data
  */
 export const useOnboardingData = (enabled: boolean = true) => {
-	return useQuery({
+	return useQuery<Array<OnboardingApiResponse>>({
 		queryKey: musicalProductKeys.pending(),
 		queryFn: async () => {
 			const response = await onboardingService.getOnboardingPending();
 			return response;
-		},
-		select: (data) => {
-			const item = data.find((item) => item);
-			return item ? { ...item } : undefined;
 		},
 		enabled,
 	});

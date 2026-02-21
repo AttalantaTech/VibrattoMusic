@@ -49,7 +49,7 @@ export const TabNavigation = ({
 			className={`
 				flex w-full items-center
 				${variant === "pills" ? "justify-start gap-3" : "justify-start lg:justify-center gap-2 lg:gap-4"} 
-				px-3 sm:px-4 py-2 overflow-visible scrollbar-hide`}
+				px-3 sm:px-4 py-2 overflow-x-scroll`}
 		>
 			{tabs.map((tab) => {
 				const isActive = tab.value === currentTab;
