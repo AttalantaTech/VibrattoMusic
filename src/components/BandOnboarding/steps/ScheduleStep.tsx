@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import {
 	Calendar,
 	Loader2,
@@ -15,6 +15,7 @@ import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
 import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
 import type {
 	MusicalProductSchedule,
+	OnboardingApiResponse,
 	ScheduleApiResponse,
 } from "../../../api/types";
 import type { AgendaEvent } from "../../BandProfile/Agenda/types";
@@ -25,6 +26,7 @@ import {
 	useOnboardingData,
 } from "@/hooks/useMusicalProducts";
 import { ptBR } from "date-fns/locale";
+import { decryptValue } from "@/utils/encryptValue";
 
 // Define styles consistent with modern interface pattern
 const styles = {
@@ -35,7 +37,27 @@ const styles = {
 };
 
 export default function ScheduleStep() {
-	const { data: onboardingData } = useOnboardingData();
+	const { data } = useOnboardingData();
+
+	const searchParameters = useSearch({ from: "/band/register/onboarding/5" });
+	const onboardingID = searchParameters.registerId
+		? decryptValue(searchParameters.registerId ?? "")
+		: null;
+	const onboardingType = searchParameters.type
+		? decryptValue(searchParameters.type ?? "")
+		: null;
+
+	const onboardingData = useMemo<OnboardingApiResponse | undefined>(() => {
+		return data?.find((item) => {
+			if (onboardingType === "new-onboarding") {
+				return undefined;
+			} else if (onboardingID && parseInt(onboardingID) === item.id) {
+				return item;
+			}
+
+			return undefined;
+		});
+	}, [data, onboardingType, onboardingID]);
 	const produtoMusicalId = onboardingData ? onboardingData.id : 0;
 
 	const { data: dataSchedule } = useMusicalProductSchedule(produtoMusicalId);

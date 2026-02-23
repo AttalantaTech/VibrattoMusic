@@ -18,7 +18,7 @@ import {
 	ChevronLeft,
 } from "lucide-react";
 import { imageUploadService, onboardingService } from "../../../api";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
 import { Button } from "../../ui/Button/Button";
 import { IconTabNavigation } from "../../ui/IconTabNavigation/IconTabNavigation";
@@ -35,9 +35,14 @@ import { useOnboardingData } from "@/hooks/useMusicalProducts";
 import { SimpleEditor } from "@/components/forms/SimpleEditor/SimpleEditor";
 import { FileCard } from "@/components/cards/FileCard/FileCard";
 import { ToggleSwitch } from "@/components/forms/ToggleSwitch/ToggleSwitch";
-import type { FileEventType, FilterOption } from "@/api/types";
+import type {
+	FileEventType,
+	FilterOption,
+	OnboardingApiResponse,
+} from "@/api/types";
 import { useInstrumentos } from "@/hooks/useFilters";
 import { toast } from "sonner";
+import { decryptValue } from "@/utils/encryptValue";
 
 // Define styles consistent with modern interface pattern
 const styles = {
@@ -163,7 +168,27 @@ export default function TechnicalStep() {
 
 	const { updateData, markStepComplete } = useOnboarding();
 
-	const { data: onboardingData } = useOnboardingData();
+	const { data } = useOnboardingData();
+
+	const searchParameters = useSearch({ from: "/band/register/onboarding/4" });
+	const onboardingID = searchParameters.registerId
+		? decryptValue(searchParameters.registerId ?? "")
+		: null;
+	const onboardingType = searchParameters.type
+		? decryptValue(searchParameters.type ?? "")
+		: null;
+
+	const onboardingData = useMemo<OnboardingApiResponse | undefined>(() => {
+		return data?.find((item) => {
+			if (onboardingType === "new-onboarding") {
+				return undefined;
+			} else if (onboardingID && parseInt(onboardingID) === item.id) {
+				return item;
+			}
+
+			return undefined;
+		});
+	}, [data, onboardingType, onboardingID]);
 	const produtoMusicalId = onboardingData ? onboardingData.id : 0;
 
 	const { data: instrumentsData } = useInstrumentos();
@@ -501,12 +526,12 @@ export default function TechnicalStep() {
 						<ToggleSwitch
 							className="mb-6"
 							checked={hasDressingRoom}
-							label="Camarim incluso"
+							label="Não Necessita de Camarim"
 							name="dressingRoom"
 							setChecked={setHasDressingRoom}
 						/>
 
-						{hasDressingRoom && (
+						{!hasDressingRoom && (
 							<>
 								<div className="w-full overflow-x-auto">
 									<IconTabNavigation
@@ -600,6 +625,24 @@ export default function TechnicalStep() {
 										</>
 									)}
 								</Button>
+
+								{stageMapData.length > 0 && (
+									<Button
+										className="w-full text-sm sm:text-base py-2 sm:py-3"
+										type="button"
+										variant="danger"
+										onClick={() => {
+											handleStageMapSave([]);
+										}}
+									>
+										<>
+											<span className="hidden sm:inline">
+												Apagar Mapa de Palco
+											</span>
+											<span className="sm:hidden">Apagar Palco</span>
+										</>
+									</Button>
+								)}
 							</div>
 						</div>
 					</div>

@@ -4,6 +4,7 @@ import { useRouter } from "@tanstack/react-router";
 import { useToastStore } from "../../../../store/toast/toastStore";
 import { FinishModal } from "../../FinishModal/FinishModal";
 import { OnboardingHeader } from "../../../BandOnboarding/OnboardingHeader/OnboardingHeader";
+import { Button } from "@/components/ui/button";
 
 interface StepLayoutProps {
 	children: ReactNode; // current step
@@ -172,14 +173,21 @@ export const StepLayout = ({
 
 						<div className="w-full lg:w-3/5 xl:w-[60%] order-1 lg:order-2">
 							<div className="flex flex-col w-full h-full items-center justify-center p-4 md:p-6 lg:p-8 gap-4 md:gap-6 border border-gray-200 bg-gray-50 rounded-lg text-left">
-								<div className="flex w-full items-center gap-3 md:gap-6">
-									<div className="flex items-center justify-center bg-[#d6f2ff] p-2 md:p-3 rounded">
-										{headerIcon}
+								<div className="w-full flex items-center">
+									<div className="flex w-full items-center gap-3 md:gap-6">
+										<div className="flex items-center justify-center bg-[#d6f2ff] p-2 md:p-3 rounded">
+											{headerIcon}
+										</div>
+										<h1 className="text-gray-900 font-bold text-lg md:text-xl lg:text-2xl">
+											{headerTitle}
+										</h1>
 									</div>
-									<h1 className="text-gray-900 font-bold text-lg md:text-xl lg:text-2xl">
-										{headerTitle}
-									</h1>
+
+									<Button className="w-full sm:w-auto">
+										Usar Dados do Cadastro
+									</Button>
 								</div>
+
 								<hr className="w-full" />
 								{children}
 							</div>

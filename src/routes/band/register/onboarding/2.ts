@@ -3,6 +3,7 @@ import DetailsStep from "../../../../components/BandOnboarding/steps/DetailsStep
 import { OnboardingProvider } from "../../../../contexts/OnboardingContext";
 import { OnboardingLayout } from "../../../../components/BandOnboarding/layout/OnboardingLayout";
 import React from "react";
+import z from "zod";
 
 const ProtectedStep2 = () =>
 	React.createElement(
@@ -17,4 +18,8 @@ const ProtectedStep2 = () =>
 
 export const Route = createFileRoute("/band/register/onboarding/2")({
 	component: ProtectedStep2,
+	validateSearch: z.object({
+		type: z.string().optional(),
+		registerId: z.string().optional(),
+	}),
 });

@@ -396,20 +396,20 @@ export interface OnboardingApiResponse extends MusicalProductApiResponse {
 
 export interface MusicalProductContact {
 	id: number;
-	cpf?: string;
-	nome?: string;
-	email?: string;
 	usaCnpj: boolean;
-	cnpj?: string | undefined;
-	razaoSocial?: string | undefined;
-	telefone?: string | undefined;
-	cepContato?: string | undefined;
-	logradouroContato?: string | undefined;
-	numeroContato?: string | undefined;
-	bairroContato?: string | undefined;
-	cidadeContato?: string | undefined;
-	estadoContato?: string | undefined;
-	complementoContato?: string | undefined;
+	cnpj?: string | null;
+	cpf?: string | null;
+	nome?: string | null;
+	email?: string;
+	razaoSocial?: string;
+	telefone?: string;
+	cepContato?: string;
+	logradouroContato?: string;
+	numeroContato?: string;
+	bairroContato?: string;
+	cidadeContato?: string;
+	estadoContato?: string;
+	complementoContato?: string;
 }
 
 export interface MusicalProductDetails {

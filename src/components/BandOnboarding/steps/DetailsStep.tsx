@@ -11,10 +11,10 @@ import {
 	Info,
 	User,
 } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
 import { filterService } from "../../../api";
-import type { FilterOption } from "../../../api/types";
+import type { FilterOption, OnboardingApiResponse } from "../../../api/types";
 import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
 import { InputField } from "../../forms/InputField/InputField";
 import { Select, type Option } from "../../forms/Select/Select";
@@ -26,6 +26,7 @@ import {
 	useSaveOnboardingDetails,
 } from "../../../hooks/useMusicalProducts";
 import { toast } from "sonner";
+import { decryptValue } from "@/utils/encryptValue";
 
 const detailsSchema = z.object({
 	nome: z.string().min(1, "Nome é obrigatório"),
@@ -46,7 +47,28 @@ const detailsSchema = z.object({
 type DetailsFormData = z.infer<typeof detailsSchema>;
 
 export default function DetailsStep() {
-	const { data: onboardingData } = useOnboardingData();
+	const { data } = useOnboardingData();
+
+	const searchParameters = useSearch({ from: "/band/register/onboarding/2" });
+	const onboardingID = searchParameters.registerId
+		? decryptValue(searchParameters.registerId ?? "")
+		: null;
+	const onboardingType = searchParameters.type
+		? decryptValue(searchParameters.type ?? "")
+		: null;
+
+	const onboardingData = useMemo<OnboardingApiResponse | undefined>(() => {
+		return data?.find((item) => {
+			if (onboardingType === "new-onboarding") {
+				return undefined;
+			} else if (onboardingID && parseInt(onboardingID) === item.id) {
+				return item;
+			}
+
+			return undefined;
+		});
+	}, [data, onboardingType, onboardingID]);
+
 	const produtoMusicalId = onboardingData ? onboardingData.id : 0;
 
 	const saveOnboardingDetails = useSaveOnboardingDetails();

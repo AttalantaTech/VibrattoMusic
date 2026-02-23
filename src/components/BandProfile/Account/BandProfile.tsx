@@ -126,8 +126,11 @@ export const BandProfile = ({
 					);
 				} else if (musicalProduct?.riderTexto) {
 					return (
-						<div className="flex w-full min-h-[680px]">
-							<embed className="w-full" src={musicalProduct.riderTexto} />
+						<div className="flex justify-center items-center p-4 max-w-screen-md min-h-[480px]">
+							<div
+								className="bg-gray-100"
+								dangerouslySetInnerHTML={{ __html: musicalProduct.riderTexto }}
+							/>
 						</div>
 					);
 				} else {
@@ -148,10 +151,12 @@ export const BandProfile = ({
 					);
 				} else if (musicalProduct?.infraCamarimTexto) {
 					return (
-						<div className="flex w-full min-h-[680px]">
-							<embed
-								className="w-full"
-								src={musicalProduct.infraCamarimTexto}
+						<div className="flex justify-center items-center p-4 max-w-screen-md min-h-[480px]">
+							<div
+								className="bg-gray-100"
+								dangerouslySetInnerHTML={{
+									__html: musicalProduct.infraCamarimTexto,
+								}}
 							/>
 						</div>
 					);
@@ -541,7 +546,7 @@ export const BandProfile = ({
 					</div>
 
 					{/* Side Card */}
-					{musicalProduct.usuario.id !== user?.id && (
+					{musicalProduct.usuario.id !== user?.id ? (
 						<div className="w-full lg:w-80 xl:w-96 border border-gray-200 rounded-lg flex flex-col gap-4 lg:gap-6 p-4 lg:p-6 shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08)] order-1 lg:order-2 lg:sticky lg:top-4 lg:self-start">
 							{/* Media content (YouTube or Spotify) */}
 							{musicalProduct.videosYouTube &&
@@ -665,6 +670,65 @@ export const BandProfile = ({
 									</div>
 								</div>
 							) : null}
+						</div>
+					) : (
+						<div className="w-full lg:w-80 xl:w-96 border border-gray-200 rounded-lg flex flex-col gap-4 lg:gap-6 p-4 lg:p-6 shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08)] order-1 lg:order-2 lg:sticky lg:top-4 lg:self-start">
+							{/* Media content (YouTube or Spotify) */}
+							{musicalProduct.videosYouTube &&
+							musicalProduct.videosYouTube.length > 0 ? (
+								(() => {
+									const video =
+										musicalProduct.videosYouTube.find((item) => item)?.link ??
+										"";
+									const videoId = extractYouTubeId(video);
+
+									return videoId ? (
+										<div
+											className="relative w-full rounded-lg overflow-hidden"
+											style={{ paddingBottom: "56.25%" }}
+										>
+											<iframe
+												className="absolute top-0 left-0 w-full h-full"
+												src={`https://www.youtube.com/embed/${videoId}`}
+												title="YouTube video"
+												frameBorder="0"
+												allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+												allowFullScreen
+											/>
+										</div>
+									) : (
+										<a
+											href={video}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="block"
+										>
+											<LazyImage
+												alt="Video"
+												className="rounded-lg h-40 sm:h-48 lg:h-[180px] w-full object-cover hover:opacity-90 transition-opacity"
+												src={musicalProduct.fotoPerfil}
+											/>
+										</a>
+									);
+								})()
+							) : musicalProduct.spotifyPlaylistId ? (
+								<div className="w-full rounded-lg overflow-hidden">
+									<iframe
+										src={`https://open.spotify.com/embed/playlist/${musicalProduct.spotifyPlaylistId}`}
+										width="100%"
+										height="352"
+										frameBorder="0"
+										allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+										loading="lazy"
+									/>
+								</div>
+							) : (
+								<LazyImage
+									alt="Band photo"
+									className="rounded-lg h-40 sm:h-48 lg:h-[180px] w-full object-cover"
+									src={musicalProduct.fotoPerfil}
+								/>
+							)}
 						</div>
 					)}
 				</div>

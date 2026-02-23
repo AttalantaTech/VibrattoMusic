@@ -8,10 +8,11 @@ import {
 	MapPin,
 	UserIcon,
 	ChevronRight,
+	User,
 } from "lucide-react";
 
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useAuthStore } from "@/store/authStore";
 import type { z } from "zod";
 import type { OnboardingContactData } from "../../../utils/validation";
@@ -25,6 +26,8 @@ import {
 	useSaveOnboardingContact,
 } from "../../../hooks/useMusicalProducts";
 import { toast } from "sonner";
+import type { OnboardingApiResponse } from "@/api/types";
+import { decryptValue } from "@/utils/encryptValue";
 
 // helper text matching Step1
 const helperText =
@@ -32,10 +35,7 @@ const helperText =
 
 const helpTextContact = "Caso não tenha sede, utilize o endereço residencial.";
 
-type ContactFormData = Omit<
-	z.infer<typeof ContactValidationSchema>,
-	"nome" | "cpf"
->;
+type ContactFormData = z.infer<typeof ContactValidationSchema>;
 
 interface CepResponse {
 	erro?: boolean;
@@ -46,12 +46,32 @@ interface CepResponse {
 }
 
 export default function ContactStep() {
-	const [loading, setLoading] = useState(false);
+	const { data } = useOnboardingData();
 
-	const { data: onboardingData } = useOnboardingData();
+	const searchParameters = useSearch({ from: "/band/register/onboarding/1" });
+	const onboardingID = searchParameters.registerId
+		? decryptValue(searchParameters.registerId ?? "")
+		: null;
+	const onboardingType = searchParameters.type
+		? decryptValue(searchParameters.type ?? "")
+		: null;
+
+	const onboardingData = useMemo<OnboardingApiResponse | undefined>(() => {
+		return data?.find((item) => {
+			if (onboardingType === "new-onboarding") {
+				return undefined;
+			} else if (onboardingID && parseInt(onboardingID) === item.id) {
+				return item;
+			}
+
+			return undefined;
+		});
+	}, [data, onboardingType, onboardingID]);
 
 	const { markStepComplete } = useOnboarding();
 	const saveOnboardingContactMutation = useSaveOnboardingContact();
+
+	const [loading, setLoading] = useState(false);
 
 	const values = useMemo(() => {
 		return {
@@ -66,6 +86,8 @@ export default function ContactStep() {
 			estadoContato: onboardingData?.estadoContato ?? "",
 			cnpj: onboardingData?.cnpj ?? "",
 			complementoContato: onboardingData?.complementoContato ?? "",
+			cpf: onboardingData?.cpf ?? "",
+			nome: onboardingData?.nome ?? "",
 		};
 	}, [onboardingData]);
 
@@ -162,7 +184,7 @@ export default function ContactStep() {
 					label="Usar CNPJ no contrato"
 				/>
 
-				{watchUsaCnpj && (
+				{watchUsaCnpj ? (
 					<>
 						<Controller
 							name="cnpj"
@@ -182,21 +204,53 @@ export default function ContactStep() {
 						{errors.cnpj?.message && (
 							<div className="text-red-500 text-sm">{errors.cnpj.message}</div>
 						)}
-					</>
-				)}
 
-				<InputField
-					required={watchUsaCnpj}
-					helperText={helperText}
-					icon={<Briefcase size={20} />}
-					label="Nome Jurídico (Razão Social)"
-					placeholder="Ex: Banda LTDA"
-					{...register("razaoSocial")}
-				/>
-				{errors.razaoSocial?.message && (
-					<div className="text-red-500 text-sm">
-						{errors.razaoSocial.message}
-					</div>
+						<InputField
+							required={watchUsaCnpj}
+							helperText={helperText}
+							icon={<User size={20} />}
+							label="Nome Jurídico (Razão Social)"
+							placeholder="Ex: Banda LTDA"
+							{...register("razaoSocial")}
+						/>
+						{errors.razaoSocial?.message && (
+							<div className="text-red-500 text-sm">
+								{errors.razaoSocial.message}
+							</div>
+						)}
+					</>
+				) : (
+					<>
+						<Controller
+							name="cpf"
+							control={control}
+							render={({ field }) => (
+								<InputField
+									{...field}
+									required={!watchUsaCnpj}
+									helperText={helperText}
+									icon={<Briefcase size={20} />}
+									label="CPF"
+									mask="000.000.000-00"
+									placeholder="000.000.000-00"
+								/>
+							)}
+						/>
+						{errors.cpf?.message && (
+							<div className="text-red-500 text-sm">{errors.cpf.message}</div>
+						)}
+
+						<InputField
+							required={watchUsaCnpj}
+							helperText={helperText}
+							icon={<User size={20} />}
+							label="Nome Completo"
+							{...register("nome")}
+						/>
+						{errors.nome?.message && (
+							<div className="text-red-500 text-sm">{errors.nome.message}</div>
+						)}
+					</>
 				)}
 
 				<Controller
