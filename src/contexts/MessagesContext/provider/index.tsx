@@ -281,6 +281,9 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		addMessageReadHandler(handleMessageRead);
 
 		addNotificationHandler((notification: string) => {
+			if (notification.toLowerCase().includes("entrou na conversa")) {
+				return;
+			}
 			toast.info(notification);
 		});
 
