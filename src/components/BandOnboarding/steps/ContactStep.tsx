@@ -16,7 +16,10 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useAuthStore } from "@/store/authStore";
 import type { z } from "zod";
 import type { OnboardingContactData } from "../../../utils/validation";
-import { ContactValidationSchema } from "../../../utils/validation";
+import {
+	ContactValidationSchema,
+	validateCNPJ,
+} from "../../../utils/validation";
 import { Button } from "../../ui/Button/Button";
 import { InputField } from "../../forms/InputField/InputField";
 import { ToggleSwitch } from "../../forms/ToggleSwitch/ToggleSwitch";
@@ -28,6 +31,7 @@ import {
 import { toast } from "sonner";
 import type { OnboardingApiResponse } from "@/api/types";
 import { decryptValue } from "@/utils/encryptValue";
+import { useUser } from "@/hooks/useUser";
 
 // helper text matching Step1
 const helperText =
@@ -47,26 +51,26 @@ interface CepResponse {
 
 export default function ContactStep() {
 	const { data } = useOnboardingData();
+	const { data: userData } = useUser();
 
 	const searchParameters = useSearch({ from: "/band/register/onboarding/1" });
 	const onboardingID = searchParameters.registerId
 		? decryptValue(searchParameters.registerId ?? "")
 		: null;
-	const onboardingType = searchParameters.type
-		? decryptValue(searchParameters.type ?? "")
-		: null;
+	const onboardingType = searchParameters.type ?? null;
+
+	console.log(data);
 
 	const onboardingData = useMemo<OnboardingApiResponse | undefined>(() => {
-		return data?.find((item) => {
-			if (onboardingType === "new-onboarding") {
-				return undefined;
-			} else if (onboardingID && parseInt(onboardingID) === item.id) {
-				return item;
-			}
+		if (!data?.length) return undefined;
 
-			return undefined;
-		});
-	}, [data, onboardingType, onboardingID]);
+		if (onboardingType === "new-onboarding") return undefined;
+
+		if (onboardingID)
+			return data.find((item) => item.id === Number(onboardingID));
+
+		return data[0];
+	}, [data, onboardingID, onboardingType]);
 
 	const { markStepComplete } = useOnboarding();
 	const saveOnboardingContactMutation = useSaveOnboardingContact();
@@ -140,6 +144,27 @@ export default function ContactStep() {
 		}
 	};
 
+	const handleRegistrationDataButton = () => {
+		const isCNPJ = validateCNPJ(userData?.cpfOuCnpj ?? "");
+
+		setValue("cepContato", userData?.cep ?? "");
+		setValue("bairroContato", userData?.bairro ?? "");
+		setValue("cidadeContato", userData?.cidade ?? "");
+		setValue("complementoContato", userData?.complemento ?? "");
+		setValue("numeroContato", userData?.numero ?? "");
+		setValue("logradouroContato", userData?.logradouro ?? "");
+		setValue("estadoContato", userData?.estado ?? "");
+		setValue("logradouroContato", userData?.logradouro ?? "");
+
+		if (isCNPJ) {
+			setValue("razaoSocial", userData?.nome ?? "");
+			setValue("cnpj", userData?.cpfOuCnpj ?? "");
+		} else {
+			setValue("nome", userData?.nome ?? "");
+			setValue("cpf", userData?.cpfOuCnpj ?? "");
+		}
+	};
+
 	const handleCepChange = async (cep: string) => {
 		if (cep.length === 8) {
 			try {
@@ -158,16 +183,15 @@ export default function ContactStep() {
 	};
 
 	useEffect(() => {
-		if (onboardingData) {
-			reset({
-				...values,
-			});
-		}
-	}, [values, reset, onboardingData]);
+		reset({
+			...values,
+		});
+	}, [values, reset]);
 
 	return (
 		<StepLayout
 			currentStep={1}
+			onClick={handleRegistrationDataButton}
 			headerTitle="Informações de contato"
 			headerIcon={<UserIcon color="#007bff" size={24} />}
 		>
