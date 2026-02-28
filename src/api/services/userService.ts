@@ -13,6 +13,7 @@ import type {
 	UserSettings,
 	PaginationParameters,
 	PaginatedResponse,
+	UserApiResponse,
 } from "../types";
 
 export class UserService {
@@ -33,11 +34,6 @@ export class UserService {
 			credentials
 		);
 
-		// Debug log to see what's being returned
-		console.log("🔍 Login API Response:", response);
-		console.log("🔍 Response type:", typeof response);
-		console.log("🔍 Response keys:", Object.keys(response || {}));
-
 		// Handle if response is a string (token directly)
 		let token: string | undefined;
 		let normalizedResponse: LoginResponse;
@@ -51,12 +47,17 @@ export class UserService {
 			};
 		} else if (typeof response === "object" && response !== null) {
 			// Check multiple possible token field names
-			token = response.Token || response.token || response.accessToken || response.access_token;
-			
+			token =
+				response.Token ||
+				response.token ||
+				response.accessToken ||
+				response.access_token;
+
 			// If still no token, check if the whole response might be wrapped
 			if (!token && response.data) {
 				const data = response.data;
-				token = data.Token || data.token || data.accessToken || data.access_token;
+				token =
+					data.Token || data.token || data.accessToken || data.access_token;
 			}
 
 			normalizedResponse = {
@@ -68,14 +69,9 @@ export class UserService {
 			console.error("❌ Unexpected response type:", typeof response);
 			throw new Error("Invalid response format from API");
 		}
-		
+
 		// Validate token format
 		if (!token || typeof token !== "string") {
-			console.error("❌ Token validation failed. Response structure:", {
-				responseType: typeof response,
-				responseKeys: typeof response === "object" ? Object.keys(response) : [],
-				fullResponse: response
-			});
 			throw new Error("Invalid token received from API");
 		}
 
@@ -83,12 +79,16 @@ export class UserService {
 		// Temporarily disable strict JWT validation to see the actual response
 		const tokenParts = token.split(".");
 		if (tokenParts.length !== 3) {
-			console.warn("⚠️ Token may not be in standard JWT format. Token parts:", tokenParts.length, "Token preview:", token.substring(0, 50));
+			console.warn(
+				"⚠️ Token may not be in standard JWT format. Token parts:",
+				tokenParts.length,
+				"Token preview:",
+				token.substring(0, 50)
+			);
 			// Don't throw error for now, just log warning
 			// throw new Error("Invalid JWT token format");
 		}
 
-		console.log("✅ Login successful, returning normalized response");
 		return normalizedResponse;
 	}
 
@@ -98,8 +98,11 @@ export class UserService {
 	public async refreshToken(
 		request: RefreshTokenRequest
 	): Promise<LoginResponse> {
-		const response = await this.apiClient.post<any>("usuario/refresh-token", request);
-		
+		const response = await this.apiClient.post<any>(
+			"usuario/refresh-token",
+			request
+		);
+
 		// Apply the same normalization logic as login
 		let token: string | undefined;
 		let normalizedResponse: LoginResponse;
@@ -111,11 +114,16 @@ export class UserService {
 				token: token,
 			};
 		} else if (typeof response === "object" && response !== null) {
-			token = response.Token || response.token || response.accessToken || response.access_token;
-			
+			token =
+				response.Token ||
+				response.token ||
+				response.accessToken ||
+				response.access_token;
+
 			if (!token && response.data) {
 				const data = response.data;
-				token = data.Token || data.token || data.accessToken || data.access_token;
+				token =
+					data.Token || data.token || data.accessToken || data.access_token;
 			}
 
 			normalizedResponse = {
@@ -126,7 +134,7 @@ export class UserService {
 		} else {
 			throw new Error("Invalid refresh token response format from API");
 		}
-		
+
 		if (!token || typeof token !== "string") {
 			throw new Error("Invalid token received from refresh endpoint");
 		}
@@ -220,6 +228,14 @@ export class UserService {
 	public async toggleFavorite(request: FavoriteRequest): Promise<void> {
 		return this.apiClient.post<void>("usuario/favorito", request);
 	}
+
+	/**
+	 * Get user
+	 */
+	public async getUser(): Promise<UserApiResponse> {
+		return this.apiClient.get<UserApiResponse>("usuario");
+	}
+
 	/**
 	 * Get user's favorite products
 	 */
@@ -237,32 +253,27 @@ export class UserService {
 			? `usuario/favorito?${queryString}`
 			: "usuario/favorito";
 
-		try {
-			// Try to get the response first
-			const response = await this.apiClient.get<any>(url);
+		// Try to get the response first
+		const response = await this.apiClient.get<any>(url);
 
-			// If the API returns an array directly, transform it to paginated format
-			if (Array.isArray(response)) {
-				const paginatedResponse: PaginatedResponse<MusicalProductApiResponse> =
-					{
-						data: response as Array<MusicalProductApiResponse>,
-						pagination: {
-							currentPage: 1,
-							totalPages: 1,
-							totalItems: response.length,
-							itemsPerPage: response.length,
-							hasNextPage: false,
-							hasPreviousPage: false,
-						},
-					};
-				return paginatedResponse;
-			}
-
-			// If it's already in paginated format, return as is
-			return response as PaginatedResponse<MusicalProductApiResponse>;
-		} catch (error) {
-			throw error;
+		// If the API returns an array directly, transform it to paginated format
+		if (Array.isArray(response)) {
+			const paginatedResponse: PaginatedResponse<MusicalProductApiResponse> = {
+				data: response as Array<MusicalProductApiResponse>,
+				pagination: {
+					currentPage: 1,
+					totalPages: 1,
+					totalItems: response.length,
+					itemsPerPage: response.length,
+					hasNextPage: false,
+					hasPreviousPage: false,
+				},
+			};
+			return paginatedResponse;
 		}
+
+		// If it's already in paginated format, return as is
+		return response as PaginatedResponse<MusicalProductApiResponse>;
 	}
 
 	/**
@@ -273,5 +284,4 @@ export class UserService {
 			`usuario/favorito/${productId}`
 		);
 	}
-
 }
