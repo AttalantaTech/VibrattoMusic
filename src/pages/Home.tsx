@@ -108,9 +108,9 @@ export const Home = (): FunctionComponent => {
 		const filters: MusicalProductSearchRequest = {
 			limite: 5,
 			ordenarPorAvaliacao: true,
-			tamanhoPagina: 5,
+			tamanhoPagina: 4,
 			pagina: 1,
-			codigoMunicipio: 3550308, // São Paulo - SP as default
+			// codigoMunicipio: 3550308, // São Paulo - SP as default
 		};
 
 		// Add city filter if selected
@@ -316,12 +316,12 @@ export const Home = (): FunctionComponent => {
 										))}
 									</div>
 								</>
-							) : (featuredBands?.data?.length ?? 0) > 0 ? (
+							) : (featuredBands?.dados?.length ?? 0) > 0 ? (
 								// Real API data
 								<>
 									{/* Mobile to Large: Horizontal scroll */}
 									<div className="flex gap-4 overflow-x-auto pb-4 xl:hidden">
-										{(featuredBands?.data ?? []).map((band) => (
+										{(featuredBands?.dados ?? []).map((band) => (
 											<div key={`mobile-${band.id}`} className="flex-none w-64">
 												<ArtistCardWithFavorites
 													product={band}
@@ -337,7 +337,7 @@ export const Home = (): FunctionComponent => {
 									</div>
 									{/* Extra Large: Grid layout with 4 columns */}
 									<div className="hidden xl:grid xl:grid-cols-4 gap-4 2xl:gap-6 max-w-7xl mx-auto">
-										{(featuredBands?.data ?? []).map((band) => (
+										{(featuredBands?.dados ?? []).map((band) => (
 											<div key={`desktop-${band.id}`} className="w-full">
 												<ArtistCardWithFavorites
 													product={band}

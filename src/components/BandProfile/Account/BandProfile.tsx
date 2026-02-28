@@ -493,9 +493,9 @@ export const BandProfile = ({
 												</div>
 											</div>
 										))
-									) : (similarArtists?.data?.length ?? 0) > 0 ? (
+									) : (similarArtists?.dados?.length ?? 0) > 0 ? (
 										// Real API data
-										(similarArtists?.data ?? [])
+										(similarArtists?.dados ?? [])
 											.filter((product) => product.id !== musicalProduct.id) // Exclude current musicalProduct
 											.slice(0, 2)
 											.map((product) => (

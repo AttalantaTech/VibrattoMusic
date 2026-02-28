@@ -189,7 +189,7 @@ export const SearchBar = ({
 			</div>
 
 			{showSuggestions &&
-				(searchResults?.data?.length ||
+				(searchResults?.dados?.length ||
 					filteredHistory.length > 0 ||
 					searchHistory.length > 0 ||
 					isSearching) && (
@@ -207,12 +207,12 @@ export const SearchBar = ({
 											Buscando...
 										</span>
 									</div>
-								) : searchResults?.data && searchResults.data.length > 0 ? (
+								) : searchResults?.dados && searchResults.dados.length > 0 ? (
 									<div>
 										<div className="px-4 py-2 text-xs font-medium text-gray-500 border-b border-gray-100">
 											Artistas encontrados
 										</div>
-										{searchResults.data.slice(0, 5).map((artist) => (
+										{searchResults.dados.slice(0, 5).map((artist) => (
 											<button
 												key={artist.id}
 												onClick={() => {

@@ -1,4 +1,10 @@
-import { ArrowDown, AudioLines, Check, ChevronRight, AlertCircle } from "lucide-react";
+import {
+	ArrowDown,
+	AudioLines,
+	Check,
+	ChevronRight,
+	AlertCircle,
+} from "lucide-react";
 import { Button } from "../../ui/Button/Button";
 import { useProfileStatus } from "../../../hooks/useProfileStatus";
 
@@ -8,7 +14,8 @@ interface AdvantagesCardProps {
 }
 
 export const AdvantagesCard = ({ onStart, onSkip }: AdvantagesCardProps) => {
-	const { isProfileIncomplete, musicalProducts, isLoading } = useProfileStatus();
+	const { isProfileIncomplete, musicalProducts, isLoading } =
+		useProfileStatus();
 
 	const advantages = [
 		{
@@ -45,14 +52,17 @@ export const AdvantagesCard = ({ onStart, onSkip }: AdvantagesCardProps) => {
 				</h2>
 
 				{/* Profile Status Indicator */}
-				{!isLoading && isProfileIncomplete && musicalProducts && musicalProducts.length > 0 && (
-					<div className="flex items-center gap-2 mt-4 px-4 py-2 bg-orange-50 border border-orange-200 rounded-lg">
-						<AlertCircle className="w-5 h-5 text-orange-500" />
-						<span className="text-orange-700 text-sm font-medium">
-							Seu perfil está incompleto. Complete-o para enviar propostas.
-						</span>
-					</div>
-				)}
+				{!isLoading &&
+					isProfileIncomplete &&
+					musicalProducts &&
+					musicalProducts.dados.length > 0 && (
+						<div className="flex items-center gap-2 mt-4 px-4 py-2 bg-orange-50 border border-orange-200 rounded-lg">
+							<AlertCircle className="w-5 h-5 text-orange-500" />
+							<span className="text-orange-700 text-sm font-medium">
+								Seu perfil está incompleto. Complete-o para enviar propostas.
+							</span>
+						</div>
+					)}
 			</div>
 
 			{/*Advantages Box */}
@@ -95,7 +105,11 @@ export const AdvantagesCard = ({ onStart, onSkip }: AdvantagesCardProps) => {
 							<ChevronRight size={20} className="sm:w-6 sm:h-6" />
 						</span>
 					</Button>
-					<Button variant="outline" className="w-full h-12 sm:h-14" onClick={onSkip}>
+					<Button
+						variant="outline"
+						className="w-full h-12 sm:h-14"
+						onClick={onSkip}
+					>
 						Pular cadastro completo
 					</Button>
 				</div>

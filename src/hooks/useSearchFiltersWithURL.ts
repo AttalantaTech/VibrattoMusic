@@ -134,11 +134,13 @@ export const useSearchFiltersWithURL = () => {
 	// Update filters and URL
 	const updateFilters = useCallback(
 		(newFilters: Partial<SearchFilters>) => {
-			const updatedFilters = { ...filters, ...newFilters };
-			setFilters(updatedFilters);
-			updateURL(updatedFilters);
+			setFilters((previous) => {
+				const updatedFilters = { ...previous, ...newFilters };
+				updateURL(updatedFilters);
+				return updatedFilters;
+			});
 		},
-		[filters, updateURL]
+		[updateURL]
 	);
 
 	// Convert to API request format
@@ -194,10 +196,10 @@ export const useSearchFiltersWithURL = () => {
 		optionsToArray,
 		hasActiveFilters: Boolean(
 			filters.NomeOuDescricao ||
-				filters.codigoMunicipio ||
-				filters.categorias.length > 0 ||
-				filters.tiposEvento.length > 0 ||
-				filters.generosMusicais.length > 0
+			filters.codigoMunicipio ||
+			filters.categorias.length > 0 ||
+			filters.tiposEvento.length > 0 ||
+			filters.generosMusicais.length > 0
 		),
 		clearFilters: () => {
 			const clearedFilters: SearchFilters = {

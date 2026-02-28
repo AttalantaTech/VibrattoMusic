@@ -349,7 +349,7 @@ export interface MusicalProductApiResponse {
 	}>;
 	usaCnpj: boolean;
 	cnpj: string | null;
-	cpf: string | null;
+	cpf?: string | null;
 	razaoSocial: string | null;
 	telefone: string | null;
 	cepContato: string | null;
@@ -369,19 +369,33 @@ export interface MusicalProductApiResponse {
 	riderTexto: string | null; // Send rider text
 	infraCamarim: string | null;
 	infraCamarimTexto: string | null;
-	numeroIntegrantes: number;
+	numeroIntegrantes?: number | null;
 }
 
 export interface MusicalProductListApiResponse {
-	data: Array<MusicalProductApiResponse>;
-	pagination: {
-		currentPage: number;
-		totalPages: number;
-		totalItems: number;
-		itemsPerPage: number;
-		hasNextPage: boolean;
-		hasPreviousPage: boolean;
+	dados: Array<MusicalProductApiResponse>;
+	paginacao: {
+		paginaAtual: number;
+		totalPaginas: number;
+		totalItens: number;
+		itensPorPagina: number;
+		temProximaPagina: boolean;
+		temPaginaAnterior: boolean;
 	};
+}
+
+export interface UserApiResponse {
+	ativo: boolean;
+	bairro: string;
+	cep: string;
+	cidade: string;
+	complemento: string;
+	cpfOuCnpj: string;
+	email: string;
+	estado: string;
+	logradouro: string;
+	nome: string;
+	numero: string;
 }
 
 // ===== Musical Product Types =====
