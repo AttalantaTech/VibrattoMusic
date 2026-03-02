@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import type { ReactNode } from "react";
 
 interface AccountLayoutProps {
@@ -27,10 +26,6 @@ export const AccountLayout = ({
 									{headerTitle}
 								</h1>
 							</div>
-
-							<Button className="w-full sm:w-auto">
-								Usar Dados do Cadastro
-							</Button>
 						</div>
 
 						<hr className="w-full" />
