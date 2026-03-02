@@ -12,7 +12,7 @@ export const ProfileStatusDemo = () => {
 		isProfileIncomplete,
 		musicalProducts,
 		isLoading,
-		refetch
+		refetch,
 	} = useProfileStatus();
 
 	const handleRefresh = async () => {
@@ -21,7 +21,9 @@ export const ProfileStatusDemo = () => {
 
 	return (
 		<div className="p-6 bg-white rounded-lg border shadow-sm">
-			<h3 className="text-lg font-semibold mb-4">Sistema de Status de Perfil - Demonstração</h3>
+			<h3 className="text-lg font-semibold mb-4">
+				Sistema de Status de Perfil - Demonstração
+			</h3>
 
 			{/* Status Badge */}
 			<div className="mb-4">
@@ -32,29 +34,38 @@ export const ProfileStatusDemo = () => {
 			<div className="space-y-3 mb-4">
 				<div className="flex items-center justify-between">
 					<span className="text-sm font-medium">Status do Perfil:</span>
-					<span className={`px-2 py-1 rounded text-xs font-medium ${
-						isProfileComplete ? 'bg-green-100 text-green-800' :
-						isProfileIncomplete ? 'bg-orange-100 text-orange-800' :
-						'bg-gray-100 text-gray-800'
-					}`}>
-						{isProfileComplete ? 'COMPLETO' :
-						 isProfileIncomplete ? 'INCOMPLETO' : 'CARREGANDO'}
+					<span
+						className={`px-2 py-1 rounded text-xs font-medium ${
+							isProfileComplete
+								? "bg-green-100 text-green-800"
+								: isProfileIncomplete
+									? "bg-orange-100 text-orange-800"
+									: "bg-gray-100 text-gray-800"
+						}`}
+					>
+						{isProfileComplete
+							? "COMPLETO"
+							: isProfileIncomplete
+								? "INCOMPLETO"
+								: "CARREGANDO"}
 					</span>
 				</div>
 
 				<div className="flex items-center justify-between">
 					<span className="text-sm font-medium">Produtos Musicais:</span>
 					<span className="text-sm text-gray-600">
-						{isLoading ? 'Carregando...' : (musicalProducts?.length || 0)}
+						{isLoading ? "Carregando..." : musicalProducts?.dados.length || 0}
 					</span>
 				</div>
 
 				<div className="flex items-center justify-between">
 					<span className="text-sm font-medium">Pode Enviar Propostas:</span>
-					<span className={`text-sm font-medium ${
-						isProfileComplete ? 'text-green-600' : 'text-red-600'
-					}`}>
-						{isProfileComplete ? 'SIM' : 'NÃO'}
+					<span
+						className={`text-sm font-medium ${
+							isProfileComplete ? "text-green-600" : "text-red-600"
+						}`}
+					>
+						{isProfileComplete ? "SIM" : "NÃO"}
 					</span>
 				</div>
 			</div>
@@ -67,7 +78,7 @@ export const ProfileStatusDemo = () => {
 				variant="outline"
 				className="w-full"
 			>
-				{isLoading ? 'Atualizando...' : 'Atualizar Status'}
+				{isLoading ? "Atualizando..." : "Atualizar Status"}
 			</Button>
 
 			{/* Instructions */}

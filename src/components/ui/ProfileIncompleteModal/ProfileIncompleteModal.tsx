@@ -31,7 +31,7 @@ export const ProfileIncompleteModal = ({
 
 	// Helper function to check individual fields
 	const getProfileRequirements = () => {
-		if (!musicalProducts || musicalProducts.length === 0) {
+		if (!musicalProducts || musicalProducts.dados.length === 0) {
 			return {
 				hasProduct: false,
 				requirements: [
@@ -47,11 +47,11 @@ export const ProfileIncompleteModal = ({
 					{ label: "Gêneros Musicais", completed: false },
 					{ label: "Tipos de Produção", completed: false },
 					{ label: "Imagens do Portfólio", completed: false },
-				]
+				],
 			};
 		}
 
-		const product = musicalProducts[0];
+		const product = musicalProducts.dados[0];
 		if (!product) {
 			return {
 				hasProduct: false,
@@ -68,34 +68,82 @@ export const ProfileIncompleteModal = ({
 					{ label: "Gêneros Musicais", completed: false },
 					{ label: "Tipos de Produção", completed: false },
 					{ label: "Imagens do Portfólio", completed: false },
-				]
+				],
 			};
 		}
 		return {
 			hasProduct: true,
 			requirements: [
-				{ label: "Nome do Produto", completed: !!(product.nome && product.nome.trim()) },
-				{ label: "Descrição", completed: !!(product.descricao && product.descricao.trim()) },
-				{ label: "Foto de Perfil", completed: !!(product.fotoPerfil && product.fotoPerfil.trim()) },
-				{ label: "Logo", completed: !!(product.logomarca && product.logomarca.trim()) },
-				{ label: "CEP de Contato", completed: !!(product.cepContato && product.cepContato.trim()) },
-				{ label: "Endereço", completed: !!(product.logradouroContato && product.logradouroContato.trim()) },
-				{ label: "Número", completed: !!(product.numeroContato && product.numeroContato.trim()) },
-				{ label: "Cidade", completed: !!(product.cidadeContato && product.cidadeContato.trim()) },
-				{ label: "Estado", completed: !!(product.estadoContato && product.estadoContato.trim()) },
-				{ label: "Email", completed: !!(product.email && product.email.trim()) },
+				{
+					label: "Nome do Produto",
+					completed: !!(product.nome && product.nome.trim()),
+				},
+				{
+					label: "Descrição",
+					completed: !!(product.descricao && product.descricao.trim()),
+				},
+				{
+					label: "Foto de Perfil",
+					completed: !!(product.fotoPerfil && product.fotoPerfil.trim()),
+				},
+				{
+					label: "Logo",
+					completed: !!(product.logomarca && product.logomarca.trim()),
+				},
+				{
+					label: "CEP de Contato",
+					completed: !!(product.cepContato && product.cepContato.trim()),
+				},
+				{
+					label: "Endereço",
+					completed: !!(
+						product.logradouroContato && product.logradouroContato.trim()
+					),
+				},
+				{
+					label: "Número",
+					completed: !!(product.numeroContato && product.numeroContato.trim()),
+				},
+				{
+					label: "Cidade",
+					completed: !!(product.cidadeContato && product.cidadeContato.trim()),
+				},
+				{
+					label: "Estado",
+					completed: !!(product.estadoContato && product.estadoContato.trim()),
+				},
+				{
+					label: "Email",
+					completed: !!(product.email && product.email.trim()),
+				},
 				{ label: "Categoria", completed: !!product.categoria?.id },
 				{ label: "Cidade", completed: !!product.cidade?.id },
-				{ label: "Tipos de Evento", completed: !!(product.tipoEvento && product.tipoEvento.length > 0) },
-				{ label: "Gêneros Musicais", completed: !!(product.generoMusical && product.generoMusical.length > 0) },
-				{ label: "Tipos de Produção", completed: !!(product.tiposProducao && product.tiposProducao.length > 0) },
-				{ label: "Imagens do Portfólio", completed: !!(product.imagens && product.imagens.length > 0) },
-			]
+				{
+					label: "Tipos de Evento",
+					completed: !!(product.tipoEvento && product.tipoEvento.length > 0),
+				},
+				{
+					label: "Gêneros Musicais",
+					completed: !!(
+						product.generoMusical && product.generoMusical.length > 0
+					),
+				},
+				{
+					label: "Tipos de Produção",
+					completed: !!(
+						product.tiposProducao && product.tiposProducao.length > 0
+					),
+				},
+				{
+					label: "Imagens do Portfólio",
+					completed: !!(product.imagens && product.imagens.length > 0),
+				},
+			],
 		};
 	};
 
 	const { hasProduct, requirements } = getProfileRequirements();
-	const completedCount = requirements.filter(r => r.completed).length;
+	const completedCount = requirements.filter((r) => r.completed).length;
 	const totalCount = requirements.length;
 
 	return (
@@ -104,15 +152,16 @@ export const ProfileIncompleteModal = ({
 				<DialogHeader>
 					<div className="flex items-center gap-3">
 						<AlertTriangle className="h-6 w-6 text-orange-500" />
-						<DialogTitle className="text-left">
-							Perfil Incompleto
-						</DialogTitle>
+						<DialogTitle className="text-left">Perfil Incompleto</DialogTitle>
 					</div>
 					<DialogDescription className="text-left">
-						Para enviar uma proposta, você precisa completar seu perfil de músico.
+						Para enviar uma proposta, você precisa completar seu perfil de
+						músico.
 						{hasProduct && (
 							<span className="block mt-2 text-sm">
-								<strong>Progresso: {completedCount}/{totalCount} campos preenchidos</strong>
+								<strong>
+									Progresso: {completedCount}/{totalCount} campos preenchidos
+								</strong>
 							</span>
 						)}
 					</DialogDescription>
@@ -140,15 +189,19 @@ export const ProfileIncompleteModal = ({
 						{hasProduct ? "Campos obrigatórios:" : "Para começar:"}
 					</h4>
 					<div className="space-y-2">
-						{requirements.slice(0, hasProduct ? 8 : 4).map((req, index) => (
+						{requirements.slice(0, hasProduct ? 8 : 4).map((request, index) => (
 							<div key={index} className="flex items-center gap-2 text-sm">
-								{req.completed ? (
+								{request.completed ? (
 									<Check className="w-4 h-4 text-green-500" />
 								) : (
 									<X className="w-4 h-4 text-red-400" />
 								)}
-								<span className={req.completed ? "text-green-700" : "text-gray-600"}>
-									{req.label}
+								<span
+									className={
+										request.completed ? "text-green-700" : "text-gray-600"
+									}
+								>
+									{request.label}
 								</span>
 							</div>
 						))}
@@ -164,23 +217,17 @@ export const ProfileIncompleteModal = ({
 					<p className="text-sm text-orange-800">
 						<strong>Por que isso é importante?</strong>
 						<br />
-						Um perfil completo aumenta suas chances de ser contratado, pois os contratantes
-						podem ver todas as informações relevantes sobre sua banda.
+						Um perfil completo aumenta suas chances de ser contratado, pois os
+						contratantes podem ver todas as informações relevantes sobre sua
+						banda.
 					</p>
 				</div>
 
 				<DialogFooter className="flex-col gap-2 sm:flex-col">
-					<Button
-						onClick={handleCompleteProfile}
-						className="w-full"
-					>
+					<Button onClick={handleCompleteProfile} className="w-full">
 						Completar Meu Perfil
 					</Button>
-					<Button
-						variant="outline"
-						onClick={onClose}
-						className="w-full"
-					>
+					<Button variant="outline" onClick={onClose} className="w-full">
 						Cancelar
 					</Button>
 				</DialogFooter>

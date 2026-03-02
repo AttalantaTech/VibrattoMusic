@@ -89,23 +89,7 @@ export const useProfileStatus = () => {
 	} = useQuery({
 		queryKey: profileKeys.musicalProducts(user?.id),
 		queryFn: async () => {
-			try {
-				return await musicalProductService.getMyProducts();
-			} catch (error) {
-				console.error(error);
-				// Return empty result instead of throwing error
-				return {
-					data: [],
-					pagination: {
-						currentPage: 1,
-						totalPages: 0,
-						totalItems: 0,
-						itemsPerPage: 0,
-						hasNextPage: false,
-						hasPreviousPage: false,
-					},
-				};
-			}
+			return musicalProductService.getMyProducts();
 		},
 		enabled: user?.id !== undefined && user?.id !== null,
 		staleTime: 5 * 60 * 1000, // 5 minutes
@@ -114,8 +98,11 @@ export const useProfileStatus = () => {
 	});
 
 	const musicalProducts =
-		(musicalProductsData !== undefined && musicalProductsData?.data) || null;
-	const isProfileComplete = isMusicianProfileComplete(user, musicalProducts);
+		(musicalProductsData !== undefined && musicalProductsData) || null;
+	const isProfileComplete = isMusicianProfileComplete(
+		user,
+		musicalProducts?.dados ?? []
+	);
 	const profileStatus: ProfileStatus = isProfileComplete
 		? "COMPLETE"
 		: "INCOMPLETE";

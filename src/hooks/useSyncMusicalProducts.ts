@@ -16,8 +16,8 @@ export const useSyncMusicalProducts = () => {
 
 		setIsLoadingMusicalProduct(isLoading);
 
-		if (musicalProducts && musicalProducts.length > 0) {
-			setAvailableProducts(musicalProducts);
+		if (musicalProducts && musicalProducts.dados.length > 0) {
+			setAvailableProducts(musicalProducts.dados);
 		}
 	}, [
 		musicalProducts,

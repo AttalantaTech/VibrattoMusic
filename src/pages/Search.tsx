@@ -92,7 +92,7 @@ export const SearchPage = () => {
 			!searchRequest.codigoMunicipio &&
 			!searchRequest.NomeOuDescricao
 		) {
-			updateFilters({ codigoMunicipio: 3550308, pagina: 1 });
+			updateFilters({ pagina: 1 });
 		}
 	}, [isLoading, searchResults, searchRequest, updateFilters]);
 
@@ -337,22 +337,24 @@ export const SearchPage = () => {
 					<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
 						<div className="flex-1">
 							<h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
-								{searchResults?.pagination?.totalItems
+								{searchResults?.paginacao?.totalPaginas
 									? (() => {
-											const totalItems = searchResults.pagination.totalItems;
+											const totalItems =
+												searchResults.paginacao.totalItens ?? 0;
+
 											const itemText =
-												totalItems === 1
+												totalItems < 2
 													? "artista encontrado"
 													: "artistas encontrados";
-											return `${totalItems} ${itemText}`;
+											return `${totalItems > 0 ? totalItems : "Nenhum"} ${itemText}`;
 										})()
 									: "Resultados da Busca"}
 							</h2>
-							{searchResults?.pagination &&
-								searchResults.pagination.totalPages > 1 && (
+							{searchResults?.paginacao &&
+								searchResults.paginacao.totalPaginas > 1 && (
 									<p className="text-gray-600 mt-1 text-sm sm:text-base">
-										Página {searchResults.pagination.currentPage} de{" "}
-										{searchResults.pagination.totalPages}
+										Página {searchResults.paginacao.paginaAtual} de{" "}
+										{searchResults.paginacao.totalPaginas}
 									</p>
 								)}
 						</div>
@@ -381,11 +383,11 @@ export const SearchPage = () => {
 					)}
 					{/* Results Grid */}
 					{!isLoading &&
-						searchResults?.data &&
-						searchResults.data.length > 0 && (
+						searchResults?.dados &&
+						searchResults.dados.length > 0 && (
 							<>
 								<div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-									{searchResults.data.map(
+									{searchResults.dados.map(
 										(product: MusicalProductApiResponse) => (
 											<div key={product.id} className="relative">
 												<ArtistCardWithFavorites
@@ -403,19 +405,19 @@ export const SearchPage = () => {
 								</div>
 
 								{/* Pagination - Mobile Responsive */}
-								{searchResults?.pagination &&
-									searchResults.pagination.totalPages > 1 && (
+								{searchResults?.paginacao &&
+									searchResults.paginacao.totalPaginas > 1 && (
 										<div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8 sm:mt-12">
 											{/* Mobile: Simplified pagination */}
 											<div className="flex sm:hidden items-center justify-between w-full max-w-sm">
 												<Button
-													disabled={searchResults.pagination.currentPage === 1}
+													disabled={searchResults.paginacao.paginaAtual === 1}
 													variant="outline"
 													size="sm"
 													className="flex items-center gap-2"
 													onClick={() => {
 														handlePageChange(
-															searchResults.pagination.currentPage - 1
+															searchResults.paginacao.paginaAtual - 1
 														);
 													}}
 												>
@@ -424,11 +426,11 @@ export const SearchPage = () => {
 
 												<div className="flex items-center gap-2 text-sm text-gray-600">
 													<span className="font-medium">
-														{searchResults.pagination.currentPage}
+														{searchResults.paginacao.paginaAtual}
 													</span>
 													<span>de</span>
 													<span className="font-medium">
-														{searchResults.pagination.totalPages}
+														{searchResults.paginacao.totalPaginas}
 													</span>
 												</div>
 
@@ -437,12 +439,12 @@ export const SearchPage = () => {
 													size="sm"
 													className="flex items-center gap-2"
 													disabled={
-														searchResults.pagination.currentPage ===
-														searchResults.pagination.totalPages
+														searchResults.paginacao.paginaAtual ===
+														searchResults.paginacao.totalPaginas
 													}
 													onClick={() => {
 														handlePageChange(
-															searchResults.pagination.currentPage + 1
+															searchResults.paginacao.paginaAtual + 1
 														);
 													}}
 												>
@@ -453,12 +455,12 @@ export const SearchPage = () => {
 											{/* Desktop: Full pagination */}
 											<div className="hidden sm:flex items-center space-x-3">
 												<Button
-													disabled={searchResults.pagination.currentPage === 1}
+													disabled={searchResults.paginacao.paginaAtual === 1}
 													variant="outline"
 													className="px-4 py-2 text-sm font-medium"
 													onClick={() => {
 														handlePageChange(
-															searchResults.pagination.currentPage - 1
+															searchResults.paginacao.paginaAtual - 1
 														);
 													}}
 												>
@@ -470,13 +472,13 @@ export const SearchPage = () => {
 														{
 															length: Math.min(
 																5,
-																searchResults.pagination.totalPages
+																searchResults.paginacao.totalPaginas
 															),
 														},
 														(_, index) => {
 															const page = index + 1;
 															const isCurrentPage =
-																page === searchResults.pagination.currentPage;
+																page === searchResults.paginacao.paginaAtual;
 															return (
 																<Button
 																	key={page}
@@ -503,12 +505,12 @@ export const SearchPage = () => {
 													variant="outline"
 													className="px-4 py-2 text-sm font-medium"
 													disabled={
-														searchResults.pagination.currentPage ===
-														searchResults.pagination.totalPages
+														searchResults.paginacao.paginaAtual ===
+														searchResults.paginacao.totalPaginas
 													}
 													onClick={() => {
 														handlePageChange(
-															searchResults.pagination.currentPage + 1
+															searchResults.paginacao.paginaAtual + 1
 														);
 													}}
 												>
@@ -520,7 +522,7 @@ export const SearchPage = () => {
 							</>
 						)}{" "}
 					{/* No Results - Mobile Responsive */}
-					{!isLoading && searchResults?.data?.length === 0 && (
+					{!isLoading && searchResults?.dados?.length === 0 && (
 						<div className="text-center py-12 sm:py-16 lg:py-20 px-4">
 							<div className="bg-gray-100 rounded-full w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 mx-auto mb-4 sm:mb-6 flex items-center justify-center">
 								<Search className="h-8 w-8 sm:h-9 sm:w-9 lg:h-10 lg:w-10 text-gray-400" />

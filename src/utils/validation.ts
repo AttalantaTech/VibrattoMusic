@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 // Utility functions for CPF/CNPJ validation
-const validateCPF = (cpf: string): boolean => {
+export const validateCPF = (cpf: string): boolean => {
 	const cleaned = cpf.replace(/\D/g, "");
 
 	if (cleaned.length !== 11) return false;
@@ -29,7 +29,7 @@ const validateCPF = (cpf: string): boolean => {
 	return true;
 };
 
-const validateCNPJ = (cnpj: string): boolean => {
+export const validateCNPJ = (cnpj: string): boolean => {
 	const cleaned = cnpj.replace(/\D/g, "");
 
 	if (cleaned.length !== 14) return false;

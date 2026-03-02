@@ -17,6 +17,7 @@ import { useAuthStore } from "../store/authStore";
 export const userKeys = {
 	all: ["user"] as const,
 	favorites: () => [...userKeys.all, "favorites"] as const,
+	user: () => [...userKeys.all, "get-user"] as const,
 };
 
 /**
@@ -285,5 +286,13 @@ export const useResetPassword = () => {
 		onError: (error) => {
 			console.error("❌ Password reset failed:", error);
 		},
+	});
+};
+
+export const useUser = (enabled: boolean = true) => {
+	return useQuery({
+		queryKey: userKeys.user(),
+		queryFn: () => userService.getUser(),
+		enabled,
 	});
 };

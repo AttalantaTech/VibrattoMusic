@@ -61,22 +61,10 @@ export class MusicalProductService {
 			const cleanedRequest = this.cleanSearchRequest(searchRequest);
 
 			// API returns array directly, not wrapped in pagination object
-			const apiResponse = await this.apiClient.post<
-				Array<MusicalProductApiResponse>
-			>("produtomusical/listar", { ...cleanedRequest, ativo });
-
-			// Transform API response to expected frontend format
-			const response: MusicalProductListApiResponse = {
-				data: apiResponse,
-				pagination: {
-					currentPage: searchRequest.pagina || 1,
-					totalPages: 1, // Since API doesn't provide pagination info
-					totalItems: apiResponse.length,
-					itemsPerPage: apiResponse.length,
-					hasNextPage: false,
-					hasPreviousPage: false,
-				},
-			};
+			const response = await this.apiClient.post<MusicalProductListApiResponse>(
+				"produtomusical/listar",
+				{ ...cleanedRequest, ativo }
+			);
 
 			return response;
 		} catch (error: unknown) {
@@ -214,22 +202,10 @@ export class MusicalProductService {
 			const cleanedRequest = this.cleanSearchRequest(defaultRequest);
 
 			// API returns array directly, not wrapped in pagination object
-			const apiResponse = await this.apiClient.post<
-				Array<MusicalProductApiResponse>
-			>("produtomusical/meusProdutos", cleanedRequest);
-
-			// Transform API response to expected frontend format
-			const response: MusicalProductListApiResponse = {
-				data: apiResponse,
-				pagination: {
-					currentPage: defaultRequest.pagina || 1,
-					totalPages: 1, // Since API doesn't provide pagination info
-					totalItems: apiResponse.length,
-					itemsPerPage: apiResponse.length,
-					hasNextPage: false,
-					hasPreviousPage: false,
-				},
-			};
+			const response = await this.apiClient.post<MusicalProductListApiResponse>(
+				"produtomusical/meusProdutos",
+				cleanedRequest
+			);
 
 			return response;
 		} catch (error: unknown) {

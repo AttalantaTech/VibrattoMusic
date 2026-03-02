@@ -53,14 +53,14 @@ export const useActiveMusicalProduct = () => {
 	 * musicalProducts loaded → decide activeProduct
 	 */
 	useEffect(() => {
-		if (!musicalProducts || musicalProducts.length === 0) return;
+		if (!musicalProducts || musicalProducts.dados.length === 0) return;
 
 		const stored = storageAvailable ? readStoredProduct() : null;
 
 		const validStored =
-			stored && musicalProducts.find((p) => p.id === stored.id);
+			stored && musicalProducts.dados.find((p) => p.id === stored.id);
 
-		const productToUse = validStored || musicalProducts[0];
+		const productToUse = validStored || musicalProducts.dados[0];
 
 		setActiveProduct(productToUse ?? null);
 
@@ -102,7 +102,7 @@ export const useActiveMusicalProduct = () => {
 
 	const getActiveProductData = useCallback(() => {
 		if (!activeProduct || !musicalProducts) return null;
-		return musicalProducts.find((p) => p.id === activeProduct.id) || null;
+		return musicalProducts.dados.find((p) => p.id === activeProduct.id) || null;
 	}, [activeProduct, musicalProducts]);
 
 	/** derived */
@@ -112,7 +112,7 @@ export const useActiveMusicalProduct = () => {
 		changeActiveProduct,
 		clearStoredProduct,
 		getActiveProductData,
-		hasMultipleProducts: (musicalProducts?.length || 0) > 1,
+		hasMultipleProducts: (musicalProducts?.dados.length || 0) > 1,
 		isLoading: !musicalProducts && !!user?.id,
 	};
 };

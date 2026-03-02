@@ -37,9 +37,9 @@ export const Header = () => {
 		!isOnboardingPage && !location.pathname.includes("/search");
 
 	useEffect(() => {
-		if (!musicalProducts?.length) return;
+		if (!musicalProducts?.dados.length) return;
 
-		const musicalProduct = musicalProducts.find((item) => item);
+		const musicalProduct = musicalProducts.dados.find((item) => item);
 		if (musicalProduct) setActiveProduct(musicalProduct);
 	}, [musicalProducts, setActiveProduct]);
 
@@ -67,7 +67,7 @@ export const Header = () => {
 	const handleProfile = async () => {
 		setShowDropdown(false);
 
-		if (musicalProducts && musicalProducts.length > 0) {
+		if (musicalProducts && musicalProducts.dados.length > 0) {
 			await navigate({
 				to: "/band/me",
 				search: { tab: "account" },

@@ -43,21 +43,19 @@ export default function ScheduleStep() {
 	const onboardingID = searchParameters.registerId
 		? decryptValue(searchParameters.registerId ?? "")
 		: null;
-	const onboardingType = searchParameters.type
-		? decryptValue(searchParameters.type ?? "")
-		: null;
+	const onboardingType = searchParameters.type ?? null;
 
 	const onboardingData = useMemo<OnboardingApiResponse | undefined>(() => {
-		return data?.find((item) => {
-			if (onboardingType === "new-onboarding") {
-				return undefined;
-			} else if (onboardingID && parseInt(onboardingID) === item.id) {
-				return item;
-			}
+		if (!data?.length) return undefined;
 
-			return undefined;
-		});
-	}, [data, onboardingType, onboardingID]);
+		if (onboardingType === "new-onboarding") return undefined;
+
+		if (onboardingID)
+			return data.find((item) => item.id === Number(onboardingID));
+
+		return data[0];
+	}, [data, onboardingID, onboardingType]);
+
 	const produtoMusicalId = onboardingData ? onboardingData.id : 0;
 
 	const { data: dataSchedule } = useMusicalProductSchedule(produtoMusicalId);
