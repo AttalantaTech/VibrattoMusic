@@ -11,6 +11,8 @@ import { Link, useRouter } from "@tanstack/react-router";
 import { extractUserIdFromToken } from "../utils/jwt";
 import Logo from "../assets/images/Logomark.png";
 import ShowImg from "../assets/images/show.jpg";
+import { apiClient } from "@/api/core/client";
+import { User } from "@/api/types";
 
 const loginSchema = z.object({
 	email: z.string().email("Email inválido"),
@@ -51,13 +53,16 @@ export const Login = () => {
 
 			// Extract user ID from JWT token
 			const userIdFromToken = extractUserIdFromToken(response.token);
+			const user = await apiClient.get<User>("usuario", {
+				headers: { Authorization: `Bearer ${response.token}` },
+			});
 
 			// Set auth with the data from login response
 			setAuth(
-				response.user || {
+				{
 					id: userIdFromToken || 0, // Use extracted ID from token
-					email: data.email,
-					nome: "",
+					email: user.email,
+					nome: user.nome,
 					ativo: true,
 					userType: response.userType,
 				},
