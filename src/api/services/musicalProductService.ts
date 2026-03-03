@@ -83,11 +83,16 @@ export class MusicalProductService {
 	public async getProductById(
 		productId: number,
 		ativo = true
-	): Promise<MusicalProductApiResponse> {
-		return this.apiClient.post("produtomusical/listar", {
-			Id: productId,
-			ativo,
-		});
+	): Promise<Array<MusicalProductApiResponse>> {
+		const response = await this.apiClient.post<MusicalProductListApiResponse>(
+			"produtomusical/listar",
+			{
+				Id: productId,
+				ativo,
+			}
+		);
+
+		return response.dados ?? [];
 	}
 
 	/**

@@ -22,16 +22,20 @@ export const PublicBandProfile = () => {
 	// Parse ID from URL parameter
 	const bandId = Number(id);
 
+	console.log(bandId);
+
 	// Fetch band data
 	const {
 		data: bandList,
 		isLoading: bandLoading,
 		error,
-	} = useMusicalProduct(bandId, bandId > 0 && !isNaN(bandId)) as {
+	} = useMusicalProduct(bandId) as {
 		data: Array<MusicalProductApiResponse> | undefined;
 		isLoading: boolean;
 		error: any;
 	};
+
+	console.log(bandList);
 
 	const band = bandList?.[0];
 
