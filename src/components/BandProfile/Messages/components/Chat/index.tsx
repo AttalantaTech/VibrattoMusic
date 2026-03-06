@@ -1,4 +1,4 @@
-import { Circle, DollarSign, MessageSquare } from "lucide-react";
+import { ArrowLeft, Circle, DollarSign, MessageSquare } from "lucide-react";
 import { useActiveMusicalProduct } from "@/hooks/useActiveMusicalProduct";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { Loading } from "@/shared/components/Loading";
@@ -6,6 +6,7 @@ import { useAuthStore } from "@/store/authStore";
 import { ChatInput } from "@/components/forms/ChatInput/ChatInput";
 import { UserImageContainer } from "../SideBar/styles";
 import {
+	ChatContainer,
 	ChatHeaderContainer,
 	ChatInputContainer,
 	ChatMessagesContainer,
@@ -31,8 +32,9 @@ export const Chat = () => {
 		setMessageInput,
 		messages,
 		messagesError,
-		isMessagesLoading,
 		selectedConversation,
+		setSelectedConversation,
+		isMessagesLoading,
 		handleSendMessage,
 		setIsProposalModalOpen,
 		setIsProfileIncompleteModalOpen,
@@ -41,7 +43,7 @@ export const Chat = () => {
 	} = messagesContext || {};
 
 	return (
-		<div className="flex-1 flex flex-col">
+		<ChatContainer isInsideConversation={!!selectedConversation}>
 			{!selectedConversation && (
 				<div className="flex-1 flex items-center justify-center bg-gray-50">
 					<div className="text-center">
@@ -58,7 +60,15 @@ export const Chat = () => {
 			{selectedConversation && (
 				<>
 					<ChatHeaderContainer>
-						<div className="flex items-center space-x-3">
+						<div className="flex items-center space-x-1 md:space-x-3">
+							{selectedConversation && (
+								<div
+									className="p-1 md:p-2 rounded-full transition-colors hover:bg-gray-200 bg-white flex md:hidden"
+									onClick={() => setSelectedConversation?.(null)}
+								>
+									<ArrowLeft />
+								</div>
+							)}
 							<div className="relative">
 								<UserImageContainer>
 									{getParticipantInitials(
@@ -73,7 +83,7 @@ export const Chat = () => {
 									<Circle className="absolute bottom-0 right-0 w-3 h-3 text-green-500 fill-current" />
 								)}
 							</div>
-							<h2 className="text-lg font-semibold text-gray-900">
+							<h2 className="text-md md:text-lg whitespace-nowrap text-ellipsis overflow-hidden font-semibold text-gray-900">
 								{[currentProductId, user?.id].includes(
 									selectedConversation.participanteId
 								)
@@ -84,7 +94,7 @@ export const Chat = () => {
 						{activeProduct && !isProfileComplete && (
 							<button
 								onClick={() => setIsProfileIncompleteModalOpen?.(true)}
-								className="flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+								className="flex items-center space-x-1 px-2 md:space-x-2 md:px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
 							>
 								<DollarSign className="w-4 h-4" />
 								<span className="text-sm font-medium">Completar Perfil</span>
@@ -94,7 +104,7 @@ export const Chat = () => {
 							<button
 								disabled={!activeProduct}
 								onClick={() => setIsProposalModalOpen?.(true)}
-								className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+								className="flex items-center space-x-1 px-2 md:space-x-2 md:px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
 							>
 								<DollarSign className="w-4 h-4" />
 								<span className="text-sm font-medium">Enviar Proposta</span>
@@ -176,6 +186,6 @@ export const Chat = () => {
 					</ChatInputContainer>
 				</>
 			)}
-		</div>
+		</ChatContainer>
 	);
 };
