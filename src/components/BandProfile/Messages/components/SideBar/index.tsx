@@ -6,6 +6,7 @@ import {
 	ConversationsListContainer,
 	ConversationTabContainer,
 	SearchBarContainer,
+	SideBarContainer,
 	SideBarHeaderContainer,
 	UserImageContainer,
 	UserInfoContainer,
@@ -26,7 +27,7 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 	} = messagesContext || {};
 
 	return (
-		<div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+		<SideBarContainer isInsideConversation={!!selectedConversation}>
 			<SideBarHeaderContainer>
 				<UserInfoContainer>
 					<UserImageContainer>
@@ -155,6 +156,6 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 					);
 				})}
 			</ConversationsListContainer>
-		</div>
+		</SideBarContainer>
 	);
 };

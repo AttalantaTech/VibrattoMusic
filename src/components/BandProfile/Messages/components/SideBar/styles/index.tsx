@@ -1,5 +1,18 @@
 import type { PropsWithChildren } from "react";
 
+export const SideBarContainer = ({
+	children,
+	isInsideConversation,
+}: PropsWithChildren & { isInsideConversation: boolean }) => {
+	return (
+		<div
+			className={`w-full md:w-80 bg-white border-r border-gray-200 flex-col ${isInsideConversation ? "hidden" : "flex"} md:flex`}
+		>
+			{children}
+		</div>
+	);
+};
+
 export const SideBarHeaderContainer = ({ children }: PropsWithChildren) => {
 	return <div className="p-4 border-b border-gray-200">{children}</div>;
 };
