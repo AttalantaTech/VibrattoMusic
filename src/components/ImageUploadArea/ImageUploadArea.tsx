@@ -1,5 +1,5 @@
 import { Camera, Loader2, Trash2, Upload } from "lucide-react";
-import type { ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 
 // Image upload component
 interface ImageUploadAreaProps {
@@ -21,10 +21,13 @@ export const ImageUploadArea = ({
 	description,
 	aspectRatio = "aspect-square",
 }: ImageUploadAreaProps) => {
+	const [imageLoaded, setImageLoaded] = useState(false);
+
 	const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
 		if (file) {
 			onFileSelect(file);
+			setImageLoaded(false);
 		}
 	};
 
@@ -40,11 +43,24 @@ export const ImageUploadArea = ({
 			>
 				{currentImage ? (
 					<div className="relative w-full h-full">
+						{/* Image Loaded  */}
+						{!imageLoaded && (
+							<div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
+								<Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+							</div>
+						)}
+
 						<img
 							src={currentImage}
 							alt={title}
-							className="w-full h-full object-cover rounded-lg"
+							onLoad={() => {
+								setImageLoaded(true);
+							}}
+							className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${
+								imageLoaded ? "opacity-100" : "opacity-0"
+							}`}
 						/>
+
 						<div className="absolute inset-0 bg-black bg-opacity-40 rounded-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
 							<div className="flex gap-2">
 								<label
