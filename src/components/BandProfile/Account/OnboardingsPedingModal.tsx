@@ -11,15 +11,10 @@ import type { Dispatch, SetStateAction } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { encryptValue } from "@/utils/encryptValue";
 import { DialogDescription } from "@radix-ui/react-dialog";
-
-export type OnboardingsPeding = {
-	id: number;
-	nome: string;
-	etapaCadastro: number;
-};
+import type { OnboardingApiResponse } from "@/api/types";
 
 interface OnboardingsPedingTableProps {
-	data: Array<OnboardingsPeding>;
+	data: Array<OnboardingApiResponse>;
 	pageSize?: number;
 }
 
@@ -38,7 +33,7 @@ const getStatusColor = (status: "Pendente" | "Concluído") => {
 	}
 };
 
-const columnHelper = createColumnHelper<OnboardingsPeding>();
+const columnHelper = createColumnHelper<OnboardingApiResponse>();
 
 export const OnboardingsPedingModal = ({
 	isOpen,
@@ -128,7 +123,7 @@ export const OnboardingsPedingModal = ({
 				</DialogHeader>
 
 				<div className="overflow-auto">
-					<GenericTable<OnboardingsPeding>
+					<GenericTable<OnboardingApiResponse>
 						columns={tableColumns}
 						data={data}
 						pageSize={pageSize}
