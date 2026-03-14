@@ -11,6 +11,7 @@ export interface StageElement {
 	color: string;
 	instrumentId?: number;
 	instrumentName?: string; // For display purposes
+	idTipoEquipamento?: number;
 	isSelected?: boolean;
 	width: number;
 	height: number;

@@ -1,5 +1,9 @@
 import type { ApiClient } from "../core/client";
-import type { FilterOption, FilterType } from "../types";
+import type {
+	FilterOption,
+	FilterOptionInstrument,
+	FilterType,
+} from "../types";
 
 export class FilterService {
 	constructor(private readonly apiClient: ApiClient) {}
@@ -9,6 +13,17 @@ export class FilterService {
 	 */
 	async getFilterOptions(filterType: FilterType): Promise<Array<FilterOption>> {
 		return this.apiClient.get<Array<FilterOption>>(`filtro/${filterType}`);
+	}
+
+	/**
+	 * Get filter options by instruments
+	 */
+	async getFilterOptionsInstruments(
+		filterType: FilterType
+	): Promise<Array<FilterOptionInstrument>> {
+		return this.apiClient.get<Array<FilterOptionInstrument>>(
+			`filtro/${filterType}`
+		);
 	}
 
 	/**
@@ -49,8 +64,8 @@ export class FilterService {
 	/**
 	 * Get instrument types
 	 */
-	async getInstruments(): Promise<Array<FilterOption>> {
-		return this.getFilterOptions("TipoInstrumento" as FilterType);
+	async getInstruments(): Promise<Array<FilterOptionInstrument>> {
+		return this.getFilterOptionsInstruments("TipoInstrumento" as FilterType);
 	}
 
 	/**
