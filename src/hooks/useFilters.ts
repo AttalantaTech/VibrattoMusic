@@ -24,6 +24,21 @@ export const useFilterOptions = (
 };
 
 /**
+ * Hook to get filter options by type
+ */
+export const useFilterOptionsInstruments = (
+	filterType: FilterType,
+	enabled: boolean = true
+) => {
+	return useQuery({
+		queryKey: filterKeys.byType(filterType),
+		queryFn: () => filterService.getFilterOptionsInstruments(filterType),
+		enabled,
+		staleTime: 10 * 60 * 1000, // 10 minutes - filters don't change often
+	});
+};
+
+/**
  * Hook to get categories
  */
 export const useCategorias = (enabled: boolean = true) => {
@@ -55,7 +70,7 @@ export const useGenerosMusicais = (enabled: boolean = true) => {
  * Hook to get instrument types
  */
 export const useInstrumentos = (enabled: boolean = true) => {
-	return useFilterOptions("TipoInstrumento", enabled);
+	return useFilterOptionsInstruments("TipoInstrumento", enabled);
 };
 
 /**
