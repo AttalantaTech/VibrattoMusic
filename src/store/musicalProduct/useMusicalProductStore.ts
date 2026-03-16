@@ -8,7 +8,7 @@ interface MusicalProductState {
 	isLoadingMusicalProduct: boolean;
 
 	setAvailableProducts: (products: Array<MusicalProduct>) => void;
-	setActiveProduct: (product: MusicalProduct) => void;
+	setActiveProduct: (product: MusicalProduct | null) => void;
 	setIsLoadingMusicalProduct: (state: boolean) => void;
 	clear: () => void;
 
@@ -24,20 +24,24 @@ export const useMusicalProductStore = create<MusicalProductState>()(
 			availableProducts: [],
 
 			setAvailableProducts: (products) => {
-				const current = get().activeProduct;
+				// const current = get().activeProduct;
 
-				let nextActive: MusicalProduct | null = null;
+				// let nextActive: MusicalProduct | null = null;
 
-				if (current) {
-					nextActive =
-						products.find((p) => p.id === current.id) ?? products[0] ?? null;
-				} else {
-					nextActive = products[0] ?? null;
-				}
+				// if (current) {
+				// 	nextActive =
+				// 		products.find((p) => p.id === current.id) ?? products[0] ?? null;
+				// } else {
+				// 	nextActive = products[0] ?? null;
+				// }
+
+				// set({
+				// 	availableProducts: products,
+				// 	activeProduct: nextActive,
+				// });
 
 				set({
 					availableProducts: products,
-					activeProduct: nextActive,
 				});
 			},
 

@@ -9,12 +9,12 @@ import {
 	Music,
 	Volume2,
 } from "lucide-react";
-import type { FilterOption } from "@/api/types";
+import type { FilterOptionInstrument } from "@/api/types";
 import type { MusicalProduct } from "@/components/BandProfileSwitcher";
 
 interface StageMapAreaProps {
 	musicalProduct: MusicalProduct | null;
-	instrumentsData: Array<FilterOption> | undefined;
+	instrumentsData: Array<FilterOptionInstrument> | undefined;
 }
 
 function getInstrumentIcon(instrumentName: string) {
@@ -36,7 +36,7 @@ function getInstrumentIcon(instrumentName: string) {
 
 function convertStageMapDataToElements(
 	stageMapData: Array<StageMapData>,
-	instrumentsData: Array<FilterOption>
+	instrumentsData: Array<FilterOptionInstrument>
 ): Array<StageElement> {
 	return stageMapData
 		.map((item, index) => {
@@ -53,9 +53,16 @@ function convertStageMapDataToElements(
 				x: item.posicaoX,
 				y: item.posicaoY,
 				icon: getInstrumentIcon(instrument.Nome),
-				category: "instrument" as const,
-				color: STAGE_COLORS.instrument,
+				category:
+					instrument.IdTipoEquipamento === 1
+						? ("instrument" as const)
+						: ("infrastructure" as const),
+				color:
+					instrument.IdTipoEquipamento === 1
+						? STAGE_COLORS.instrument
+						: STAGE_COLORS.infrastructure,
 				instrumentId: item.idInstrumento,
+				idTipoEquipamento: instrument.IdTipoEquipamento,
 				width: 80,
 				height: 80,
 			};
@@ -137,7 +144,7 @@ export const StageMapArea = ({
 							<div
 								role="button"
 								key={element.id}
-								className={`absolute rounded-lg flex flex-col items-center justify-center transition-all duration-200`}
+								className={`absolute rounded-lg flex flex-col items-center justify-center transition-all duration-200 cursor-default`}
 								style={{
 									left: element.x,
 									top: element.y,
@@ -149,7 +156,7 @@ export const StageMapArea = ({
 								}}
 							>
 								<div style={{ color: element.color }}>{element.icon}</div>
-								<span className="text-xs font-medium text-gray-700 mt-1">
+								<span className="text-xs text-center font-medium text-gray-700 mt-1">
 									{element.name}
 								</span>
 							</div>

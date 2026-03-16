@@ -182,9 +182,7 @@ const socialNetworkCatalog: Array<SocialNetwork> = [
 ];
 
 export default function MediaStep() {
-	const [loading, setLoading] = useState(false);
 	const navigate = useNavigate();
-
 	const { updateData, markStepComplete } = useOnboarding();
 
 	const { data: socialNetworksData } = useSocialNetworks(true);
@@ -224,6 +222,8 @@ export default function MediaStep() {
 		};
 	}, [onboardingData]);
 
+	const [loading, setLoading] = useState(false);
+	const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
 	// State for Step3-style UI
 	const [currentMediaTab, setCurrentMediaTab] = useState<string>("youtube");
 	const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -262,6 +262,13 @@ export default function MediaStep() {
 		control,
 		name: "redeSocial",
 	});
+
+	const handleImageLoad = (link: string) => {
+		setLoadedImages((previous) => ({
+			...previous,
+			[link]: true,
+		}));
+	};
 
 	// Handle image upload using Azure Blob Storage
 	const handleImageUpload = async (file: File, type: FileEventType) => {
@@ -762,11 +769,27 @@ export default function MediaStep() {
 												key={index}
 												className="relative aspect-square rounded-lg overflow-hidden border border-gray-200"
 											>
-												<img
-													src={img.link}
-													alt={`Imagem ${index + 1}`}
-													className="w-full h-full object-cover"
-												/>
+												<div className="relative w-full h-full">
+													{!loadedImages[img.link] && (
+														<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+															<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+														</div>
+													)}
+
+													<img
+														src={img.link}
+														alt={`Imagem ${index + 1}`}
+														onLoad={() => {
+															handleImageLoad(img.link);
+														}}
+														className={`w-full h-full object-cover transition-opacity duration-300 ${
+															loadedImages[img.link]
+																? "opacity-100"
+																: "opacity-0"
+														}`}
+													/>
+												</div>
+
 												<button
 													type="button"
 													onClick={async () => {

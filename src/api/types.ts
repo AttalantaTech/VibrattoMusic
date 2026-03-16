@@ -51,6 +51,13 @@ export interface FilterOption {
 	descricao?: string;
 }
 
+export interface FilterOptionInstrument {
+	Id: number;
+	Nome: string;
+	IdTipoEquipamento: number;
+	NomeTipoEquipamento: string;
+}
+
 export type FilterType =
 	| "TipoFiltro"
 	| "Categoria"

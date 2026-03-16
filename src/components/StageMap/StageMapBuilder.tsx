@@ -14,7 +14,6 @@ import {
 	MicVocal,
 	Volume2,
 	KeyboardMusic,
-	Zap,
 	Undo,
 	Redo,
 	ZoomIn,
@@ -36,6 +35,7 @@ import {
 } from "./types";
 
 import { useInstrumentos } from "@/hooks/useFilters";
+import { TabNavigation } from "../ui/TabNavigation/TabNavigation";
 
 // Custom hooks
 const useStageHistory = (
@@ -164,6 +164,14 @@ export function StageMapBuilder({
 	const [zoom, setZoom] = useState(1);
 	const [showGrid, setShowGrid] = useState(true);
 	const [instrumentSearch, setInstrumentSearch] = useState("");
+	const [infrastructureSearch, setInfrastructureSearch] = useState("");
+	const [activeTab, setActiveTab] = useState<string>("instrument");
+
+	// Secondary tabs for gallery
+	const secondaryTabs = [
+		{ label: "Instrumentos", value: "instrument" },
+		{ label: "Infraestrutura de Palco", value: "infrastructure" },
+	];
 
 	const stageRef = useRef<HTMLDivElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -215,10 +223,17 @@ export function StageMapBuilder({
 			x: 0,
 			y: 0,
 			icon: getInstrumentIcon(instrument.Nome),
-			category: "instrument" as const,
-			color: STAGE_COLORS.instrument,
+			category:
+				instrument.IdTipoEquipamento === 1
+					? ("instrument" as const)
+					: ("infrastructure" as const),
+			color:
+				instrument.IdTipoEquipamento === 1
+					? STAGE_COLORS.instrument
+					: STAGE_COLORS.infrastructure,
 			instrumentId: instrument.Id,
 			instrumentName: instrument.Nome,
+			idTipoEquipamento: instrument.IdTipoEquipamento,
 			width: 80,
 			height: 80,
 		}));
@@ -226,13 +241,22 @@ export function StageMapBuilder({
 
 	// Filtered instruments based on search
 	const filteredInstrumentElements = useMemo(() => {
-		if (!instrumentSearch.trim()) {
+		if (activeTab === "instrument") {
+			if (!instrumentSearch.trim()) {
+				return instrumentElements;
+			}
+			return instrumentElements.filter((instrument) =>
+				instrument.name.toLowerCase().includes(instrumentSearch.toLowerCase())
+			);
+		}
+
+		if (!infrastructureSearch.trim()) {
 			return instrumentElements;
 		}
 		return instrumentElements.filter((instrument) =>
-			instrument.name.toLowerCase().includes(instrumentSearch.toLowerCase())
+			instrument.name.toLowerCase().includes(infrastructureSearch.toLowerCase())
 		);
-	}, [instrumentElements, instrumentSearch]);
+	}, [instrumentElements, instrumentSearch, infrastructureSearch, activeTab]);
 
 	// Keyboard shortcuts
 	useEffect(() => {
@@ -379,6 +403,137 @@ export function StageMapBuilder({
 
 	if (!isOpen) return null;
 
+	const renderTabContent = () => {
+		switch (activeTab) {
+			case "infrastructure":
+				return (
+					<>
+						<div className="p-6">
+							{/* Tabs */}
+							<div className="mb-6">
+								<p className="text-sm text-gray-600 mb-4">
+									Arraste o opção desejada para o local ideal no palco
+								</p>
+							</div>
+
+							{/* Search */}
+							<div className="relative mb-6">
+								<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+								<input
+									type="text"
+									placeholder="Buscar itens de palco..."
+									value={infrastructureSearch}
+									onChange={(event) => {
+										setInfrastructureSearch(event.target.value);
+									}}
+									className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+								/>
+							</div>
+
+							{/* Infrastructure */}
+							<div className="mb-6">
+								<div className="grid grid-cols-3 gap-3">
+									{loadingInstruments ? (
+										<div className="col-span-3 text-center py-4">
+											<div className="animate-spin rounded-full h-8 w-8 border-b-2  border-green-600 mx-auto"></div>
+										</div>
+									) : filteredInstrumentElements.length > 0 ? (
+										filteredInstrumentElements
+											.filter((element) => element.idTipoEquipamento === 2)
+											.map((element) => (
+												<button
+													key={element.id}
+													draggable
+													onDragStart={() => {
+														handleDragStart(element);
+													}}
+													className="p-3 bg-white hover:bg-green-50 border border-gray-200 hover:border-green-300 rounded-lg cursor-grab transition-all duration-200 flex flex-col items-center gap-2"
+												>
+													<div style={{ color: element.color }}>
+														{element.icon}
+													</div>
+													<span className="text-xs text-gray-600 text-center leading-tight">
+														{element.name}
+													</span>
+												</button>
+											))
+									) : (
+										<div className="col-span-3 text-center py-4 text-gray-500 text-sm">
+											Nenhum instrumento encontrado
+										</div>
+									)}
+								</div>
+							</div>
+						</div>
+					</>
+				);
+
+			default:
+				return (
+					<>
+						<div className="p-6">
+							{/* Tabs */}
+							<div className="mb-6">
+								<p className="text-sm text-gray-600 mb-4">
+									Arraste o instrumento desejado para o local ideal no palco
+								</p>
+							</div>
+
+							{/* Search */}
+							<div className="relative mb-6">
+								<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+								<input
+									type="text"
+									placeholder="Buscar instrumentos..."
+									value={instrumentSearch}
+									onChange={(event) => {
+										setInstrumentSearch(event.target.value);
+									}}
+									className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+								/>
+							</div>
+
+							{/* Instruments */}
+							<div className="mb-6">
+								<div className="grid grid-cols-3 gap-3">
+									{loadingInstruments ? (
+										<div className="col-span-3 text-center py-4">
+											<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+										</div>
+									) : filteredInstrumentElements.length > 0 ? (
+										filteredInstrumentElements
+											.filter((element) => element.idTipoEquipamento === 1)
+											.map((element) => (
+												<button
+													key={element.id}
+													draggable
+													onDragStart={() => {
+														handleDragStart(element);
+													}}
+													className="p-3 bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg cursor-grab transition-all duration-200 flex flex-col items-center gap-2"
+												>
+													<div style={{ color: element.color }}>
+														{element.icon}
+													</div>
+													<span className="text-xs text-gray-600 text-center leading-tight">
+														{element.name}
+													</span>
+												</button>
+											))
+									) : (
+										<div className="col-span-3 text-center py-4 text-gray-500 text-sm">
+											Nenhum instrumento encontrado
+										</div>
+									)}
+								</div>
+							</div>
+						</div>
+						);
+					</>
+				);
+		}
+	};
+
 	return (
 		<div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
 			{/* Main Container */}
@@ -415,114 +570,16 @@ export function StageMapBuilder({
 				<div className="flex flex-1 overflow-hidden">
 					{/* Left Sidebar */}
 					<div className="w-96 bg-gray-50 border-r border-gray-200 flex flex-col overflow-y-auto">
-						<div className="p-6">
-							{/* Tabs */}
-							<div className="mb-6">
-								<h3 className="text-lg font-semibold text-gray-800 mb-4">
-									Elementos do Palco
-								</h3>
-								<p className="text-sm text-gray-600 mb-4">
-									Arraste os elementos para organizar seu palco
-								</p>
-							</div>
-
-							{/* Search */}
-							<div className="relative mb-6">
-								<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-								<input
-									type="text"
-									placeholder="Buscar instrumentos..."
-									value={instrumentSearch}
-									onChange={(event) => {
-										setInstrumentSearch(event.target.value);
-									}}
-									className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-								/>
-							</div>
-
-							{/* Instrumentos */}
-							<div className="mb-6">
-								<h3 className="text-sm font-medium text-gray-700 mb-3">
-									Instrumentos
-								</h3>
-								<div className="grid grid-cols-3 gap-3">
-									{loadingInstruments ? (
-										<div className="col-span-3 text-center py-4">
-											<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-										</div>
-									) : filteredInstrumentElements.length > 0 ? (
-										filteredInstrumentElements.map((element) => (
-											<button
-												key={element.id}
-												draggable
-												onDragStart={() => {
-													handleDragStart(element);
-												}}
-												className="p-3 bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg cursor-grab transition-all duration-200 flex flex-col items-center gap-2"
-											>
-												<div style={{ color: element.color }}>
-													{element.icon}
-												</div>
-												<span className="text-xs text-gray-600 text-center leading-tight">
-													{element.name}
-												</span>
-											</button>
-										))
-									) : (
-										<div className="col-span-3 text-center py-4 text-gray-500 text-sm">
-											Nenhum instrumento encontrado
-										</div>
-									)}
-								</div>
-							</div>
-
-							{/* Infraestrutura */}
-							<div className="mb-6">
-								<h3 className="text-sm font-medium text-gray-700 mb-3">
-									Infraestrutura
-								</h3>
-								<div className="grid grid-cols-2 gap-2">
-									<button
-										draggable
-										onDragStart={() => {
-											handleDragStart({
-												id: "power-ac-120",
-												name: "AC 120V",
-												x: 0,
-												y: 0,
-												icon: <Zap size={24} />,
-												category: "infrastructure",
-												color: STAGE_COLORS.infrastructure,
-												width: 60,
-												height: 60,
-											});
-										}}
-										className="px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
-									>
-										AC 120V
-									</button>
-									<button
-										draggable
-										onDragStart={() => {
-											handleDragStart({
-												id: "power-ac-240",
-												name: "AC 240V",
-												x: 0,
-												y: 0,
-												icon: <Zap size={24} />,
-												category: "infrastructure",
-												color: STAGE_COLORS.infrastructure,
-												width: 60,
-												height: 60,
-											});
-										}}
-										className="px-3 py-2 text-xs font-semibold bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
-									>
-										AC 240V
-									</button>
-								</div>
-							</div>
+						<div>
+							<TabNavigation
+								currentTab={activeTab}
+								tabs={secondaryTabs}
+								variant="underline"
+								onChange={setActiveTab}
+							/>
 						</div>
+
+						{renderTabContent()}
 					</div>
 
 					{/* Center - Stage Area */}
@@ -576,7 +633,7 @@ export function StageMapBuilder({
 											key={element.id}
 											className={`absolute rounded-lg flex flex-col items-center justify-center transition-all duration-200 ${
 												isSelected
-													? "ring-2 ring-blue-500 shadow-xl scale-105 z-10"
+													? `ring-2 ${element.idTipoEquipamento === 1 ? "ring-blue-500" : "ring-green-600"} shadow-xl scale-105 z-10`
 													: "hover:shadow-lg hover:scale-102 shadow-md"
 											}`}
 											style={{
@@ -643,7 +700,7 @@ export function StageMapBuilder({
 											}}
 										>
 											<div style={{ color: element.color }}>{element.icon}</div>
-											<span className="text-xs font-medium text-gray-700 mt-1">
+											<span className="text-xs text-center font-medium text-gray-700 mt-1">
 												{element.name}
 											</span>
 
@@ -652,7 +709,7 @@ export function StageMapBuilder({
 												onClick={() => {
 													deleteElement(element.id);
 												}}
-												className="absolute top-0 right-0 text-blue-500 hover:text-blue-700 rounded-full p-1 transition-colors"
+												className={`absolute top-0 right-0 ${element.idTipoEquipamento === 1 ? "text-blue-500 hover:text-blue-700" : "text-green-600 hover:text-green-700"}  rounded-full p-1 transition-colors`}
 											>
 												<X className="w-5 h-5" />
 											</button>
@@ -764,7 +821,7 @@ export function StageMapBuilder({
 										<span className="text-lg font-bold text-blue-600">
 											{
 												elements.filter(
-													(element) => element.category === "instrument"
+													(element) => element.idTipoEquipamento === 1
 												).length
 											}
 										</span>
@@ -776,7 +833,7 @@ export function StageMapBuilder({
 										<span className="text-lg font-bold text-green-600">
 											{
 												elements.filter(
-													(element) => element.category === "infrastructure"
+													(element) => element.idTipoEquipamento === 2
 												).length
 											}
 										</span>

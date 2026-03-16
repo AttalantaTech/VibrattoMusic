@@ -22,8 +22,6 @@ export const PublicBandProfile = () => {
 	// Parse ID from URL parameter
 	const bandId = Number(id);
 
-	console.log(bandId);
-
 	// Fetch band data
 	const {
 		data: bandList,
@@ -34,8 +32,6 @@ export const PublicBandProfile = () => {
 		isLoading: boolean;
 		error: any;
 	};
-
-	console.log(bandList);
 
 	const band = bandList?.[0];
 
@@ -71,7 +67,7 @@ export const PublicBandProfile = () => {
 		return (
 			<MainLayout>
 				<div className="flex items-center justify-center min-h-screen">
-					<div className="text-center">
+					<div className="flex flex-col text-center">
 						<h2 className="text-2xl font-bold text-gray-900 mb-2">
 							Dados não encontrados
 						</h2>

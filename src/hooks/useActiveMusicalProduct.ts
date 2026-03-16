@@ -81,7 +81,7 @@ export const useActiveMusicalProduct = () => {
 
 	/** actions */
 	const changeActiveProduct = useCallback(
-		(product: ActiveMusicalProduct) => {
+		(product: ActiveMusicalProduct | null) => {
 			if (!isValidProduct(product)) return;
 
 			setActiveProduct(product);

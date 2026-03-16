@@ -4,13 +4,15 @@ import { ChevronDown, Check } from "lucide-react";
 import { Avatar } from "../Avatar/Avatar";
 import { cn } from "../../lib/utils/cn";
 import type { ActiveMusicalProduct } from "@/hooks/useActiveMusicalProduct";
+import { useUser } from "@/hooks/useUser";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 
 export type MusicalProduct = ActiveMusicalProduct;
 
 export interface BandProfileSwitcherProps {
-	activeMusicalProduct: MusicalProduct;
+	activeMusicalProduct: MusicalProduct | null;
 	musicalProducts: Array<MusicalProduct>;
-	onProductChange: (product: MusicalProduct) => void;
+	onProductChange: (product: MusicalProduct | null) => void;
 	className?: string;
 }
 
@@ -20,6 +22,10 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 	onProductChange,
 	className,
 }) => {
+	const navigate = useNavigate();
+	const location = useLocation();
+	const { data: userData } = useUser();
+
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -39,9 +45,23 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 		};
 	}, []);
 
-	const handleProductSelect = (product: MusicalProduct) => {
+	const handleProductSelect = (product: MusicalProduct | null) => {
 		onProductChange(product);
 		setIsOpen(false);
+
+		if (location.pathname === "/band/me") {
+			if (!product) {
+				void navigate({
+					to: "/band/me",
+					search: { tab: "messages" },
+				});
+			} else {
+				void navigate({
+					to: "/band/me",
+					search: { tab: "account" },
+				});
+			}
+		}
 	};
 
 	const handleTriggerClick = () => {
@@ -55,13 +75,13 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 				className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
 			>
 				<Avatar
-					src={activeMusicalProduct.fotoPerfil ?? ""}
-					alt={activeMusicalProduct.nome}
+					src={activeMusicalProduct?.fotoPerfil ?? ""}
+					alt={activeMusicalProduct?.nome ?? userData?.nome ?? ""}
 					size={32}
 				/>
 				<div className="flex flex-col">
 					<span className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
-						{activeMusicalProduct.nome}
+						{activeMusicalProduct?.nome ?? userData?.nome ?? ""}
 					</span>
 				</div>
 				<ChevronDown
@@ -75,7 +95,28 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 			{isOpen && (
 				<div className="absolute z-50 left-0 mt-1 w-64 overflow-hidden rounded-md border bg-white shadow-md">
 					<div className="w-64 py-1">
-						{/* Seção de Perfis/Bandas */}
+						<div className="px-3 py-2">
+							<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+								Perfil Pessoal
+							</p>
+						</div>
+
+						<button
+							onClick={() => {
+								handleProductSelect(null);
+							}}
+							className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors"
+						>
+							<Avatar src={""} alt={userData?.nome ?? ""} size={24} />
+							<span className="text-sm text-gray-700 truncate">
+								{userData?.nome ?? "Usuário"}
+							</span>
+							{!activeMusicalProduct && (
+								<Check className="h-4 w-4 text-blue-600 ml-auto" />
+							)}
+						</button>
+
+						{/* Section Musical Products */}
 						<div className="px-3 py-2">
 							<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
 								Produtos Musicais
@@ -98,7 +139,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 								<span className="text-sm text-gray-700 truncate">
 									{product.nome}
 								</span>
-								{product.id === activeMusicalProduct.id && (
+								{product.id === activeMusicalProduct?.id && (
 									<Check className="h-4 w-4 text-blue-600 ml-auto" />
 								)}
 							</button>

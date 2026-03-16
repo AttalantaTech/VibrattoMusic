@@ -190,13 +190,13 @@ export const BandProfile = ({
 	if (!musicalProduct?.id) {
 		return (
 			<MainLayout>
-				<div className="flex items-center justify-center min-h-screen">
-					<div className="text-center">
+				<div className="flex items-center justify-center min-h-40">
+					<div className="flex flex-col text-center">
 						<h2 className="text-2xl font-bold text-gray-900 mb-2">
 							Dados não encontrados
 						</h2>
 						<p className="text-gray-600 mb-4">
-							Os dados da banda que você está procurando não foram encontrados.
+							Dados de Produto Musical não encontrados.
 						</p>
 						<Button onClick={() => navigate({ to: "/" })}>
 							Voltar para a página inicial
@@ -230,7 +230,7 @@ export const BandProfile = ({
 									<div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 w-full">
 										<div className="flex flex-col items-center sm:items-start gap-2 w-full">
 											<h2 className="text-gray-500 text-xs uppercase tracking-wide font-medium">
-												Nome da Banda
+												{musicalProduct.categoria.nome ?? ""}
 											</h2>
 											<div className="flex items-center gap-3">
 												<h1 className="text-gray-900 font-bold text-xl sm:text-2xl">
@@ -339,7 +339,7 @@ export const BandProfile = ({
 						{/* Band Description */}
 						{musicalProduct.descricao && (
 							<section className={styles.section}>
-								<h2 className={styles.subtitle}>Sobre a banda</h2>
+								<h2 className={styles.subtitle}>BIO</h2>
 								<p className="text-sm lg:text-lg text-gray-800 text-justify">
 									{musicalProduct.descricao}
 								</p>
@@ -611,9 +611,7 @@ export const BandProfile = ({
 								onClick={handleRequestQuote}
 								disabled={startConversationMutation.isPending}
 							>
-								{startConversationMutation.isPending
-									? "Carregando..."
-									: "Solicitar Orçamento"}
+								{startConversationMutation.isPending ? "Carregando..." : "Chat"}
 							</IconButton>
 							<IconButton
 								icon={<Heart size={20} />}

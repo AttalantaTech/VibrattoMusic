@@ -29,7 +29,7 @@ import { TooltipCustom } from "@/components/ui/TooltipCustom/TooltipCustom";
 import { SimpleEditor } from "@/components/forms/SimpleEditor/SimpleEditor";
 import { FileCard } from "@/components/cards/FileCard/FileCard";
 import { ToggleSwitch } from "@/components/forms/ToggleSwitch/ToggleSwitch";
-import type { FileEventType, FilterOption } from "@/api/types";
+import type { FileEventType, FilterOptionInstrument } from "@/api/types";
 import { useInstrumentos } from "@/hooks/useFilters";
 import { toast } from "sonner";
 import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
@@ -65,7 +65,7 @@ function getInstrumentIcon(instrumentName: string) {
 // Helper function to convert saved StageMapData back to StageElement format
 function convertStageMapDataToElements(
 	stageMapData: Array<StageMapData>,
-	instrumentsData: Array<FilterOption>
+	instrumentsData: Array<FilterOptionInstrument>
 ): Array<StageElement> {
 	return stageMapData
 		.map((item, index) => {
@@ -82,8 +82,15 @@ function convertStageMapDataToElements(
 				x: item.posicaoX,
 				y: item.posicaoY,
 				icon: getInstrumentIcon(instrument.Nome),
-				category: "instrument" as const,
-				color: STAGE_COLORS.instrument,
+				category:
+					instrument.IdTipoEquipamento === 1
+						? ("instrument" as const)
+						: ("infrastructure" as const),
+				color:
+					instrument.IdTipoEquipamento === 1
+						? STAGE_COLORS.instrument
+						: STAGE_COLORS.infrastructure,
+				idTipoEquipamento: instrument.IdTipoEquipamento,
 				instrumentId: item.idInstrumento,
 				width: 80,
 				height: 80,

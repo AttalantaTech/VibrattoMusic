@@ -1,4 +1,12 @@
-import { HelpCircle, Search, LogOut, User, UserPlus } from "lucide-react";
+import {
+	HelpCircle,
+	Search,
+	LogOut,
+	User,
+	Music,
+	Music2Icon,
+	Plus,
+} from "lucide-react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Button } from "../../ui/Button/Button";
 import { VibrattoLogo } from "../../VibrattoLogo/VibrattoLogo";
@@ -37,10 +45,9 @@ export const Header = () => {
 		!isOnboardingPage && !location.pathname.includes("/search");
 
 	useEffect(() => {
-		if (!musicalProducts?.dados.length) return;
-
-		const musicalProduct = musicalProducts.dados.find((item) => item);
-		if (musicalProduct) setActiveProduct(musicalProduct);
+		// if (!musicalProducts?.dados.length) return;
+		// const musicalProduct = musicalProducts.dados.find((item) => item);
+		// if (musicalProduct) setActiveProduct(musicalProduct);
 	}, [musicalProducts, setActiveProduct]);
 
 	useEffect(() => {
@@ -61,16 +68,21 @@ export const Header = () => {
 
 	const handleLogout = async () => {
 		logout();
-		await navigate({ to: "/login" });
+		await navigate({ to: "/" });
 	};
 
 	const handleProfile = async () => {
 		setShowDropdown(false);
 
-		if (musicalProducts && musicalProducts.dados.length > 0) {
+		if (activeProduct) {
 			await navigate({
 				to: "/band/me",
 				search: { tab: "account" },
+			});
+		} else if (musicalProducts && musicalProducts.dados.length > 0) {
+			await navigate({
+				to: "/band/me",
+				search: { tab: "messages" },
 			});
 		} else if (onboardingData?.etapaCadastro) {
 			const etapaCadastro =
@@ -99,7 +111,7 @@ export const Header = () => {
 				{/* Actions */}
 				<div className="flex flex-row items-center gap-2 sm:gap-3 flex-shrink-0">
 					{/* Band Profile Switcher - For musicians with at least one product */}
-					{isAuthenticated && availableProducts.length > 0 && activeProduct && (
+					{isAuthenticated && (
 						<BandProfileSwitcher
 							activeMusicalProduct={activeProduct}
 							musicalProducts={availableProducts}
@@ -132,7 +144,11 @@ export const Header = () => {
 									setShowDropdown(!showDropdown);
 								}}
 							>
-								<User className="w-5 h-5 text-gray-600" />
+								{activeProduct?.id ? (
+									<Music className="w-5 h-5 text-gray-600" />
+								) : (
+									<User className="w-5 h-5 text-gray-600" />
+								)}
 							</Button>
 
 							{showDropdown && (
@@ -141,7 +157,11 @@ export const Header = () => {
 										onClick={handleProfile}
 										className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
 									>
-										<User className="w-4 h-4" />
+										{activeProduct?.id ? (
+											<Music className="w-4 h-4" />
+										) : (
+											<User className="w-4 h-4" />
+										)}
 										<span>Meu Perfil</span>
 									</button>
 									<button
@@ -155,7 +175,21 @@ export const Header = () => {
 										}}
 										className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
 									>
-										<UserPlus className="w-4 h-4" />
+										<div className="flex relative">
+											<Music2Icon className="w-4 h-4" />
+											{/* <span
+												className="absolute -top-1.5 pb-0.5 -right-1 flex items-center justify-center
+        w-3 h-3 text-[9px] font-bold bg-black text-white rounded-full border border-white"
+											>
+												+
+											</span> */}
+											<span
+												className="absolute top-1 -right-1 flex items-center justify-center
+        w-3 h-3 font-bold text-black rounded-full"
+											>
+												<Plus strokeWidth={3} className="w-2 h-3" />
+											</span>
+										</div>
 										<span>Criar Novo Perfil</span>
 									</button>
 									{/* Help link */}

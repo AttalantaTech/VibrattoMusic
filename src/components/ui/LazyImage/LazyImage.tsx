@@ -3,8 +3,10 @@ import { useState, useRef, useEffect } from "react";
 import { ImageIcon } from "lucide-react";
 import { cn } from "../../../lib/utils/cn";
 
-export interface LazyImageProps
-	extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> {
+export interface LazyImageProps extends Omit<
+	React.ImgHTMLAttributes<HTMLImageElement>,
+	"src"
+> {
 	src?: string | null;
 	alt: string;
 	aspectRatio?: "square" | "video" | "portrait" | "landscape" | "auto";
@@ -25,16 +27,16 @@ export const LazyImage: React.FC<LazyImageProps> = ({
 	const imgRef = useRef<HTMLImageElement>(null);
 
 	// Check if src is valid (not null, undefined, or empty)
-	const hasValidSrc = src != null && typeof src === 'string' && src.trim() !== "";
-	const shouldShowImage = hasValidSrc && !error;
+	const hasValidSource =
+		src != null && typeof src === "string" && src.trim() !== "";
+	const shouldShowImage = hasValidSource && !error;
 
 	// Show fallback when no valid image source - more robust detection
-	const showFallback = !hasValidSrc;
-
+	const showFallback = !hasValidSource;
 
 	useEffect(() => {
 		// Only set up intersection observer if we have a valid image source
-		if (!hasValidSrc) {
+		if (!hasValidSource) {
 			return;
 		}
 
@@ -59,7 +61,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
 		return () => {
 			observer.disconnect();
 		};
-	}, [hasValidSrc]);
+	}, [hasValidSource]);
 
 	const aspectRatioClasses = {
 		square: "aspect-square",
@@ -92,11 +94,11 @@ export const LazyImage: React.FC<LazyImageProps> = ({
 
 	// Simple debug version
 	if (showFallback) {
-	return (
-		<div className={cn(containerClasses, "items-center justify-center")}>
-			<FallbackImage />
-		</div>
-	);
+		return (
+			<div className={cn(containerClasses, "items-center justify-center")}>
+				<FallbackImage />
+			</div>
+		);
 	}
 
 	return (
