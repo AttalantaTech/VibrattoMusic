@@ -24,7 +24,7 @@ const registerSchema = z
 	.object({
 		email: z.string().email("Email inválido"),
 		nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-		documento: z.string().min(1, "Documento é obrigatório"),
+		cpfOuCnpj: z.string().min(1, "Documento é obrigatório"),
 		cep: z
 			.string()
 			.min(8, "CEP deve ter no mínimo 6 dígitos")
@@ -44,12 +44,12 @@ const registerSchema = z
 	})
 	.refine(
 		(data) => {
-			const digitsOnly = data.documento.replace(/\D/g, "");
+			const digitsOnly = data.cpfOuCnpj.replace(/\D/g, "");
 			return digitsOnly.length === 11 || digitsOnly.length === 14;
 		},
 		{
 			message: "Documento deve ter 11 (CPF) ou 14 (CNPJ) dígitos",
-			path: ["documento"],
+			path: ["cpfOuCnpj"],
 		}
 	);
 
@@ -117,13 +117,14 @@ export const Register = () => {
 	const onSubmit = async (data: RegisterFormData) => {
 		try {
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const { confirmarSenha, documento, ...registerData } = data;
+			const { confirmarSenha, cpfOuCnpj, ...registerData } = data;
 
 			// Map document according to selected type and remove formatting from CEP
 			const finalRegisterData = {
 				...registerData,
 				cep: registerData.cep?.replace(/\D/g, "") || "", // Remove non-numeric characters from CEP
-				...(tipoDocumento === "cpf" ? { cpf: documento } : { cnpj: documento }),
+				cpfOuCnpj: cpfOuCnpj.replace(/\D/g, "") || "",
+				// ...(tipoDocumento === "cpf" ? { cpf: cpfOuCnpj } : { cnpj: cpfOuCnpj }),
 			};
 
 			// Don't include userType yet - it will be selected after registration
@@ -289,7 +290,7 @@ export const Register = () => {
 									</div>
 									<div className="col-span-3">
 										<Controller
-											name="documento"
+											name="cpfOuCnpj"
 											control={control}
 											render={({ field }) => (
 												<InputField
@@ -304,9 +305,9 @@ export const Register = () => {
 												/>
 											)}
 										/>
-										{errors.documento && (
+										{errors.cpfOuCnpj && (
 											<p className="text-red-600 text-sm mt-1">
-												{errors.documento.message}
+												{errors.cpfOuCnpj.message}
 											</p>
 										)}
 									</div>
