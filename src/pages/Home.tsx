@@ -305,16 +305,16 @@ export const Home = (): FunctionComponent => {
 
 								<div
 									style={{
-										background: `linear-gradient(90deg, rgba(19, 93, 173, 0.5) 0%, rgba(3, 40, 80, 0.5) 100%)`,
+										background: `rgba(0, 0, 0, 0.25)`,
 									}}
 									className="absolute inset-0 overflow-hidden"
 								/>
 
 								{!userData && (
-									<Link to="/welcome">
+									<Link to="/welcome" className="w-full">
 										<Button
 											variant="secondary"
-											className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-gray-300 text-gray-700 rounded-sm px-10"
+											className="absolute top-1/2 left-1/2 w-[80%] md:w-[50%] lg:w-[30%] h-[60px] bg-white -translate-x-1/2 -translate-y-1/2 border-gray-300 text-gray-700"
 										>
 											Cadastre-se
 										</Button>
