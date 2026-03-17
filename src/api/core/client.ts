@@ -31,8 +31,7 @@ interface CacheHitError extends Error {
 }
 
 // Try production URL first, fallback to localhost if needed
-const PRODUCTION_URL =
-	"https://apivibratto-api-ctdqdacrascbhzcz.brazilsouth-01.azurewebsites.net/api/";
+const PRODUCTION_URL = import.meta.env["VITE_VIBRATTO_API_BASE_URL"] as string;
 const LOCALHOST_URL = "http://localhost:3001/api/";
 // Allow opting in to localhost fallback explicitly via env; default is disabled
 const ENABLE_LOCALHOST_FALLBACK =
