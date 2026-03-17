@@ -8,7 +8,6 @@ import {
 	Guitar,
 	Loader2,
 	MapIcon,
-	Settings,
 	Drum,
 	MicVocal,
 	Volume2,
@@ -121,15 +120,18 @@ const technicalSchema = z.object({
 		.optional()
 		.transform((value) => (value && value.trim() !== "" ? value : null))
 		.nullable(),
-	mapaPalco: z
-		.array(
-			z.object({
-				idInstrumento: z.number(),
-				posicaoX: z.number(),
-				posicaoY: z.number(),
-			})
-		)
-		.optional(),
+	mapaPalco: z.array(
+		z.object({
+			idInstrumento: z.number(),
+			posicaoX: z.number(),
+			posicaoY: z.number(),
+		})
+	),
+	mapaPalcoLink: z
+		.string()
+		.optional()
+		.transform((value) => (value && value.trim() !== "" ? value : null))
+		.nullable(),
 });
 
 const riderTabs = [
@@ -148,6 +150,19 @@ const riderTabs = [
 const camarimTabs = [
 	{
 		label: "Digitar Camarim",
+		value: "digital",
+		icon: null,
+	},
+	{
+		label: "Fazer upload de arquivo",
+		value: "upload",
+		icon: null,
+	},
+];
+
+const stageMapTabs = [
+	{
+		label: "Criar manualmente",
 		value: "digital",
 		icon: null,
 	},
@@ -189,6 +204,10 @@ export default function TechnicalSection({
 		null
 	);
 
+	const [stageMapTab, setStageMapTab] = useState("upload");
+	const [stageMapFile, setStageMapFile] = useState<File | null>(null);
+	const [stageMapUrl, setStageMapUrl] = useState<string | null>(null);
+
 	// const [infraCamarim, setInfraCamarim] = useState("");
 	const [stageMapData, setStageMapData] = useState<Array<StageMapData>>([]);
 
@@ -201,6 +220,7 @@ export default function TechnicalSection({
 			infraCamarimTexto: activeProduct?.infraCamarimTexto ?? null,
 			camarimIncluso: activeProduct?.camarimIncluso ?? false,
 			mapaPalco: activeProduct?.mapaPalco ?? [],
+			mapaPalcoLink: activeProduct?.mapaPalcoLink ?? null,
 		};
 	}, [activeProduct]);
 
@@ -225,6 +245,10 @@ export default function TechnicalSection({
 		setDressingRoomTab(
 			initialTechinicalData.infraCamarimTexto ? "digital" : "upload"
 		);
+		setStageMapUrl(initialTechinicalData.mapaPalcoLink);
+		setStageMapTab(
+			initialTechinicalData.mapaPalco?.length > 0 ? "digital" : "upload"
+		);
 	}, [reset, initialTechinicalData]);
 
 	const handleRiderFileUpload = (file: File | null) => {
@@ -245,13 +269,24 @@ export default function TechnicalSection({
 		}
 	};
 
+	const handleStageMapFileUpload = (file: File | null) => {
+		setStageMapFile(file);
+
+		// Reset the uploaded URL when a new file is selected
+		if (file) {
+			setStageMapUrl(null);
+		}
+	};
+
 	const removeFile = async (eventType: FileEventType) => {
 		try {
 			// It only makes a request to remove an image from Azure if it exists there.
 			if (
 				(eventType === "ProdutoMusicalRider" && activeProduct?.rider) ||
 				(eventType === "ProdutoMusicalInfraCamarim" &&
-					activeProduct?.infraCamarim)
+					activeProduct?.infraCamarim) ||
+				(eventType === "ProdutoMusicalMapaPalco" &&
+					activeProduct?.mapaPalcoLink)
 			) {
 				await imageUploadService.deleteImage({
 					idCadastro: activeProduct.id,
@@ -267,6 +302,11 @@ export default function TechnicalSection({
 			if (eventType === "ProdutoMusicalInfraCamarim") {
 				setDressingRoomFileUrl(null);
 				setDressingRoomFile(null);
+			}
+
+			if (eventType === "ProdutoMusicalMapaPalco") {
+				setStageMapUrl(null);
+				setStageMapFile(null);
 			}
 		} catch (error) {
 			console.error(error);
@@ -297,6 +337,8 @@ export default function TechnicalSection({
 			let finalRiderUrl = riderFileUrl || activeProduct?.rider || null;
 			let finalDressingRoomUrl =
 				dressingRoomFileUrl || activeProduct?.infraCamarim || null;
+			let finalStageMapUrl =
+				stageMapUrl || activeProduct?.mapaPalcoLink || null;
 
 			if (riderFile) {
 				// Reset the uploaded URL if needed
@@ -336,6 +378,25 @@ export default function TechnicalSection({
 				setDressingRoomFileUrl(newUrl);
 			}
 
+			if (stageMapFile) {
+				// Reset the uploaded URL if needed
+				if (finalStageMapUrl) {
+					await imageUploadService.deleteImage({
+						evento: "ProdutoMusicalMapaPalco",
+						idCadastro: activeProduct.id,
+					});
+				}
+
+				const newUrl = await imageUploadService.uploadImage({
+					evento: "ProdutoMusicalMapaPalco",
+					idCadastro: activeProduct.id,
+					file: stageMapFile,
+				});
+
+				finalStageMapUrl = newUrl;
+				setStageMapUrl(newUrl);
+			}
+
 			//Remove all HTML tags and then check if the text should be sent.
 			const riderText = technicalData.riderTexto
 				? removeHtml(technicalData.riderTexto)
@@ -354,6 +415,7 @@ export default function TechnicalSection({
 					: null,
 				camarimIncluso: hasDressingRoom,
 				mapaPalco: stageMapData,
+				mapaPalcoLink: finalStageMapUrl ?? null,
 			};
 
 			await updateMusicalProductMutation.mutateAsync({
@@ -417,6 +479,32 @@ export default function TechnicalSection({
 					acceptedTypes={["application/pdf"]}
 					maxSizeMB={10}
 					onFileSelected={handleCamarimFileUpload}
+				/>
+			);
+		}
+	};
+
+	const ContentStageMap = () => {
+		if (stageMapUrl || stageMapFile) {
+			return (
+				<div>
+					<span className="block text-sm font-medium text-gray-700 mb-1">
+						Upload do Mapa de Palco
+					</span>
+					<FileCard
+						title="Mapa de Palco"
+						onClick={async () => {
+							await removeFile("ProdutoMusicalMapaPalco");
+						}}
+					/>
+				</div>
+			);
+		} else {
+			return (
+				<FileUploadBox
+					acceptedTypes={["application/pdf"]}
+					maxSizeMB={10}
+					onFileSelected={handleStageMapFileUpload}
 				/>
 			);
 		}
@@ -526,6 +614,120 @@ export default function TechnicalSection({
 					{/* Seção do Mapa de Palco */}
 					<div className={styles.sectionContainer}>
 						<div className={styles.sectionTitle}>
+							<h2 className={styles.titleText}>Mapa de Palco</h2>
+
+							<TooltipCustom
+								trigger={<HelpCircle className="w-4 h-4 cursor-pointer" />}
+								content="Especifique as necessidades técnicas para sua
+					apresentação. Informações sobre o posicionamento do equipamento de som, iluminação,
+					instrumentos e requisitos de palco em geral."
+							/>
+						</div>
+
+						<div className="w-full overflow-x-auto">
+							<IconTabNavigation
+								currentTab={stageMapTab}
+								tabs={stageMapTabs}
+								onChange={setStageMapTab}
+							/>
+						</div>
+						<div className="mt-3 sm:mt-4">
+							{stageMapTab === "upload" ? (
+								<div className="space-y-3">
+									<ContentStageMap />
+								</div>
+							) : (
+								<div className={styles.sectionContainer}>
+									<p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
+										Crie um mapa detalhado da disposição dos equipamentos no
+										palco.
+									</p>
+									<div className="flex flex-col w-full items-center bg-white border border-gray-200 rounded-lg py-4 sm:py-6 px-3 sm:px-4 gap-3 sm:gap-4">
+										<div className="flex flex-col w-full items-center gap-2 sm:gap-3 text-center">
+											<div
+												className={`h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center rounded-full ${
+													stageMapData.length > 0
+														? "bg-green-100"
+														: "bg-blue-100"
+												}`}
+											>
+												<MapIcon
+													size={24}
+													className={`sm:w-8 sm:h-8 ${
+														stageMapData.length > 0
+															? "text-green-600"
+															: "text-blue-600"
+													}`}
+												/>
+											</div>
+											<div className="px-2 sm:px-0">
+												<h3 className="font-semibold text-gray-800 text-base sm:text-lg mb-1 sm:mb-2">
+													{stageMapData.length > 0
+														? "Mapa de Palco Salvo"
+														: "Crie o seu mapa de palco"}
+												</h3>
+												<p className="text-gray-600 text-xs sm:text-sm leading-relaxed max-w-xs sm:max-w-md">
+													{stageMapData.length > 0
+														? `Seu mapa de palco está configurado com ${stageMapData.length} elemento${stageMapData.length > 1 ? "s" : ""}. Você pode editá-lo a qualquer momento.`
+														: "Organize a disposição da banda no palco, personalizando músicos, instrumentos e equipamentos para facilitar a montagem e logística do evento."}
+												</p>
+											</div>
+										</div>
+										<div className="flex flex-col w-full max-w-xs sm:max-w-md gap-2 sm:gap-3 items-center justify-center px-2 sm:px-0">
+											<Button
+												className="w-full text-sm sm:text-base py-2 sm:py-3"
+												type="button"
+												variant={
+													stageMapData.length > 0 ? "outline" : "primary"
+												}
+												onClick={() => {
+													setIsStageBuilderOpen(true);
+												}}
+											>
+												{stageMapData.length > 0 ? (
+													<>
+														<span className="hidden sm:inline">
+															Editar Mapa de Palco
+														</span>
+														<span className="sm:hidden">Editar Palco</span>
+													</>
+												) : (
+													<>
+														<span className="hidden sm:inline">
+															Criar Mapa de Palco
+														</span>
+														<span className="sm:hidden">Criar Palco</span>
+													</>
+												)}
+											</Button>
+
+											{stageMapData.length > 0 && (
+												<Button
+													className="w-full text-sm sm:text-base py-2 sm:py-3"
+													type="button"
+													variant="danger"
+													onClick={() => {
+														handleStageMapSave([]);
+													}}
+												>
+													<>
+														<span className="hidden sm:inline">
+															Apagar Mapa de Palco
+														</span>
+														<span className="sm:hidden">Apagar Palco</span>
+													</>
+												</Button>
+											)}
+										</div>
+									</div>
+								</div>
+							)}
+						</div>
+					</div>
+
+					{/* Seção do Mapa de Palco */}
+					{/* <div className={styles.sectionContainer}>
+						<div className={styles.sectionTitle}>
 							<Settings className={styles.sectionIcon} size={24} />
 							<h2 className={styles.titleText}>Mapa de Palco</h2>
 						</div>
@@ -606,7 +808,7 @@ export default function TechnicalSection({
 								)}
 							</div>
 						</div>
-					</div>
+					</div> */}
 
 					{/* Navigation buttons */}
 					<div className="flex flex-col sm:flex-row w-full gap-2 sm:gap-3 items-stretch sm:items-center justify-end mt-4 lg:mt-6 px-1 sm:px-0">

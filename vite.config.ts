@@ -18,7 +18,7 @@ export default defineConfig({
 			"/api": {
 				target:
 					process.env.VITE_PROXY_TARGET ||
-					"https://apivibratto-api-ctdqdacrascbhzcz.brazilsouth-01.azurewebsites.net",
+					process.env.VITE_VIBRATTO_API_BASE_URL,
 				changeOrigin: true,
 				rewrite: (path) => path,
 				secure: true,

@@ -58,6 +58,11 @@ export interface FilterOptionInstrument {
 	NomeTipoEquipamento: string;
 }
 
+export interface FilterHomeImage {
+	Id: number;
+	Link: string;
+}
+
 export type FilterType =
 	| "TipoFiltro"
 	| "Categoria"
@@ -70,7 +75,8 @@ export type FilterType =
 	| "FormaPagamento"
 	| "CondicoesPagamento"
 	| "CondicoesPagamentoRestante"
-	| "MotivoRejeicaoProposta";
+	| "MotivoRejeicaoProposta"
+	| "HomePageImagens";
 
 export interface Category {
 	Id: number;
@@ -343,6 +349,7 @@ export interface MusicalProductApiResponse {
 		id: number;
 		link: string;
 	}>;
+	mapaPalcoLink: string | null;
 	mapaPalco: Array<{
 		idProdutoMusical: number;
 		idInstrumento: number;
@@ -529,11 +536,13 @@ export type FileEventType =
 	| "ProdutoMusicalOnboardingCarrossel"
 	| "ProdutoMusicalOnboardingRider"
 	| "ProdutoMusicalOnboardingInfraCamarim"
+	| "ProdutoMusicalOnboardingMapaPalco"
 	| "ProdutoMusicalFotoPerfil"
 	| "ProdutoMusicalLogomarca"
 	| "ProdutoMusicalCarrossel"
 	| "ProdutoMusicalRider"
-	| "ProdutoMusicalInfraCamarim";
+	| "ProdutoMusicalInfraCamarim"
+	| "ProdutoMusicalMapaPalco";
 
 export interface ImageUploadRequest {
 	evento: FileEventType;

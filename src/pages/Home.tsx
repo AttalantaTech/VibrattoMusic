@@ -25,10 +25,14 @@ import {
 	useCategorias,
 	useCidades,
 	useGenerosMusicais,
+	useHomePageImages,
 	useTiposEvento,
 } from "../hooks/useFilters";
 import { useSearchMusicalProducts } from "../hooks/useMusicalProducts";
 import type { MusicalProductSearchRequest } from "@/api/types";
+import { useUser } from "@/hooks/useUser";
+// import { Carousel } from "@/components/ui/Carousel/Carousel";
+// import { CarouselItem } from "@/components/ui/carousel";
 
 const promos = [
 	{
@@ -102,6 +106,8 @@ export const Home = (): FunctionComponent => {
 	const { data: categorias } = useCategorias();
 	const { data: tiposEvento } = useTiposEvento();
 	const { data: generosMusicais } = useGenerosMusicais();
+	const { data: homePageImages } = useHomePageImages();
+	const { data: userData } = useUser();
 
 	// Build search filters based on dropdown selections
 	const searchFilters = useMemo(() => {
@@ -252,12 +258,74 @@ export const Home = (): FunctionComponent => {
 				{/* Content */}
 				<div className="w-full flex flex-col justify-center items-center gap-7">
 					{/* Hero Image */}
-					<div className="w-full h-48 sm:h-64 md:h-80 lg:h-96 xl:h-[28rem] max-w-9xl mx-auto">
-						<LazyImage
-							alt="Imagem ilustrativa"
-							className="w-full h-full object-cover xl:rounded-lg"
-							src="" // Teste: string vazia deve mostrar fallback
-						/>
+					<div className="w-full max-w-9xl mx-auto">
+						{/* {homePageImages && homePageImages.length > 0 ? (
+							<Carousel>
+								<CarouselItem className="relative w-full max-h-[394px] xl:rounded-lg">
+									<div className="relative w-full h-full object-cover rounded-sm border">
+										<LazyImage
+											alt="Band gallery photo"
+											className="w-full h-full object-cover rounded-sm"
+											src={homePageImages[0]?.Link ?? ""}
+										/>
+									</div>
+
+									<div
+										style={{
+											background: `linear-gradient(90deg, rgba(19, 93, 173, 0.5) 0%, rgba(3, 40, 80, 0.5) 100%)`,
+										}}
+										className="absolute inset-0 overflow-hidden"
+									/>
+
+									<Button
+										variant="secondary"
+										className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-gray-300 text-gray-700"
+									>
+										Cadastre-se
+									</Button>
+								</CarouselItem>
+							</Carousel>
+						) : (
+							<LazyImage
+								alt="Imagem ilustrativa"
+								className="w-full h-full object-cover xl:rounded-lg"
+								src="" // Teste: string vazia deve mostrar fallback
+							/>
+						)} */}
+
+						{homePageImages && homePageImages.length > 0 ? (
+							<div className="relative w-full max-h-[394px] xl:rounded-lg">
+								<div className="relative w-full h-full object-cover rounded-sm border">
+									<LazyImage
+										alt="Band gallery photo"
+										className="w-full max-h-[394px] object-cover rounded-sm"
+										src={homePageImages[0]?.Link ?? ""}
+									/>
+								</div>
+
+								<div
+									style={{
+										background: `linear-gradient(90deg, rgba(19, 93, 173, 0.5) 0%, rgba(3, 40, 80, 0.5) 100%)`,
+									}}
+									className="absolute inset-0 overflow-hidden"
+								/>
+
+								{!userData && (
+									<Link to="/welcome">
+										<Button
+											variant="secondary"
+											className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-gray-300 text-gray-700 rounded-sm px-10"
+										>
+											Cadastre-se
+										</Button>
+									</Link>
+								)}
+							</div>
+						) : (
+							<div className="animate-pulse w-full h-48 sm:h-64 md:h-80 lg:h-96 xl:h-[28rem] max-w-9xl">
+								<div className="bg-gray-300 h-full xl:rounded-lg w-full"></div>
+							</div>
+						)}
 					</div>
 					{/* Best Rated */}
 					<div className="w-full flex flex-col justify-center items-center py-8 px-4 sm:px-8 lg:px-12 xl:px-16 gap-7 max-w-9xl mx-auto">

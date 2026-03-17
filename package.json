@@ -66,6 +66,7 @@
 		"crypto-js": "^4.2.0",
 		"date-fns": "^4.1.0",
 		"dayjs": "^1.11.13",
+		"embla-carousel-autoplay": "^8.6.0",
 		"embla-carousel-react": "^8.6.0",
 		"js-cookie": "^3.0.5",
 		"lucide-react": "^0.503.0",

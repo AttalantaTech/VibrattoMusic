@@ -1,5 +1,6 @@
 import type { ApiClient } from "../core/client";
 import type {
+	FilterHomeImage,
 	FilterOption,
 	FilterOptionInstrument,
 	FilterType,
@@ -13,6 +14,15 @@ export class FilterService {
 	 */
 	async getFilterOptions(filterType: FilterType): Promise<Array<FilterOption>> {
 		return this.apiClient.get<Array<FilterOption>>(`filtro/${filterType}`);
+	}
+
+	/**
+	 * Get filter options by type
+	 */
+	async getFilterHomeImages(
+		filterType: FilterType
+	): Promise<Array<FilterHomeImage>> {
+		return this.apiClient.get<Array<FilterHomeImage>>(`filtro/${filterType}`);
 	}
 
 	/**
@@ -108,5 +118,12 @@ export class FilterService {
 	 */
 	async getMotivosRejeicaoProposta(): Promise<Array<FilterOption>> {
 		return this.getFilterOptions("MotivoRejeicaoProposta" as FilterType);
+	}
+
+	/**
+	 * Get Images to inital home
+	 */
+	async getHomeImages(): Promise<Array<FilterHomeImage>> {
+		return this.getFilterHomeImages("MotivoRejeicaoProposta" as FilterType);
 	}
 }

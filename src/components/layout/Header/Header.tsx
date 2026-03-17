@@ -225,15 +225,6 @@ export const Header = () => {
 									Entrar
 								</Button>
 							</Link>
-							<Link to="/welcome">
-								<Button
-									variant="gradient"
-									size="sm"
-									className="text-sm sm:text-base px-2 sm:px-4"
-								>
-									Cadastre-se
-								</Button>
-							</Link>
 						</div>
 					)}
 				</div>
