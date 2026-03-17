@@ -528,7 +528,6 @@ export function StageMapBuilder({
 								</div>
 							</div>
 						</div>
-						);
 					</>
 				);
 		}

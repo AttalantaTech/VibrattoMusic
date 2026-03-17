@@ -4,8 +4,12 @@ import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProduct
 
 export const useSyncMusicalProducts = () => {
 	const { musicalProducts, user, isLoading } = useProfileStatus();
-	const { setAvailableProducts, setIsLoadingMusicalProduct } =
-		useMusicalProductStore();
+	const {
+		setAvailableProducts,
+		setIsLoadingMusicalProduct,
+		setActiveProduct,
+		activeProduct,
+	} = useMusicalProductStore();
 	const clear = useMusicalProductStore((s) => s.clear);
 
 	useEffect(() => {
@@ -18,6 +22,14 @@ export const useSyncMusicalProducts = () => {
 
 		if (musicalProducts && musicalProducts.dados.length > 0) {
 			setAvailableProducts(musicalProducts.dados);
+
+			if (activeProduct) {
+				const product = musicalProducts.dados.find(
+					(item) => item.id === activeProduct.id
+				);
+
+				if (product) setActiveProduct(product);
+			}
 		}
 	}, [
 		musicalProducts,
@@ -26,5 +38,7 @@ export const useSyncMusicalProducts = () => {
 		clear,
 		setIsLoadingMusicalProduct,
 		isLoading,
+		activeProduct,
+		setActiveProduct,
 	]);
 };
