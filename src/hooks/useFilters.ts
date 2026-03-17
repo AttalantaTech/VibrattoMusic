@@ -39,6 +39,21 @@ export const useFilterOptionsInstruments = (
 };
 
 /**
+ * Hook to get filter options by type
+ */
+export const useFilterHomeImages = (
+	filterType: FilterType,
+	enabled: boolean = true
+) => {
+	return useQuery({
+		queryKey: filterKeys.byType(filterType),
+		queryFn: () => filterService.getFilterHomeImages(filterType),
+		enabled,
+		staleTime: 10 * 60 * 1000, // 10 minutes - filters don't change often
+	});
+};
+
+/**
  * Hook to get categories
  */
 export const useCategorias = (enabled: boolean = true) => {
@@ -85,4 +100,11 @@ export const useMotivosRejeicaoProposta = (enabled: boolean = true) => {
  */
 export const useSocialNetworks = (enabled: boolean = true) => {
 	return useFilterOptions("RedeSocial", enabled);
+};
+
+/**
+ * Hook to get images to home
+ */
+export const useHomePageImages = (enabled: boolean = true) => {
+	return useFilterHomeImages("HomePageImagens", enabled);
 };
