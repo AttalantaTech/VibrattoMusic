@@ -20,6 +20,8 @@ import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { useSyncMusicalProducts } from "@/hooks/useSyncMusicalProducts";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import type { OnboardingApiResponse } from "@/api/types";
+import { userKeys } from "@/hooks/useUser";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Header = () => {
 	const { isAuthenticated, logout } = useAuthStore();
@@ -35,6 +37,8 @@ export const Header = () => {
 	const { musicalProducts } = useProfileStatus();
 
 	const { data } = useOnboardingData();
+	const queryClient = useQueryClient();
+
 	const onboardingData = useMemo<OnboardingApiResponse | undefined>(() => {
 		return data?.find((item) => item);
 	}, [data]);
@@ -68,6 +72,11 @@ export const Header = () => {
 
 	const handleLogout = async () => {
 		logout();
+
+		await queryClient.resetQueries({
+			queryKey: userKeys.all,
+		});
+
 		await navigate({ to: "/" });
 	};
 
