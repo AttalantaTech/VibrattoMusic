@@ -19,6 +19,11 @@ type SelectProps = {
 	multiple?: boolean;
 };
 
+const ALL_OPTION: Option = {
+	value: "__ALL__",
+	label: "Todos",
+};
+
 export const Select = ({
 	label,
 	name,
@@ -31,6 +36,8 @@ export const Select = ({
 }: SelectProps): FunctionComponent => {
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
+
+	const computedOptions = multiple ? [ALL_OPTION, ...options] : options;
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -56,23 +63,34 @@ export const Select = ({
 	};
 
 	const toggleOption = (option: Option) => {
-		const isSelected = selectedOptions.some((o) => o.value === option.value);
+		const isAll = option.value === ALL_OPTION.value;
 
 		if (multiple) {
-			if (isSelected) {
-				setSelectedOptions(
-					selectedOptions.filter((o) => o.value !== option.value)
-				);
-			} else {
-				setSelectedOptions([...selectedOptions, option]);
+			if (isAll) {
+				const isAllSelected = selectedOptions.length === options.length;
+
+				if (isAllSelected) {
+					setSelectedOptions([]);
+				} else {
+					setSelectedOptions(options);
+				}
+				return;
 			}
+
+			const isSelected = selectedOptions.some((o) => o.value === option.value);
+
+			let newSelected: Array<Option>;
+
+			if (isSelected) {
+				newSelected = selectedOptions.filter((o) => o.value !== option.value);
+			} else {
+				newSelected = [...selectedOptions, option];
+			}
+
+			setSelectedOptions(newSelected);
 		} else {
-			if (isSelected) {
-				setSelectedOptions([]);
-			} else {
-				setSelectedOptions([option]);
-				setIsOpen(false);
-			}
+			setSelectedOptions([option]);
+			setIsOpen(false);
 		}
 	};
 
@@ -82,6 +100,24 @@ export const Select = ({
 
 	const handleSelect = (option: Option) => {
 		toggleOption(option);
+	};
+
+	const handleSelectOptionsText = (): string => {
+		if (selectedOptions.length === 0) return placeholder;
+
+		if (multiple) {
+			if (selectedOptions.length === options.length) {
+				return "Todos selecionados";
+			}
+
+			if (selectedOptions.length === 1) {
+				return `${selectedOptions.length} selecionado`;
+			}
+
+			return `${selectedOptions.length} selecionados`;
+		}
+
+		return `${selectedOptions.length} selecionado`;
 	};
 
 	return (
@@ -105,11 +141,7 @@ export const Select = ({
 							selectedOptions.length > 0 ? "text-gray-900" : "text-gray-400"
 						}
 					>
-						{selectedOptions.length > 0
-							? multiple
-								? `${selectedOptions.length} selecionados`
-								: selectedOptions[0]?.label
-							: placeholder}
+						{handleSelectOptionsText()}
 					</span>
 					<ChevronDown
 						className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
@@ -121,27 +153,33 @@ export const Select = ({
 				{isOpen && (
 					<div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-auto">
 						<ul className="py-1">
-							{options.map((option) => (
-								<li
-									key={option.value}
-									className="px-4 py-2 text-sm text-gray-900 hover:bg-blue-50 cursor-pointer flex items-center gap-2"
-									onClick={(event) => {
-										event.stopPropagation();
-										handleSelect(option);
-									}}
-								>
-									<input
-										readOnly
-										className="text-blue-500"
-										size={16}
-										type={multiple ? "checkbox" : "radio"}
-										checked={selectedOptions.some(
-											(o) => o.value === option.value
-										)}
-									/>
-									{option.label}
-								</li>
-							))}
+							{computedOptions.map((option) => {
+								const isAll = option.value === ALL_OPTION.value;
+
+								return (
+									<li
+										key={option.value}
+										className="px-4 py-2 text-sm text-gray-900 hover:bg-blue-50 cursor-pointer flex items-center gap-2"
+										onClick={(event) => {
+											event.stopPropagation();
+											handleSelect(option);
+										}}
+									>
+										<input
+											readOnly
+											type={multiple ? "checkbox" : "radio"}
+											checked={
+												isAll
+													? selectedOptions.length === options.length
+													: selectedOptions.some(
+															(o) => o.value === option.value
+														)
+											}
+										/>
+										{option.label}
+									</li>
+								);
+							})}
 						</ul>
 					</div>
 				)}
@@ -149,23 +187,25 @@ export const Select = ({
 
 			{selectedOptions.length > 0 && (
 				<div className="mt-2 flex flex-wrap gap-2">
-					{selectedOptions.map((option) => (
-						<div
-							key={option.value}
-							className="flex items-center justify-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700"
-						>
-							<button
-								className="rounded-full hover:bg-blue-200 focus:outline-none"
-								type="button"
-								onClick={() => {
-									onRemove(option.value);
-								}}
+					{selectedOptions
+						.filter((option) => option.label !== "Todos")
+						.map((option) => (
+							<div
+								key={option.value}
+								className="flex items-center justify-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700"
 							>
-								<X size={10} />
-							</button>
-							<span>{option.label}</span>
-						</div>
-					))}
+								<button
+									className="rounded-full hover:bg-blue-200 focus:outline-none"
+									type="button"
+									onClick={() => {
+										onRemove(option.value);
+									}}
+								>
+									<X size={10} />
+								</button>
+								<span>{option.label}</span>
+							</div>
+						))}
 				</div>
 			)}
 		</div>
