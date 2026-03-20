@@ -161,7 +161,7 @@ export const Header = () => {
 							</Button>
 
 							{showDropdown && (
-								<div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200">
+								<div className="absolute right-0 mt-2 w-60 bg-white rounded-md shadow-lg border border-gray-200">
 									<button
 										onClick={handleProfile}
 										className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
@@ -199,7 +199,7 @@ export const Header = () => {
 												<Plus strokeWidth={3} className="w-2 h-3" />
 											</span>
 										</div>
-										<span>Criar Novo Perfil</span>
+										<span>Criar Perfil Profissional</span>
 									</button>
 									{/* Help link */}
 									<a

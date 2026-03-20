@@ -119,7 +119,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 						{/* Section Musical Products */}
 						<div className="px-3 py-2">
 							<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-								Produtos Musicais
+								Perfil Profissional
 							</p>
 						</div>
 
