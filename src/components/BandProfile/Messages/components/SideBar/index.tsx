@@ -1,5 +1,4 @@
 import { Circle, MessageSquare, Search } from "lucide-react";
-import type { SideBarProps } from "./types";
 import { Loading } from "@/shared/components/Loading";
 import {
 	ConversationInfoContainer,
@@ -14,10 +13,14 @@ import {
 import { formatMessageTime, getParticipantInitials } from "../../utils/Message";
 import type { Conversation } from "@/api/services/messages/types";
 import { useMessagesContext } from "@/contexts/MessagesContext";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
-export const SideBar = ({ user, currentProductId }: SideBarProps) => {
+export const SideBar = () => {
+	const { activeProduct } = useMusicalProductStore();
+	const currentProductId = activeProduct?.id;
 	const messagesContext = useMessagesContext();
 	const {
+		currentChatUser,
 		searchQuery,
 		setSearchQuery,
 		isConversationsLoading,
@@ -31,10 +34,12 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 			<SideBarHeaderContainer>
 				<UserInfoContainer>
 					<UserImageContainer>
-						{user?.nome ? getParticipantInitials(user.nome) : "U"}
+						{currentChatUser?.name
+							? getParticipantInitials(currentChatUser.name)
+							: "U"}
 					</UserImageContainer>
 					<h3 className="font-medium text-gray-900">
-						{user?.nome || "Usuário"}
+						{currentChatUser?.name || "Usuário"}
 					</h3>
 				</UserInfoContainer>
 
@@ -89,11 +94,10 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 				)}
 				{filteredConversations?.map((conversation: Conversation) => {
 					const isSelected = selectedConversation?.id === conversation.id;
-					const unreadCount = [currentProductId, user?.id].includes(
-						conversation.contratanteId
-					)
-						? conversation.numeroMensagensNãoLidasContratante || 0
-						: conversation.numeroMensagensNãoLidasContratado || 0;
+					const unreadCount =
+						currentProductId === conversation.participanteId
+							? conversation.numeroMensagensNãoLidasContratante || 0
+							: conversation.numeroMensagensNãoLidasContratado || 0;
 
 					return (
 						<ConversationTabContainer
@@ -110,9 +114,7 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 							<div className="relative">
 								<UserImageContainer size={12}>
 									{getParticipantInitials(
-										[currentProductId, user?.id].includes(
-											conversation.participanteId
-										)
+										currentChatUser?.id === conversation.participanteId
 											? conversation.contratanteNome
 											: conversation.participanteNome
 									)}
@@ -126,9 +128,7 @@ export const SideBar = ({ user, currentProductId }: SideBarProps) => {
 							</div>
 							<ConversationInfoContainer>
 								<h4 className="font-medium text-gray-900 truncate">
-									{[currentProductId, user?.id].includes(
-										conversation.participanteId
-									)
+									{currentChatUser?.id === conversation.participanteId
 										? conversation.contratanteNome
 										: conversation.participanteNome}
 								</h4>

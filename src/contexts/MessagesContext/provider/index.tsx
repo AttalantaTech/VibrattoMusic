@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/authStore";
-import { useActiveMusicalProduct } from "@/hooks/useActiveMusicalProduct";
 import {
 	messagingKeys,
 	useConversationMessages,
@@ -14,15 +13,28 @@ import { useChat } from "@/api/services/chat/useChat";
 import type { Conversation, Message } from "@/api/services/messages/types";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { playNotificationSound } from "@/components/BandProfile/Messages/utils/Message";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 	const queryClient = useQueryClient();
 	const { user, token } = useAuthStore();
 	const currentUserId = user?.id;
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 	const currentProductId = activeProduct?.id
 		? Number(activeProduct.id)
 		: undefined;
+
+	const currentChatUser = activeProduct
+		? {
+				id: activeProduct.id,
+				name: activeProduct.nome,
+				type: "product" as const,
+			}
+		: {
+				id: user?.id || 0,
+				name: user?.nome || "Usuário",
+				type: "user" as const,
+			};
 
 	const [messageInput, setMessageInput] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
@@ -100,6 +112,13 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 	const filteredConversations = useMemo(() => {
 		return (
 			conversations.filter((conversation: Conversation) => {
+				if (
+					![conversation.contratanteId, conversation.participanteId].includes(
+						currentChatUser.id
+					)
+				) {
+					return false;
+				}
 				if (!searchQuery) return true;
 				const searchLower = searchQuery.toLowerCase();
 				return (
@@ -449,6 +468,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 	return (
 		<MessagesContext.Provider
 			value={{
+				currentChatUser,
 				messageInput,
 				setMessageInput,
 				messagesError,

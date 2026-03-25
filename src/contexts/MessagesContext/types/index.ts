@@ -1,6 +1,13 @@
 import type { Conversation, Message } from "@/api/services/messages/types";
 
+export type ChatUser = {
+	id: number;
+	name: string;
+	type: "user" | "product";
+};
+
 export type MessagesContextType = {
+	currentChatUser: ChatUser;
 	messageInput: string;
 	setMessageInput: (value: string) => void;
 	messagesError: Error | null;
