@@ -593,12 +593,13 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 									title="Foto de Perfil"
 									description="JPG, PNG até 5MB"
 									currentImage={profilePhoto}
-									isUploading={uploadingImage === "fotoPerfil"}
+									isUploading={uploadingImage === "ProdutoMusicalFotoPerfil"}
 									onDelete={async () => {
 										await removeImage("ProdutoMusicalFotoPerfil");
 									}}
 									onFileSelect={async (file) => {
-										await handleImageUpload(file, "ProdutoMusicalFotoPerfil");
+										if (file)
+											await handleImageUpload(file, "ProdutoMusicalFotoPerfil");
 									}}
 									aspectRatio="aspect-square"
 								/>
@@ -607,12 +608,13 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 									title="Logomarca"
 									description="JPG, PNG até 5MB"
 									currentImage={logoImage}
-									isUploading={uploadingImage === "logomarca"}
+									isUploading={uploadingImage === "ProdutoMusicalLogomarca"}
 									onDelete={async () => {
 										await removeImage("ProdutoMusicalLogomarca");
 									}}
 									onFileSelect={async (file) => {
-										await handleImageUpload(file, "ProdutoMusicalLogomarca");
+										if (file)
+											await handleImageUpload(file, "ProdutoMusicalLogomarca");
 									}}
 									aspectRatio="aspect-square"
 								/>
