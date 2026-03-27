@@ -13,6 +13,7 @@ interface StepLayoutProps {
 	headerIcon: ReactNode;
 	isFinishing?: boolean;
 	onClick?: () => void;
+	buttonTitle?: string;
 }
 
 const styles = {
@@ -40,6 +41,7 @@ export const StepLayout = ({
 	headerTitle,
 	isFinishing = false,
 	onClick,
+	buttonTitle,
 }: StepLayoutProps) => {
 	const router = useRouter();
 	const { addToast } = useToastStore();
@@ -187,7 +189,7 @@ export const StepLayout = ({
 
 									{currentStep === 1 ? (
 										<Button className="w-full sm:w-auto" onClick={onClick}>
-											Usar Dados do Cadastro
+											{buttonTitle ?? ""}
 										</Button>
 									) : null}
 								</div>

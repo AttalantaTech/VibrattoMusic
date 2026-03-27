@@ -27,7 +27,7 @@ import {
 import { onboardingService, imageUploadService } from "../../../api";
 import { IconInput } from "../../forms/IconInput/IconInput";
 import { IconTabNavigation } from "../../ui/IconTabNavigation/IconTabNavigation";
-import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
+import { StepLayout } from "../layout/StepLayout/StepLayout";
 import {
 	FaInstagram,
 	FaTiktok,

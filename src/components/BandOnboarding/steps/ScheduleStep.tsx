@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { onboardingService } from "../../../api";
 import { Button } from "../../ui/Button/Button";
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
-import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
+import { StepLayout } from "../layout/StepLayout/StepLayout";
 import type {
 	MusicalProductSchedule,
 	OnboardingApiResponse,

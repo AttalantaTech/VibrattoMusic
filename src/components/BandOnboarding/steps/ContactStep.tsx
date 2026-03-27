@@ -23,7 +23,7 @@ import {
 import { Button } from "../../ui/Button/Button";
 import { InputField } from "../../forms/InputField/InputField";
 import { ToggleSwitch } from "../../forms/ToggleSwitch/ToggleSwitch";
-import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
+import { StepLayout } from "../layout/StepLayout/StepLayout";
 import {
 	useOnboardingData,
 	useSaveOnboardingContact,
@@ -59,8 +59,6 @@ export default function ContactStep() {
 		: null;
 	const onboardingType = searchParameters.type ?? null;
 
-	console.log(data);
-
 	const onboardingData = useMemo<OnboardingApiResponse | undefined>(() => {
 		if (!data?.length) return undefined;
 
@@ -76,6 +74,7 @@ export default function ContactStep() {
 	const saveOnboardingContactMutation = useSaveOnboardingContact();
 
 	const [loading, setLoading] = useState(false);
+	const [buttonToggle, setButtonToggle] = useState<number>(0);
 
 	const values = useMemo(() => {
 		return {
@@ -147,21 +146,45 @@ export default function ContactStep() {
 	const handleRegistrationDataButton = () => {
 		const isCNPJ = validateCNPJ(userData?.cpfOuCnpj ?? "");
 
-		setValue("cepContato", userData?.cep ?? "");
-		setValue("bairroContato", userData?.bairro ?? "");
-		setValue("cidadeContato", userData?.cidade ?? "");
-		setValue("complementoContato", userData?.complemento ?? "");
-		setValue("numeroContato", userData?.numero ?? "");
-		setValue("logradouroContato", userData?.logradouro ?? "");
-		setValue("estadoContato", userData?.estado ?? "");
-		setValue("logradouroContato", userData?.logradouro ?? "");
+		setButtonToggle(buttonToggle + 1);
+
+		if (buttonToggle % 2 === 0) {
+			setValue("cepContato", userData?.cep ?? "");
+			setValue("bairroContato", userData?.bairro ?? "");
+			setValue("cidadeContato", userData?.cidade ?? "");
+			setValue("complementoContato", userData?.complemento ?? "");
+			setValue("numeroContato", userData?.numero ?? "");
+			setValue("logradouroContato", userData?.logradouro ?? "");
+			setValue("estadoContato", userData?.estado ?? "");
+			setValue("logradouroContato", userData?.logradouro ?? "");
+			setValue("telefone", userData?.telefone ?? "");
+
+			if (isCNPJ) {
+				setValue("razaoSocial", userData?.nome ?? "");
+				setValue("cnpj", userData?.cpfOuCnpj ?? "");
+			} else {
+				setValue("nome", userData?.nome ?? "");
+				setValue("cpf", userData?.cpfOuCnpj ?? "");
+			}
+			return;
+		}
+
+		setValue("cepContato", "");
+		setValue("bairroContato", "");
+		setValue("cidadeContato", "");
+		setValue("complementoContato", "");
+		setValue("numeroContato", "");
+		setValue("logradouroContato", "");
+		setValue("estadoContato", "");
+		setValue("logradouroContato", "");
+		setValue("telefone", "");
 
 		if (isCNPJ) {
-			setValue("razaoSocial", userData?.nome ?? "");
-			setValue("cnpj", userData?.cpfOuCnpj ?? "");
+			setValue("razaoSocial", "");
+			setValue("cnpj", "");
 		} else {
-			setValue("nome", userData?.nome ?? "");
-			setValue("cpf", userData?.cpfOuCnpj ?? "");
+			setValue("nome", "");
+			setValue("cpf", "");
 		}
 	};
 
@@ -192,6 +215,11 @@ export default function ContactStep() {
 		<StepLayout
 			currentStep={1}
 			onClick={handleRegistrationDataButton}
+			buttonTitle={
+				buttonToggle % 2 === 0
+					? "Usar Dados do Cadastro"
+					: "Limpar Dados do Cadastro"
+			}
 			headerTitle="Informações de contato"
 			headerIcon={<UserIcon color="#007bff" size={24} />}
 		>

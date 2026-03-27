@@ -11,18 +11,21 @@ import {
 import { onboardingService } from "../../../api";
 import { Button } from "../../ui/Button/Button";
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
-import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
+import { StepLayout } from "../layout/StepLayout/StepLayout";
 import { useOnboardingData } from "@/hooks/useMusicalProducts";
 import { toast } from "sonner";
 import type { OnboardingApiResponse } from "@/api/types";
 import { decryptValue } from "@/utils/encryptValue";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 export default function PublishStep() {
 	const [loading, setLoading] = useState(false);
 	const navigate = useNavigate();
 	const { clearData } = useOnboarding();
-
+	const { availableProducts } = useMusicalProductStore();
 	const { data, isFetching } = useOnboardingData();
+
+	console.log(availableProducts);
 
 	const searchParameters = useSearch({ from: "/band/register/onboarding/6" });
 	const onboardingID = searchParameters.registerId
@@ -64,15 +67,18 @@ export default function PublishStep() {
 
 		setLoading(true);
 		try {
-			await onboardingService.publish(Number(produtoMusicalId));
-			clearData();
+			await onboardingService
+				.publish(Number(produtoMusicalId))
+				.then(async () => {
+					clearData();
 
-			toast.success("Produto musical publicado com sucesso");
+					toast.success("Produto musical publicado com sucesso");
 
-			await navigate({
-				to: "/band/me",
-				search: { tab: "account" },
-			});
+					await navigate({
+						to: "/band/me",
+						search: { tab: "account" },
+					});
+				});
 		} catch (error: any) {
 			console.error("Error publishing:", error);
 			toast.error("Erro ao publicar produto musical");
