@@ -273,7 +273,7 @@ export default function MediaStep() {
 	// Handle image upload using Azure Blob Storage
 	const handleImageUpload = async (file: File, type: FileEventType) => {
 		if (!produtoMusicalId) {
-			toast.error("ID do produto musical não encontrado");
+			toast.error("Onboarding não encontrado");
 
 			return;
 		}
@@ -609,16 +609,19 @@ export default function MediaStep() {
 									title="Foto de Perfil"
 									description="JPG, PNG até 5MB"
 									currentImage={profilePhoto}
-									isUploading={uploadingImage === "fotoPerfil"}
+									isUploading={
+										uploadingImage === "ProdutoMusicalOnboardingFotoPerfil"
+									}
 									onDelete={async () => {
 										await removeImage("ProdutoMusicalOnboardingFotoPerfil");
 									}}
-									onFileSelect={(file) =>
-										handleImageUpload(
-											file,
-											"ProdutoMusicalOnboardingFotoPerfil"
-										)
-									}
+									onFileSelect={async (file) => {
+										if (file)
+											await handleImageUpload(
+												file,
+												"ProdutoMusicalOnboardingFotoPerfil"
+											);
+									}}
 									aspectRatio="aspect-square"
 								/>
 
@@ -626,13 +629,19 @@ export default function MediaStep() {
 									title="Logomarca"
 									description="JPG, PNG até 5MB"
 									currentImage={logoImage}
-									isUploading={uploadingImage === "logomarca"}
+									isUploading={
+										uploadingImage === "ProdutoMusicalOnboardingLogomarca"
+									}
 									onDelete={async () => {
 										await removeImage("ProdutoMusicalOnboardingLogomarca");
 									}}
-									onFileSelect={(file) =>
-										handleImageUpload(file, "ProdutoMusicalOnboardingLogomarca")
-									}
+									onFileSelect={async (file) => {
+										if (file)
+											await handleImageUpload(
+												file,
+												"ProdutoMusicalOnboardingLogomarca"
+											);
+									}}
 									aspectRatio="aspect-square"
 								/>
 							</div>
