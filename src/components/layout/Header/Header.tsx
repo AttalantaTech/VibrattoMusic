@@ -6,6 +6,7 @@ import {
 	Music,
 	Music2Icon,
 	Plus,
+	Settings,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Button } from "../../ui/Button/Button";
@@ -119,15 +120,6 @@ export const Header = () => {
 
 				{/* Actions */}
 				<div className="flex flex-row items-center gap-2 sm:gap-3 flex-shrink-0">
-					{/* Band Profile Switcher - For musicians with at least one product */}
-					{isAuthenticated && (
-						<BandProfileSwitcher
-							activeMusicalProduct={activeProduct}
-							musicalProducts={availableProducts}
-							onProductChange={setActiveProduct}
-						/>
-					)}
-
 					{/* Search button - Always visible */}
 					{showSearchButton && (
 						<Link to="/search">
@@ -148,16 +140,12 @@ export const Header = () => {
 						<div className="relative" ref={dropdownRef}>
 							<Button
 								variant="transparent"
-								className="w-10 h-10 p-0 rounded-full border-2 border-gray-300 hover:border-gray-400 transition-colors flex items-center justify-center"
+								className="w-9 h-9 p-2 rounded-full flex items-center justify-center"
 								onClick={() => {
 									setShowDropdown(!showDropdown);
 								}}
 							>
-								{activeProduct?.id ? (
-									<Music className="w-5 h-5 text-gray-600" />
-								) : (
-									<User className="w-5 h-5 text-gray-600" />
-								)}
+								<Settings className="w-5 h-5 text-gray-600" />
 							</Button>
 
 							{showDropdown && (
@@ -186,12 +174,7 @@ export const Header = () => {
 									>
 										<div className="flex relative">
 											<Music2Icon className="w-4 h-4" />
-											{/* <span
-												className="absolute -top-1.5 pb-0.5 -right-1 flex items-center justify-center
-        w-3 h-3 text-[9px] font-bold bg-black text-white rounded-full border border-white"
-											>
-												+
-											</span> */}
+
 											<span
 												className="absolute top-1 -right-1 flex items-center justify-center
         w-3 h-3 font-bold text-black rounded-full"
@@ -235,6 +218,15 @@ export const Header = () => {
 								</Button>
 							</Link>
 						</div>
+					)}
+
+					{/* Band Profile Switcher - For musicians with at least one product */}
+					{isAuthenticated && (
+						<BandProfileSwitcher
+							activeMusicalProduct={activeProduct}
+							musicalProducts={availableProducts}
+							onProductChange={setActiveProduct}
+						/>
 					)}
 				</div>
 			</nav>
