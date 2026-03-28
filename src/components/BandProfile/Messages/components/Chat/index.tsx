@@ -1,11 +1,11 @@
-import { Circle, DollarSign, MessageSquare } from "lucide-react";
-import { useActiveMusicalProduct } from "@/hooks/useActiveMusicalProduct";
+import { ArrowLeft, Circle, DollarSign, MessageSquare } from "lucide-react";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { Loading } from "@/shared/components/Loading";
 import { useAuthStore } from "@/store/authStore";
 import { ChatInput } from "@/components/forms/ChatInput/ChatInput";
 import { UserImageContainer } from "../SideBar/styles";
 import {
+	ChatContainer,
 	ChatHeaderContainer,
 	ChatInputContainer,
 	ChatMessagesContainer,
@@ -16,23 +16,26 @@ import {
 import { getParticipantInitials } from "../../utils/Message";
 import type { Message } from "@/api/services/messages/types";
 import { useMessagesContext } from "@/contexts/MessagesContext";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 export const Chat = () => {
 	const { user } = useAuthStore();
 	const currentUserId = user?.id;
 
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 	const currentProductId = activeProduct?.id;
 	const { isProfileComplete } = useProfileStatus();
 
 	const messagesContext = useMessagesContext();
 	const {
+		currentChatUser,
 		messageInput,
 		setMessageInput,
 		messages,
 		messagesError,
-		isMessagesLoading,
 		selectedConversation,
+		setSelectedConversation,
+		isMessagesLoading,
 		handleSendMessage,
 		setIsProposalModalOpen,
 		setIsProfileIncompleteModalOpen,
@@ -41,7 +44,7 @@ export const Chat = () => {
 	} = messagesContext || {};
 
 	return (
-		<div className="flex-1 flex flex-col">
+		<ChatContainer isInsideConversation={!!selectedConversation}>
 			{!selectedConversation && (
 				<div className="flex-1 flex items-center justify-center bg-gray-50">
 					<div className="text-center">
@@ -58,48 +61,46 @@ export const Chat = () => {
 			{selectedConversation && (
 				<>
 					<ChatHeaderContainer>
-						<div className="flex items-center space-x-3">
+						<div className="flex items-center space-x-1 md:space-x-3">
+							{selectedConversation && (
+								<div
+									className="p-1 md:p-2 rounded-full transition-colors hover:bg-gray-200 bg-white flex md:hidden"
+									onClick={() => setSelectedConversation?.(null)}
+								>
+									<ArrowLeft />
+								</div>
+							)}
 							<div className="relative">
 								<UserImageContainer>
-									{getParticipantInitials(
-										[currentProductId, user?.id].includes(
-											selectedConversation.participanteId
-										)
-											? selectedConversation.contratanteNome
-											: selectedConversation.participanteNome
-									)}
+									{getParticipantInitials(currentChatUser?.name || "Usuário")}
 								</UserImageContainer>
 								{selectedConversation.online && (
 									<Circle className="absolute bottom-0 right-0 w-3 h-3 text-green-500 fill-current" />
 								)}
 							</div>
-							<h2 className="text-lg font-semibold text-gray-900">
-								{[currentProductId, user?.id].includes(
-									selectedConversation.participanteId
-								)
-									? selectedConversation.contratanteNome
-									: selectedConversation.participanteNome}
+							<h2 className="text-md md:text-lg whitespace-nowrap text-ellipsis overflow-hidden font-semibold text-gray-900">
+								{currentChatUser?.name || "Usuário"}
 							</h2>
 						</div>
 						{activeProduct && !isProfileComplete && (
 							<button
 								onClick={() => setIsProfileIncompleteModalOpen?.(true)}
-								className="flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+								className="flex items-center space-x-1 px-2 md:space-x-2 md:px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
 							>
 								<DollarSign className="w-4 h-4" />
 								<span className="text-sm font-medium">Completar Perfil</span>
 							</button>
 						)}
-						{isProfileComplete && (
-							<button
-								disabled={!activeProduct}
-								onClick={() => setIsProposalModalOpen?.(true)}
-								className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-							>
-								<DollarSign className="w-4 h-4" />
-								<span className="text-sm font-medium">Enviar Proposta</span>
-							</button>
-						)}
+						{currentProductId === selectedConversation?.participanteId &&
+							isProfileComplete && (
+								<button
+									onClick={() => setIsProposalModalOpen?.(true)}
+									className="flex items-center space-x-1 px-2 md:space-x-2 md:px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+								>
+									<DollarSign className="w-4 h-4" />
+									<span className="text-sm font-medium">Criar Proposta</span>
+								</button>
+							)}
 					</ChatHeaderContainer>
 
 					<ChatMessagesContainer messagesContainerRef={messagesContainerRef}>
@@ -176,6 +177,6 @@ export const Chat = () => {
 					</ChatInputContainer>
 				</>
 			)}
-		</div>
+		</ChatContainer>
 	);
 };

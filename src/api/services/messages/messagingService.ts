@@ -198,7 +198,6 @@ export class MessagingService {
 	 */
 	public async startConversation(
 		participanteId: number,
-		assunto: string,
 		conteudo: string
 	): Promise<Conversation> {
 		// First, get or create conversation with the product
@@ -217,7 +216,7 @@ export class MessagingService {
 		// Then send the initial message
 		await this.apiClient.post<Message>("chat/mensagem", {
 			IdConversa: conversationId,
-			Conteudo: `${assunto}: ${conteudo}`,
+			Conteudo: conteudo,
 		});
 
 		// Return a minimal conversation object for compatibility

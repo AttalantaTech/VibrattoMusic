@@ -20,7 +20,6 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 	participantName,
 	onConversationStarted,
 }) => {
-	const [subject, setSubject] = useState("");
 	const [message, setMessage] = useState("");
 	const { mutate: startConversation, isPending } = useStartConversation();
 
@@ -29,7 +28,7 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 	const handleSubmit = (event: React.FormEvent) => {
 		event.preventDefault();
 
-		if (!subject.trim() || !message.trim()) {
+		if (!message.trim()) {
 			toast.error("Por favor, preencha todos os campos");
 			return;
 		}
@@ -37,7 +36,6 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 		startConversation(
 			{
 				participanteId: participantId,
-				assunto: subject,
 				conteudo: message,
 			},
 			{
@@ -45,7 +43,6 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 					toast.success("Conversa iniciada com sucesso!");
 					onConversationStarted?.(data.id);
 					onClose();
-					setSubject("");
 					setMessage("");
 				},
 				onError: () => {
@@ -71,26 +68,6 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 				</div>
 
 				<form onSubmit={handleSubmit}>
-					<div className="mb-4">
-						<label
-							htmlFor="subject"
-							className="block text-sm font-medium text-gray-700 mb-2"
-						>
-							Assunto
-						</label>
-						<input
-							id="subject"
-							type="text"
-							value={subject}
-							onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-								setSubject(event.target.value);
-							}}
-							className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-							placeholder="Sobre o que você quer conversar?"
-							disabled={isPending}
-						/>
-					</div>
-
 					<div className="mb-4">
 						<label
 							htmlFor="message"

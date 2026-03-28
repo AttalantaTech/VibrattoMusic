@@ -140,13 +140,11 @@ export const useStartConversation = () => {
 	return useMutation({
 		mutationFn: ({
 			participanteId,
-			assunto,
 			conteudo,
 		}: {
 			participanteId: number;
-			assunto: string;
 			conteudo: string;
-		}) => messagingService.startConversation(participanteId, assunto, conteudo),
+		}) => messagingService.startConversation(participanteId, conteudo),
 		onSuccess: () => {
 			// Invalidate conversations list
 			void queryClient.invalidateQueries({
