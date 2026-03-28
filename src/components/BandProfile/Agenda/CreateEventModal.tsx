@@ -91,10 +91,10 @@ export const CreateEventModal = ({
 		{
 			value: "show",
 			label: "Show",
-			color: "bg-blue-500",
-			borderColor: "border-blue-500",
-			textColor: "text-blue-600",
-			bgLight: "bg-blue-50",
+			color: "bg-primary-500",
+			borderColor: "border-primary-500",
+			textColor: "text-primary-600",
+			bgLight: "bg-primary-50",
 			icon: Music,
 		},
 		{

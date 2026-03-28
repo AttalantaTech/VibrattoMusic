@@ -259,7 +259,7 @@ export const ContractEditor = ({
 				<DialogHeader>
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-3">
-							<Edit3 className="w-6 h-6 text-blue-600" />
+							<Edit3 className="w-6 h-6 text-primary-600" />
 							<DialogTitle className="text-xl font-semibold">
 								Editar Contrato #{identificadorUnico?.slice(0, 8) || "N/A"}
 							</DialogTitle>

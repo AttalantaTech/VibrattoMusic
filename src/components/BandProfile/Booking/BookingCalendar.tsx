@@ -126,7 +126,7 @@ export const BookingCalendar = ({ musicalProduct }: BookingCalendarProps) => {
 			case "cancelado":
 				return "bg-red-100 border-red-300 text-red-800";
 			case "concluido":
-				return "bg-blue-100 border-blue-300 text-blue-800";
+				return "bg-primary-100 border-primary-300 text-primary-800";
 			default:
 				return "bg-gray-100 border-gray-300 text-gray-800";
 		}
@@ -182,7 +182,7 @@ export const BookingCalendar = ({ musicalProduct }: BookingCalendarProps) => {
 								onClick={() => {
 									setViewType("month");
 								}}
-								className={`px-3 py-1 text-sm ${viewType === "month" ? "bg-blue-500 text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+								className={`px-3 py-1 text-sm ${viewType === "month" ? "bg-primary-500 text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
 							>
 								Mês
 							</button>
@@ -190,7 +190,7 @@ export const BookingCalendar = ({ musicalProduct }: BookingCalendarProps) => {
 								onClick={() => {
 									setViewType("week");
 								}}
-								className={`px-3 py-1 text-sm ${viewType === "week" ? "bg-blue-500 text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+								className={`px-3 py-1 text-sm ${viewType === "week" ? "bg-primary-500 text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
 							>
 								Semana
 							</button>
@@ -220,7 +220,7 @@ export const BookingCalendar = ({ musicalProduct }: BookingCalendarProps) => {
 						<span>Confirmado</span>
 					</div>
 					<div className="flex items-center gap-2">
-						<div className="w-3 h-3 rounded bg-blue-100 border border-blue-300"></div>
+						<div className="w-3 h-3 rounded bg-primary-100 border border-primary-300"></div>
 						<span>Concluído</span>
 					</div>
 					<div className="flex items-center gap-2">
@@ -264,12 +264,12 @@ export const BookingCalendar = ({ musicalProduct }: BookingCalendarProps) => {
 										className={`
 											min-h-24 p-2 border rounded cursor-pointer hover:bg-gray-50
 											${isCurrentMonth ? "bg-white" : "bg-gray-50 text-gray-400"}
-											${isToday(day) ? "bg-blue-50 border-blue-200" : "border-gray-200"}
+											${isToday(day) ? "bg-primary-50 border-primary-200" : "border-gray-200"}
 											${isSelected ? "ring-2 ring-blue-500" : ""}
 										`}
 									>
 										<div
-											className={`text-sm font-medium mb-1 ${isToday(day) ? "text-blue-600" : ""}`}
+											className={`text-sm font-medium mb-1 ${isToday(day) ? "text-primary-600" : ""}`}
 										>
 											{format(day, "d")}
 										</div>
@@ -330,7 +330,7 @@ export const BookingCalendar = ({ musicalProduct }: BookingCalendarProps) => {
 									<div
 										className={`
 										text-center p-2 mb-2 rounded
-										${isToday(day) ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-700"}
+										${isToday(day) ? "bg-primary-500 text-white" : "bg-gray-100 text-gray-700"}
 									`}
 									>
 										<div className="text-xs font-medium">

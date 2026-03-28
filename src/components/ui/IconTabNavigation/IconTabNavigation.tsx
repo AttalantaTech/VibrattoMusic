@@ -18,17 +18,17 @@ const styles = {
 	default: {
 		button:
 			"rounded-lg text-xs sm:text-base font-semibold flex items-center justify-center gap-1 sm:gap-2 py-2 px-2 sm:px-4 min-w-0 flex-1 sm:flex-initial whitespace-nowrap",
-		active: "bg-blue-600 text-blue-600 text-white",
-		inactive: "text-gray-700 hover:text-blue-600",
+		active: "bg-primary-600 text-primary-600 text-white",
+		inactive: "text-gray-700 hover:text-primary-600",
 	},
 	underline: {
 		button: "text-sm font-medium flex items-center gap-2",
-		active: "text-blue-600",
+		active: "text-primary-600",
 		inactive: "text-gray-500 hover:text-gray-700",
 	},
 	icon: {
 		button: "flex flex-col items-center justify-center gap-1 p-3 w-full",
-		active: "text-blue-600 border-b-2 border-blue-600",
+		active: "text-primary-600 border-b-2 border-primary-600",
 		inactive: "text-gray-500 hover:text-gray-700",
 	},
 };
@@ -81,7 +81,7 @@ export const IconTabNavigation = ({
 							)}
 
 							{variant === "underline" && isActive && (
-								<div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
+								<div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600" />
 							)}
 
 							{variant === "icon" && (

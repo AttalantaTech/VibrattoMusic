@@ -213,7 +213,7 @@ function ForgotPasswordComponent() {
 
 					<div className="flex flex-col gap-4 lg:gap-6 w-full mt-4">
 						<Link
-							className="flex items-center justify-center gap-2 text-sm text-blue-600 hover:text-blue-500"
+							className="flex items-center justify-center gap-2 text-sm text-primary-600 hover:text-primary-500"
 							to="/login"
 						>
 							<ArrowLeft size={16} />

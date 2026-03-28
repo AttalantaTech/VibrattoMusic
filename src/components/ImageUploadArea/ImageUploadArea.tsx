@@ -74,7 +74,7 @@ export const ImageUploadArea = ({
 				<div
 					className={` ${aspectRatio} ${
 						isDragging
-							? "border border-blue-500 bg-blue-50"
+							? "border border-primary-500 bg-primary-50"
 							: "border border-gray-200 hover:border-gray-300"
 					}`}
 					onClick={triggerFileInput}

@@ -8,14 +8,14 @@ const buttonVariants = cva(
 		variants: {
 			variant: {
 				primary:
-					"bg-[#007BFF] text-white border border-[#007BFF] shadow-sm hover:bg-[#006ae0]",
+					"bg-primary-600 text-white border border-primary-300 shadow-sm hover:bg-primary-700",
 				secondary:
-					"bg-white text-[#007BFF] border border-[#007BFF] hover:bg-blue-50",
+					"bg-gray-200 text-gray-700 border border-gray-300 hover:bg-gray-300",
 				gradient:
-					"bg-gradient-to-r from-[#007BFF] to-[#7DB6F3] text-white font-semibold",
+					"bg-gradient-to-r from-[bg-primary-800] to-[bg-primary-50] text-white font-semibold",
 				transparent: "bg-transparent text-gray-600 hover:bg-gray-100",
 				outline:
-					"bg-transparent text-gray-700 font-semibold border border-gray-300 hover:text-gray-900 hover:bg-gray-100",
+					"bg-transparent text-primary-700 font-semibold border border-primary-200 hover:text-primary-900 hover:bg-primary-50",
 				red: "bg-[#D92D20] text-white border border-[#D92D20] shadow-sm",
 				danger:
 					"bg-[#D92D20] text-white border border-[#D92D20] shadow-sm hover:bg-[#C5271B] focus:ring-red-300",

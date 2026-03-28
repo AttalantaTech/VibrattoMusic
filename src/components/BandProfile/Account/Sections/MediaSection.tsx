@@ -112,7 +112,7 @@ const styles = {
 	titleText: "text-sm font-medium text-gray-700",
 	sectionContainer: "bg-gray-50 py-6 border-b-2 border-gray-200",
 	sectionHeader: "mb-4",
-	sectionIcon: "text-blue-600",
+	sectionIcon: "text-primary-600",
 	subtitle: "block text-gray-500 text-sm my-4",
 };
 
@@ -568,7 +568,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 
 	return (
 		<AccountLayout
-			headerIcon={<ImageIcon className="text-blue-500" size={24} />}
+			headerIcon={<ImageIcon className="text-primary-700" size={24} />}
 			headerTitle="Mídia Kit e Visibilidade"
 		>
 			<div className="flex flex-col w-full h-full gap-4 md:gap-6 overflow-y-auto">

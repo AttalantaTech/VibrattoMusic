@@ -15,7 +15,12 @@ import { HiresTable } from "./HiresTable";
 import { ContractModal } from "./ContractModal";
 import { ProposalModal } from "./ProposalModal";
 import { CancelHiringModal } from "./CancelHiringModal";
-import { useMyHirings, useHiringContract, useHiringProposal, useCancelHiring } from "../../../hooks/useHirings";
+import {
+	useMyHirings,
+	useHiringContract,
+	useHiringProposal,
+	useCancelHiring,
+} from "../../../hooks/useHirings";
 import { useToastStore } from "../../../store/toast/toastStore";
 import { dates, values } from "./data";
 
@@ -60,7 +65,9 @@ export const MyHiresTab = () => {
 		{ id: "cancelled", label: "Canceladas" },
 	];
 
-	const [selectedChartFilters, setSelectedChartFilters] = useState<Array<string>>([]);
+	const [selectedChartFilters, setSelectedChartFilters] = useState<
+		Array<string>
+	>([]);
 	const chartFilters = [{ id: "spending", label: "Gastos" }];
 
 	// Modal states
@@ -69,14 +76,31 @@ export const MyHiresTab = () => {
 	const [cancelModalOpen, setCancelModalOpen] = useState(false);
 
 	// Current items for modals
-	const [currentContractId, setCurrentContractId] = useState<string | null>(null);
-	const [currentProposalId, setCurrentProposalId] = useState<string | null>(null);
-	const [currentHiringToCancel, setCurrentHiringToCancel] = useState<{ id: string; title: string } | null>(null);
+	const [currentContractId, setCurrentContractId] = useState<string | null>(
+		null
+	);
+	const [currentProposalId, setCurrentProposalId] = useState<string | null>(
+		null
+	);
+	const [currentHiringToCancel, setCurrentHiringToCancel] = useState<{
+		id: string;
+		title: string;
+	} | null>(null);
 
 	// Hooks
-	const { data: hiringsData, isLoading: hiringsLoading, refetch: refetchHirings } = useMyHirings();
-	const { data: contractData, isLoading: contractLoading } = useHiringContract(currentContractId || "", !!currentContractId);
-	const { data: proposalData, isLoading: proposalLoading } = useHiringProposal(currentProposalId || "", !!currentProposalId);
+	const {
+		data: hiringsData,
+		isLoading: hiringsLoading,
+		refetch: refetchHirings,
+	} = useMyHirings();
+	const { data: contractData, isLoading: contractLoading } = useHiringContract(
+		currentContractId || "",
+		!!currentContractId
+	);
+	const { data: proposalData, isLoading: proposalLoading } = useHiringProposal(
+		currentProposalId || "",
+		!!currentProposalId
+	);
 	const cancelHiringMutation = useCancelHiring();
 	const { addToast } = useToastStore();
 
@@ -94,7 +118,7 @@ export const MyHiresTab = () => {
 	};
 
 	const handleCancelHiring = (hiringId: string) => {
-		const hiring = filteredHirings.find(h => h.id === hiringId);
+		const hiring = filteredHirings.find((h) => h.id === hiringId);
 		if (hiring) {
 			setCurrentHiringToCancel({ id: hiringId, title: hiring.title });
 			setCancelModalOpen(true);
@@ -186,7 +210,9 @@ export const MyHiresTab = () => {
 			{/* Hirings Table */}
 			<div className="space-y-4">
 				<div className="flex items-center justify-between">
-					<h2 className="font-bold text-xl text-gray-900">Lista de Contratações</h2>
+					<h2 className="font-bold text-xl text-gray-900">
+						Lista de Contratações
+					</h2>
 					<span className="text-sm text-gray-500">
 						{filteredHirings.length} contratações encontradas
 					</span>
@@ -203,8 +229,10 @@ export const MyHiresTab = () => {
 						/>
 					) : (
 						<div className="flex items-center justify-center py-12">
-							<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-							<span className="ml-3 text-gray-600">Carregando contratações...</span>
+							<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+							<span className="ml-3 text-gray-600">
+								Carregando contratações...
+							</span>
 						</div>
 					)}
 				</div>

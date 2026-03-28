@@ -23,7 +23,10 @@ import { Switch } from "../../../../ui/switch";
 import { SingleSelect } from "../../../../forms/SingleSelect/SingleSelect";
 import { useCreateProposal } from "../../../../../hooks/useProposals";
 import { filterService } from "../../../../../api";
-import type { CreateProposalRequest, FilterOption } from "../../../../../api/types";
+import type {
+	CreateProposalRequest,
+	FilterOption,
+} from "../../../../../api/types";
 import { useAuthStore } from "../../../../../store/authStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { messagingKeys } from "../../../../../hooks/useMessaging";
@@ -1128,7 +1131,7 @@ export const SendProposalModal = ({
 						<Button
 							type="submit"
 							disabled={createProposalMutation.isPending || !userProductId}
-							className="bg-blue-600 hover:bg-blue-700"
+							className="bg-primary-600 hover:bg-blue-700"
 						>
 							{createProposalMutation.isPending
 								? "Enviando..."

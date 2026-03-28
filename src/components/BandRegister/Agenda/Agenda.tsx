@@ -117,10 +117,10 @@ export const Agenda = ({ onEventsChange }: AgendaProps) => {
 						<div
 							key={day.toString()}
 							className={`min-h-16 p-1 border rounded cursor-pointer hover:bg-gray-50 ${
-								isSameDay(day, new Date()) ? "bg-blue-50" : ""
+								isSameDay(day, new Date()) ? "bg-primary-50" : ""
 							} ${
 								selectedDate && isSameDay(day, selectedDate)
-									? "border-blue-500 border-2"
+									? "border-primary-500 border-2"
 									: ""
 							}`}
 							onClick={() => {
@@ -132,7 +132,7 @@ export const Agenda = ({ onEventsChange }: AgendaProps) => {
 								{dayEvents.slice(0, 2).map((event) => (
 									<div
 										key={event.id}
-										className="text-xs p-1 bg-blue-100 rounded truncate"
+										className="text-xs p-1 bg-primary-100 rounded truncate"
 									>
 										{event.title}
 									</div>
@@ -198,7 +198,7 @@ export const Agenda = ({ onEventsChange }: AgendaProps) => {
 							/>
 						</div>
 						<button
-							className="w-full bg-blue-500 text-white py-2 px-4 rounded disabled:bg-blue-300"
+							className="w-full bg-primary-500 text-white py-2 px-4 rounded disabled:bg-primary-300"
 							disabled={!newEvent.title}
 							onClick={handleAddEvent}
 						>

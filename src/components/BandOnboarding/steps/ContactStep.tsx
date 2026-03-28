@@ -221,7 +221,7 @@ export default function ContactStep() {
 					: "Limpar Dados do Cadastro"
 			}
 			headerTitle="Informações de contato"
-			headerIcon={<UserIcon color="#007bff" size={24} />}
+			headerIcon={<UserIcon className="text-primary-700" size={24} />}
 		>
 			<form
 				onSubmit={handleSubmit(onSubmit)}

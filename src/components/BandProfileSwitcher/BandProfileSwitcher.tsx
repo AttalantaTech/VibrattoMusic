@@ -113,7 +113,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 								{userData?.nome ?? "Usuário"}
 							</span>
 							{!activeMusicalProduct && (
-								<Check className="h-4 w-4 text-blue-600 ml-auto" />
+								<Check className="h-4 w-4 text-primary-600 ml-auto" />
 							)}
 						</button>
 
@@ -141,7 +141,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 									{product.nome}
 								</span>
 								{product.id === activeMusicalProduct?.id && (
-									<Check className="h-4 w-4 text-blue-600 ml-auto" />
+									<Check className="h-4 w-4 text-primary-600 ml-auto" />
 								)}
 							</button>
 						))}

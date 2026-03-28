@@ -16,7 +16,10 @@ export const ReportsSkeleton: React.FC = () => {
 			<div className="flex items-center w-full justify-center">
 				<div className="grid grid-cols-3 gap-4 w-full">
 					{Array.from({ length: 6 }).map((_, index) => (
-						<div key={index} className="flex w-full bg-gray-50 gap-12 rounded-md px-2 py-4 border border-gray-200 items-center">
+						<div
+							key={index}
+							className="flex w-full bg-gray-50 gap-12 rounded-md px-2 py-4 border border-gray-200 items-center"
+						>
 							{/* Icon skeleton */}
 							<div className="bg-gray-200 rounded-lg p-4 animate-pulse">
 								<div className="w-6 h-6 bg-gray-300 rounded"></div>
@@ -57,10 +60,13 @@ export const ChartSkeleton: React.FC = () => {
 					{Array.from({ length: 5 }).map((_, index) => (
 						<div key={index} className="flex items-center">
 							<div className="w-8 h-3 bg-gray-200 rounded mr-4 animate-pulse"></div>
-							<div className={`h-1 bg-gray-300 rounded animate-pulse`} style={{
-								width: `${Math.random() * 60 + 20}%`,
-								animationDelay: `${index * 0.1}s`
-							}}></div>
+							<div
+								className={`h-1 bg-gray-300 rounded animate-pulse`}
+								style={{
+									width: `${Math.random() * 60 + 20}%`,
+									animationDelay: `${index * 0.1}s`,
+								}}
+							></div>
 						</div>
 					))}
 				</div>
@@ -76,7 +82,10 @@ export const TableSkeleton: React.FC = () => {
 	return (
 		<div className="space-y-4">
 			{Array.from({ length: 5 }).map((_, index) => (
-				<div key={index} className="bg-white border border-gray-200 rounded-lg p-6">
+				<div
+					key={index}
+					className="bg-white border border-gray-200 rounded-lg p-6"
+				>
 					<div className="flex flex-col lg:flex-row justify-between gap-4">
 						{/* Main content skeleton */}
 						<div className="flex-1 space-y-3">
@@ -98,9 +107,12 @@ export const TableSkeleton: React.FC = () => {
 								{Array.from({ length: 4 }).map((_, detailIndex) => (
 									<div key={detailIndex} className="flex items-center gap-2">
 										<div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
-										<div className="h-4 bg-gray-200 rounded animate-pulse" style={{
-											width: `${Math.random() * 20 + 60}%`
-										}}></div>
+										<div
+											className="h-4 bg-gray-200 rounded animate-pulse"
+											style={{
+												width: `${Math.random() * 20 + 60}%`,
+											}}
+										></div>
 									</div>
 								))}
 							</div>
@@ -186,9 +198,12 @@ export const ProposalModalSkeleton: React.FC = () => {
 										<div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
 										<div>
 											<div className="h-4 bg-gray-200 rounded w-16 mb-1 animate-pulse"></div>
-											<div className="h-5 bg-gray-200 rounded animate-pulse" style={{
-												width: `${Math.random() * 20 + 60}%`
-											}}></div>
+											<div
+												className="h-5 bg-gray-200 rounded animate-pulse"
+												style={{
+													width: `${Math.random() * 20 + 60}%`,
+												}}
+											></div>
 										</div>
 									</div>
 								))}
@@ -220,15 +235,15 @@ export const LoadingSpinner: React.FC<{
 	const sizeClasses = {
 		sm: "w-4 h-4",
 		md: "w-8 h-8",
-		lg: "w-12 h-12"
+		lg: "w-12 h-12",
 	};
 
 	return (
 		<div className="flex flex-col items-center justify-center gap-2">
-			<div className={`${sizeClasses[size]} border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin`}></div>
-			{message && (
-				<p className="text-sm text-gray-600">{message}</p>
-			)}
+			<div
+				className={`${sizeClasses[size]} border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin`}
+			></div>
+			{message && <p className="text-sm text-gray-600">{message}</p>}
 		</div>
 	);
 };
@@ -256,16 +271,28 @@ export const ErrorState: React.FC<{
 	return (
 		<div className="flex flex-col items-center justify-center min-h-[200px] text-center">
 			<div className="text-red-500 mb-4">
-				<svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+				<svg
+					className="w-12 h-12"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+				>
+					<path
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						strokeWidth={2}
+						d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+					/>
 				</svg>
 			</div>
-			<h3 className="text-lg font-semibold text-gray-900 mb-2">Ops! Algo deu errado</h3>
+			<h3 className="text-lg font-semibold text-gray-900 mb-2">
+				Ops! Algo deu errado
+			</h3>
 			<p className="text-gray-600 mb-4">{message}</p>
 			{onRetry && (
 				<button
 					onClick={onRetry}
-					className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+					className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
 				>
 					Tentar novamente
 				</button>
@@ -285,11 +312,7 @@ export const EmptyState: React.FC<{
 }> = ({ icon, title, message, action }) => {
 	return (
 		<div className="flex flex-col items-center justify-center min-h-[400px] bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-			{icon && (
-				<div className="text-gray-400 mb-4">
-					{icon}
-				</div>
-			)}
+			{icon && <div className="text-gray-400 mb-4">{icon}</div>}
 			<h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
 			<p className="text-gray-600 text-center max-w-md mb-4">{message}</p>
 			{action}

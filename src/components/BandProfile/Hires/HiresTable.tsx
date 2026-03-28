@@ -5,7 +5,7 @@ import {
 	SquareArrowOutUpRightIcon,
 	FileTextIcon,
 	XIcon,
-	EyeIcon
+	EyeIcon,
 } from "lucide-react";
 import { GenericTable } from "../../ui/Table/Table";
 import { Button } from "../../ui/Button/Button";
@@ -22,7 +22,7 @@ interface HiresTableProps {
 const getStatusColor = (status: HiringStatus) => {
 	switch (status) {
 		case "Proposta recebida":
-			return "bg-blue-100 text-blue-800";
+			return "bg-primary-100 text-primary-800";
 		case "Aguardando pagamento":
 			return "bg-yellow-100 text-yellow-800";
 		case "Contrato pendente":
@@ -44,7 +44,7 @@ export const HiresTable = ({
 	onViewContract,
 	onViewProposal,
 	onCancelHiring,
-	onViewDetails
+	onViewDetails,
 }: HiresTableProps) => {
 	// Create columns with handlers
 	const tableColumns = [
@@ -52,7 +52,9 @@ export const HiresTable = ({
 			header: "Evento/Serviço",
 			cell: ({ row }) => (
 				<div className="flex flex-col">
-					<div className="font-medium text-gray-900">{row.getValue("title")}</div>
+					<div className="font-medium text-gray-900">
+						{row.getValue("title")}
+					</div>
 					<div className="text-gray-500 text-sm">{row.getValue("date")}</div>
 				</div>
 			),
@@ -61,7 +63,9 @@ export const HiresTable = ({
 			header: "Músico Contratado",
 			cell: ({ row }) => (
 				<div className="flex flex-col">
-					<div className="font-medium text-gray-900">{row.getValue("hiredArtist")}</div>
+					<div className="font-medium text-gray-900">
+						{row.getValue("hiredArtist")}
+					</div>
 					<div className="text-gray-500 text-sm">{row.original.service}</div>
 				</div>
 			),
@@ -69,9 +73,7 @@ export const HiresTable = ({
 		columnHelper.accessor("value", {
 			header: "Valor",
 			cell: (info) => (
-				<span className="font-medium text-gray-900">
-					R$ {info.getValue()}
-				</span>
+				<span className="font-medium text-gray-900">R$ {info.getValue()}</span>
 			),
 		}),
 		columnHelper.accessor("status", {
@@ -98,10 +100,10 @@ export const HiresTable = ({
 							variant="transparent"
 							size="sm"
 							onClick={() => onViewProposal?.(hiring.id)}
-							className="p-2 hover:bg-blue-50"
+							className="p-2 hover:bg-primary-50"
 							title="Visualizar Proposta"
 						>
-							<EyeIcon size={16} className="text-blue-600" />
+							<EyeIcon size={16} className="text-primary-600" />
 						</Button>
 
 						{hiring.contractId && (

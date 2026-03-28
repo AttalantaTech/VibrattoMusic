@@ -116,8 +116,8 @@ const ConfigurationsInterface = () => {
 			<div className="max-w-md">
 				{/* Header */}
 				<div className="flex items-center mb-8">
-					<div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-						<LockIcon className="w-4 h-4 text-blue-600" />
+					<div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3">
+						<LockIcon className="w-4 h-4 text-primary-600" />
 					</div>
 					<h2 className="text-xl font-semibold text-gray-900">Senha</h2>
 				</div>
@@ -136,7 +136,7 @@ const ConfigurationsInterface = () => {
 								onChange={(event) => {
 									handlePasswordChange("current", event.target.value);
 								}}
-								className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+								className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-primary-500"
 								placeholder="••••••••"
 							/>
 							<button
@@ -167,7 +167,7 @@ const ConfigurationsInterface = () => {
 								onChange={(event) => {
 									handlePasswordChange("new", event.target.value);
 								}}
-								className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+								className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-primary-500"
 								placeholder="••••••••"
 							/>
 							<button
@@ -198,7 +198,7 @@ const ConfigurationsInterface = () => {
 								onChange={(event) => {
 									handlePasswordChange("confirm", event.target.value);
 								}}
-								className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+								className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-primary-500"
 								placeholder="••••••••"
 							/>
 							<button
@@ -237,8 +237,8 @@ const ConfigurationsInterface = () => {
 		<div className="flex-1 p-8">
 			{/* Header */}
 			<div className="flex items-center mb-8">
-				<div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-					<DollarSign className="w-4 h-4 text-blue-600" />
+				<div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3">
+					<DollarSign className="w-4 h-4 text-primary-600" />
 				</div>
 				<h2 className="text-xl font-semibold text-gray-900">
 					Histórico de Pagamentos
@@ -288,7 +288,7 @@ const ConfigurationsInterface = () => {
 								}}
 								className={`w-full flex items-center justify-between p-4 rounded-lg text-left transition-colors ${
 									activeSection === item.id
-										? "bg-blue-50 text-blue-700 border border-blue-200"
+										? "bg-primary-50 text-primary-700 border border-primary-200"
 										: "text-gray-700 hover:bg-gray-50"
 								}`}
 							>
@@ -298,19 +298,19 @@ const ConfigurationsInterface = () => {
 											size={20}
 											className={
 												activeSection === item.id
-													? "text-blue-700"
+													? "text-primary-700"
 													: "text-gray-500"
 											}
 										/>
 									)}
 									<span
-										className={`font-medium ${activeSection === item.id ? "text-blue-700" : ""}`}
+										className={`font-medium ${activeSection === item.id ? "text-primary-700" : ""}`}
 									>
 										{item.label}
 									</span>
 								</div>
 								<ChevronRight
-									className={`w-4 h-4 ${activeSection === item.id ? "text-blue-700" : "text-gray-400"}`}
+									className={`w-4 h-4 ${activeSection === item.id ? "text-primary-700" : "text-gray-400"}`}
 								/>
 							</button>
 						))}
@@ -327,9 +327,9 @@ const ConfigurationsInterface = () => {
 				{activeSection === "perfil-ativo" && (
 					<div className="flex-1 p-8">
 						<div className="flex items-center mb-8">
-							<div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+							<div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3">
 								{isProfileActive ? (
-									<ToggleRight className="w-4 h-4 text-blue-600" />
+									<ToggleRight className="w-4 h-4 text-primary-600" />
 								) : (
 									<ToggleLeft className="w-4 h-4 text-gray-600" />
 								)}

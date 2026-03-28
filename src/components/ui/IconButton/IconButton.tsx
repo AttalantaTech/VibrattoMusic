@@ -2,8 +2,7 @@ import React from "react";
 
 type ButtonVariant = "primary" | "secondary" | "outline";
 
-interface IconButtonProps
-	extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 	variant?: ButtonVariant;
 	icon: React.ReactNode;
 	children: React.ReactNode;
@@ -16,9 +15,9 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
 
 		const variantClasses = {
 			primary:
-				"bg-[#007BFF] text-white border border-[#007BFF] shadow-sm hover:bg-[#006ae0]",
+				"bg-primary-600 text-white border border-primary-600 shadow-sm hover:bg-[#006ae0]",
 			secondary:
-				"bg-white text-[#007BFF] border border-[#007BFF] hover:bg-blue-50",
+				"bg-white text-primary-600 border border-primary-600 hover:bg-primary-50",
 			outline:
 				"border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus-visible:ring-gray-500",
 		};

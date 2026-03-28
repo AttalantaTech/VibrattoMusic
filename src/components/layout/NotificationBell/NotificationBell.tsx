@@ -97,7 +97,7 @@ export const NotificationBell = () => {
 								</h3>
 								{unreadCount > 0 && (
 									<button
-										className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 transition-colors whitespace-nowrap"
+										className="text-xs sm:text-sm text-primary-600 hover:text-primary-800 transition-colors whitespace-nowrap"
 										onClick={markAllAsRead}
 									>
 										Marcar todas como lidas
@@ -140,7 +140,7 @@ export const NotificationBell = () => {
 									<div
 										key={notification.id}
 										className={`p-3 sm:p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
-											!notification.read ? "bg-blue-50" : ""
+											!notification.read ? "bg-primary-50" : ""
 										}`}
 										onClick={() => {
 											markAsRead(notification.id);
@@ -165,7 +165,7 @@ export const NotificationBell = () => {
 												</p>
 											</div>
 											{!notification.read && (
-												<div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1" />
+												<div className="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0 mt-1" />
 											)}
 										</div>
 									</div>

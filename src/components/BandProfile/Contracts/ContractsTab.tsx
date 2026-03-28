@@ -216,7 +216,7 @@ export const ContractsTab = () => {
 							<Button
 								size="sm"
 								variant="outline"
-								className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-300"
+								className="text-primary-600 hover:text-primary-700 hover:bg-primary-50 border-primary-300"
 								onClick={handleViewContract}
 							>
 								<Eye className="h-4 w-4 mr-1" />

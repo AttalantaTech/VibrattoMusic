@@ -41,7 +41,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 	const getIcon = () => {
 		switch (notification.type) {
 			case "booking":
-				return <Calendar className="w-5 h-5 text-blue-500" />;
+				return <Calendar className="w-5 h-5 text-primary-500" />;
 			case "message":
 				return <MessageCircle className="w-5 h-5 text-green-500" />;
 			case "payment":
@@ -72,7 +72,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 		<div
 			className={`
 			p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors
-			${!notification.read ? "bg-blue-50 border-blue-100" : ""}
+			${!notification.read ? "bg-primary-50 border-blue-100" : ""}
 		`}
 		>
 			<div className="flex items-start gap-3">
@@ -129,7 +129,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 						</span>
 
 						{!notification.read && (
-							<div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+							<div className="w-2 h-2 bg-primary-500 rounded-full"></div>
 						)}
 					</div>
 				</div>

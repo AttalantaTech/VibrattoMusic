@@ -81,7 +81,7 @@ export const BookingDetailsModal = ({
 			case "cancelado":
 				return "bg-red-100 text-red-800";
 			case "concluido":
-				return "bg-blue-100 text-blue-800";
+				return "bg-primary-100 text-primary-800";
 			default:
 				return "bg-gray-100 text-gray-800";
 		}
@@ -321,7 +321,7 @@ export const BookingDetailsModal = ({
 						<Button
 							onClick={() => handleStatusUpdate(BookingStatus.COMPLETED)}
 							disabled={updateStatusMutation.isPending}
-							className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+							className="flex items-center gap-2 bg-primary-600 hover:bg-blue-700"
 						>
 							<CheckCircle className="w-4 h-4" />
 							Concluir

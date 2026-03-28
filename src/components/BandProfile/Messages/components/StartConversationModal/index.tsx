@@ -82,7 +82,9 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 							id="subject"
 							type="text"
 							value={subject}
-							onChange={(event: React.ChangeEvent<HTMLInputElement>) => { setSubject(event.target.value); }}
+							onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+								setSubject(event.target.value);
+							}}
 							className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
 							placeholder="Sobre o que você quer conversar?"
 							disabled={isPending}
@@ -99,7 +101,9 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 						<textarea
 							id="message"
 							value={message}
-							onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => { setMessage(event.target.value); }}
+							onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
+								setMessage(event.target.value);
+							}}
 							className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none"
 							placeholder="Digite sua mensagem..."
 							disabled={isPending}
@@ -117,7 +121,7 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 						</button>
 						<button
 							type="submit"
-							className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+							className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50"
 							disabled={isPending}
 						>
 							{isPending ? "Iniciando..." : "Iniciar Conversa"}

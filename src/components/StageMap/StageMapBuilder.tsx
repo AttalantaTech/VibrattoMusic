@@ -36,6 +36,7 @@ import {
 
 import { useInstrumentos } from "@/hooks/useFilters";
 import { TabNavigation } from "../ui/TabNavigation/TabNavigation";
+import { Button } from "../ui/Button/Button";
 
 // Custom hooks
 const useStageHistory = (
@@ -426,7 +427,7 @@ export function StageMapBuilder({
 									onChange={(event) => {
 										setInfrastructureSearch(event.target.value);
 									}}
-									className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+									className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-transparent"
 								/>
 							</div>
 
@@ -498,7 +499,7 @@ export function StageMapBuilder({
 								<div className="grid grid-cols-3 gap-3">
 									{loadingInstruments ? (
 										<div className="col-span-3 text-center py-4">
-											<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+											<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
 										</div>
 									) : filteredInstrumentElements.length > 0 ? (
 										filteredInstrumentElements
@@ -510,7 +511,7 @@ export function StageMapBuilder({
 													onDragStart={() => {
 														handleDragStart(element);
 													}}
-													className="p-3 bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg cursor-grab transition-all duration-200 flex flex-col items-center gap-2"
+													className="p-3 bg-white hover:bg-primary-50 border border-gray-200 hover:border-primary-300 rounded-lg cursor-grab transition-all duration-200 flex flex-col items-center gap-2"
 												>
 													<div style={{ color: element.color }}>
 														{element.icon}
@@ -546,7 +547,7 @@ export function StageMapBuilder({
 				{/* Header */}
 				<div className="flex items-center justify-between p-6 border-b border-gray-200">
 					<div className="flex items-center gap-3">
-						<div className="p-2 bg-blue-600 rounded-lg">
+						<div className="p-2 bg-primary-600 rounded-lg">
 							<Layers className="w-6 h-6 text-white" />
 						</div>
 						<div>
@@ -717,7 +718,7 @@ export function StageMapBuilder({
 								})}
 
 								{/* Audience Indicator */}
-								<div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
+								<div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-primary-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
 									Frente (Plateia)
 								</div>
 							</div>
@@ -768,7 +769,7 @@ export function StageMapBuilder({
 											}}
 											className={`p-2 rounded-lg transition-all ${
 												showGrid
-													? "bg-blue-100 text-blue-600"
+													? "bg-primary-100 text-primary-600"
 													: "bg-gray-200 text-gray-400 hover:bg-gray-300"
 											}`}
 										>
@@ -852,19 +853,20 @@ export function StageMapBuilder({
 					</div>
 
 					<div className="flex gap-3">
-						<button
+						<Button
+							variant="secondary"
 							onClick={onClose}
-							className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-all duration-200"
+							className="px-6 py-2.5 font-medium rounded-lg transition-all duration-200"
 						>
 							Cancelar
-						</button>
-						<button
+						</Button>
+						<Button
 							onClick={handleSave}
-							className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 flex items-center gap-2"
+							className="px-6 py-2.5 text-white font-medium rounded-lg transition-all duration-200 flex items-center gap-2"
 						>
 							<Save className="w-4 h-4" />
 							Salvar Mapa
-						</button>
+						</Button>
 					</div>
 				</div>
 			</div>

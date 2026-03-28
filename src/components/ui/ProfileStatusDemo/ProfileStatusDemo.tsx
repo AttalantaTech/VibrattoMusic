@@ -82,8 +82,8 @@ export const ProfileStatusDemo = () => {
 			</Button>
 
 			{/* Instructions */}
-			<div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
-				<p className="text-xs text-blue-800">
+			<div className="mt-4 p-3 bg-primary-50 border border-primary-200 rounded">
+				<p className="text-xs text-primary-800">
 					<strong>Como testar:</strong>
 					<br />
 					1. Complete seu perfil musical no onboarding

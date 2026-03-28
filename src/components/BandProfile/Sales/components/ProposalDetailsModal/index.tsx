@@ -238,7 +238,7 @@ export const ProposalDetailsModal = ({
 						{/* Contractor signature button */}
 						{needsContractorSignature && (
 							<Button
-								className="bg-blue-600 hover:bg-blue-700"
+								className="bg-primary-600 hover:bg-blue-700"
 								onClick={() => {
 									onSignContract(proposal.identificadorUnico);
 									onClose();
@@ -252,7 +252,7 @@ export const ProposalDetailsModal = ({
 						{/* Band (contracted) signature button */}
 						{needsContractedSignature && (
 							<Button
-								className="bg-blue-600 hover:bg-blue-700"
+								className="bg-primary-600 hover:bg-blue-700"
 								onClick={() => {
 									onSignContract(proposal.identificadorUnico);
 									onClose();

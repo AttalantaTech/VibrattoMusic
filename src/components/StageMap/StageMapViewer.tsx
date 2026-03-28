@@ -96,7 +96,7 @@ export const StageMapViewer = ({
 		<div className="bg-white rounded-lg border-2 border-gray-200 p-6">
 			<div className="flex items-center justify-between mb-4">
 				<div className="flex items-center gap-2">
-					<MapIcon size={20} className="text-blue-600" />
+					<MapIcon size={20} className="text-primary-600" />
 					<h3 className="text-lg font-semibold text-gray-700">Mapa do Palco</h3>
 				</div>
 				{editable && (
@@ -139,7 +139,7 @@ export const StageMapViewer = ({
 				{stageElements.map((element) => (
 					<div
 						key={element.id}
-						className="absolute bg-blue-500 text-white text-xs font-medium rounded-lg border-2 border-blue-600 flex items-center justify-center shadow-lg"
+						className="absolute bg-primary-500 text-white text-xs font-medium rounded-lg border-2 border-primary-600 flex items-center justify-center shadow-lg"
 						style={{
 							left: `${element.x}%`,
 							top: `${element.y}%`,
@@ -165,7 +165,7 @@ export const StageMapViewer = ({
 								key={element.id}
 								className="flex items-center gap-2 text-sm text-gray-600"
 							>
-								<div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
+								<div className="w-3 h-3 bg-primary-500 rounded-full flex-shrink-0"></div>
 								<span className="truncate">{element.instrumentName}</span>
 							</div>
 						))}

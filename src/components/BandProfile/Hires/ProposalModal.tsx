@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { X, Download, Eye, Calendar, DollarSign, Clock } from "lucide-react";
 import { Button } from "../../ui/Button/Button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "../../ui/dialog";
 
 interface ProposalModalProps {
 	isOpen: boolean;
@@ -22,7 +27,14 @@ interface ProposalModalProps {
 	onReject?: (proposalId: string) => void;
 }
 
-export const ProposalModal = ({ isOpen, onClose, proposal, loading, onAccept, onReject }: ProposalModalProps) => {
+export const ProposalModal = ({
+	isOpen,
+	onClose,
+	proposal,
+	loading,
+	onAccept,
+	onReject,
+}: ProposalModalProps) => {
 	const [downloading, setDownloading] = useState(false);
 
 	const handleDownload = async () => {
@@ -33,12 +45,15 @@ export const ProposalModal = ({ isOpen, onClose, proposal, loading, onAccept, on
 			const content = `
 PROPOSTA #${proposal.id}
 
-Data de Criação: ${new Date(proposal.createdAt).toLocaleDateString('pt-BR')}
+Data de Criação: ${new Date(proposal.createdAt).toLocaleDateString("pt-BR")}
 
 SERVIÇOS PROPOSTOS:
-${proposal.services.map(service =>
-	`- ${service.name}: ${service.description} - R$ ${service.value.toFixed(2)}`
-).join('\n')}
+${proposal.services
+	.map(
+		(service) =>
+			`- ${service.name}: ${service.description} - R$ ${service.value.toFixed(2)}`
+	)
+	.join("\n")}
 
 DESCRIÇÃO DETALHADA:
 ${proposal.content}
@@ -46,9 +61,9 @@ ${proposal.content}
 Valor Total: R$ ${proposal.services.reduce((total, service) => total + service.value, 0).toFixed(2)}
 			`;
 
-			const blob = new Blob([content], { type: 'text/plain' });
+			const blob = new Blob([content], { type: "text/plain" });
 			const url = URL.createObjectURL(blob);
-			const a = document.createElement('a');
+			const a = document.createElement("a");
 			a.href = url;
 			a.download = `proposta-${proposal.id}.txt`;
 			document.body.appendChild(a);
@@ -56,13 +71,15 @@ Valor Total: R$ ${proposal.services.reduce((total, service) => total + service.v
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
 		} catch (error) {
-			console.error('Erro ao baixar proposta:', error);
+			console.error("Erro ao baixar proposta:", error);
 		} finally {
 			setDownloading(false);
 		}
 	};
 
-	const totalValue = proposal?.services.reduce((total, service) => total + service.value, 0) || 0;
+	const totalValue =
+		proposal?.services.reduce((total, service) => total + service.value, 0) ||
+		0;
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
@@ -70,7 +87,7 @@ Valor Total: R$ ${proposal.services.reduce((total, service) => total + service.v
 				<DialogHeader>
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-3">
-							<Eye className="w-6 h-6 text-blue-600" />
+							<Eye className="w-6 h-6 text-primary-600" />
 							<DialogTitle className="text-xl font-semibold">
 								Proposta #{proposal?.id}
 							</DialogTitle>
@@ -88,7 +105,7 @@ Valor Total: R$ ${proposal.services.reduce((total, service) => total + service.v
 
 				{loading ? (
 					<div className="flex items-center justify-center py-8">
-						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
 					</div>
 				) : proposal ? (
 					<div className="space-y-6">
@@ -99,7 +116,7 @@ Valor Total: R$ ${proposal.services.reduce((total, service) => total + service.v
 								<div>
 									<p className="text-sm text-gray-500">Criada em</p>
 									<p className="font-medium">
-										{new Date(proposal.createdAt).toLocaleDateString('pt-BR')}
+										{new Date(proposal.createdAt).toLocaleDateString("pt-BR")}
 									</p>
 								</div>
 							</div>
@@ -131,8 +148,12 @@ Valor Total: R$ ${proposal.services.reduce((total, service) => total + service.v
 									<div key={index} className="border rounded-lg p-4 bg-white">
 										<div className="flex justify-between items-start">
 											<div className="flex-1">
-												<h4 className="font-medium text-gray-900">{service.name}</h4>
-												<p className="text-sm text-gray-600 mt-1">{service.description}</p>
+												<h4 className="font-medium text-gray-900">
+													{service.name}
+												</h4>
+												<p className="text-sm text-gray-600 mt-1">
+													{service.description}
+												</p>
 											</div>
 											<div className="text-right ml-4">
 												<p className="font-semibold text-green-600">
@@ -164,14 +185,14 @@ Valor Total: R$ ${proposal.services.reduce((total, service) => total + service.v
 								className="flex items-center gap-2"
 							>
 								<Download className="w-4 h-4" />
-								{downloading ? 'Baixando...' : 'Baixar Proposta'}
+								{downloading ? "Baixando..." : "Baixar Proposta"}
 							</Button>
 
 							<div className="flex gap-3">
 								<Button variant="outline" onClick={onClose}>
 									Fechar
 								</Button>
-								{proposal.status === 'recebida' && (
+								{proposal.status === "recebida" && (
 									<>
 										<Button
 											variant="outline"

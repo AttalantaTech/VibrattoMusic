@@ -106,7 +106,7 @@ export const FileUploadBox = ({
 			<div
 				className={`flex flex-col justify-center items-center bg-white border text-gray-500 gap-4 py-6 px-5 w-full transition-colors rounded-lg cursor-pointer ${
 					isDragging
-						? "border-blue-500 bg-blue-50"
+						? "border-primary-500 bg-primary-50"
 						: "border-gray-200 hover:border-gray-300"
 				} ${error ? "border-red-500" : ""}`}
 				onClick={triggerFileInput}

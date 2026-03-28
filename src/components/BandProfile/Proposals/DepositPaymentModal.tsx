@@ -1,7 +1,20 @@
 import { useState } from "react";
-import { CreditCard, AlertCircle, CheckCircle, Loader2, DollarSign, Calendar, Info } from "lucide-react";
+import {
+	CreditCard,
+	AlertCircle,
+	CheckCircle,
+	Loader2,
+	DollarSign,
+	Calendar,
+	Info,
+} from "lucide-react";
 import { Button } from "../../ui/Button/Button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "../../ui/dialog";
 import { Badge } from "../../ui/Badge/Badge";
 import { useUpdateProposalStatus } from "../../../hooks/useProposals";
 import type { ProposalResponse } from "../../../api/types";
@@ -12,8 +25,14 @@ interface DepositPaymentModalProps {
 	proposal: ProposalResponse | null;
 }
 
-export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymentModalProps) => {
-	const [step, setStep] = useState<'info' | 'gateway' | 'success' | 'error'>('info');
+export const DepositPaymentModal = ({
+	isOpen,
+	onClose,
+	proposal,
+}: DepositPaymentModalProps) => {
+	const [step, setStep] = useState<"info" | "gateway" | "success" | "error">(
+		"info"
+	);
 	const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
 	const markPaidMutation = useUpdateProposalStatus();
@@ -25,7 +44,7 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 		// Simulate payment processing
 		setTimeout(() => {
 			setIsProcessingPayment(false);
-			setStep('success');
+			setStep("success");
 		}, 2000);
 	};
 
@@ -35,23 +54,23 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 		try {
 			await markPaidMutation.mutateAsync({
 				proposalId: proposal.id,
-				status: 'sinalPago'
+				status: "sinalPago",
 			});
-			setStep('success');
+			setStep("success");
 		} catch (error) {
-			console.error('Error marking deposit as paid:', error);
-			setStep('error');
+			console.error("Error marking deposit as paid:", error);
+			setStep("error");
 		}
 	};
 
 	const handleClose = () => {
-		setStep('info');
+		setStep("info");
 		setIsProcessingPayment(false);
 		onClose();
 	};
 
 	const handleSuccessClose = () => {
-		setStep('info');
+		setStep("info");
 		setIsProcessingPayment(false);
 		onClose();
 	};
@@ -66,25 +85,35 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 			<DialogContent className="max-w-lg">
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
-						{step === 'info' && <CreditCard className="w-5 h-5 text-blue-600" />}
-						{step === 'gateway' && <CreditCard className="w-5 h-5 text-blue-600" />}
-						{step === 'success' && <CheckCircle className="w-5 h-5 text-green-600" />}
-						{step === 'error' && <AlertCircle className="w-5 h-5 text-red-600" />}
-						{step === 'info' && 'Pagamento do Sinal'}
-						{step === 'gateway' && 'Processando Pagamento'}
-						{step === 'success' && 'Pagamento Confirmado!'}
-						{step === 'error' && 'Erro no Pagamento'}
+						{step === "info" && (
+							<CreditCard className="w-5 h-5 text-primary-600" />
+						)}
+						{step === "gateway" && (
+							<CreditCard className="w-5 h-5 text-primary-600" />
+						)}
+						{step === "success" && (
+							<CheckCircle className="w-5 h-5 text-green-600" />
+						)}
+						{step === "error" && (
+							<AlertCircle className="w-5 h-5 text-red-600" />
+						)}
+						{step === "info" && "Pagamento do Sinal"}
+						{step === "gateway" && "Processando Pagamento"}
+						{step === "success" && "Pagamento Confirmado!"}
+						{step === "error" && "Erro no Pagamento"}
 					</DialogTitle>
 				</DialogHeader>
 
 				<div className="space-y-6">
-					{step === 'info' && (
+					{step === "info" && (
 						<>
 							{/* Proposal Summary */}
 							<div className="space-y-3 p-4 bg-gray-50 rounded-lg">
 								<div className="flex items-center justify-between">
-									<span className="text-sm font-medium">Proposta #{proposal.id}</span>
-									<Badge className="bg-blue-100 text-blue-800">
+									<span className="text-sm font-medium">
+										Proposta #{proposal.id}
+									</span>
+									<Badge className="bg-primary-100 text-primary-800">
 										Aguardando Pagamento
 									</Badge>
 								</div>
@@ -92,36 +121,57 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 								<div className="space-y-2 text-sm">
 									<div className="flex items-center gap-2">
 										<DollarSign className="w-4 h-4 text-gray-500" />
-										<span>Valor Total: R$ {proposal.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+										<span>
+											Valor Total: R${" "}
+											{proposal.valor.toLocaleString("pt-BR", {
+												minimumFractionDigits: 2,
+											})}
+										</span>
 									</div>
 
 									<div className="flex items-center gap-2">
 										<DollarSign className="w-4 h-4 text-green-600" />
 										<span className="font-medium text-green-600">
-											Sinal: R$ {depositAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+											Sinal: R${" "}
+											{depositAmount.toLocaleString("pt-BR", {
+												minimumFractionDigits: 2,
+											})}
 										</span>
 									</div>
 
 									<div className="flex items-center gap-2">
 										<Calendar className="w-4 h-4 text-gray-500" />
-										<span>Vencimento: {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}</span>
+										<span>
+											Vencimento:{" "}
+											{new Date(
+												Date.now() + 7 * 24 * 60 * 60 * 1000
+											).toLocaleDateString("pt-BR")}
+										</span>
 									</div>
 								</div>
 							</div>
 
 							{/* Payment Options */}
 							<div className="space-y-4">
-								<h4 className="font-medium text-gray-900">Opções de Pagamento</h4>
+								<h4 className="font-medium text-gray-900">
+									Opções de Pagamento
+								</h4>
 
 								{/* Payment Gateway Placeholder */}
 								<div
-									className="p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 transition-colors"
-									onClick={() => { setStep('gateway'); }}
+									className="p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-400 transition-colors"
+									onClick={() => {
+										setStep("gateway");
+									}}
 								>
 									<div className="text-center">
 										<CreditCard className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-										<p className="font-medium text-gray-700">Pagar com Cartão</p>
-										<p className="text-sm text-gray-500">Stripe, PagSeguro, Mercado Pago</p>
+										<p className="font-medium text-gray-700">
+											Pagar com Cartão
+										</p>
+										<p className="text-sm text-gray-500">
+											Stripe, PagSeguro, Mercado Pago
+										</p>
 										<p className="text-xs text-gray-400 mt-1">
 											Integração em desenvolvimento
 										</p>
@@ -131,12 +181,14 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 								{/* Manual Confirmation */}
 								<div className="p-4 border border-gray-200 rounded-lg">
 									<div className="flex items-start gap-3">
-										<Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+										<Info className="w-5 h-5 text-primary-500 flex-shrink-0 mt-0.5" />
 										<div className="text-sm">
-											<p className="font-medium text-gray-700">Pagamento Manual</p>
+											<p className="font-medium text-gray-700">
+												Pagamento Manual
+											</p>
 											<p className="text-gray-600 mt-1">
-												Se você já efetuou o pagamento por transferência bancária,
-												pix ou outro meio, confirme abaixo.
+												Se você já efetuou o pagamento por transferência
+												bancária, pix ou outro meio, confirme abaixo.
 											</p>
 											<Button
 												variant="outline"
@@ -151,7 +203,7 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 														Processando...
 													</>
 												) : (
-													'Marcar como Pago'
+													"Marcar como Pago"
 												)}
 											</Button>
 										</div>
@@ -175,12 +227,18 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 
 							{/* Actions */}
 							<div className="flex gap-3">
-								<Button variant="outline" onClick={handleClose} className="flex-1">
+								<Button
+									variant="outline"
+									onClick={handleClose}
+									className="flex-1"
+								>
 									Cancelar
 								</Button>
 								<Button
-									onClick={() => { setStep('gateway'); }}
-									className="flex-1 bg-blue-600 hover:bg-blue-700"
+									onClick={() => {
+										setStep("gateway");
+									}}
+									className="flex-1 bg-primary-600 hover:bg-blue-700"
 								>
 									Pagar Sinal
 								</Button>
@@ -188,12 +246,12 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 						</>
 					)}
 
-					{step === 'gateway' && (
+					{step === "gateway" && (
 						<>
 							{/* Payment Gateway Placeholder */}
 							<div className="text-center space-y-6">
-								<div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-									<CreditCard className="w-10 h-10 text-blue-600" />
+								<div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto">
+									<CreditCard className="w-10 h-10 text-primary-600" />
 								</div>
 
 								<div>
@@ -201,7 +259,10 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 										Gateway de Pagamento
 									</h3>
 									<p className="text-sm text-gray-600 mt-2">
-										Valor do sinal: R$ {depositAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+										Valor do sinal: R${" "}
+										{depositAmount.toLocaleString("pt-BR", {
+											minimumFractionDigits: 2,
+										})}
 									</p>
 								</div>
 
@@ -247,19 +308,26 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 									</div>
 
 									<p className="text-xs text-gray-400 mt-4">
-										Placeholder - Integração com gateway será implementada futuramente
+										Placeholder - Integração com gateway será implementada
+										futuramente
 									</p>
 								</div>
 
 								{/* Actions */}
 								<div className="flex gap-3">
-									<Button variant="outline" onClick={() => { setStep('info'); }} className="flex-1">
+									<Button
+										variant="outline"
+										onClick={() => {
+											setStep("info");
+										}}
+										className="flex-1"
+									>
 										Voltar
 									</Button>
 									<Button
 										onClick={handleProcessPayment}
 										disabled={isProcessingPayment}
-										className="flex-1 bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
+										className="flex-1 bg-primary-600 hover:bg-blue-700 flex items-center gap-2"
 									>
 										{isProcessingPayment ? (
 											<>
@@ -269,7 +337,10 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 										) : (
 											<>
 												<CreditCard className="w-4 h-4" />
-												Pagar R$ {depositAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+												Pagar R${" "}
+												{depositAmount.toLocaleString("pt-BR", {
+													minimumFractionDigits: 2,
+												})}
 											</>
 										)}
 									</Button>
@@ -278,7 +349,7 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 						</>
 					)}
 
-					{step === 'success' && (
+					{step === "success" && (
 						<>
 							<div className="text-center space-y-4">
 								<div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
@@ -297,20 +368,38 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 
 								{/* Payment Summary */}
 								<div className="bg-green-50 border border-green-200 rounded-lg p-4 text-left">
-									<h4 className="font-medium text-green-800 mb-2">Resumo do Pagamento:</h4>
+									<h4 className="font-medium text-green-800 mb-2">
+										Resumo do Pagamento:
+									</h4>
 									<div className="space-y-1 text-sm text-green-700">
 										<div className="flex justify-between">
 											<span>Sinal:</span>
-											<span>R$ {depositAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+											<span>
+												R${" "}
+												{depositAmount.toLocaleString("pt-BR", {
+													minimumFractionDigits: 2,
+												})}
+											</span>
 										</div>
 										<div className="flex justify-between">
 											<span>Restante:</span>
-											<span>R$ {(proposal.valor - depositAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+											<span>
+												R${" "}
+												{(proposal.valor - depositAmount).toLocaleString(
+													"pt-BR",
+													{ minimumFractionDigits: 2 }
+												)}
+											</span>
 										</div>
 										<div className="border-t border-green-300 pt-1 mt-2">
 											<div className="flex justify-between font-medium">
 												<span>Total:</span>
-												<span>R$ {proposal.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+												<span>
+													R${" "}
+													{proposal.valor.toLocaleString("pt-BR", {
+														minimumFractionDigits: 2,
+													})}
+												</span>
 											</div>
 										</div>
 									</div>
@@ -323,7 +412,7 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 						</>
 					)}
 
-					{step === 'error' && (
+					{step === "error" && (
 						<>
 							<div className="text-center space-y-4">
 								<div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
@@ -335,17 +424,26 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 										Erro no Pagamento
 									</h3>
 									<p className="text-sm text-gray-600 mt-2">
-										Ocorreu um erro ao processar o pagamento.
-										Tente novamente ou entre em contato com o suporte.
+										Ocorreu um erro ao processar o pagamento. Tente novamente ou
+										entre em contato com o suporte.
 									</p>
 								</div>
 							</div>
 
 							<div className="flex gap-3">
-								<Button variant="outline" onClick={handleClose} className="flex-1">
+								<Button
+									variant="outline"
+									onClick={handleClose}
+									className="flex-1"
+								>
 									Fechar
 								</Button>
-								<Button onClick={() => { setStep('info'); }} className="flex-1">
+								<Button
+									onClick={() => {
+										setStep("info");
+									}}
+									className="flex-1"
+								>
 									Tentar Novamente
 								</Button>
 							</div>
@@ -356,4 +454,3 @@ export const DepositPaymentModal = ({ isOpen, onClose, proposal }: DepositPaymen
 		</Dialog>
 	);
 };
-

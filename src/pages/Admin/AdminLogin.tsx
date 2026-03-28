@@ -44,7 +44,7 @@ export const AdminLogin = (): FunctionComponent => {
 					<InputField label="Senha" name="password" type="password" />
 					<div className="flex flex-row justify-between">
 						<CheckboxField label="Lembrar-me" name="remember" />
-						<a className="text-blue-700 font-semibold" href="#">
+						<a className="text-primary-700 font-semibold" href="#">
 							Esqueci minha senha
 						</a>
 					</div>

@@ -40,7 +40,7 @@ const styles = {
 	titleText: "text-gray-700 text-sm font-medium",
 	sectionContainer: "bg-gray-50 py-4 sm:py-6 border-b-2 border-gray-200",
 	sectionTitle: "flex items-center gap-2 mb-3 sm:mb-4",
-	sectionIcon: "text-blue-600 flex-shrink-0",
+	sectionIcon: "text-primary-600 flex-shrink-0",
 };
 
 // Helper function to get icon for instrument
@@ -512,7 +512,7 @@ export default function TechnicalSection({
 
 	return (
 		<AccountLayout
-			headerIcon={<MapIcon className="text-blue-600" size={24} />}
+			headerIcon={<MapIcon className="text-primary-700" size={24} />}
 			headerTitle="Rider e Configurações Técnicas"
 		>
 			<div className="flex flex-col w-full h-full gap-4 lg:gap-6 overflow-y-auto px-1 sm:px-0">
@@ -648,7 +648,7 @@ export default function TechnicalSection({
 												className={`h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center rounded-full ${
 													stageMapData.length > 0
 														? "bg-green-100"
-														: "bg-blue-100"
+														: "bg-primary-100"
 												}`}
 											>
 												<MapIcon
@@ -656,7 +656,7 @@ export default function TechnicalSection({
 													className={`sm:w-8 sm:h-8 ${
 														stageMapData.length > 0
 															? "text-green-600"
-															: "text-blue-600"
+															: "text-primary-600"
 													}`}
 												/>
 											</div>
@@ -738,7 +738,7 @@ export default function TechnicalSection({
 							<div className="flex flex-col w-full items-center gap-2 sm:gap-3 text-center">
 								<div
 									className={`h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center rounded-full ${
-										stageMapData.length > 0 ? "bg-green-100" : "bg-blue-100"
+										stageMapData.length > 0 ? "bg-green-100" : "bg-primary-100"
 									}`}
 								>
 									<MapIcon
@@ -746,7 +746,7 @@ export default function TechnicalSection({
 										className={`sm:w-8 sm:h-8 ${
 											stageMapData.length > 0
 												? "text-green-600"
-												: "text-blue-600"
+												: "text-primary-600"
 										}`}
 									/>
 								</div>

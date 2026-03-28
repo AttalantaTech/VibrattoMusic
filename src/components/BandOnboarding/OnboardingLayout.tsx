@@ -58,7 +58,7 @@ export default function OnboardingLayout() {
 						<div className="block sm:hidden mb-6">
 							<div className="flex items-center justify-center mb-4">
 								<div className="flex items-center space-x-2">
-									<div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-medium">
+									<div className="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-sm font-medium">
 										{currentStepIndex + 1}
 									</div>
 									<span className="text-gray-600 text-sm">
@@ -86,7 +86,7 @@ export default function OnboardingLayout() {
 											className={cn(
 												"flex items-center justify-center w-8 sm:w-10 h-8 sm:h-10 rounded-full border-2 transition-colors text-sm sm:text-base",
 												currentStepIndex >= index
-													? "border-blue-600 bg-blue-600 text-white"
+													? "border-primary-600 bg-primary-600 text-white"
 													: canAccessStep(step.number)
 														? "border-gray-300 bg-white text-gray-600 hover:border-gray-400"
 														: "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
@@ -113,7 +113,7 @@ export default function OnboardingLayout() {
 												className={cn(
 													"w-full h-1 mx-1 sm:mx-2",
 													currentStepIndex > index
-														? "bg-blue-600"
+														? "bg-primary-600"
 														: "bg-gray-200"
 												)}
 											/>
@@ -128,7 +128,7 @@ export default function OnboardingLayout() {
 										className={cn(
 											"font-medium text-center",
 											currentStepIndex + 1 >= step.number
-												? "text-blue-600"
+												? "text-primary-600"
 												: "text-gray-500"
 										)}
 									>

@@ -332,7 +332,7 @@ export const Register = () => {
 									</p>
 								)}
 								{isLoadingAddress && (
-									<p className="text-blue-600 text-sm mt-1">
+									<p className="text-primary-600 text-sm mt-1">
 										Buscando endereço...
 									</p>
 								)}

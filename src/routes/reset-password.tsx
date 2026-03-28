@@ -248,7 +248,7 @@ function ResetPasswordComponent() {
 								</Button>
 							</Link>
 							<Link
-								className="text-center text-sm text-blue-600 hover:text-blue-500"
+								className="text-center text-sm text-primary-600 hover:text-primary-500"
 								to="/login"
 							>
 								Voltar para o Login
@@ -380,7 +380,7 @@ function ResetPasswordComponent() {
 						<div className="text-xs sm:text-sm text-center">
 							<p className="text-gray-500">
 								Lembrou sua senha?{" "}
-								<Link className="font-semibold text-[#007BFF]" to="/login">
+								<Link className="font-semibold text-primary-600" to="/login">
 									Faça login
 								</Link>
 							</p>

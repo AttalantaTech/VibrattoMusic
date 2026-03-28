@@ -67,7 +67,7 @@ export const TextAreaField = React.forwardRef<
 						placeholder={placeholder}
 						rows={rows}
 						className={cn(
-							"w-full rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y min-h-[100px]",
+							"w-full rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-50 resize-y min-h-[100px]",
 							{
 								"pl-10": icon,
 							},

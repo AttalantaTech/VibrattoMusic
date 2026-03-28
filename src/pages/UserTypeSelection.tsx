@@ -96,7 +96,7 @@ export const UserTypeSelection = () => {
 					<div
 						className={`relative p-6 border-2 rounded-xl ${
 							selectedRoles.has("contratante")
-								? "border-blue-500 bg-blue-50"
+								? "border-primary-500 bg-primary-50"
 								: "border-gray-200 bg-white"
 						}`}
 					>
@@ -138,7 +138,7 @@ export const UserTypeSelection = () => {
 					<div
 						className={`relative p-6 border-2 rounded-xl ${
 							selectedRoles.has("musico")
-								? "border-blue-500 bg-blue-50"
+								? "border-primary-500 bg-primary-50"
 								: "border-gray-200 bg-white"
 						}`}
 					>
@@ -214,7 +214,7 @@ export const UserTypeSelection = () => {
 						Já tem uma conta?{" "}
 						<button
 							onClick={() => navigate({ to: "/login" })}
-							className="text-blue-600 hover:text-blue-700 font-medium underline"
+							className="text-primary-600 hover:text-primary-700 font-medium underline"
 						>
 							Faça login
 						</button>

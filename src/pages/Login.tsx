@@ -230,7 +230,7 @@ export const Login = () => {
 							)}
 							<div className="flex items-center justify-end">
 								<Link
-									className="text-xs sm:text-sm text-blue-600 hover:text-blue-500"
+									className="text-xs sm:text-sm text-primary-600 hover:text-primary-500"
 									to="/forgot-password"
 								>
 									Esqueceu sua senha?
@@ -252,7 +252,7 @@ export const Login = () => {
 						<div className="text-xs sm:text-sm flex items-center justify-center text-center">
 							<p className="text-gray-500 text-normal">
 								Não tem uma conta?{" "}
-								<Link className="font-semibold text-[#007BFF]" to="/welcome">
+								<Link className="font-semibold text-primary-600" to="/welcome">
 									Cadastre-se
 								</Link>
 							</p>

@@ -178,7 +178,7 @@ export const BandProfile = ({
 			<MainLayout>
 				<div className="flex items-center justify-center min-h-screen">
 					<div className="text-center">
-						<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+						<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
 						<p className="text-gray-600">Carregando perfil da banda...</p>
 					</div>
 				</div>
@@ -244,16 +244,16 @@ export const BandProfile = ({
 												{musicalProduct.generoMusical?.map((genero) => (
 													<span
 														key={genero.id}
-														className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+														className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800"
 													>
 														{genero.nome}
 													</span>
 												)) || (
 													<>
-														<span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+														<span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
 															Forró
 														</span>
-														<span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+														<span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
 															Sertanejo
 														</span>
 													</>
@@ -325,7 +325,7 @@ export const BandProfile = ({
 											{musicalProduct.tipoEvento.map((tipo, index) => (
 												<div
 													key={tipo.id || index}
-													className="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 font-medium"
+													className="flex items-center gap-2 px-4 py-2 bg-primary-50 border border-primary-200 rounded-lg text-primary-700 font-medium"
 												>
 													<Disc size={18} />
 													<span>{tipo.nome}</span>
@@ -393,7 +393,7 @@ export const BandProfile = ({
 								<div className="flex flex-col lg:flex-row w-full items-center lg:items-start gap-8 bg-gray-50 rounded-xl p-6">
 									<div className="flex flex-col gap-3 items-center lg:items-start">
 										<div className="text-center lg:text-left">
-											<h1 className="text-blue-600 font-bold text-4xl">
+											<h1 className="text-primary-600 font-bold text-4xl">
 												{!musicalProduct ? (
 													<div className="bg-gray-200 animate-pulse h-10 w-16 rounded"></div>
 												) : (
@@ -634,7 +634,10 @@ export const BandProfile = ({
 							{/* Info cards */}
 							<div className="flex flex-col w-full text-gray-600 gap-4">
 								<div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-									<Clock4 size={20} className="flex-shrink-0 text-blue-600" />
+									<Clock4
+										size={20}
+										className="flex-shrink-0 text-primary-600"
+									/>
 									<span className="text-sm font-medium">
 										Normalmente responde em 2 horas
 									</span>
@@ -657,12 +660,12 @@ export const BandProfile = ({
 
 							{/* Price range (if available) */}
 							{musicalProduct.valorServico ? (
-								<div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+								<div className="bg-primary-50 rounded-lg p-4 border border-primary-200">
 									<div className="text-center">
-										<span className="text-sm text-blue-700 font-medium">
+										<span className="text-sm text-primary-700 font-medium">
 											A partir de
 										</span>
-										<div className="text-2xl font-bold text-blue-900">
+										<div className="text-2xl font-bold text-primary-900">
 											R$ {musicalProduct.valorServico.toLocaleString("pt-BR")}
 										</div>
 									</div>

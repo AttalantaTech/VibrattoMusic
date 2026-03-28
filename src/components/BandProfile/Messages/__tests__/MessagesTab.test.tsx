@@ -4,7 +4,11 @@ import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { MessagesTab } from "../MessagesTab";
-import type { Conversation, Message, PaginatedResponse } from "../../../../api/types";
+import type {
+	Conversation,
+	Message,
+	PaginatedResponse,
+} from "../../../../api/types";
 
 const mockUseAuthStore = vi.fn();
 const mockUseConversations = vi.fn();
@@ -240,9 +244,10 @@ describe("MessagesTab", () => {
 		it("should select conversation on click", async () => {
 			render(<MessagesTab />, { wrapper: createWrapper });
 
-			const bobConversation = screen.getByText("Bob Johnson").closest("div[role='button']") || 
+			const bobConversation =
+				screen.getByText("Bob Johnson").closest("div[role='button']") ||
 				screen.getByText("Bob Johnson").closest("div[class*='cursor-pointer']");
-			
+
 			if (bobConversation) {
 				fireEvent.click(bobConversation);
 			}
@@ -314,7 +319,9 @@ describe("MessagesTab", () => {
 			const searchInput = screen.getByPlaceholderText("Buscar no chat");
 			await userEvent.type(searchInput, "NonExistentText");
 
-			expect(screen.getByText("Nenhuma conversa encontrada")).toBeInTheDocument();
+			expect(
+				screen.getByText("Nenhuma conversa encontrada")
+			).toBeInTheDocument();
 		});
 	});
 
@@ -331,9 +338,11 @@ describe("MessagesTab", () => {
 
 			render(<MessagesTab />, { wrapper: createWrapper });
 
-			const messageInput = screen.getByPlaceholderText("Digite sua mensagem...");
+			const messageInput = screen.getByPlaceholderText(
+				"Digite sua mensagem..."
+			);
 			await userEvent.type(messageInput, "New message");
-			
+
 			const sendButton = screen.getByLabelText("Enviar mensagem");
 			fireEvent.click(sendButton);
 
@@ -348,7 +357,9 @@ describe("MessagesTab", () => {
 		});
 
 		it("should handle send message error", async () => {
-			const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+			const consoleSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => {});
 			const sendMessageMock = vi
 				.fn()
 				.mockRejectedValue(new Error("Send failed"));
@@ -359,9 +370,11 @@ describe("MessagesTab", () => {
 
 			render(<MessagesTab />, { wrapper: createWrapper });
 
-			const messageInput = screen.getByPlaceholderText("Digite sua mensagem...");
+			const messageInput = screen.getByPlaceholderText(
+				"Digite sua mensagem..."
+			);
 			await userEvent.type(messageInput, "Failed message");
-			
+
 			const sendButton = screen.getByLabelText("Enviar mensagem");
 			fireEvent.click(sendButton);
 
@@ -397,7 +410,9 @@ describe("MessagesTab", () => {
 
 			render(<MessagesTab />, { wrapper: createWrapper });
 
-			const messageInput = screen.getByPlaceholderText("Digite sua mensagem...");
+			const messageInput = screen.getByPlaceholderText(
+				"Digite sua mensagem..."
+			);
 			await userEvent.type(messageInput, "T");
 
 			await waitFor(() => {
@@ -417,7 +432,9 @@ describe("MessagesTab", () => {
 
 			render(<MessagesTab />, { wrapper: createWrapper });
 
-			const messageInput = screen.getByPlaceholderText("Digite sua mensagem...");
+			const messageInput = screen.getByPlaceholderText(
+				"Digite sua mensagem..."
+			);
 			await userEvent.type(messageInput, "Test");
 
 			vi.advanceTimersByTime(3500);
@@ -467,12 +484,12 @@ describe("MessagesTab", () => {
 			const artistasTab = screen.getByText("Artistas");
 			fireEvent.click(artistasTab);
 
-			expect(artistasTab).toHaveClass("text-blue-600");
+			expect(artistasTab).toHaveClass("text-primary-600");
 
 			const clientesTab = screen.getByText("Clientes");
 			fireEvent.click(clientesTab);
 
-			expect(clientesTab).toHaveClass("text-blue-600");
+			expect(clientesTab).toHaveClass("text-primary-600");
 		});
 	});
 

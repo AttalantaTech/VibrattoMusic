@@ -61,7 +61,7 @@ export const SingleSelect = ({
 				<div
 					id={name}
 					className={cn(
-						"w-full rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer flex items-center justify-between",
+						"w-full rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer flex items-center justify-between",
 						icon && "pl-10",
 						className
 					)}
@@ -99,7 +99,7 @@ export const SingleSelect = ({
 									className={cn(
 										"px-4 py-2 text-sm cursor-pointer",
 										option.value === value
-											? "bg-blue-50 text-blue-900"
+											? "bg-primary-50 text-primary-900"
 											: "text-gray-900 hover:bg-gray-50"
 									)}
 									onClick={() => {

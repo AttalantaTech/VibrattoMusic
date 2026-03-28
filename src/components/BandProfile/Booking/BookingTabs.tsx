@@ -53,11 +53,11 @@ export const BookingTabs = ({ musicalProduct }: BookingTabsProps) => {
 				{/* Quick Stats */}
 				{stats && (
 					<div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-						<div className="bg-blue-50 rounded-lg p-4">
-							<div className="text-2xl font-bold text-blue-600">
+						<div className="bg-primary-50 rounded-lg p-4">
+							<div className="text-2xl font-bold text-primary-600">
 								{stats.totalBookings}
 							</div>
-							<div className="text-sm text-blue-600">Total</div>
+							<div className="text-sm text-primary-600">Total</div>
 						</div>
 						<div className="bg-yellow-50 rounded-lg p-4">
 							<div className="text-2xl font-bold text-yellow-600">
@@ -96,8 +96,8 @@ export const BookingTabs = ({ musicalProduct }: BookingTabsProps) => {
 								key={tab.value}
 								className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
 									isActive
-										? "bg-blue-600 text-white border-blue-600"
-										: "text-gray-700 border-gray-300 hover:border-blue-600 hover:text-blue-600"
+										? "bg-primary-600 text-white border-primary-600"
+										: "text-gray-700 border-gray-300 hover:border-primary-600 hover:text-primary-600"
 								}`}
 								onClick={() => {
 									setCurrentTab(tab.value);

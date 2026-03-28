@@ -92,11 +92,11 @@ export const FinishStep = ({
 					<h3 className="font-medium">Termos de Uso da Plataforma</h3>
 					<p className="text-sm">
 						Ao publicar na plataforma Vibratto, você concorda com os{" "}
-						<span className="underline cursor-pointer text-blue-600">
+						<span className="underline cursor-pointer text-primary-600">
 							Termos de Uso
 						</span>{" "}
 						e{" "}
-						<span className="underline cursor-pointer text-blue-600">
+						<span className="underline cursor-pointer text-primary-600">
 							Política de Privacidade
 						</span>
 						.

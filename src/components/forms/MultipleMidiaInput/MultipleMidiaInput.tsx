@@ -136,7 +136,7 @@ export const MultipleMidiaInput = ({
 		<div className="flex flex-col w-full items-center justify-center gap-3">
 			{/* Main Box */}
 			<div
-				className={`flex flex-col justify-center items-center bg-white border text-gray-500 gap-4 py-6 px-5 w-full transition-colors ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-200"}`}
+				className={`flex flex-col justify-center items-center bg-white border text-gray-500 gap-4 py-6 px-5 w-full transition-colors ${isDragging ? "border-primary-500 bg-primary-50" : "border-gray-200"}`}
 				onDragLeave={handleDragLeave}
 				onDragOver={handleDragOver}
 				onDrop={handleDrop}

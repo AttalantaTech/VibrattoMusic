@@ -103,7 +103,7 @@ export default function PublishStep() {
 	return (
 		<StepLayout
 			currentStep={6}
-			headerIcon={<PenSquareIcon />}
+			headerIcon={<PenSquareIcon className="text-primary-700" size={24} />}
 			headerTitle="Publicar"
 		>
 			<div className="container mx-auto px-4 py-8 max-w-2xl">
