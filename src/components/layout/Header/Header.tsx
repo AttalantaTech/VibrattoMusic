@@ -119,12 +119,12 @@ export const Header = () => {
 				</div>
 
 				{/* Actions */}
-				<div className="flex flex-row items-center gap-2 sm:gap-3 flex-shrink-0">
+				<div className="flex flex-row items-center gap-1 sm:gap-3 flex-shrink-0">
 					{/* Search button - Always visible */}
 					{showSearchButton && (
 						<Link to="/search">
 							<Button variant="transparent" size="sm" className="p-2">
-								<Search className="w-5 h-5 text-gray-600" />
+								<Search className="w-4 h-4 sm:w-4 sm:h-4 text-gray-600" />
 							</Button>
 						</Link>
 					)}
@@ -145,7 +145,7 @@ export const Header = () => {
 									setShowDropdown(!showDropdown);
 								}}
 							>
-								<Settings className="w-5 h-5 text-gray-600" />
+								<Settings className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
 							</Button>
 
 							{showDropdown && (

@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "../../../store/authStore";
 import { useMessagesContext } from "@/contexts/MessagesContext";
 import { useMemo } from "react";
-import { Conversation } from "@/api/services/messages/types";
+import type { Conversation } from "@/api/services/messages/types";
 
 export const MessageBell = () => {
 	const { user, isAuthenticated } = useAuthStore();
@@ -12,7 +12,7 @@ export const MessageBell = () => {
 	const { conversations } = messagesContext || {};
 
 	const totalUnreadMessages: number = useMemo(() => {
-		return (conversations as Conversation[])?.reduce(
+		return (conversations as Array<Conversation>)?.reduce(
 			(total: number, conversation: Conversation) => {
 				return (
 					total +
@@ -24,6 +24,7 @@ export const MessageBell = () => {
 			},
 			0
 		);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [conversations]);
 
 	// Don't render if not authenticated
@@ -31,8 +32,8 @@ export const MessageBell = () => {
 		return null;
 	}
 
-	const handleClick = () => {
-		navigate({ to: "/band/me", search: { tab: "messages" } });
+	const handleClick = async () => {
+		await navigate({ to: "/band/me", search: { tab: "messages" } });
 	};
 
 	return (
@@ -41,7 +42,7 @@ export const MessageBell = () => {
 			onClick={handleClick}
 			aria-label="Mensagens"
 		>
-			<MessageSquare color="#667085" size={20} />
+			<MessageSquare color="#667085" className="w-4 h-4 sm:w-5 sm:h-5" />
 			{totalUnreadMessages > 0 && (
 				<div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
 					{totalUnreadMessages > 9 ? "9+" : totalUnreadMessages}
