@@ -8,7 +8,8 @@ import { Button } from "../components/ui/Button/Button";
 import { InputField } from "../components/forms/InputField/InputField";
 import { Link, useRouter, useSearch } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
-import Logo from "../assets/images/Logomark.png";
+import LogoVibratto from "../assets/images/Logo_Vibratto.png";
+import VibrattoName from "../assets/images/Vibratto.png";
 import ShowImg from "../assets/images/show.jpg";
 
 const resetPasswordSchema = z
@@ -71,19 +72,21 @@ function ResetPasswordComponent() {
 
 			if (error && typeof error === "object" && "response" in error) {
 				const responseError = error as {
-					response?: { 
-						status?: number; 
-						data?: { mensagem?: string } | Array<{
-							propertyName?: string;
-							errorMessage?: string;
-							errorCode?: string;
-						}>;
+					response?: {
+						status?: number;
+						data?:
+							| { mensagem?: string }
+							| Array<{
+									propertyName?: string;
+									errorMessage?: string;
+									errorCode?: string;
+							  }>;
 					};
 				};
 
 				const status = responseError.response?.status;
 				const data = responseError.response?.data;
-				
+
 				// Check if error is validation array format
 				let message: string | undefined;
 				if (Array.isArray(data) && data.length > 0) {
@@ -92,8 +95,12 @@ function ResetPasswordComponent() {
 					if (firstError && firstError.errorMessage) {
 						message = firstError.errorMessage;
 						// Check for specific error codes
-						if (firstError.errorCode === "GreaterThanValidator" && firstError.propertyName === "Expiracao") {
-							message = "Este link de redefinição de senha expirou. Por favor, solicite um novo link.";
+						if (
+							firstError.errorCode === "GreaterThanValidator" &&
+							firstError.propertyName === "Expiracao"
+						) {
+							message =
+								"Este link de redefinição de senha expirou. Por favor, solicite um novo link.";
 						}
 					}
 				} else if (data && typeof data === "object" && "mensagem" in data) {
@@ -158,15 +165,17 @@ function ResetPasswordComponent() {
 					<div className="w-full max-w-md lg:w-[50%] flex flex-col">
 						{/* Header */}
 						<div className="flex flex-col justify-center items-center gap-4 lg:gap-6 text-center">
-							<div className="w-[153px] flex items-center justify-around">
+							<div className="flex items-center justify-around">
 								<img
 									alt="Vibratto logo"
-									className="w-[26.25px] h-[43.46px]"
-									src={Logo}
+									className="w-auto h-8"
+									src={LogoVibratto}
 								/>
-								<h2 className="font-semibold text-[#007BFF] text-lg sm:text-[22px]">
-									Vibratto
-								</h2>
+								<img
+									alt="Vibratto logo"
+									className="w-auto  h-6"
+									src={VibrattoName}
+								/>
 							</div>
 							<div className="flex flex-col gap-4 items-center">
 								<CheckCircle className="w-16 h-16 text-green-500" />
@@ -209,15 +218,17 @@ function ResetPasswordComponent() {
 					<div className="w-full max-w-md lg:w-[50%] flex flex-col">
 						{/* Header */}
 						<div className="flex flex-col justify-center items-center gap-4 lg:gap-6 text-center">
-							<div className="w-[153px] flex items-center justify-around">
+							<div className="flex items-center justify-around">
 								<img
 									alt="Vibratto logo"
-									className="w-[26.25px] h-[43.46px]"
-									src={Logo}
+									className="w-auto h-8"
+									src={LogoVibratto}
 								/>
-								<h2 className="font-semibold text-[#007BFF] text-lg sm:text-[22px]">
-									Vibratto
-								</h2>
+								<img
+									alt="Vibratto logo"
+									className="w-auto  h-6"
+									src={VibrattoName}
+								/>
 							</div>
 							<div className="flex flex-col gap-2 lg:gap-3 w-full">
 								<h1 className="font-semibold text-2xl sm:text-3xl text-red-600">
@@ -264,15 +275,17 @@ function ResetPasswordComponent() {
 				<div className="w-full max-w-md lg:w-[50%] flex flex-col">
 					{/* Header */}
 					<div className="flex flex-col justify-center items-center gap-4 lg:gap-6 text-center">
-						<div className="w-[153px] flex items-center justify-around">
+						<div className="flex items-center justify-around">
 							<img
 								alt="Vibratto logo"
-								className="w-[26.25px] h-[43.46px]"
-								src={Logo}
+								className="w-auto h-8"
+								src={LogoVibratto}
 							/>
-							<h2 className="font-semibold text-[#007BFF] text-lg sm:text-[22px]">
-								Vibratto
-							</h2>
+							<img
+								alt="Vibratto logo"
+								className="w-auto  h-6"
+								src={VibrattoName}
+							/>
 						</div>
 						<div className="flex flex-col gap-2 lg:gap-3 w-full">
 							<h1 className="font-semibold text-2xl sm:text-3xl">
@@ -302,7 +315,9 @@ function ResetPasswordComponent() {
 								<button
 									className="absolute inset-y-0 right-0 pr-3 flex items-center top-6"
 									type="button"
-									onClick={() => { setShowPassword(!showPassword); }}
+									onClick={() => {
+										setShowPassword(!showPassword);
+									}}
 								>
 									{showPassword ? (
 										<EyeOff className="h-5 w-5 text-gray-400" />
@@ -328,7 +343,9 @@ function ResetPasswordComponent() {
 								<button
 									className="absolute inset-y-0 right-0 pr-3 flex items-center top-6"
 									type="button"
-									onClick={() => { setShowConfirmPassword(!showConfirmPassword); }}
+									onClick={() => {
+										setShowConfirmPassword(!showConfirmPassword);
+									}}
 								>
 									{showConfirmPassword ? (
 										<EyeOff className="h-5 w-5 text-gray-400" />

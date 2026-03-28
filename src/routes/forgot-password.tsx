@@ -8,7 +8,8 @@ import { Button } from "../components/ui/Button/Button";
 import { InputField } from "../components/forms/InputField/InputField";
 import { Link } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
-import Logo from "../assets/images/Logomark.png";
+import LogoVibratto from "../assets/images/Logo_Vibratto.png";
+import VibrattoName from "../assets/images/Vibratto.png";
 import ShowImg from "../assets/images/show.jpg";
 
 const forgotPasswordSchema = z.object({
@@ -87,15 +88,17 @@ function ForgotPasswordComponent() {
 					<div className="w-full max-w-md lg:w-[50%] flex flex-col">
 						{/* Header */}
 						<div className="flex flex-col justify-center items-center gap-4 lg:gap-6 text-center">
-							<div className="w-[153px] flex items-center justify-around">
+							<div className="flex items-center justify-around">
 								<img
 									alt="Vibratto logo"
-									className="w-[26.25px] h-[43.46px]"
-									src={Logo}
+									className="w-auto h-8"
+									src={LogoVibratto}
 								/>
-								<h2 className="font-semibold text-[#007BFF] text-lg sm:text-[22px]">
-									Vibratto
-								</h2>
+								<img
+									alt="Vibratto logo"
+									className="w-auto  h-6"
+									src={VibrattoName}
+								/>
 							</div>
 							<div className="flex flex-col gap-2 lg:gap-3 w-full">
 								<h1 className="font-semibold text-2xl sm:text-3xl">
@@ -146,15 +149,17 @@ function ForgotPasswordComponent() {
 				<div className="w-full max-w-md lg:w-[50%] flex flex-col">
 					{/* Header */}
 					<div className="flex flex-col justify-center items-center gap-4 lg:gap-6 text-center">
-						<div className="w-[153px] flex items-center justify-around">
+						<div className="flex items-center justify-around">
 							<img
 								alt="Vibratto logo"
-								className="w-[26.25px] h-[43.46px]"
-								src={Logo}
+								className="w-auto h-8"
+								src={LogoVibratto}
 							/>
-							<h2 className="font-semibold text-[#007BFF] text-lg sm:text-[22px]">
-								Vibratto
-							</h2>
+							<img
+								alt="Vibratto logo"
+								className="w-auto  h-6"
+								src={VibrattoName}
+							/>
 						</div>
 						<div className="flex flex-col gap-2 lg:gap-3 w-full">
 							<h1 className="font-semibold text-2xl sm:text-3xl">

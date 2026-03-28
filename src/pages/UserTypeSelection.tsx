@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "../components/ui/Button/Button";
-import Logo from "../assets/images/Logomark.png";
+import LogoVibratto from "../assets/images/Logo_Vibratto.png";
+import VibrattoName from "../assets/images/Vibratto.png";
 import { useAuthStore } from "../store/authStore";
 import { setStoredUserType } from "../utils/userType";
 import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
@@ -70,15 +71,17 @@ export const UserTypeSelection = () => {
 			<div className="w-full max-w-4xl">
 				{/* Header */}
 				<div className="flex flex-col justify-center items-center gap-6 mb-12">
-					<div className="w-[153px] flex items-center justify-around">
+					<div className="flex items-center justify-around">
 						<img
 							alt="Vibratto logo"
-							className="w-[26.25px] h-[43.46px]"
-							src={Logo}
+							className="w-auto h-8"
+							src={LogoVibratto}
 						/>
-						<h2 className="font-semibold text-[#007BFF] text-[22px]">
-							Vibratto
-						</h2>
+						<img
+							alt="Vibratto logo"
+							className="w-auto  h-6"
+							src={VibrattoName}
+						/>
 					</div>
 					<div className="text-center">
 						<h1 className="text-3xl font-bold text-gray-900 mb-3">
