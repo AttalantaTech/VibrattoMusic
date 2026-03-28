@@ -62,9 +62,9 @@ export const StatusCardConfigDict: StatusCardConfigDictType = {
 	// 	label: "Agendado",
 	// 	icon: Calendar,
 	// 	variant: "secondary" as const,
-	// 	color: "text-blue-600",
-	// 	bgColor: "bg-blue-100",
-	// 	borderColor: "border-blue-200",
+	// 	color: "text-primary-600",
+	// 	bgColor: "bg-primary-100",
+	// 	borderColor: "border-primary-200",
 	// },
 	// concluido: {
 	// 	label: "Concluído",

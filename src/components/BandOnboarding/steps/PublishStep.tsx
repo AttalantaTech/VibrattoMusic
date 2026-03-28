@@ -10,18 +10,22 @@ import {
 } from "lucide-react";
 import { onboardingService } from "../../../api";
 import { Button } from "../../ui/Button/Button";
-import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
-import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
+import { StepLayout } from "../layout/StepLayout/StepLayout";
 import { useOnboardingData } from "@/hooks/useMusicalProducts";
 import { toast } from "sonner";
 import type { OnboardingApiResponse } from "@/api/types";
 import { decryptValue } from "@/utils/encryptValue";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { profileKeys, useProfileStatus } from "@/hooks/useProfileStatus";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function PublishStep() {
 	const [loading, setLoading] = useState(false);
 	const navigate = useNavigate();
-	const { clearData } = useOnboarding();
+	const queryClient = useQueryClient();
 
+	const { setNewProductCreated } = useMusicalProductStore();
+	const { user } = useProfileStatus();
 	const { data, isFetching } = useOnboardingData();
 
 	const searchParameters = useSearch({ from: "/band/register/onboarding/6" });
@@ -64,15 +68,22 @@ export default function PublishStep() {
 
 		setLoading(true);
 		try {
-			await onboardingService.publish(Number(produtoMusicalId));
-			clearData();
+			await onboardingService
+				.publish(Number(produtoMusicalId))
+				.then(async (id) => {
+					await queryClient.invalidateQueries({
+						queryKey: profileKeys.musicalProducts(user?.id),
+					});
 
-			toast.success("Produto musical publicado com sucesso");
+					setNewProductCreated(id);
 
-			await navigate({
-				to: "/band/me",
-				search: { tab: "account" },
-			});
+					toast.success("Produto musical publicado com sucesso");
+
+					await navigate({
+						to: "/band/me",
+						search: { tab: "account" },
+					});
+				});
 		} catch (error: any) {
 			console.error("Error publishing:", error);
 			toast.error("Erro ao publicar produto musical");
@@ -92,7 +103,7 @@ export default function PublishStep() {
 	return (
 		<StepLayout
 			currentStep={6}
-			headerIcon={<PenSquareIcon />}
+			headerIcon={<PenSquareIcon className="text-primary-700" size={24} />}
 			headerTitle="Publicar"
 		>
 			<div className="container mx-auto px-4 py-8 max-w-2xl">

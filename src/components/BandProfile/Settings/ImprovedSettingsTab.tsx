@@ -42,7 +42,9 @@ const SettingsSection = ({
 		className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}
 	>
 		<div className="flex items-start gap-4 mb-6">
-			<div className="p-2 bg-blue-50 rounded-lg text-blue-600">{icon}</div>
+			<div className="p-2 bg-primary-50 rounded-lg text-primary-600">
+				{icon}
+			</div>
 			<div className="flex-1">
 				<h3 className="text-lg font-semibold text-gray-900">{title}</h3>
 				{description && (
@@ -233,7 +235,7 @@ export const ImprovedSettingsTab = () => {
 														[key]: e.target.checked,
 													});
 												}}
-												className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+												className="w-5 h-5 text-primary-600 rounded focus:ring-blue-500"
 											/>
 										</label>
 									))}
@@ -271,7 +273,7 @@ export const ImprovedSettingsTab = () => {
 														[key]: e.target.checked,
 													});
 												}}
-												className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+												className="w-5 h-5 text-primary-600 rounded focus:ring-blue-500"
 											/>
 										</label>
 									))}
@@ -333,7 +335,7 @@ export const ImprovedSettingsTab = () => {
 										}}
 										className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
 											privacy[key as keyof typeof privacy]
-												? "bg-blue-600"
+												? "bg-primary-600"
 												: "bg-gray-200"
 										}`}
 									>
@@ -552,7 +554,7 @@ export const ImprovedSettingsTab = () => {
 											}}
 											className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
 												theme === value
-													? "border-blue-500 bg-blue-50 text-blue-600"
+													? "border-primary-500 bg-primary-50 text-primary-600"
 													: "border-gray-200 hover:border-gray-300"
 											}`}
 										>
@@ -658,7 +660,7 @@ export const ImprovedSettingsTab = () => {
 								}}
 								className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
 									activeSection === item.id
-										? "bg-blue-50 text-blue-600"
+										? "bg-primary-50 text-primary-600"
 										: "text-gray-700 hover:bg-gray-50"
 								}`}
 							>

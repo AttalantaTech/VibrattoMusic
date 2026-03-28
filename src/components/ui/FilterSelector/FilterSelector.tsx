@@ -111,7 +111,7 @@ export const FilterSelector = ({
 								>
 									<input
 										checked={selectedFilters.includes(filter.id)}
-										className="rounded text-blue-600 mr-2"
+										className="rounded text-primary-600 mr-2"
 										type="checkbox"
 										onChange={() => {
 											toggleFilter(filter.id);

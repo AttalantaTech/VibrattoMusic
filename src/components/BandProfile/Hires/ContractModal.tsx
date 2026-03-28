@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { X, Download, FileText, Calendar, User } from "lucide-react";
 import { Button } from "../../ui/Button/Button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "../../ui/dialog";
 
 interface ContractModalProps {
 	isOpen: boolean;
@@ -16,7 +21,12 @@ interface ContractModalProps {
 	loading?: boolean;
 }
 
-export const ContractModal = ({ isOpen, onClose, contract, loading }: ContractModalProps) => {
+export const ContractModal = ({
+	isOpen,
+	onClose,
+	contract,
+	loading,
+}: ContractModalProps) => {
 	const [downloading, setDownloading] = useState(false);
 
 	const handleDownload = async () => {
@@ -25,9 +35,9 @@ export const ContractModal = ({ isOpen, onClose, contract, loading }: ContractMo
 		setDownloading(true);
 		try {
 			// Simular download do contrato
-			const blob = new Blob([contract.content], { type: 'text/plain' });
+			const blob = new Blob([contract.content], { type: "text/plain" });
 			const url = URL.createObjectURL(blob);
-			const a = document.createElement('a');
+			const a = document.createElement("a");
 			a.href = url;
 			a.download = `contrato-${contract.id}.txt`;
 			document.body.appendChild(a);
@@ -35,7 +45,7 @@ export const ContractModal = ({ isOpen, onClose, contract, loading }: ContractMo
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
 		} catch (error) {
-			console.error('Erro ao baixar contrato:', error);
+			console.error("Erro ao baixar contrato:", error);
 		} finally {
 			setDownloading(false);
 		}
@@ -47,7 +57,7 @@ export const ContractModal = ({ isOpen, onClose, contract, loading }: ContractMo
 				<DialogHeader>
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-3">
-							<FileText className="w-6 h-6 text-blue-600" />
+							<FileText className="w-6 h-6 text-primary-600" />
 							<DialogTitle className="text-xl font-semibold">
 								Contrato #{contract?.id}
 							</DialogTitle>
@@ -65,7 +75,7 @@ export const ContractModal = ({ isOpen, onClose, contract, loading }: ContractMo
 
 				{loading ? (
 					<div className="flex items-center justify-center py-8">
-						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
 					</div>
 				) : contract ? (
 					<div className="space-y-6">
@@ -76,7 +86,7 @@ export const ContractModal = ({ isOpen, onClose, contract, loading }: ContractMo
 								<div>
 									<p className="text-sm text-gray-500">Criado em</p>
 									<p className="font-medium">
-										{new Date(contract.createdAt).toLocaleDateString('pt-BR')}
+										{new Date(contract.createdAt).toLocaleDateString("pt-BR")}
 									</p>
 								</div>
 							</div>
@@ -95,7 +105,7 @@ export const ContractModal = ({ isOpen, onClose, contract, loading }: ContractMo
 									<div>
 										<p className="text-sm text-gray-500">Assinado em</p>
 										<p className="font-medium">
-											{new Date(contract.signedAt).toLocaleDateString('pt-BR')}
+											{new Date(contract.signedAt).toLocaleDateString("pt-BR")}
 										</p>
 									</div>
 								</div>
@@ -121,14 +131,14 @@ export const ContractModal = ({ isOpen, onClose, contract, loading }: ContractMo
 								className="flex items-center gap-2"
 							>
 								<Download className="w-4 h-4" />
-								{downloading ? 'Baixando...' : 'Baixar Contrato'}
+								{downloading ? "Baixando..." : "Baixar Contrato"}
 							</Button>
 
 							<div className="flex gap-3">
 								<Button variant="outline" onClick={onClose}>
 									Fechar
 								</Button>
-								{contract.status === 'pendente' && (
+								{contract.status === "pendente" && (
 									<Button className="bg-green-600 hover:bg-green-700">
 										Assinar Contrato
 									</Button>

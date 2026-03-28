@@ -1,6 +1,6 @@
 import { Button } from "../../components/ui/Button/Button";
-
-import Logo from "../../assets/images/Logomark.png";
+import LogoVibratto from "../../assets/images/Logo_Vibratto.png";
+import VibrattoName from "../../assets/images/Vibratto.png";
 import type { FunctionComponent } from "../../common/types";
 import { CheckboxField } from "../../components/forms/CheckBoxField/CheckBoxField";
 import { InputField } from "../../components/forms/InputField/InputField";
@@ -11,11 +11,18 @@ export const AdminLogin = (): FunctionComponent => {
 			<div className="w-full max-w-[390px] flex flex-col gap-8 px-4">
 				{/* Header */}
 				<div className="flex flex-col items-center justify-center text-center gap-6">
-					<img
-						alt="Logo da Vibratto Pro"
-						className="w-[33px] h-[54.62px]"
-						src={Logo}
-					/>
+					<div className="flex items-center justify-around">
+						<img
+							alt="Vibratto logo"
+							className="w-auto h-8"
+							src={LogoVibratto}
+						/>
+						<img
+							alt="Vibratto logo"
+							className="w-auto  h-6"
+							src={VibrattoName}
+						/>
+					</div>
 					<div className="flex flex-col items-center gap-3">
 						<h1 className="font-semibold text-3xl ">
 							Bem-vindo à Vibratto Pro
@@ -37,7 +44,7 @@ export const AdminLogin = (): FunctionComponent => {
 					<InputField label="Senha" name="password" type="password" />
 					<div className="flex flex-row justify-between">
 						<CheckboxField label="Lembrar-me" name="remember" />
-						<a className="text-blue-700 font-semibold" href="#">
+						<a className="text-primary-700 font-semibold" href="#">
 							Esqueci minha senha
 						</a>
 					</div>

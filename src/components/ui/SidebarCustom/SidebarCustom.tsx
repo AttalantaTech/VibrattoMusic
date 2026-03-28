@@ -28,7 +28,7 @@ export const SidebarCustom = ({
 							}}
 							className={`w-full flex justify-center lg:justify-between items-center gap-3 px-3  rounded-lg transition-colors py-4 md:py-6 lg:py-7 ${
 								activeItem === item.id
-									? "text-blue-600"
+									? "text-primary-600"
 									: "text-gray-700 hover:bg-gray-50"
 							}`}
 						>
@@ -37,7 +37,7 @@ export const SidebarCustom = ({
 							<ChevronRight
 								className={`hidden lg:block ${
 									activeItem === item.id
-										? "text-blue-600"
+										? "text-primary-600"
 										: "text-gray-700 hover:bg-gray-50"
 								}`}
 								size={24}

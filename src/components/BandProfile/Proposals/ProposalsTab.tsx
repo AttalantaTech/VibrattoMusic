@@ -49,8 +49,8 @@ const statusConfig = {
 		label: "Sinal Pago",
 		icon: CreditCard,
 		variant: "success" as const,
-		color: "text-blue-600",
-		bgColor: "bg-blue-50",
+		color: "text-primary-600",
+		bgColor: "bg-primary-50",
 	},
 	rejeitado: {
 		label: "Rejeitado",
@@ -253,7 +253,7 @@ const ProposalDetailsModal = ({
 							<div className="flex gap-3">
 								<Button
 									variant="outline"
-									className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-300"
+									className="text-primary-600 hover:text-primary-700 hover:bg-primary-50 border-primary-300"
 									onClick={() => {
 										onStatusUpdate(proposal.id, "sinalPago");
 										onClose();
@@ -454,7 +454,7 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 					onClick={() => {
 						setIsCreateModalOpen(true);
 					}}
-					className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+					className="flex items-center gap-2 bg-primary-600 hover:bg-blue-700"
 				>
 					<Plus className="h-4 w-4" />
 					Nova Proposta
@@ -529,7 +529,7 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 														"inline-block w-2 h-2 rounded-full",
 														status === "pendente" && "bg-yellow-500",
 														status === "aceito" && "bg-green-500",
-														status === "sinalPago" && "bg-blue-500",
+														status === "sinalPago" && "bg-primary-500",
 														status === "rejeitado" && "bg-red-500",
 														status === "cancelado" && "bg-gray-500"
 													)}
@@ -616,7 +616,7 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 							onClick={() => {
 								setIsCreateModalOpen(true);
 							}}
-							className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+							className="flex items-center gap-2 bg-primary-600 hover:bg-blue-700"
 						>
 							<Plus className="h-4 w-4" />
 							Criar Primeira Proposta
@@ -743,7 +743,7 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 											<Button
 												size="sm"
 												variant="outline"
-												className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-300"
+												className="text-primary-600 hover:text-primary-700 hover:bg-primary-50 border-primary-300"
 												onClick={(event) => {
 													event.stopPropagation();
 													void handleStatusUpdate(proposal.id, "sinalPago");

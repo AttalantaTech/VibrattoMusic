@@ -97,7 +97,7 @@ export const BookingCalendar = ({
 
 		return (
 			colors[status as keyof typeof colors] ||
-			"bg-blue-100 text-blue-800 border-blue-200"
+			"bg-primary-100 text-primary-800 border-primary-200"
 		);
 	};
 
@@ -112,7 +112,7 @@ export const BookingCalendar = ({
 	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center p-8">
-				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+				<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
 			</div>
 		);
 	}
@@ -167,7 +167,7 @@ export const BookingCalendar = ({
 								<span
 									className={`text-sm font-medium ${
 										isCurrentDay
-											? "bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+											? "bg-primary-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
 											: isCurrentMonth
 												? "text-gray-900"
 												: "text-gray-400"

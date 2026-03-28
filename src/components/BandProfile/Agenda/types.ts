@@ -31,11 +31,11 @@ export interface EventTypeConfig {
 export const eventTypeConfig: Record<EventType, EventTypeConfig> = {
 	show: {
 		label: "Show",
-		color: "bg-blue-500",
-		lightColor: "bg-blue-50",
-		borderColor: "border-blue-500",
-		textColor: "text-blue-700",
-		hoverColor: "hover:bg-blue-100",
+		color: "bg-primary-500",
+		lightColor: "bg-primary-50",
+		borderColor: "border-primary-500",
+		textColor: "text-primary-700",
+		hoverColor: "hover:bg-primary-100",
 	},
 	rehearsal: {
 		label: "Ensaio",

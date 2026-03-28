@@ -21,20 +21,20 @@ const styles = {
 	default: {
 		button:
 			"rounded-lg text-sm sm:text-base font-medium h-10 min-w-[84px] flex items-center justify-center",
-		active: "bg-blue-50 text-blue-600",
-		inactive: "text-gray-700 hover:text-blue-600",
+		active: "bg-primary-50 text-primary-600",
+		inactive: "text-gray-700 hover:text-primary-600",
 	},
 	underline: {
 		button: "text-sm font-medium",
-		active: "text-blue-600",
+		active: "text-primary-600",
 		inactive: "text-gray-500 hover:text-gray-700",
 	},
 	pills: {
 		button:
 			"rounded-full text-sm font-medium px-4 py-2 border transition-colors",
-		active: "bg-blue-600 text-white border-blue-600",
+		active: "bg-primary-600 text-white border-primary-600",
 		inactive:
-			"text-gray-700 border-gray-300 hover:border-blue-600 hover:text-blue-600",
+			"text-gray-700 border-gray-300 hover:border-primary-600 hover:text-primary-600",
 	},
 };
 
@@ -89,7 +89,7 @@ export const TabNavigation = ({
 									</span>
 								)}
 								{variant === "underline" && (isActive || currentSubTab) && (
-									<div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
+									<div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600" />
 								)}
 							</>
 						}

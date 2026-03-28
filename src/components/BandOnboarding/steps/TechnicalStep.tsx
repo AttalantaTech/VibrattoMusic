@@ -23,7 +23,7 @@ import { Button } from "../../ui/Button/Button";
 import { IconTabNavigation } from "../../ui/IconTabNavigation/IconTabNavigation";
 import { FileUploadBox } from "../../forms/FileUploadBox/FileUploadBox";
 import { StageMapBuilder } from "@/components/StageMap/StageMapBuilder";
-import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
+import { StepLayout } from "../layout/StepLayout/StepLayout";
 import {
 	type StageMapData,
 	type StageElement,
@@ -48,7 +48,7 @@ const styles = {
 	titleText: "text-gray-700 text-sm font-medium",
 	sectionContainer: "bg-gray-50 py-4 sm:py-6 border-b-2 border-gray-200",
 	sectionTitle: "flex items-center gap-2 mb-3 sm:mb-4",
-	sectionIcon: "text-blue-600 flex-shrink-0",
+	sectionIcon: "text-primary-600 flex-shrink-0",
 };
 
 // Helper function to get icon for instrument
@@ -243,6 +243,7 @@ export default function TechnicalStep() {
 			camarimIncluso: onboardingData?.camarimIncluso ?? false,
 			mapaPalco: onboardingData?.mapaPalco ?? [],
 			mapaPalcoLink: onboardingData?.mapaPalcoLink ?? null,
+			clipagem: [],
 		};
 	}, [onboardingData]);
 
@@ -309,7 +310,7 @@ export default function TechnicalStep() {
 					onboardingData?.rider) ||
 				(eventType === "ProdutoMusicalOnboardingInfraCamarim" &&
 					onboardingData?.infraCamarim) ||
-				(eventType === "ProdutoMusicalMapaPalco" &&
+				(eventType === "ProdutoMusicalOnboardingMapaPalco" &&
 					onboardingData?.mapaPalcoLink)
 			) {
 				await onboardingService.deleteImage({
@@ -352,6 +353,7 @@ export default function TechnicalStep() {
 					infraCamarim && infraCamarim.trim() !== "" ? infraCamarim : null,
 				camarimIncluso: hasDressingRoom,
 				mapaPalco: stageElements,
+				clipagem: [],
 			};
 			updateData("technical", updatedTechnicalData);
 		}
@@ -422,13 +424,13 @@ export default function TechnicalStep() {
 				// Reset the uploaded URL if needed
 				if (finalStageMapUrl) {
 					await imageUploadService.deleteImage({
-						evento: "ProdutoMusicalMapaPalco",
+						evento: "ProdutoMusicalOnboardingMapaPalco",
 						idCadastro: produtoMusicalId,
 					});
 				}
 
 				const newUrl = await imageUploadService.uploadImage({
-					evento: "ProdutoMusicalMapaPalco",
+					evento: "ProdutoMusicalOnboardingMapaPalco",
 					idCadastro: produtoMusicalId,
 					file: stageMapFile,
 				});
@@ -456,6 +458,7 @@ export default function TechnicalStep() {
 				camarimIncluso: hasDressingRoom,
 				mapaPalco: stageMapData,
 				mapaPalcoLink: finalStageMapUrl ?? null,
+				clipagem: [],
 			};
 
 			await onboardingService.updateTechnical(produtoMusicalId, data);
@@ -536,7 +539,7 @@ export default function TechnicalStep() {
 					<FileCard
 						title="Mapa de Palco"
 						onClick={async () => {
-							await removeFile("ProdutoMusicalMapaPalco");
+							await removeFile("ProdutoMusicalOnboardingMapaPalco");
 						}}
 					/>
 				</div>
@@ -555,7 +558,7 @@ export default function TechnicalStep() {
 	return (
 		<StepLayout
 			currentStep={4}
-			headerIcon={<MapIcon className="text-blue-600" size={24} />}
+			headerIcon={<MapIcon className="text-primary-700" size={24} />}
 			headerTitle="Rider e Configurações Técnicas"
 		>
 			<div className="flex flex-col w-full h-full gap-4 lg:gap-6 overflow-y-auto px-1 sm:px-0">
@@ -691,7 +694,7 @@ export default function TechnicalStep() {
 												className={`h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center rounded-full ${
 													stageMapData.length > 0
 														? "bg-green-100"
-														: "bg-blue-100"
+														: "bg-primary-100"
 												}`}
 											>
 												<MapIcon
@@ -699,7 +702,7 @@ export default function TechnicalStep() {
 													className={`sm:w-8 sm:h-8 ${
 														stageMapData.length > 0
 															? "text-green-600"
-															: "text-blue-600"
+															: "text-primary-600"
 													}`}
 												/>
 											</div>
@@ -767,90 +770,6 @@ export default function TechnicalStep() {
 							)}
 						</div>
 					</div>
-
-					{/* <div className={styles.sectionContainer}>
-						<div className={styles.sectionTitle}>
-							<Settings className={styles.sectionIcon} size={24} />
-							<h2 className={styles.titleText}>Mapa de Palco</h2>
-						</div>
-						<p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
-							Crie um mapa detalhado da disposição dos equipamentos no palco.
-						</p>
-						<div className="flex flex-col w-full items-center bg-white border border-gray-200 rounded-lg py-4 sm:py-6 px-3 sm:px-4 gap-3 sm:gap-4">
-							<div className="flex flex-col w-full items-center gap-2 sm:gap-3 text-center">
-								<div
-									className={`h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center rounded-full ${
-										stageMapData.length > 0 ? "bg-green-100" : "bg-blue-100"
-									}`}
-								>
-									<MapIcon
-										size={24}
-										className={`sm:w-8 sm:h-8 ${
-											stageMapData.length > 0
-												? "text-green-600"
-												: "text-blue-600"
-										}`}
-									/>
-								</div>
-								<div className="px-2 sm:px-0">
-									<h3 className="font-semibold text-gray-800 text-base sm:text-lg mb-1 sm:mb-2">
-										{stageMapData.length > 0
-											? "Mapa de Palco Salvo"
-											: "Crie o seu mapa de palco"}
-									</h3>
-									<p className="text-gray-600 text-xs sm:text-sm leading-relaxed max-w-xs sm:max-w-md">
-										{stageMapData.length > 0
-											? `Seu mapa de palco está configurado com ${stageMapData.length} elemento${stageMapData.length > 1 ? "s" : ""}. Você pode editá-lo a qualquer momento.`
-											: "Organize a disposição da banda no palco, personalizando músicos, instrumentos e equipamentos para facilitar a montagem e logística do evento."}
-									</p>
-								</div>
-							</div>
-							<div className="flex flex-col w-full max-w-xs sm:max-w-md gap-2 sm:gap-3 items-center justify-center px-2 sm:px-0">
-								<Button
-									className="w-full text-sm sm:text-base py-2 sm:py-3"
-									type="button"
-									variant={stageMapData.length > 0 ? "outline" : "primary"}
-									onClick={() => {
-										setIsStageBuilderOpen(true);
-									}}
-								>
-									{stageMapData.length > 0 ? (
-										<>
-											<span className="hidden sm:inline">
-												Editar Mapa de Palco
-											</span>
-											<span className="sm:hidden">Editar Palco</span>
-										</>
-									) : (
-										<>
-											<span className="hidden sm:inline">
-												Criar Mapa de Palco
-											</span>
-											<span className="sm:hidden">Criar Palco</span>
-										</>
-									)}
-								</Button>
-
-								{stageMapData.length > 0 && (
-									<Button
-										className="w-full text-sm sm:text-base py-2 sm:py-3"
-										type="button"
-										variant="danger"
-										onClick={() => {
-											handleStageMapSave([]);
-										}}
-									>
-										<>
-											<span className="hidden sm:inline">
-												Apagar Mapa de Palco
-											</span>
-											<span className="sm:hidden">Apagar Palco</span>
-										</>
-									</Button>
-								)}
-							</div>
-						</div>
-					</div> */}
 
 					{/* Navigation buttons */}
 					<div className="flex flex-col sm:flex-row w-full gap-2 sm:gap-3 items-stretch sm:items-center justify-end mt-4 lg:mt-6 px-1 sm:px-0">

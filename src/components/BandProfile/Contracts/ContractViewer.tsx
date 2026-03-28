@@ -31,7 +31,7 @@ const getStatusColor = (status: string) => {
 		case "Pendente":
 			return "bg-yellow-100 text-yellow-800";
 		case "Aceita":
-			return "bg-blue-100 text-blue-800";
+			return "bg-primary-100 text-primary-800";
 		case "Sinal Pago":
 			return "bg-green-100 text-green-800";
 		case "Concluído":
@@ -74,9 +74,9 @@ export const ContractViewer = ({
 		error,
 	} = useProposalById(identificadorUnico || "");
 
-	const {
-		data: contractSections,
-	} = useContractSections(proposal?.produtoMusical.id || 0);
+	const { data: contractSections } = useContractSections(
+		proposal?.produtoMusical.id || 0
+	);
 
 	const handleDownload = () => {
 		if (!proposal) return;
@@ -129,7 +129,7 @@ ${
 				<DialogHeader>
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-3">
-							<FileText className="w-6 h-6 text-blue-600" />
+							<FileText className="w-6 h-6 text-primary-600" />
 							<DialogTitle className="text-xl font-semibold">
 								{proposal ? `Contrato #${proposal.id}` : "Contrato"}
 							</DialogTitle>

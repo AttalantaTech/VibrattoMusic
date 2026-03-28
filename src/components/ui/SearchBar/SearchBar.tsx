@@ -173,7 +173,7 @@ export const SearchBar = ({
 					value={searchQuery}
 					onChange={handleInputChange}
 					onFocus={handleInputFocus}
-					className="pl-10 pr-10 h-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+					className="pl-10 pr-10 h-10 border-gray-300 focus:border-primary-500 focus:ring-blue-500"
 				/>
 				{searchQuery && (
 					<Button
@@ -202,7 +202,7 @@ export const SearchBar = ({
 							<div>
 								{isSearching ? (
 									<div className="px-4 py-3 text-center">
-										<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mx-auto"></div>
+										<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-500 mx-auto"></div>
 										<span className="text-xs text-gray-500 mt-2 block">
 											Buscando...
 										</span>
@@ -220,7 +220,7 @@ export const SearchBar = ({
 												}}
 												className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 transition-colors"
 											>
-												<User className="w-4 h-4 text-blue-500" />
+												<User className="w-4 h-4 text-primary-500" />
 												<div className="flex-1 min-w-0">
 													<div className="text-sm font-medium text-gray-900 truncate">
 														{artist.nome}
@@ -255,7 +255,7 @@ export const SearchBar = ({
 									<span>Buscas recentes</span>
 									<button
 										onClick={clearSearchHistory}
-										className="text-blue-600 hover:text-blue-800 text-xs"
+										className="text-primary-600 hover:text-primary-800 text-xs"
 									>
 										Limpar
 									</button>

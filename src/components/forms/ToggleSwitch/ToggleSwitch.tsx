@@ -37,7 +37,7 @@ export const ToggleSwitch = ({
 			<div
 				className={cn(
 					"relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-					checked ? "bg-blue-600" : "bg-gray-200"
+					checked ? "bg-primary-600" : "bg-gray-200"
 				)}
 			>
 				<span

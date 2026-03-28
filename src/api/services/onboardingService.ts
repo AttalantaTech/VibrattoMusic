@@ -138,8 +138,8 @@ export class OnboardingService {
 	/**
 	 * Step 6: Publish the product
 	 */
-	public async publish(productId: number): Promise<void> {
-		return this.apiClient.post<void>(
+	public async publish(productId: number): Promise<number> {
+		return this.apiClient.post<number>(
 			`/produtomusical/onboarding/${productId}/publicar`
 		);
 	}

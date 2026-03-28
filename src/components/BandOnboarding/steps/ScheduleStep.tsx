@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { onboardingService } from "../../../api";
 import { Button } from "../../ui/Button/Button";
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
-import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
+import { StepLayout } from "../layout/StepLayout/StepLayout";
 import type {
 	MusicalProductSchedule,
 	OnboardingApiResponse,
@@ -33,7 +33,7 @@ const styles = {
 	titleText: "text-gray-800 font-semibold text-lg sm:text-xl",
 	sectionContainer: "bg-gray-50",
 	sectionTitle: "flex items-center gap-2 mb-3 sm:mb-4",
-	sectionIcon: "text-blue-600 flex-shrink-0",
+	sectionIcon: "text-primary-600 flex-shrink-0",
 };
 
 export default function ScheduleStep() {
@@ -192,7 +192,7 @@ export default function ScheduleStep() {
 		<>
 			<StepLayout
 				currentStep={5}
-				headerIcon={<Calendar className="text-blue-600" size={24} />}
+				headerIcon={<Calendar className="text-primary-700" size={24} />}
 				headerTitle="Agenda"
 			>
 				<div className="flex flex-col w-full h-full gap-4 lg:gap-6  px-1 sm:px-0">
@@ -226,7 +226,7 @@ export default function ScheduleStep() {
 										.map((event, index) => (
 											<div
 												key={index}
-												className="border-l-4 border-blue-500 text-blue-500 bg-blue-50 p-3 min-h-32 rounded-lg flex justify-between items-start"
+												className="border-l-4 border-primary-500 text-primary-500 bg-primary-50 p-3 min-h-32 rounded-lg flex justify-between items-start"
 											>
 												<div>
 													<div className="font-medium">{event.title}</div>

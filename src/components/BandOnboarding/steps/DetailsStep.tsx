@@ -15,7 +15,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
 import { filterService } from "../../../api";
 import type { FilterOption, OnboardingApiResponse } from "../../../api/types";
-import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
+import { StepLayout } from "../layout/StepLayout/StepLayout";
 import { InputField } from "../../forms/InputField/InputField";
 import { Select, type Option } from "../../forms/Select/Select";
 import { ToggleSwitch } from "../../forms/ToggleSwitch/ToggleSwitch";
@@ -316,7 +316,7 @@ export default function DetailsStep() {
 		<StepLayout
 			currentStep={2}
 			headerTitle="Informações da Banda"
-			headerIcon={<Info color="#007bff" size={24} />}
+			headerIcon={<Info className="text-primary-700" size={24} />}
 		>
 			<form
 				onSubmit={handleSubmit(onSubmit)}

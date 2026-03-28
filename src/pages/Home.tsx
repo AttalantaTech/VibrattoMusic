@@ -344,10 +344,10 @@ export const Home = (): FunctionComponent => {
 							>
 								<Button variant="transparent" className="shrink-0">
 									<div className="flex justify-center items-center gap-2 px-4">
-										<span className="font-semibold text-[#007BFF] text-base sm:text-lg whitespace-nowrap">
+										<span className="font-semibold text-primary-700 text-base sm:text-lg whitespace-nowrap">
 											Ver Todos
 										</span>
-										<ArrowRight color="#007BFF" size={18} />
+										<ArrowRight className="text-primary-700" size={18} />
 									</div>
 								</Button>
 							</Link>
@@ -437,7 +437,7 @@ export const Home = (): FunctionComponent => {
 									{hasActiveFilters && (
 										<Button
 											onClick={clearAllFilters}
-											className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+											className="mt-4 bg-primary-600 hover:bg-blue-700 text-white"
 										>
 											Limpar Filtros
 										</Button>
@@ -481,7 +481,7 @@ export const Home = (): FunctionComponent => {
 						</div>
 					</div>
 					{/* Categories */}
-					<div className="w-full flex flex-col justify-center items-center py-8 gap-7 bg-[#EDFAFF] px-4">
+					<div className="w-full flex flex-col justify-center items-center py-8 gap-7 bg-primary-50/60 px-4">
 						<h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center">
 							Categorias
 						</h1>
@@ -493,7 +493,8 @@ export const Home = (): FunctionComponent => {
 										key={category.Id}
 										to="/search"
 										search={{ categorias: [category.Id.toString()] }}
-										className="hover:underline font-medium text-sm text-gray-900 hover:text-blue-600 transition-colors text-center p-3 rounded-lg hover:bg-white/50 border border-gray-200 hover:border-blue-300 bg-white/70"
+										className="font-medium text-sm text-gray-900 hover:text-primary-600 transition-colors text-center p-3 
+										rounded-lg hover:bg-white/50 border border-gray-200 hover:border-primary-500"
 									>
 										{category.Nome}
 									</Link>
@@ -512,7 +513,7 @@ export const Home = (): FunctionComponent => {
 												key={category.Id}
 												to="/search"
 												search={{ categorias: [category.Id.toString()] }}
-												className="hover:underline font-medium text-base text-gray-900 hover:text-blue-600 transition-colors text-center p-3 rounded-lg hover:bg-white/50 w-fit min-w-0 flex-1 max-w-xs"
+												className="font-medium text-base text-gray-900 hover:text-primary-600 transition-colors text-center p-3 rounded-lg hover:bg-primary-50 w-fit min-w-0 flex-1 max-w-xs"
 											>
 												{category.Nome}
 											</Link>
@@ -533,7 +534,7 @@ export const Home = (): FunctionComponent => {
 												key={category.Id}
 												to="/search"
 												search={{ categorias: [category.Id.toString()] }}
-												className="hover:underline font-medium text-base lg:text-lg text-gray-900 hover:text-blue-600 transition-colors text-center p-3 rounded-lg hover:bg-white/50 w-fit"
+												className="font-medium text-base lg:text-lg text-primary-800 transition-colors text-center p-3 rounded-lg hover:bg-primary-50 hover:border-primary-300 w-fit"
 											>
 												{category.Nome}
 											</Link>
@@ -544,7 +545,7 @@ export const Home = (): FunctionComponent => {
 						</div>
 						<Link
 							to="/search"
-							className="text-[#007BFF] text-lg font-medium hover:underline flex gap-3 align-center justify-center w-full"
+							className="text-primary-500 text-lg font-medium hover:underline flex gap-3 align-center justify-center w-full"
 						>
 							Ver Todos
 							<ArrowRight className="rounded-full border-2 border-solid border-current h-[26px] w-[26px]" />
@@ -563,7 +564,7 @@ export const Home = (): FunctionComponent => {
 										key={item.Id}
 										to="/search"
 										search={{ tipos: [item.Id.toString()] }}
-										className="flex flex-col items-center gap-2 text-[#007BFF] hover:text-blue-700 transition-colors p-3 rounded-lg hover:bg-blue-50 text-center border border-blue-200 bg-blue-50/30"
+										className="flex flex-col items-center gap-2 text-primary-700 hover:text-primary-700 transition-colors p-3 rounded-lg hover:bg-primary-50 text-center border border-primary-200 bg-primary-50/30"
 									>
 										<span className="text-sm font-medium leading-tight">
 											{item.Nome}
@@ -584,7 +585,7 @@ export const Home = (): FunctionComponent => {
 												key={item.Id}
 												to="/search"
 												search={{ tipos: [item.Id.toString()] }}
-												className="flex flex-col items-center gap-2 text-[#007BFF] hover:text-blue-700 transition-colors p-3 rounded-lg hover:bg-blue-50 text-center w-fit min-w-0 flex-1 max-w-xs"
+												className="flex flex-col items-center gap-2 text-primary-700 hover:text-primary-700 transition-colors p-3 rounded-lg hover:bg-primary-50 text-center w-fit min-w-0 flex-1 max-w-xs"
 											>
 												<span className="text-base font-medium leading-tight">
 													{item.Nome}
@@ -607,7 +608,7 @@ export const Home = (): FunctionComponent => {
 												key={item.Id}
 												to="/search"
 												search={{ tipos: [item.Id.toString()] }}
-												className="flex flex-col items-center gap-2 text-[#007BFF] hover:text-blue-700 transition-colors p-3 rounded-lg hover:bg-blue-50 text-center w-fit"
+												className="flex flex-col items-center gap-2 text-primary-700 hover:text-primary-700 transition-colors p-3 rounded-lg hover:bg-primary-50 text-center w-fit"
 											>
 												<span className="text-base lg:text-lg font-medium leading-tight">
 													{item.Nome}
@@ -632,7 +633,7 @@ export const Home = (): FunctionComponent => {
 										key={genero.Id}
 										to="/search"
 										search={{ generos: [genero.Id.toString()] }}
-										className="flex flex-col items-center gap-2 text-[#007BFF] hover:text-blue-700 transition-colors p-3 rounded-lg hover:bg-blue-50 text-center border border-blue-200 bg-blue-50/30"
+										className="flex flex-col items-center gap-2 text-primary-700 hover:text-primary-700 transition-colors p-3 rounded-lg hover:bg-primary-50 text-center border border-primary-200 bg-primary-50/30"
 									>
 										<span className="text-sm font-medium leading-tight">
 											{genero.Nome}
@@ -653,7 +654,7 @@ export const Home = (): FunctionComponent => {
 												key={genero.Id}
 												to="/search"
 												search={{ generos: [genero.Id.toString()] }}
-												className="flex flex-col items-center gap-2 text-[#007BFF] hover:text-blue-700 transition-colors p-3 rounded-lg hover:bg-blue-50 text-center w-fit min-w-0 flex-1 max-w-xs"
+												className="flex flex-col items-center gap-2 text-primary-700 hover:text-primary-700 transition-colors p-3 rounded-lg hover:bg-primary-50 text-center w-fit min-w-0 flex-1 max-w-xs"
 											>
 												<span className="text-base font-medium leading-tight">
 													{genero.Nome}
@@ -676,7 +677,7 @@ export const Home = (): FunctionComponent => {
 												key={genero.Id}
 												to="/search"
 												search={{ generos: [genero.Id.toString()] }}
-												className="flex flex-col items-center gap-2 text-[#007BFF] hover:text-blue-700 transition-colors p-3 rounded-lg hover:bg-blue-50 text-center w-fit"
+												className="flex flex-col items-center gap-2 text-primary-700 hover:text-primary-700 transition-colors p-3 rounded-lg hover:bg-primary-50 text-center w-fit"
 											>
 												<span className="text-base lg:text-lg font-medium leading-tight">
 													{genero.Nome}
@@ -756,7 +757,7 @@ export const Home = (): FunctionComponent => {
 										key={index}
 										className={`w-2 h-2 rounded-full transition-colors ${
 											index === currentTestimonyIndex
-												? "bg-blue-600"
+												? "bg-primary-600"
 												: "bg-gray-300"
 										}`}
 									/>

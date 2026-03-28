@@ -11,19 +11,25 @@ type ChatInputProps = {
 } & React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 export const ChatInput = React.forwardRef<HTMLTextAreaElement, ChatInputProps>(
-	({ onSend, className, value, onChange, ...props }, ref): FunctionComponent => {
+	(
+		{ onSend, className, value, onChange, ...props },
+		ref
+	): FunctionComponent => {
 		const [internalValue, setInternalValue] = useState("");
 		const internalRef = useRef<HTMLTextAreaElement>(null);
-		
+
 		// Use external ref if provided, otherwise use internal ref
-		const textareaRef = (ref as React.RefObject<HTMLTextAreaElement>) || internalRef;
-		
+		const textareaRef =
+			(ref as React.RefObject<HTMLTextAreaElement>) || internalRef;
+
 		// Determine if this is a controlled or uncontrolled component
 		const isControlled = value !== undefined && onChange !== undefined;
 		const currentValue = isControlled ? value : internalValue;
 
 		const handleSend = () => {
-			const messageText = isControlled ? value : textareaRef.current?.value || "";
+			const messageText = isControlled
+				? value
+				: textareaRef.current?.value || "";
 			if (messageText.trim()) {
 				onSend(messageText.trim());
 				// Clear input after sending if uncontrolled
@@ -38,7 +44,7 @@ export const ChatInput = React.forwardRef<HTMLTextAreaElement, ChatInputProps>(
 
 		const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
 			const newValue = event.target.value;
-			
+
 			if (isControlled && onChange) {
 				onChange(event);
 			} else {
@@ -71,7 +77,7 @@ export const ChatInput = React.forwardRef<HTMLTextAreaElement, ChatInputProps>(
 				{/* Send button */}
 				<button
 					aria-label="Enviar mensagem"
-					className="p-2 text-blue-500 hover:text-blue-700 focus:outline-none disabled:opacity-50"
+					className="p-2 text-primary-500 hover:text-primary-700 focus:outline-none disabled:opacity-50"
 					type="button"
 					onClick={handleSend}
 					disabled={!currentValue?.trim()}

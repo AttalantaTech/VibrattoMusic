@@ -29,7 +29,10 @@ export const TestimonialCard = ({
 							<span className="text-sm sm:text-base font-medium text-gray-900 truncate">
 								{name}
 							</span>
-							<BadgeCheck className="text-blue-500 flex-shrink-0" size={16} />
+							<BadgeCheck
+								className="text-primary-500 flex-shrink-0"
+								size={16}
+							/>
 						</div>
 
 						{/* Stars */}
@@ -49,7 +52,7 @@ export const TestimonialCard = ({
 						<div className="text-xs sm:text-sm text-gray-600">
 							Contratou{" "}
 							<a
-								className="font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+								className="font-medium text-primary-600 hover:text-primary-700 hover:underline transition-colors"
 								href="#"
 							>
 								{hired}

@@ -123,7 +123,7 @@ export const SearchPage = () => {
 	};
 	return (
 		<MainLayout>
-			<div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+			<div className="min-h-screen bg-primary-50/30">
 				{/* Search Section */}
 				<div className="bg-white shadow-sm">
 					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
@@ -193,7 +193,7 @@ export const SearchPage = () => {
 									<Button
 										className={`flex items-center gap-2 relative w-full sm:w-auto transition-all duration-200 ${
 											hasActiveFilters
-												? "border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100"
+												? "border-primary-500 bg-primary-50 text-primary-700 hover:bg-primary-100"
 												: ""
 										}`}
 										variant="outline"
@@ -204,11 +204,11 @@ export const SearchPage = () => {
 									>
 										<Filter
 											size={18}
-											className={hasActiveFilters ? "text-blue-600" : ""}
+											className={hasActiveFilters ? "text-primary-600" : ""}
 										/>
 										<span>Filtros Avançados</span>
 										{hasActiveFilters && (
-											<span className="ml-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+											<span className="ml-1 bg-primary-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
 												{(() => {
 													let count = 0;
 													if (filters.categorias?.length) count++;
@@ -227,7 +227,7 @@ export const SearchPage = () => {
 
 						{/* Advanced Filters - Responsive Layout */}
 						{showFilters && (
-							<div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
+							<div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-primary-50/20 rounded-lg border border-primary-50">
 								<div className="space-y-4">
 									<h3 className="text-lg font-semibold text-gray-900 mb-3">
 										Filtros Avançados
@@ -487,8 +487,8 @@ export const SearchPage = () => {
 																	}
 																	className={`px-4 py-2 text-sm font-medium ${
 																		isCurrentPage
-																			? "bg-blue-600 text-white"
-																			: "text-gray-700 hover:text-blue-600"
+																			? "bg-primary-600 text-white"
+																			: "text-gray-700 hover:text-primary-600"
 																	}`}
 																	onClick={() => {
 																		handlePageChange(page);
@@ -536,11 +536,11 @@ export const SearchPage = () => {
 							</p>
 
 							{/* Suggestions for better search */}
-							<div className="bg-blue-50 rounded-lg p-4 sm:p-6 max-w-lg mx-auto">
-								<h4 className="font-semibold text-blue-900 mb-3 text-sm sm:text-base">
+							<div className="bg-primary-50 rounded-lg p-4 sm:p-6 max-w-lg mx-auto">
+								<h4 className="font-semibold text-primary-900 mb-3 text-sm sm:text-base">
 									Dicas para melhorar sua busca:
 								</h4>
-								<ul className="text-blue-800 text-sm space-y-2 text-left">
+								<ul className="text-primary-800 text-sm space-y-2 text-left">
 									<li>• Tente usar termos mais gerais</li>
 									<li>• Remova alguns filtros aplicados</li>
 									<li>• Verifique a ortografia dos termos de busca</li>

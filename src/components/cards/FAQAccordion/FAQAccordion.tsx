@@ -31,9 +31,9 @@ export const FAQAccordion = ({ items }: FAQAccordionProps) => {
 							{item.question}
 						</span>
 						{openIndex === index ? (
-							<MinusCircle color="#1544E0" size={24} />
+							<MinusCircle className="text-primary-500" size={24} />
 						) : (
-							<PlusCircle color="#1544E0" size={24} />
+							<PlusCircle className="text-primary-500" size={24} />
 						)}
 					</button>
 

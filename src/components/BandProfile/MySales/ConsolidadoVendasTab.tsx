@@ -56,22 +56,22 @@ const unifiedStatusConfig = {
 		label: "Aguardando Pagamento",
 		icon: Clock,
 		variant: "secondary" as const,
-		color: "text-blue-600",
-		bgColor: "bg-blue-50",
+		color: "text-primary-600",
+		bgColor: "bg-primary-50",
 	},
 	aceito: {
 		label: "Agendado",
 		icon: Calendar,
 		variant: "secondary" as const,
-		color: "text-blue-600",
-		bgColor: "bg-blue-50",
+		color: "text-primary-600",
+		bgColor: "bg-primary-50",
 	},
 	aceita: {
 		label: "Agendado",
 		icon: Calendar,
 		variant: "secondary" as const,
-		color: "text-blue-600",
-		bgColor: "bg-blue-50",
+		color: "text-primary-600",
+		bgColor: "bg-primary-50",
 	},
 	concluido: {
 		label: "Concluído",
@@ -330,7 +330,7 @@ const ProposalDetailsModal = ({
 						{/* Contractor signature button */}
 						{needsContractorSignature && (
 							<Button
-								className="bg-blue-600 hover:bg-blue-700"
+								className="bg-primary-600 hover:bg-blue-700"
 								onClick={() => {
 									onSignContract(proposal);
 									onClose();
@@ -344,7 +344,7 @@ const ProposalDetailsModal = ({
 						{/* Band (contracted) signature button */}
 						{needsContractedSignature && (
 							<Button
-								className="bg-blue-600 hover:bg-blue-700"
+								className="bg-primary-600 hover:bg-blue-700"
 								onClick={() => {
 									onSignContract(proposal);
 									onClose();
@@ -627,8 +627,9 @@ export const ConsolidadoVendasTab = ({
 													className={cn(
 														"inline-block w-2 h-2 rounded-full",
 														status === "pendente" && "bg-yellow-500",
-														status === "aguardando_pagamento" && "bg-blue-500",
-														status === "aceito" && "bg-blue-500",
+														status === "aguardando_pagamento" &&
+															"bg-primary-500",
+														status === "aceito" && "bg-primary-500",
 														status === "concluido" && "bg-green-500",
 														status === "rejeitado" && "bg-red-500",
 														status === "cancelado" && "bg-gray-500"
@@ -728,7 +729,7 @@ export const ConsolidadoVendasTab = ({
 						!(searchTerm || statusFilter !== "all") ? (
 							<Button
 								onClick={() => setIsProposalModalOpen(true)}
-								className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+								className="flex items-center gap-2 bg-primary-600 hover:bg-blue-700"
 							>
 								<Plus className="h-4 w-4" />
 								Criar Primeira Proposta
@@ -865,7 +866,7 @@ export const ConsolidadoVendasTab = ({
 										{(needsContractorSignature || needsContractedSignature) && (
 											<Button
 												size="sm"
-												className="bg-blue-600 hover:bg-blue-700"
+												className="bg-primary-600 hover:bg-blue-700"
 												onClick={(event) => {
 													event.stopPropagation();
 													handleSignContract(proposal);

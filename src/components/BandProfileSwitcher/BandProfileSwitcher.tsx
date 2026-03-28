@@ -74,16 +74,17 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 				onClick={handleTriggerClick}
 				className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
 			>
-				<Avatar
-					src={activeMusicalProduct?.fotoPerfil ?? ""}
-					alt={activeMusicalProduct?.nome ?? userData?.nome ?? ""}
-					size={32}
-				/>
 				<div className="flex flex-col">
 					<span className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
 						{activeMusicalProduct?.nome ?? userData?.nome ?? ""}
 					</span>
 				</div>
+
+				<Avatar
+					src={activeMusicalProduct?.fotoPerfil ?? ""}
+					alt={activeMusicalProduct?.nome ?? userData?.nome ?? ""}
+					size={32}
+				/>
 				<ChevronDown
 					className={cn(
 						"h-4 w-4 text-gray-400 transition-transform duration-200",
@@ -112,7 +113,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 								{userData?.nome ?? "Usuário"}
 							</span>
 							{!activeMusicalProduct && (
-								<Check className="h-4 w-4 text-blue-600 ml-auto" />
+								<Check className="h-4 w-4 text-primary-600 ml-auto" />
 							)}
 						</button>
 
@@ -140,7 +141,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 									{product.nome}
 								</span>
 								{product.id === activeMusicalProduct?.id && (
-									<Check className="h-4 w-4 text-blue-600 ml-auto" />
+									<Check className="h-4 w-4 text-primary-600 ml-auto" />
 								)}
 							</button>
 						))}

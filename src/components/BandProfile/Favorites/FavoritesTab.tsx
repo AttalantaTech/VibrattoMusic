@@ -17,7 +17,7 @@ export const FavoritesTab = () => {
 		return (
 			<div className="flex items-center justify-center min-h-[400px]">
 				<div className="text-center">
-					<Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+					<Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-4" />
 					<p className="text-gray-600">Carregando seus favoritos...</p>
 				</div>
 			</div>
@@ -55,7 +55,7 @@ export const FavoritesTab = () => {
 					</p>
 					<button
 						onClick={() => void navigate({ to: "/search" })}
-						className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+						className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
 					>
 						Descobrir Bandas
 					</button>

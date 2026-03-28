@@ -9,7 +9,8 @@ import { Button } from "../components/ui/Button/Button";
 import { InputField } from "../components/forms/InputField/InputField";
 import { Link, useRouter } from "@tanstack/react-router";
 import { extractUserIdFromToken } from "../utils/jwt";
-import Logo from "../assets/images/Logomark.png";
+import LogoVibratto from "../assets/images/Logo_Vibratto.png";
+import VibrattoName from "../assets/images/Vibratto.png";
 import ShowImg from "../assets/images/show.jpg";
 import { apiClient } from "@/api/core/client";
 import { User } from "@/api/types";
@@ -157,15 +158,17 @@ export const Login = () => {
 				<div className="w-full max-w-md lg:w-[50%] flex flex-col">
 					{/* Header */}
 					<div className="flex flex-col justify-center items-center gap-4 lg:gap-6 text-center">
-						<div className="w-[153px] flex items-center justify-around">
+						<div className="flex items-center justify-around">
 							<img
 								alt="Vibratto logo"
-								className="w-[26.25px] h-[43.46px]"
-								src={Logo}
+								className="w-auto h-8"
+								src={LogoVibratto}
 							/>
-							<h2 className="font-semibold text-[#007BFF] text-lg sm:text-[22px]">
-								Vibratto
-							</h2>
+							<img
+								alt="Vibratto logo"
+								className="w-auto  h-6"
+								src={VibrattoName}
+							/>
 						</div>
 						<div className="flex flex-col gap-2 lg:gap-3 w-full">
 							<h1 className="font-semibold text-2xl sm:text-3xl">
@@ -232,7 +235,7 @@ export const Login = () => {
 							)}
 							<div className="flex items-center justify-end">
 								<Link
-									className="text-xs sm:text-sm text-blue-600 hover:text-blue-500"
+									className="text-xs sm:text-sm text-primary-600 hover:text-primary-500"
 									to="/forgot-password"
 								>
 									Esqueceu sua senha?
@@ -254,7 +257,7 @@ export const Login = () => {
 						<div className="text-xs sm:text-sm flex items-center justify-center text-center">
 							<p className="text-gray-500 text-normal">
 								Não tem uma conta?{" "}
-								<Link className="font-semibold text-[#007BFF]" to="/welcome">
+								<Link className="font-semibold text-primary-600" to="/welcome">
 									Cadastre-se
 								</Link>
 							</p>

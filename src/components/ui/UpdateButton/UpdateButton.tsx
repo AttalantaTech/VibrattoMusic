@@ -8,7 +8,7 @@ interface UpdateButtonProps {
 export const UpdateButton = ({ onClick }: UpdateButtonProps) => {
 	return (
 		<Button
-			className="text-[#007BFF] font-bold flex gap-1"
+			className="text-primary-600 font-bold flex gap-1"
 			variant="transparent"
 			onClick={onClick}
 		>

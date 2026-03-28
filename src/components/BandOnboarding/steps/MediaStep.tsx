@@ -27,7 +27,7 @@ import {
 import { onboardingService, imageUploadService } from "../../../api";
 import { IconInput } from "../../forms/IconInput/IconInput";
 import { IconTabNavigation } from "../../ui/IconTabNavigation/IconTabNavigation";
-import { StepLayout } from "../../BandRegister/layout/StepLayout/StepLayout";
+import { StepLayout } from "../layout/StepLayout/StepLayout";
 import {
 	FaInstagram,
 	FaTiktok,
@@ -119,7 +119,7 @@ const styles = {
 	titleText: "text-sm font-medium text-gray-700",
 	sectionContainer: "bg-gray-50 py-6 border-b-2 border-gray-200",
 	sectionHeader: "mb-4",
-	sectionIcon: "text-blue-600",
+	sectionIcon: "text-primary-600",
 	subtitle: "block text-gray-500 text-sm my-4",
 };
 
@@ -273,7 +273,7 @@ export default function MediaStep() {
 	// Handle image upload using Azure Blob Storage
 	const handleImageUpload = async (file: File, type: FileEventType) => {
 		if (!produtoMusicalId) {
-			toast.error("ID do produto musical não encontrado");
+			toast.error("Onboarding não encontrado");
 
 			return;
 		}
@@ -584,7 +584,7 @@ export default function MediaStep() {
 	return (
 		<StepLayout
 			currentStep={3}
-			headerIcon={<ImageIcon className="text-blue-500" size={24} />}
+			headerIcon={<ImageIcon className="text-primary-700" size={24} />}
 			headerTitle="Mídia Kit e Visibilidade"
 		>
 			<div className="flex flex-col w-full h-full gap-4 md:gap-6 overflow-y-auto">
@@ -609,16 +609,19 @@ export default function MediaStep() {
 									title="Foto de Perfil"
 									description="JPG, PNG até 5MB"
 									currentImage={profilePhoto}
-									isUploading={uploadingImage === "fotoPerfil"}
+									isUploading={
+										uploadingImage === "ProdutoMusicalOnboardingFotoPerfil"
+									}
 									onDelete={async () => {
 										await removeImage("ProdutoMusicalOnboardingFotoPerfil");
 									}}
-									onFileSelect={(file) =>
-										handleImageUpload(
-											file,
-											"ProdutoMusicalOnboardingFotoPerfil"
-										)
-									}
+									onFileSelect={async (file) => {
+										if (file)
+											await handleImageUpload(
+												file,
+												"ProdutoMusicalOnboardingFotoPerfil"
+											);
+									}}
 									aspectRatio="aspect-square"
 								/>
 
@@ -626,13 +629,19 @@ export default function MediaStep() {
 									title="Logomarca"
 									description="JPG, PNG até 5MB"
 									currentImage={logoImage}
-									isUploading={uploadingImage === "logomarca"}
+									isUploading={
+										uploadingImage === "ProdutoMusicalOnboardingLogomarca"
+									}
 									onDelete={async () => {
 										await removeImage("ProdutoMusicalOnboardingLogomarca");
 									}}
-									onFileSelect={(file) =>
-										handleImageUpload(file, "ProdutoMusicalOnboardingLogomarca")
-									}
+									onFileSelect={async (file) => {
+										if (file)
+											await handleImageUpload(
+												file,
+												"ProdutoMusicalOnboardingLogomarca"
+											);
+									}}
 									aspectRatio="aspect-square"
 								/>
 							</div>

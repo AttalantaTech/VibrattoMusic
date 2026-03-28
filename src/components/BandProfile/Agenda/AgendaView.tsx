@@ -393,7 +393,7 @@ export const AgendaView = ({
 		const config = eventTypeConfig[type as keyof typeof eventTypeConfig];
 		return config
 			? `${config.color} ${config.borderColor} text-white`
-			: "bg-blue-500 border-blue-600 text-white";
+			: "bg-primary-500 border-primary-600 text-white";
 	};
 
 	// Render loading state
@@ -401,7 +401,7 @@ export const AgendaView = ({
 		return (
 			<div className="flex items-center justify-center h-full bg-gray-50">
 				<div className="text-center">
-					<Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
+					<Loader2 className="h-8 w-8 animate-spin text-primary-600 mx-auto mb-4" />
 					<p className="text-gray-600">Carregando agenda...</p>
 				</div>
 			</div>
@@ -429,7 +429,7 @@ export const AgendaView = ({
 									}}
 									className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
 										viewMode === "week"
-											? "bg-white text-blue-600 shadow-sm"
+											? "bg-white text-primary-600 shadow-sm"
 											: "text-gray-600 hover:text-gray-900"
 									}`}
 								>
@@ -441,7 +441,7 @@ export const AgendaView = ({
 									}}
 									className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
 										viewMode === "month"
-											? "bg-white text-blue-600 shadow-sm"
+											? "bg-white text-primary-600 shadow-sm"
 											: "text-gray-600 hover:text-gray-900"
 									}`}
 								>
@@ -471,7 +471,7 @@ export const AgendaView = ({
 							>
 								<Filter size={20} className="text-gray-600" />
 								{filterType !== "all" && (
-									<div className="absolute top-1 right-1 w-2 h-2 bg-blue-600 rounded-full"></div>
+									<div className="absolute top-1 right-1 w-2 h-2 bg-primary-600 rounded-full"></div>
 								)}
 							</button>
 
@@ -579,7 +579,7 @@ export const AgendaView = ({
 										}}
 										className={`w-full px-3 py-2 rounded text-left text-sm transition-colors ${
 											filterType === type
-												? "bg-blue-50 text-blue-700 font-medium"
+												? "bg-primary-50 text-primary-700 font-medium"
 												: "hover:bg-gray-100 text-gray-700"
 										}`}
 									>
@@ -626,7 +626,7 @@ export const AgendaView = ({
 									<div
 										className={`text-sm sm:text-lg font-semibold ${
 											isToday(day)
-												? "text-blue-600 bg-blue-100 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center mx-auto text-xs sm:text-base"
+												? "text-primary-600 bg-primary-100 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center mx-auto text-xs sm:text-base"
 												: "text-gray-900"
 										}`}
 									>
@@ -670,7 +670,7 @@ export const AgendaView = ({
 											day={day}
 											dayIndex={dayIndex}
 											hour={hour}
-											className="border-r border-gray-200 hover:bg-blue-50 transition-colors cursor-pointer min-h-[64px]"
+											className="border-r border-gray-200 hover:bg-primary-50 transition-colors cursor-pointer min-h-[64px]"
 											onClick={() => {
 												handleTimeSlotClick(day, hour);
 											}}

@@ -25,7 +25,7 @@ export const DroppableTimeSlot = ({
 			ref={setNodeRef}
 			onClick={onClick}
 			className={`h-20 border-r border-b border-gray-100 relative transition-colors cursor-pointer ${
-				isOver ? "bg-blue-50 border-blue-200" : "hover:bg-gray-50"
+				isOver ? "bg-primary-50 border-primary-200" : "hover:bg-gray-50"
 			} ${className}`}
 		>
 			{/* Hour line marker for midday */}

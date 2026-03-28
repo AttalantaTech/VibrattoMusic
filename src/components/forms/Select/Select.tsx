@@ -131,7 +131,7 @@ export const Select = ({
 				<div
 					id={name}
 					className={cn(
-						"w-full bg-white rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer flex items-center justify-between",
+						"w-full bg-white rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 cursor-pointer flex items-center justify-between",
 						className
 					)}
 					onClick={toggleDropdown}
@@ -159,7 +159,7 @@ export const Select = ({
 								return (
 									<li
 										key={option.value}
-										className="px-4 py-2 text-sm text-gray-900 hover:bg-blue-50 cursor-pointer flex items-center gap-2"
+										className="px-4 py-2 text-sm text-gray-900 hover:bg-primary-50 cursor-pointer flex items-center gap-2"
 										onClick={(event) => {
 											event.stopPropagation();
 											handleSelect(option);
@@ -192,10 +192,10 @@ export const Select = ({
 						.map((option) => (
 							<div
 								key={option.value}
-								className="flex items-center justify-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700"
+								className="flex items-center justify-center gap-1 rounded-full bg-primary-50 px-3 py-1 text-sm text-primary-700"
 							>
 								<button
-									className="rounded-full hover:bg-blue-200 focus:outline-none"
+									className="rounded-full hover:bg-primary-200 focus:outline-none"
 									type="button"
 									onClick={() => {
 										onRemove(option.value);

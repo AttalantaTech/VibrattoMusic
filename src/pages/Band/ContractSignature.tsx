@@ -24,7 +24,7 @@ const getStatusColor = (status: string) => {
 		case "Pendente":
 			return "bg-yellow-100 text-yellow-800";
 		case "Aceita":
-			return "bg-blue-100 text-blue-800";
+			return "bg-primary-100 text-primary-800";
 		case "Sinal Pago":
 			return "bg-green-100 text-green-800";
 		case "Concluído":
@@ -142,7 +142,7 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 		return (
 			<div className="min-h-screen flex items-center justify-center bg-gray-50">
 				<div className="text-center">
-					<Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto" />
+					<Loader2 className="h-12 w-12 animate-spin text-primary-600 mx-auto" />
 					<p className="mt-4 text-gray-600">Carregando contrato...</p>
 				</div>
 			</div>
@@ -206,7 +206,7 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 								Voltar
 							</Button>
 							<div className="flex items-center gap-3">
-								<FileText className="h-6 w-6 text-blue-600" />
+								<FileText className="h-6 w-6 text-primary-600" />
 								<div>
 									<h1 className="text-xl font-bold text-gray-900">
 										Contrato #{proposal.idContrato}
@@ -337,10 +337,10 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 					</div>
 
 					{canSign && (
-						<div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+						<div className="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
 							<div className="flex gap-3">
-								<AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-								<div className="text-sm text-blue-800">
+								<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
+								<div className="text-sm text-primary-800">
 									<p className="font-medium mb-1">Importante:</p>
 									<p>
 										Ao clicar em "Assinar via D4Sign", você será redirecionado

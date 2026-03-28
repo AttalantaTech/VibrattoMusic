@@ -409,7 +409,8 @@ export interface UserApiResponse {
 	estado: string;
 	logradouro: string;
 	nome: string;
-	numero: string;
+	numero: string | null;
+	telefone?: string | null;
 }
 
 // ===== Musical Product Types =====
@@ -480,6 +481,7 @@ export interface MusicalProductTechnicalConfig {
 		posicaoX: number;
 		posicaoY: number;
 	}>;
+	clipagem: Array<string>;
 }
 
 export interface MusicalProductSchedule {

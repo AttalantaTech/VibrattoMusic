@@ -68,7 +68,7 @@ export const OwnMessageElement = ({
 	const isRead = isMessageRead(message, user?.id);
 	const messageReadElement =
 		isRead === null ? null : isRead ? (
-			<CheckCheck className="w-4 h-4 text-blue-500" />
+			<CheckCheck className="w-4 h-4 text-primary-500" />
 		) : (
 			<Check className="w-4 h-4 text-gray-400" />
 		);
@@ -76,7 +76,7 @@ export const OwnMessageElement = ({
 	return (
 		<div className="flex items-end space-x-2 max-w-xs lg:max-w-md">
 			<div className="flex flex-col">
-				<div className="bg-blue-600 text-white px-4 py-3 rounded-l-2xl rounded-tr-2xl rounded-br-md shadow-lg">
+				<div className="bg-primary-600 text-white px-4 py-3 rounded-l-2xl rounded-tr-2xl rounded-br-md shadow-lg">
 					<p className="text-sm leading-relaxed">{message.conteudo}</p>
 				</div>
 				<div className="flex items-center justify-end space-x-1 mt-1 px-1">

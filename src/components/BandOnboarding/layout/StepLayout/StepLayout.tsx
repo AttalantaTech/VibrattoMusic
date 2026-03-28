@@ -13,12 +13,13 @@ interface StepLayoutProps {
 	headerIcon: ReactNode;
 	isFinishing?: boolean;
 	onClick?: () => void;
+	buttonTitle?: string;
 }
 
 const styles = {
 	active: {
-		stepNumBox: "bg-[#d6f2ff]",
-		stepNum: "text-[#007BFF]",
+		stepNumBox: "bg-primary-50",
+		stepNum: "text-primary-600",
 		stepText: "font-semibold",
 	},
 	inactive: {
@@ -40,6 +41,7 @@ export const StepLayout = ({
 	headerTitle,
 	isFinishing = false,
 	onClick,
+	buttonTitle,
 }: StepLayoutProps) => {
 	const router = useRouter();
 	const { addToast } = useToastStore();
@@ -70,7 +72,7 @@ export const StepLayout = ({
 				<div className="flex flex-col w-full items-center justify-start px-4 sm:px-6 md:px-12 lg:px-20 xl:px-28 gap-5 pb-8">
 					{/* Header */}
 					<div className="flex flex-col items-center justify-center w-full gap-3 my-4 md:my-8">
-						<AudioLines color="rgba(0, 123, 255, 1)" size={40} />
+						<AudioLines className="text-primary-500" size={40} />
 						<h1 className="text-gray-900 font-bold text-xl md:text-2xl">
 							Cadastre sua banda
 						</h1>
@@ -177,7 +179,7 @@ export const StepLayout = ({
 							<div className="flex flex-col w-full h-full items-center justify-center p-4 md:p-6 lg:p-8 gap-4 md:gap-6 border border-gray-200 bg-gray-50 rounded-lg text-left">
 								<div className="w-full flex items-center">
 									<div className="flex w-full items-center gap-3 md:gap-6">
-										<div className="flex items-center justify-center bg-[#d6f2ff] p-2 md:p-3 rounded">
+										<div className="flex items-center justify-center bg-primary-50 p-2 md:p-3 rounded">
 											{headerIcon}
 										</div>
 										<h1 className="text-gray-900 font-bold text-lg md:text-xl lg:text-2xl">
@@ -187,7 +189,7 @@ export const StepLayout = ({
 
 									{currentStep === 1 ? (
 										<Button className="w-full sm:w-auto" onClick={onClick}>
-											Usar Dados do Cadastro
+											{buttonTitle ?? ""}
 										</Button>
 									) : null}
 								</div>

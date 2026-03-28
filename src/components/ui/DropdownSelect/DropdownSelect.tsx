@@ -59,7 +59,7 @@ export const DropdownSelect = ({
 	return (
 		<div className={clsx("relative", className)} ref={dropdownRef}>
 			<button
-				className="flex items-center gap-1 px-2 py-1 text-sm text-black hover:text-blue-600"
+				className="flex items-center gap-1 px-2 py-1 text-sm text-black hover:text-primary-600"
 				onClick={() => {
 					setOpenDropdown(open ? null : id);
 				}}

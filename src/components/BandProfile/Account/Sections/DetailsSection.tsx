@@ -282,7 +282,7 @@ export default function DetailsSection({
 	return (
 		<AccountLayout
 			headerTitle="Informações da Banda"
-			headerIcon={<Info color="#007bff" size={24} />}
+			headerIcon={<Info className="text-primary-700" size={24} />}
 		>
 			<form
 				onSubmit={handleSubmit(onSubmit)}

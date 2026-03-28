@@ -57,7 +57,7 @@ export const ConversationTabContainer = ({
 	return (
 		<div
 			className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
-				isSelected ? "bg-blue-50" : ""
+				isSelected ? "bg-primary-50" : ""
 			}`}
 			onClick={onClick}
 		>
