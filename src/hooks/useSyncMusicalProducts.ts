@@ -9,6 +9,8 @@ export const useSyncMusicalProducts = () => {
 		setIsLoadingMusicalProduct,
 		setActiveProduct,
 		activeProduct,
+		newProductCreated,
+		setNewProductCreated,
 	} = useMusicalProductStore();
 	const clear = useMusicalProductStore((s) => s.clear);
 
@@ -23,7 +25,15 @@ export const useSyncMusicalProducts = () => {
 		if (musicalProducts && musicalProducts.dados.length > 0) {
 			setAvailableProducts(musicalProducts.dados);
 
-			if (activeProduct) {
+			if (newProductCreated) {
+				const product = musicalProducts.dados.find(
+					(item) => item.id === newProductCreated
+				);
+
+				if (product) setActiveProduct(product);
+
+				setNewProductCreated(null);
+			} else if (activeProduct) {
 				const product = musicalProducts.dados.find(
 					(item) => item.id === activeProduct.id
 				);
@@ -31,6 +41,7 @@ export const useSyncMusicalProducts = () => {
 				if (product) setActiveProduct(product);
 			}
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [
 		musicalProducts,
 		user?.id,

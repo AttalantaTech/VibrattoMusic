@@ -10,22 +10,23 @@ import {
 } from "lucide-react";
 import { onboardingService } from "../../../api";
 import { Button } from "../../ui/Button/Button";
-import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
 import { StepLayout } from "../layout/StepLayout/StepLayout";
 import { useOnboardingData } from "@/hooks/useMusicalProducts";
 import { toast } from "sonner";
 import type { OnboardingApiResponse } from "@/api/types";
 import { decryptValue } from "@/utils/encryptValue";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { profileKeys, useProfileStatus } from "@/hooks/useProfileStatus";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function PublishStep() {
 	const [loading, setLoading] = useState(false);
 	const navigate = useNavigate();
-	const { clearData } = useOnboarding();
-	const { availableProducts } = useMusicalProductStore();
-	const { data, isFetching } = useOnboardingData();
+	const queryClient = useQueryClient();
 
-	console.log(availableProducts);
+	const { setNewProductCreated } = useMusicalProductStore();
+	const { user } = useProfileStatus();
+	const { data, isFetching } = useOnboardingData();
 
 	const searchParameters = useSearch({ from: "/band/register/onboarding/6" });
 	const onboardingID = searchParameters.registerId
@@ -69,8 +70,12 @@ export default function PublishStep() {
 		try {
 			await onboardingService
 				.publish(Number(produtoMusicalId))
-				.then(async () => {
-					clearData();
+				.then(async (id) => {
+					await queryClient.invalidateQueries({
+						queryKey: profileKeys.musicalProducts(user?.id),
+					});
+
+					setNewProductCreated(id);
 
 					toast.success("Produto musical publicado com sucesso");
 
