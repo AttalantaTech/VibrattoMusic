@@ -15,7 +15,7 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
 
 		const variantClasses = {
 			primary:
-				"bg-primary-600 text-white border border-primary-600 shadow-sm hover:bg-[#006ae0]",
+				"bg-primary-600 text-white border border-primary-600 shadow-sm hover:bg-primary-700",
 			secondary:
 				"bg-white text-primary-600 border border-primary-600 hover:bg-primary-50",
 			outline:

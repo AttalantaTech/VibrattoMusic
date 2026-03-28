@@ -73,7 +73,7 @@ export const NotificationBell = () => {
 				onClick={toggleNotificationDropdown}
 				aria-label="Notificações"
 			>
-				<Bell color="#667085" size={20} />
+				<Bell color="#667085" className="w-4 h-4 sm:w-5 sm:h-5" />
 				{unreadCount > 0 && (
 					<div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
 						{unreadCount > 9 ? "9+" : unreadCount}
