@@ -1,5 +1,3 @@
-import { useAuthStore } from "../../../store/authStore";
-import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
 import { ProfileIncompleteModal } from "../../ui/ProfileIncompleteModal/ProfileIncompleteModal";
 import { SideBar } from "./components/SideBar";
 import { Chat } from "./components/Chat";
@@ -9,15 +7,6 @@ import { useMessagesContext } from "@/contexts/MessagesContext";
 import { useEffect } from "react";
 
 const MessagesTab = () => {
-	// Auth store - using same approach as BandProfile account tab
-	const { user } = useAuthStore();
-
-	// Active Musical Product
-	const { activeProduct } = useActiveMusicalProduct();
-	const currentProductId = activeProduct?.id
-		? Number(activeProduct.id)
-		: undefined;
-
 	const messagesContext = useMessagesContext();
 	const {
 		selectedConversation,
@@ -84,7 +73,7 @@ const MessagesTab = () => {
 				onClose={() => setIsProfileIncompleteModalOpen?.(false)}
 			/>
 
-			<SideBar user={user} currentProductId={currentProductId} />
+			<SideBar />
 			<Chat />
 		</div>
 	);

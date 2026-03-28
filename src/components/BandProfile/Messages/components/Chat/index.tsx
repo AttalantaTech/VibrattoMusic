@@ -1,5 +1,4 @@
 import { ArrowLeft, Circle, DollarSign, MessageSquare } from "lucide-react";
-import { useActiveMusicalProduct } from "@/hooks/useActiveMusicalProduct";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { Loading } from "@/shared/components/Loading";
 import { useAuthStore } from "@/store/authStore";
@@ -17,17 +16,19 @@ import {
 import { getParticipantInitials } from "../../utils/Message";
 import type { Message } from "@/api/services/messages/types";
 import { useMessagesContext } from "@/contexts/MessagesContext";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 export const Chat = () => {
 	const { user } = useAuthStore();
 	const currentUserId = user?.id;
 
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 	const currentProductId = activeProduct?.id;
 	const { isProfileComplete } = useProfileStatus();
 
 	const messagesContext = useMessagesContext();
 	const {
+		currentChatUser,
 		messageInput,
 		setMessageInput,
 		messages,
@@ -71,24 +72,14 @@ export const Chat = () => {
 							)}
 							<div className="relative">
 								<UserImageContainer>
-									{getParticipantInitials(
-										[currentProductId, user?.id].includes(
-											selectedConversation.participanteId
-										)
-											? selectedConversation.contratanteNome
-											: selectedConversation.participanteNome
-									)}
+									{getParticipantInitials(currentChatUser?.name || "Usuário")}
 								</UserImageContainer>
 								{selectedConversation.online && (
 									<Circle className="absolute bottom-0 right-0 w-3 h-3 text-green-500 fill-current" />
 								)}
 							</div>
 							<h2 className="text-md md:text-lg whitespace-nowrap text-ellipsis overflow-hidden font-semibold text-gray-900">
-								{[currentProductId, user?.id].includes(
-									selectedConversation.participanteId
-								)
-									? selectedConversation.contratanteNome
-									: selectedConversation.participanteNome}
+								{currentChatUser?.name || "Usuário"}
 							</h2>
 						</div>
 						{activeProduct && !isProfileComplete && (
@@ -100,16 +91,16 @@ export const Chat = () => {
 								<span className="text-sm font-medium">Completar Perfil</span>
 							</button>
 						)}
-						{isProfileComplete && (
-							<button
-								disabled={!activeProduct}
-								onClick={() => setIsProposalModalOpen?.(true)}
-								className="flex items-center space-x-1 px-2 md:space-x-2 md:px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-							>
-								<DollarSign className="w-4 h-4" />
-								<span className="text-sm font-medium">Enviar Proposta</span>
-							</button>
-						)}
+						{currentProductId === selectedConversation?.participanteId &&
+							isProfileComplete && (
+								<button
+									onClick={() => setIsProposalModalOpen?.(true)}
+									className="flex items-center space-x-1 px-2 md:space-x-2 md:px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+								>
+									<DollarSign className="w-4 h-4" />
+									<span className="text-sm font-medium">Criar Proposta</span>
+								</button>
+							)}
 					</ChatHeaderContainer>
 
 					<ChatMessagesContainer messagesContainerRef={messagesContainerRef}>
