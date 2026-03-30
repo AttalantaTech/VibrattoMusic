@@ -212,7 +212,7 @@ export const Register = () => {
 			<div className="flex flex-col w-full lg:w-1/2 h-full justify-start items-center gap-6 px-4 lg:px-0 overflow-y-auto py-6">
 				<div className="w-full max-w-md lg:w-[50%] flex flex-col my-auto">
 					{/* Header */}
-					<div className="flex flex-col justify-center items-center gap-4 lg:gap-6 text-center">
+					<div className="flex flex-col justify-center items-center gap-2 lg:gap-6 text-center">
 						<div className="flex items-center justify-around">
 							<img
 								alt="Vibratto logo"
