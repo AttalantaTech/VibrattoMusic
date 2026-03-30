@@ -13,7 +13,7 @@ import LogoVibratto from "../assets/images/Logo_Vibratto.png";
 import VibrattoName from "../assets/images/Vibratto.png";
 import ShowImg from "../assets/images/show.jpg";
 import { apiClient } from "@/api/core/client";
-import { User } from "@/api/types";
+import type { User } from "@/api/types";
 
 const loginSchema = z.object({
 	email: z.string().email("Email inválido"),
@@ -166,7 +166,7 @@ export const Login = () => {
 							/>
 							<img
 								alt="Vibratto logo"
-								className="w-auto h-3 sm:h-6"
+								className="w-auto h-3 sm:h-4"
 								src={VibrattoName}
 							/>
 						</div>

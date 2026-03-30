@@ -6,13 +6,13 @@ export const VibrattoLogo = () => {
 		<a className="flex h-10 justify-center items-center gap-2" href="/">
 			<img
 				alt="Vibratto logo"
-				className="w-auto h-5 sm:h-10"
+				className="w-auto h-5 sm:h-8"
 				src={LogoVibratto}
 			/>
 			<div>
 				<img
 					alt="Vibratto logo"
-					className="w-auto h-3 sm:h-6"
+					className="w-auto h-3 sm:h-4"
 					src={VibrattoName}
 				/>
 			</div>

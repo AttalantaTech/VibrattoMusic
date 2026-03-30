@@ -79,7 +79,7 @@ export const UserTypeSelection = () => {
 						/>
 						<img
 							alt="Vibratto logo"
-							className="w-auto  h-6"
+							className="w-auto h-3 sm:h-4"
 							src={VibrattoName}
 						/>
 					</div>
