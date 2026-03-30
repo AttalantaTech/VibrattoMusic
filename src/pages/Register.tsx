@@ -216,12 +216,12 @@ export const Register = () => {
 						<div className="flex items-center justify-around">
 							<img
 								alt="Vibratto logo"
-								className="w-auto h-8"
+								className="w-auto h-5 sm:h-10"
 								src={LogoVibratto}
 							/>
 							<img
 								alt="Vibratto logo"
-								className="w-auto  h-6"
+								className="w-auto h-3 sm:h-6"
 								src={VibrattoName}
 							/>
 						</div>
