@@ -12,7 +12,7 @@ export const VibrattoLogo = () => {
 			<div>
 				<img
 					alt="Vibratto logo"
-					className="w-auto h-1 sm:h-6"
+					className="w-auto h-3 sm:h-6"
 					src={VibrattoName}
 				/>
 			</div>
