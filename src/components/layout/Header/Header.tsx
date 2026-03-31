@@ -23,12 +23,14 @@ import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProduct
 import type { OnboardingApiResponse } from "@/api/types";
 import { userKeys } from "@/hooks/useUser";
 import { useQueryClient } from "@tanstack/react-query";
+import { OnboardingsPedingModal } from "@/components/BandProfile/Account/OnboardingsPedingModal";
 
 export const Header = () => {
 	const { isAuthenticated, logout } = useAuthStore();
 	const location = useLocation();
 	const navigate = useNavigate();
 	const [showDropdown, setShowDropdown] = useState(false);
+	const [openOnboardingsPending, setOpenOnboardingsPending] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
 	useSyncMusicalProducts();
@@ -37,12 +39,12 @@ export const Header = () => {
 		useMusicalProductStore();
 	const { musicalProducts } = useProfileStatus();
 
-	const { data } = useOnboardingData();
+	const { data: onboardings } = useOnboardingData();
 	const queryClient = useQueryClient();
 
 	const onboardingData = useMemo<OnboardingApiResponse | undefined>(() => {
-		return data?.find((item) => item);
-	}, [data]);
+		return onboardings?.find((item) => item);
+	}, [onboardings]);
 
 	const isOnboardingPage = location.pathname.includes("/onboarding");
 	const showNotifications = isAuthenticated && !isOnboardingPage;
@@ -70,6 +72,10 @@ export const Header = () => {
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
 	}, []);
+
+	const handleCreateProfessionalProfile = () => {
+		setOpenOnboardingsPending(true);
+	};
 
 	const handleLogout = async () => {
 		logout();
@@ -162,14 +168,7 @@ export const Header = () => {
 										<span>Meu Perfil</span>
 									</button>
 									<button
-										onClick={async () => {
-											await navigate({
-												to: `/band/register/onboarding/1`,
-												search: {
-													type: "new-onboarding",
-												},
-											});
-										}}
+										onClick={handleCreateProfessionalProfile}
 										className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
 									>
 										<div className="flex relative">
@@ -228,6 +227,13 @@ export const Header = () => {
 							onProductChange={setActiveProduct}
 						/>
 					)}
+
+					<OnboardingsPedingModal
+						isOpen={openOnboardingsPending}
+						setIsOpen={setOpenOnboardingsPending}
+						onboardingsPedingTable={{ data: onboardings ?? [] }}
+						clickComeFrom="header-menu"
+					/>
 				</div>
 			</nav>
 		</header>
