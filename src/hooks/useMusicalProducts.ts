@@ -241,6 +241,23 @@ export const useSaveOnboardingSchedule = () => {
 };
 
 /**
+ * Hook to save onboarding schedule (Step 5)
+ */
+export const useDisableOnboarding = () => {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({ onboardingId }: { onboardingId: number }) =>
+			onboardingService.disableOnboarding(onboardingId),
+		onSuccess: () => {
+			// Invalidate onboarding queries
+			void queryClient.invalidateQueries({
+				queryKey: musicalProductKeys.pending(),
+			});
+		},
+	});
+};
+
+/**
  * Hook to publish musical product after completing onboarding
  */
 export const usePublishMusicalProduct = () => {

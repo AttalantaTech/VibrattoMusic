@@ -1,10 +1,10 @@
 import { AudioLines, AwardIcon, Check, ChevronRight } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useRouter } from "@tanstack/react-router";
-import { useToastStore } from "../../../../store/toast/toastStore";
 import { FinishModal } from "../../FinishModal/FinishModal";
 import { OnboardingHeader } from "../../../BandOnboarding/OnboardingHeader/OnboardingHeader";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface StepLayoutProps {
 	children: ReactNode; // current step
@@ -44,7 +44,6 @@ export const StepLayout = ({
 	buttonTitle,
 }: StepLayoutProps) => {
 	const router = useRouter();
-	const { addToast } = useToastStore();
 	const steps = [
 		"Informações de Contato",
 		"Informações Profissionais",
@@ -56,11 +55,10 @@ export const StepLayout = ({
 	const [isFinishStepOpen, setIsFinishStepOpen] = useState(false);
 
 	const handleSkipOnboarding = async () => {
-		addToast({
-			message:
-				"Tudo bem, mais tarde você pode preencher essa informação na tela de Configurações do Perfil",
-			type: "info",
-		});
+		toast.info(
+			"Tudo bem, mais tarde você pode preencher essa informação na tela de Configurações do Perfil"
+		);
+
 		await router.navigate({ to: "/" });
 	};
 

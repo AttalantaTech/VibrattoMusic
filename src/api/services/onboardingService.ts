@@ -143,4 +143,13 @@ export class OnboardingService {
 			`/produtomusical/onboarding/${productId}/publicar`
 		);
 	}
+
+	/**
+	 * Disable Onboarding
+	 */
+	public async disableOnboarding(onboardingId: number): Promise<void> {
+		return this.apiClient.post<void>(
+			`/produtomusical/onboarding/${onboardingId}/inativar`
+		);
+	}
 }
