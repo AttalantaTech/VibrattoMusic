@@ -14,13 +14,11 @@ import { VibrattoLogo } from "../../VibrattoLogo/VibrattoLogo";
 import { NotificationBell } from "../NotificationBell";
 import { MessageBell } from "../MessageBell";
 import { useAuthStore } from "../../../store/authStore";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { BandProfileSwitcher } from "../../BandProfileSwitcher";
 import { useOnboardingData } from "@/hooks/useMusicalProducts";
-import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { useSyncMusicalProducts } from "@/hooks/useSyncMusicalProducts";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import type { OnboardingApiResponse } from "@/api/types";
 import { userKeys } from "@/hooks/useUser";
 import { useQueryClient } from "@tanstack/react-query";
 import { OnboardingsPedingModal } from "@/components/BandProfile/Account/OnboardingsPedingModal";
@@ -37,25 +35,14 @@ export const Header = () => {
 
 	const { activeProduct, availableProducts, setActiveProduct } =
 		useMusicalProductStore();
-	const { musicalProducts } = useProfileStatus();
 
 	const { data: onboardings } = useOnboardingData();
 	const queryClient = useQueryClient();
-
-	const onboardingData = useMemo<OnboardingApiResponse | undefined>(() => {
-		return onboardings?.find((item) => item);
-	}, [onboardings]);
 
 	const isOnboardingPage = location.pathname.includes("/onboarding");
 	const showNotifications = isAuthenticated && !isOnboardingPage;
 	const showSearchButton =
 		!isOnboardingPage && !location.pathname.includes("/search");
-
-	useEffect(() => {
-		// if (!musicalProducts?.dados.length) return;
-		// const musicalProduct = musicalProducts.dados.find((item) => item);
-		// if (musicalProduct) setActiveProduct(musicalProduct);
-	}, [musicalProducts, setActiveProduct]);
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -95,23 +82,10 @@ export const Header = () => {
 				to: "/band/me",
 				search: { tab: "account" },
 			});
-		} else if (musicalProducts && musicalProducts.dados.length > 0) {
+		} else {
 			await navigate({
 				to: "/band/me",
 				search: { tab: "messages" },
-			});
-		} else if (onboardingData?.etapaCadastro) {
-			const etapaCadastro =
-				onboardingData.etapaCadastro === 6
-					? onboardingData.etapaCadastro
-					: onboardingData.etapaCadastro + 1;
-
-			await navigate({
-				to: `/band/register/onboarding/${etapaCadastro}`,
-			});
-		} else {
-			await navigate({
-				to: `/band/register/onboarding/1`,
 			});
 		}
 	};
