@@ -78,6 +78,16 @@ export type FilterType =
 	| "MotivoRejeicaoProposta"
 	| "HomePageImagens";
 
+export interface FilePropsLocal {
+	id: number | null;
+	link: string;
+}
+
+export interface FileProps {
+	id: number;
+	link: string;
+}
+
 export interface Category {
 	Id: number;
 	Nome: string;
@@ -344,11 +354,9 @@ export interface MusicalProductApiResponse {
 		nome: string;
 	}>;
 	redeSocial: Array<RedeSocial>;
-	videosYouTube: Array<{ id: number; link: string }>;
-	imagens: Array<{
-		id: number;
-		link: string;
-	}>;
+	videosYouTube: Array<FileProps>;
+	imagens: Array<FileProps>;
+	clipagem: Array<FileProps>;
 	mapaPalcoLink: string | null;
 	mapaPalco: Array<{
 		idProdutoMusical: number;
@@ -539,12 +547,14 @@ export type FileEventType =
 	| "ProdutoMusicalOnboardingRider"
 	| "ProdutoMusicalOnboardingInfraCamarim"
 	| "ProdutoMusicalOnboardingMapaPalco"
+	| "ProdutoMusicalOnboardingClipagem"
 	| "ProdutoMusicalFotoPerfil"
 	| "ProdutoMusicalLogomarca"
 	| "ProdutoMusicalCarrossel"
 	| "ProdutoMusicalRider"
 	| "ProdutoMusicalInfraCamarim"
-	| "ProdutoMusicalMapaPalco";
+	| "ProdutoMusicalMapaPalco"
+	| "ProdutoMusicalClipagem";
 
 export interface ImageUploadRequest {
 	evento: FileEventType;

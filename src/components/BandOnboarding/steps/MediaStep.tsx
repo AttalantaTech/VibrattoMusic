@@ -43,6 +43,7 @@ import { SiApplemusic } from "react-icons/si";
 import { Button } from "../../ui/Button/Button";
 import type {
 	FileEventType,
+	FilePropsLocal,
 	OnboardingApiResponse,
 	RedeSocial,
 } from "../../../api/types";
@@ -347,19 +348,23 @@ export default function MediaStep() {
 	};
 
 	// Remove carousel image
-	const removeCarouselImage = async (imgId: number | null) => {
+	const removeCarouselImage = async (imgId: number | null, index: number) => {
 		try {
+			let newImages: Array<FilePropsLocal> = [];
 			// Optionally delete the image from Azure Blob Storage
-			// await imageUploadService.deleteImage(imageUrl);
 			if (imgId) {
 				await onboardingService.deleteImage({
 					idCadastro: Number(produtoMusicalId),
 					evento: "ProdutoMusicalOnboardingCarrossel",
 					idLista: imgId,
 				});
+				newImages = carouselImages.filter((img) => img.id !== imgId);
+			} else {
+				newImages = carouselImages.filter(
+					(_, indexImage) => indexImage !== index
+				);
 			}
 
-			const newImages = carouselImages.filter((img) => img.id !== imgId);
 			setCarouselImages(newImages);
 		} catch (error) {
 			console.error("Erro ao remover imagem:", error);
@@ -802,7 +807,7 @@ export default function MediaStep() {
 												<button
 													type="button"
 													onClick={async () => {
-														await removeCarouselImage(img.id);
+														await removeCarouselImage(img.id, index);
 													}}
 													className="absolute top-1 right-1 bg-gray-400 hover:bg-gray-300  text-gray-800 rounded-full p-1 transition-colors"
 												>

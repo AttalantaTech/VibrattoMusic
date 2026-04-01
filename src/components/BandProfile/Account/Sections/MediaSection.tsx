@@ -36,7 +36,11 @@ import {
 } from "react-icons/fa";
 import { SiApplemusic } from "react-icons/si";
 import { Button } from "../../../ui/Button/Button";
-import type { FileEventType, RedeSocial } from "../../../../api/types";
+import type {
+	FileEventType,
+	RedeSocial,
+	FilePropsLocal,
+} from "../../../../api/types";
 import { Label } from "@/components/ui/Label/Label";
 import { Input } from "@/components/ui/Input/Input";
 import { FileUploadBox } from "@/components/forms/FileUploadBox/FileUploadBox";
@@ -320,13 +324,14 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 	};
 
 	// Remove carousel image
-	const removeCarouselImage = async (imgId: number | null) => {
+	const removeCarouselImage = async (imgId: number | null, index: number) => {
 		if (!activeProduct?.id) {
 			toast.error("Produto musical não encontrado");
 
 			return;
 		}
 		try {
+			let newImages: Array<FilePropsLocal> = [];
 			// Optionally delete the image from Azure Blob Storage
 			if (imgId) {
 				await imageUploadService.deleteImage({
@@ -334,9 +339,13 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 					evento: "ProdutoMusicalCarrossel",
 					idLista: imgId,
 				});
+				newImages = carouselImages.filter((img) => img.id !== imgId);
+			} else {
+				newImages = carouselImages.filter(
+					(_, indexImage) => indexImage !== index
+				);
 			}
 
-			const newImages = carouselImages.filter((img) => img.id !== imgId);
 			setCarouselImages(newImages);
 		} catch (error) {
 			console.error("Erro ao remover imagem:", error);
@@ -777,7 +786,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 												<button
 													type="button"
 													onClick={async () => {
-														await removeCarouselImage(img.id);
+														await removeCarouselImage(img.id, index);
 													}}
 													className="absolute top-1 right-1 bg-gray-400 hover:bg-gray-300  text-gray-800 rounded-full p-1 transition-colors"
 												>

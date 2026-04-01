@@ -16,7 +16,7 @@ const TooltipCustom = ({ content, trigger }: TooltipCustomProps) => {
 			<Tooltip>
 				<TooltipTrigger>{trigger}</TooltipTrigger>
 
-				<TooltipContent className="w-1/5">
+				<TooltipContent className="w-[300px] text-center">
 					<span>{content}</span>
 				</TooltipContent>
 			</Tooltip>

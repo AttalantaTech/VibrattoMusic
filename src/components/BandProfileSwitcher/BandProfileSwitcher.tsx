@@ -124,27 +124,35 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 							</p>
 						</div>
 
-						{musicalProducts.map((product) => (
-							<button
-								key={product.id}
-								onClick={() => {
-									handleProductSelect(product);
-								}}
-								className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors"
-							>
-								<Avatar
-									src={product.fotoPerfil ?? ""}
-									alt={product.nome}
-									size={24}
-								/>
-								<span className="text-sm text-gray-700 truncate">
-									{product.nome}
+						{musicalProducts.length > 0 ? (
+							musicalProducts.map((product) => (
+								<button
+									key={product.id}
+									onClick={() => {
+										handleProductSelect(product);
+									}}
+									className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors"
+								>
+									<Avatar
+										src={product.fotoPerfil ?? ""}
+										alt={product.nome}
+										size={24}
+									/>
+									<span className="text-sm text-gray-700 truncate">
+										{product.nome}
+									</span>
+									{product.id === activeMusicalProduct?.id && (
+										<Check className="h-4 w-4 text-primary-600 ml-auto" />
+									)}
+								</button>
+							))
+						) : (
+							<div className="flex justify-center my-2">
+								<span className="text-xs text-center font-light text-gray-400">
+									Nenhum cadastrado
 								</span>
-								{product.id === activeMusicalProduct?.id && (
-									<Check className="h-4 w-4 text-primary-600 ml-auto" />
-								)}
-							</button>
-						))}
+							</div>
+						)}
 					</div>
 				</div>
 			)}

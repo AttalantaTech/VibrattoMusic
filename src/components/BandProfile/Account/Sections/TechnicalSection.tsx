@@ -15,6 +15,7 @@ import {
 	Music,
 	HelpCircle,
 	ChevronLeft,
+	X,
 } from "lucide-react";
 import { imageUploadService } from "../../../../api";
 import { Button } from "../../../ui/Button/Button";
@@ -28,7 +29,11 @@ import { TooltipCustom } from "@/components/ui/TooltipCustom/TooltipCustom";
 import { SimpleEditor } from "@/components/forms/SimpleEditor/SimpleEditor";
 import { FileCard } from "@/components/cards/FileCard/FileCard";
 import { ToggleSwitch } from "@/components/forms/ToggleSwitch/ToggleSwitch";
-import type { FileEventType, FilterOptionInstrument } from "@/api/types";
+import type {
+	FileEventType,
+	FilePropsLocal,
+	FilterOptionInstrument,
+} from "@/api/types";
 import { useInstrumentos } from "@/hooks/useFilters";
 import { toast } from "sonner";
 import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
@@ -182,15 +187,20 @@ interface TechnicalSectionProps {
 export default function TechnicalSection({
 	onActiveSection,
 }: TechnicalSectionProps) {
-	const [loading, setLoading] = useState(false);
-	const [isStageBuilderOpen, setIsStageBuilderOpen] = useState(false);
-
 	const { data: instrumentsData } = useInstrumentos();
 	const { activeProduct } = useMusicalProductStore();
 
 	const updateMusicalProductMutation = useUpdateMusicalProduct();
 
 	// Step4 UI pattern state
+	const [loading, setLoading] = useState(false);
+	const [isStageBuilderOpen, setIsStageBuilderOpen] = useState(false);
+	const [loadedFiles, setLoadedFiles] = useState<Record<string, boolean>>({});
+
+	const [clippings, setClippings] = useState<Array<FilePropsLocal>>(
+		activeProduct?.clipagem || []
+	);
+
 	const [riderTab, setRiderTab] = useState("upload");
 	const [riderFile, setRiderFile] = useState<File | null>(null);
 	const [riderFileUrl, setRiderFileUrl] = useState<string | null>(null);
@@ -325,6 +335,81 @@ export default function TechnicalSection({
 			.trim();
 	};
 
+	const isPdfFile = (link: string): boolean => {
+		const regex = /\.pdf$/i;
+
+		return regex.test(link);
+	};
+
+	const handleFileLoad = (link: string) => {
+		setLoadedFiles((previous) => ({
+			...previous,
+			[link]: true,
+		}));
+	};
+
+	// Handle file upload using Azure Blob Storage
+	const handleFileUpload = async (file: File, type: FileEventType) => {
+		if (!activeProduct?.id) {
+			toast.error("Perfil não encontrado");
+
+			return;
+		}
+
+		try {
+			// Upload the image using the image upload service
+			const blobUrl = await imageUploadService.uploadImage({
+				file,
+				evento: "ProdutoMusicalClipagem",
+				idCadastro: activeProduct.id,
+				idLista: clippings.length,
+			});
+
+			if (type === "ProdutoMusicalClipagem") {
+				const newFiles = [...clippings, { id: null, link: blobUrl }];
+				setClippings(newFiles);
+			}
+		} catch (error) {
+			console.error("Erro ao fazer upload do arquivo:", error);
+			toast.error(
+				error instanceof Error
+					? `Erro ao fazer upload: ${error.message}`
+					: "Erro ao fazer upload do arquivo"
+			);
+		}
+	};
+
+	// Remove Clipping
+	const removeClipping = async (fileId: number | null, index: number) => {
+		if (!activeProduct?.id) {
+			toast.error("Perfil não encontrado");
+
+			return;
+		}
+		try {
+			let newImages: Array<FilePropsLocal> = [];
+
+			// Optionally delete the file from Azure Blob Storage
+			if (fileId) {
+				await imageUploadService.deleteImage({
+					idCadastro: activeProduct.id,
+					evento: "ProdutoMusicalClipagem",
+					idLista: fileId,
+				});
+
+				newImages = clippings.filter((file) => file.id !== fileId);
+			} else {
+				newImages = clippings.filter(
+					(_, clippingIndex) => clippingIndex !== index
+				);
+			}
+
+			setClippings(newImages);
+		} catch (error) {
+			console.error("Erro ao remover arquivo:", error);
+		}
+	};
+
 	const onSubmit = async (technicalData: TechnicalFormData) => {
 		if (!activeProduct?.id) {
 			console.error("ID do produto musical não encontrado");
@@ -334,11 +419,11 @@ export default function TechnicalSection({
 
 		setLoading(true);
 		try {
-			let finalRiderUrl = riderFileUrl || activeProduct?.rider || null;
-			let finalDressingRoomUrl =
-				dressingRoomFileUrl || activeProduct?.infraCamarim || null;
-			let finalStageMapUrl =
-				stageMapUrl || activeProduct?.mapaPalcoLink || null;
+			const uploadPromises = [];
+
+			let finalRiderUrl = riderFileUrl || null;
+			let finalDressingRoomUrl = dressingRoomFileUrl || null;
+			let finalStageMapUrl = stageMapUrl || null;
 
 			if (riderFile) {
 				// Reset the uploaded URL if needed
@@ -349,14 +434,15 @@ export default function TechnicalSection({
 					});
 				}
 
-				const newUrl = await imageUploadService.uploadImage({
-					evento: "ProdutoMusicalRider",
-					idCadastro: activeProduct.id,
-					file: riderFile,
-				});
-
-				finalRiderUrl = newUrl;
-				setRiderFileUrl(newUrl);
+				uploadPromises.push(
+					imageUploadService
+						.uploadImage({
+							evento: "ProdutoMusicalRider",
+							idCadastro: activeProduct.id,
+							file: riderFile,
+						})
+						.then((url) => ({ type: "rider-promise", url }))
+				);
 			}
 
 			if (dressingRoomFile) {
@@ -368,14 +454,15 @@ export default function TechnicalSection({
 					});
 				}
 
-				const newUrl = await imageUploadService.uploadImage({
-					evento: "ProdutoMusicalInfraCamarim",
-					idCadastro: activeProduct.id,
-					file: dressingRoomFile,
-				});
-
-				finalDressingRoomUrl = newUrl;
-				setDressingRoomFileUrl(newUrl);
+				uploadPromises.push(
+					imageUploadService
+						.uploadImage({
+							evento: "ProdutoMusicalInfraCamarim",
+							idCadastro: activeProduct.id,
+							file: dressingRoomFile,
+						})
+						.then((url) => ({ type: "dressing-room-promise", url }))
+				);
 			}
 
 			if (stageMapFile) {
@@ -387,15 +474,33 @@ export default function TechnicalSection({
 					});
 				}
 
-				const newUrl = await imageUploadService.uploadImage({
-					evento: "ProdutoMusicalMapaPalco",
-					idCadastro: activeProduct.id,
-					file: stageMapFile,
-				});
-
-				finalStageMapUrl = newUrl;
-				setStageMapUrl(newUrl);
+				uploadPromises.push(
+					imageUploadService
+						.uploadImage({
+							evento: "ProdutoMusicalMapaPalco",
+							idCadastro: activeProduct.id,
+							file: stageMapFile,
+						})
+						.then((url) => ({ type: "stage-map-promise", url }))
+				);
 			}
+
+			const uploadResults = await Promise.all(uploadPromises);
+
+			uploadResults.forEach((response) => {
+				if (response.type === "rider-promise") {
+					finalRiderUrl = response.url;
+					setRiderFileUrl(response.url);
+				}
+				if (response.type === "dressing-room-promise") {
+					finalDressingRoomUrl = response.url;
+					setDressingRoomFileUrl(response.url);
+				}
+				if (response.type === "stage-map-promise") {
+					finalStageMapUrl = response.url;
+					setStageMapUrl(response.url);
+				}
+			});
 
 			//Remove all HTML tags and then check if the text should be sent.
 			const riderText = technicalData.riderTexto
@@ -407,15 +512,16 @@ export default function TechnicalSection({
 				: "";
 
 			const data = {
-				riderTexto: riderText.length > 0 ? technicalData.riderTexto : null,
+				riderTexto: riderText.length > 0 ? technicalData.riderTexto : "",
 				rider: finalRiderUrl ?? null,
 				infraCamarim: finalDressingRoomUrl ?? null,
 				infraCamarimTexto: dressingRoomText
 					? technicalData.infraCamarimTexto
-					: null,
+					: "",
 				camarimIncluso: hasDressingRoom,
 				mapaPalco: stageMapData,
 				mapaPalcoLink: finalStageMapUrl ?? null,
+				clipagem: clippings.map((file) => file.link) ?? [],
 			};
 
 			await updateMusicalProductMutation.mutateAsync({
@@ -520,7 +626,97 @@ export default function TechnicalSection({
 					className="flex flex-col w-full h-full gap-4 lg:gap-6"
 					onSubmit={handleSubmit(onSubmit)}
 				>
-					{/* Seção do Rider Técnico */}
+					{/* Section of the Clipping */}
+					<div className={styles.sectionContainer}>
+						<div className="space-y-4">
+							<div className={styles.sectionTitle}>
+								<h2 className={styles.titleText}>Clipagem</h2>
+
+								<TooltipCustom
+									trigger={<HelpCircle className="w-4 h-4 cursor-pointer" />}
+									content="Faça upload de materiais de divulgação, como PDFs de artigos,
+                 reportagens, críticas ou qualquer outra publicação que destaque sua banda.
+                  Isso ajuda a construir sua reputação e a mostrar seu impacto na mídia."
+								/>
+							</div>
+
+							<div>
+								<FileUploadBox
+									acceptedTypes={[
+										"image/png",
+										"image/jpeg",
+										"image/gif",
+										"application/pdf",
+									]}
+									maxSizeMB={10}
+									onFileSelected={async (file) => {
+										if (file)
+											await handleFileUpload(file, "ProdutoMusicalClipagem");
+									}}
+								/>
+							</div>
+
+							{clippings.length > 0 && (
+								<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+									{clippings.map((file, index) => (
+										<div
+											key={index}
+											className="relative aspect-square rounded-lg overflow-hidden border border-gray-200"
+										>
+											<div className="relative w-full h-full">
+												{!loadedFiles[file.link] && (
+													<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+														<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+													</div>
+												)}
+
+												{isPdfFile(file.link) ? (
+													<>
+														<iframe
+															src={`${file.link}#toolbar=0`}
+															onLoad={() => {
+																handleFileLoad(file.link);
+															}}
+															className={`w-full h-full object-cover transition-opacity duration-300 ${
+																loadedFiles[file.link]
+																	? "opacity-100"
+																	: "opacity-0"
+															}`}
+														/>
+													</>
+												) : (
+													<img
+														src={file.link}
+														alt={`Imagem ${index + 1}`}
+														onLoad={() => {
+															handleFileLoad(file.link);
+														}}
+														className={`w-full h-full object-cover transition-opacity duration-300 ${
+															loadedFiles[file.link]
+																? "opacity-100"
+																: "opacity-0"
+														}`}
+													/>
+												)}
+											</div>
+
+											<button
+												type="button"
+												onClick={async () => {
+													await removeClipping(file.id, index);
+												}}
+												className="absolute top-1 right-1 bg-gray-400 hover:bg-gray-300  text-gray-800 rounded-full p-1 transition-colors"
+											>
+												<X className="w-3 h-3" />
+											</button>
+										</div>
+									))}
+								</div>
+							)}
+						</div>
+					</div>
+
+					{/* Section of the Rider */}
 					<div className={styles.sectionContainer}>
 						<div className={styles.sectionTitle}>
 							<h2 className={styles.titleText}>Rider Técnico</h2>
@@ -528,8 +724,8 @@ export default function TechnicalSection({
 							<TooltipCustom
 								trigger={<HelpCircle className="w-4 h-4 cursor-pointer" />}
 								content="Especifique as necessidades técnicas e logísticas para sua
-					apresentação. Informações sobre equipamento de som, iluminação,
-					instrumentos e requisitos de palco em geral."
+          apresentação. Informações sobre equipamento de som, iluminação,
+          instrumentos e requisitos de palco em geral."
 							/>
 						</div>
 
@@ -560,7 +756,7 @@ export default function TechnicalSection({
 						</div>
 					</div>
 
-					{/* Seção do Camarim */}
+					{/* Section of the Dressing Room */}
 					<div className={styles.sectionContainer}>
 						<div className={styles.sectionTitle}>
 							<h2 className={styles.titleText}>Camarim</h2>
@@ -568,7 +764,7 @@ export default function TechnicalSection({
 							<TooltipCustom
 								trigger={<HelpCircle className="w-4 h-4 cursor-pointer" />}
 								content={`Especifique as necessidades do Camarim: alimentação, 
-									bebidas, itens de estrutura (como espelho, sofá, cadeiras, ar-condicionado, etc.)`}
+                  bebidas, itens de estrutura (como espelho, sofá, cadeiras, ar-condicionado, etc.)`}
 							/>
 						</div>
 
@@ -611,7 +807,7 @@ export default function TechnicalSection({
 						)}
 					</div>
 
-					{/* Seção do Mapa de Palco */}
+					{/* Section of the Stage Map */}
 					<div className={styles.sectionContainer}>
 						<div className={styles.sectionTitle}>
 							<h2 className={styles.titleText}>Mapa de Palco</h2>
@@ -619,8 +815,8 @@ export default function TechnicalSection({
 							<TooltipCustom
 								trigger={<HelpCircle className="w-4 h-4 cursor-pointer" />}
 								content="Especifique as necessidades técnicas para sua
-					apresentação. Informações sobre o posicionamento do equipamento de som, iluminação,
-					instrumentos e requisitos de palco em geral."
+          apresentação. Informações sobre o posicionamento do equipamento de som, iluminação,
+          instrumentos e requisitos de palco em geral."
 							/>
 						</div>
 
@@ -724,91 +920,6 @@ export default function TechnicalSection({
 							)}
 						</div>
 					</div>
-
-					{/* Seção do Mapa de Palco */}
-					{/* <div className={styles.sectionContainer}>
-						<div className={styles.sectionTitle}>
-							<Settings className={styles.sectionIcon} size={24} />
-							<h2 className={styles.titleText}>Mapa de Palco</h2>
-						</div>
-						<p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
-							Crie um mapa detalhado da disposição dos equipamentos no palco.
-						</p>
-						<div className="flex flex-col w-full items-center bg-white border border-gray-200 rounded-lg py-4 sm:py-6 px-3 sm:px-4 gap-3 sm:gap-4">
-							<div className="flex flex-col w-full items-center gap-2 sm:gap-3 text-center">
-								<div
-									className={`h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center rounded-full ${
-										stageMapData.length > 0 ? "bg-green-100" : "bg-primary-100"
-									}`}
-								>
-									<MapIcon
-										size={24}
-										className={`sm:w-8 sm:h-8 ${
-											stageMapData.length > 0
-												? "text-green-600"
-												: "text-primary-600"
-										}`}
-									/>
-								</div>
-								<div className="px-2 sm:px-0">
-									<h3 className="font-semibold text-gray-800 text-base sm:text-lg mb-1 sm:mb-2">
-										{stageMapData.length > 0
-											? "Mapa de Palco Salvo"
-											: "Crie o seu mapa de palco"}
-									</h3>
-									<p className="text-gray-600 text-xs sm:text-sm leading-relaxed max-w-xs sm:max-w-md">
-										{stageMapData.length > 0
-											? `Seu mapa de palco está configurado com ${stageMapData.length} elemento${stageMapData.length > 1 ? "s" : ""}. Você pode editá-lo a qualquer momento.`
-											: "Organize a disposição da banda no palco, personalizando músicos, instrumentos e equipamentos para facilitar a montagem e logística do evento."}
-									</p>
-								</div>
-							</div>
-							<div className="flex flex-col w-full max-w-xs sm:max-w-md gap-2 sm:gap-3 items-center justify-center px-2 sm:px-0">
-								<Button
-									className="w-full text-sm sm:text-base py-2 sm:py-3"
-									type="button"
-									variant={stageMapData.length > 0 ? "outline" : "primary"}
-									onClick={() => {
-										setIsStageBuilderOpen(true);
-									}}
-								>
-									{stageMapData.length > 0 ? (
-										<>
-											<span className="hidden sm:inline">
-												Editar Mapa de Palco
-											</span>
-											<span className="sm:hidden">Editar Palco</span>
-										</>
-									) : (
-										<>
-											<span className="hidden sm:inline">
-												Criar Mapa de Palco
-											</span>
-											<span className="sm:hidden">Criar Palco</span>
-										</>
-									)}
-								</Button>
-
-								{stageMapData.length > 0 && (
-									<Button
-										className="w-full text-sm sm:text-base py-2 sm:py-3"
-										type="button"
-										variant="danger"
-										onClick={() => {
-											handleStageMapSave([]);
-										}}
-									>
-										<>
-											<span className="hidden sm:inline">
-												Apagar Mapa de Palco
-											</span>
-											<span className="sm:hidden">Apagar Palco</span>
-										</>
-									</Button>
-								)}
-							</div>
-						</div>
-					</div> */}
 
 					{/* Navigation buttons */}
 					<div className="flex flex-col sm:flex-row w-full gap-2 sm:gap-3 items-stretch sm:items-center justify-end mt-4 lg:mt-6 px-1 sm:px-0">
