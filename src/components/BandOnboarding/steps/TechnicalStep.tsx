@@ -15,6 +15,7 @@ import {
 	HelpCircle,
 	ChevronRight,
 	ChevronLeft,
+	X,
 } from "lucide-react";
 import { imageUploadService, onboardingService } from "../../../api";
 import { useNavigate, useSearch } from "@tanstack/react-router";
@@ -36,6 +37,7 @@ import { FileCard } from "@/components/cards/FileCard/FileCard";
 import { ToggleSwitch } from "@/components/forms/ToggleSwitch/ToggleSwitch";
 import type {
 	FileEventType,
+	FilePropsLocal,
 	FilterOptionInstrument,
 	OnboardingApiResponse,
 } from "@/api/types";
@@ -183,8 +185,6 @@ const stageMapTabs = [
 type TechnicalFormData = z.infer<typeof technicalSchema>;
 
 export default function TechnicalStep() {
-	const [loading, setLoading] = useState(false);
-	const [isStageBuilderOpen, setIsStageBuilderOpen] = useState(false);
 	const navigate = useNavigate();
 
 	const { updateData, markStepComplete } = useOnboarding();
@@ -213,6 +213,14 @@ export default function TechnicalStep() {
 	const { data: instrumentsData } = useInstrumentos();
 
 	// Step4 UI pattern state
+	const [loading, setLoading] = useState(false);
+	const [isStageBuilderOpen, setIsStageBuilderOpen] = useState(false);
+	const [loadedFiles, setLoadedFiles] = useState<Record<string, boolean>>({});
+
+	const [clippings, setClippings] = useState<Array<FilePropsLocal>>(
+		onboardingData?.clipagem || []
+	);
+
 	const [riderTab, setRiderTab] = useState("upload");
 	const [riderFile, setRiderFile] = useState<File | null>(null);
 	const [riderFileUrl, setRiderFileUrl] = useState<string | null>(null);
@@ -243,7 +251,6 @@ export default function TechnicalStep() {
 			camarimIncluso: onboardingData?.camarimIncluso ?? false,
 			mapaPalco: onboardingData?.mapaPalco ?? [],
 			mapaPalcoLink: onboardingData?.mapaPalcoLink ?? null,
-			clipagem: [],
 		};
 	}, [onboardingData]);
 
@@ -367,6 +374,81 @@ export default function TechnicalStep() {
 			.trim();
 	};
 
+	const isPdfFile = (link: string): boolean => {
+		const regex = /\.pdf$/i;
+
+		return regex.test(link);
+	};
+
+	const handleFileLoad = (link: string) => {
+		setLoadedFiles((previous) => ({
+			...previous,
+			[link]: true,
+		}));
+	};
+
+	// Handle file upload using Azure Blob Storage
+	const handleFileUpload = async (file: File, type: FileEventType) => {
+		if (!onboardingData?.id) {
+			toast.error("Perfil não encontrado");
+
+			return;
+		}
+
+		try {
+			// Upload the image using the image upload service
+			const blobUrl = await imageUploadService.uploadImage({
+				file,
+				evento: "ProdutoMusicalOnboardingClipagem",
+				idCadastro: onboardingData.id,
+				idLista: clippings.length,
+			});
+
+			if (type === "ProdutoMusicalOnboardingClipagem") {
+				const newFiles = [...clippings, { id: null, link: blobUrl }];
+				setClippings(newFiles);
+			}
+		} catch (error) {
+			console.error("Erro ao fazer upload do arquivo:", error);
+			toast.error(
+				error instanceof Error
+					? `Erro ao fazer upload: ${error.message}`
+					: "Erro ao fazer upload do arquivo"
+			);
+		}
+	};
+
+	// Remove Clipping
+	const removeClipping = async (fileId: number | null, index: number) => {
+		if (!onboardingData?.id) {
+			toast.error("Onboarding não encontrado");
+
+			return;
+		}
+		try {
+			let newImages: Array<FilePropsLocal> = [];
+
+			// Optionally delete the file from Azure Blob Storage
+			if (fileId) {
+				await imageUploadService.deleteImage({
+					idCadastro: onboardingData.id,
+					evento: "ProdutoMusicalOnboardingClipagem",
+					idLista: fileId,
+				});
+
+				newImages = clippings.filter((file) => file.id !== fileId);
+			} else {
+				newImages = clippings.filter(
+					(_, clippingIndex) => clippingIndex !== index
+				);
+			}
+
+			setClippings(newImages);
+		} catch (error) {
+			console.error("Erro ao remover arquivo:", error);
+		}
+	};
+
 	const onSubmit = async (technicalData: TechnicalFormData) => {
 		if (!produtoMusicalId) {
 			console.error("ID do produto musical não encontrado");
@@ -376,11 +458,11 @@ export default function TechnicalStep() {
 
 		setLoading(true);
 		try {
-			let finalRiderUrl = riderFileUrl || onboardingData?.rider || null;
-			let finalDressingRoomUrl =
-				dressingRoomFileUrl || onboardingData?.infraCamarim || null;
-			let finalStageMapUrl =
-				stageMapUrl || onboardingData?.mapaPalcoLink || null;
+			const uploadPromises = [];
+
+			let finalRiderUrl = riderFileUrl || null;
+			let finalDressingRoomUrl = dressingRoomFileUrl || null;
+			let finalStageMapUrl = stageMapUrl || null;
 
 			if (riderFile) {
 				// Reset the uploaded URL if needed
@@ -391,14 +473,15 @@ export default function TechnicalStep() {
 					});
 				}
 
-				const newUrl = await imageUploadService.uploadImage({
-					evento: "ProdutoMusicalOnboardingRider",
-					idCadastro: produtoMusicalId,
-					file: riderFile,
-				});
-
-				finalRiderUrl = newUrl;
-				setRiderFileUrl(newUrl);
+				uploadPromises.push(
+					imageUploadService
+						.uploadImage({
+							evento: "ProdutoMusicalOnboardingRider",
+							idCadastro: produtoMusicalId,
+							file: riderFile,
+						})
+						.then((url) => ({ type: "rider-promise", url }))
+				);
 			}
 
 			if (dressingRoomFile) {
@@ -410,14 +493,15 @@ export default function TechnicalStep() {
 					});
 				}
 
-				const newUrl = await imageUploadService.uploadImage({
-					evento: "ProdutoMusicalOnboardingInfraCamarim",
-					idCadastro: produtoMusicalId,
-					file: dressingRoomFile,
-				});
-
-				finalDressingRoomUrl = newUrl;
-				setDressingRoomFileUrl(newUrl);
+				uploadPromises.push(
+					imageUploadService
+						.uploadImage({
+							evento: "ProdutoMusicalOnboardingInfraCamarim",
+							idCadastro: produtoMusicalId,
+							file: dressingRoomFile,
+						})
+						.then((url) => ({ type: "dressing-room-promise", url }))
+				);
 			}
 
 			if (stageMapFile) {
@@ -429,15 +513,33 @@ export default function TechnicalStep() {
 					});
 				}
 
-				const newUrl = await imageUploadService.uploadImage({
-					evento: "ProdutoMusicalOnboardingMapaPalco",
-					idCadastro: produtoMusicalId,
-					file: stageMapFile,
-				});
-
-				finalStageMapUrl = newUrl;
-				setStageMapUrl(newUrl);
+				uploadPromises.push(
+					imageUploadService
+						.uploadImage({
+							evento: "ProdutoMusicalOnboardingMapaPalco",
+							idCadastro: produtoMusicalId,
+							file: stageMapFile,
+						})
+						.then((url) => ({ type: "stage-map-promise", url }))
+				);
 			}
+
+			const uploadResults = await Promise.all(uploadPromises);
+
+			uploadResults.forEach((response) => {
+				if (response.type === "rider-promise") {
+					finalRiderUrl = response.url;
+					setRiderFileUrl(response.url);
+				}
+				if (response.type === "dressing-room-promise") {
+					finalDressingRoomUrl = response.url;
+					setDressingRoomFileUrl(response.url);
+				}
+				if (response.type === "stage-map-promise") {
+					finalStageMapUrl = response.url;
+					setStageMapUrl(response.url);
+				}
+			});
 
 			//Remove all HTML tags and then check if the text should be sent.
 			const riderText = technicalData.riderTexto
@@ -449,16 +551,16 @@ export default function TechnicalStep() {
 				: "";
 
 			const data = {
-				riderTexto: riderText.length > 0 ? technicalData.riderTexto : null,
+				riderTexto: riderText.length > 0 ? technicalData.riderTexto : "",
 				rider: finalRiderUrl ?? null,
 				infraCamarim: finalDressingRoomUrl ?? null,
 				infraCamarimTexto: dressingRoomText
 					? technicalData.infraCamarimTexto
-					: null,
+					: "",
 				camarimIncluso: hasDressingRoom,
 				mapaPalco: stageMapData,
 				mapaPalcoLink: finalStageMapUrl ?? null,
-				clipagem: [],
+				clipagem: clippings.map((file) => file.link) ?? [],
 			};
 
 			await onboardingService.updateTechnical(produtoMusicalId, data);
@@ -566,7 +668,97 @@ export default function TechnicalStep() {
 					className="flex flex-col w-full h-full gap-4 lg:gap-6"
 					onSubmit={handleSubmit(onSubmit)}
 				>
-					{/* Seção do Rider Técnico */}
+					{/* Section of the Clipping */}
+					<div className={styles.sectionContainer}>
+						<div className="space-y-4">
+							<div className={styles.sectionTitle}>
+								<h2 className={styles.titleText}>Clipagem</h2>
+
+								<TooltipCustom
+									trigger={<HelpCircle className="w-4 h-4 cursor-pointer" />}
+									content="Faça upload de materiais de divulgação, como PDFs de artigos,
+													 reportagens, críticas ou qualquer outra publicação que destaque sua banda.
+														Isso ajuda a construir sua reputação e a mostrar seu impacto na mídia."
+								/>
+							</div>
+
+							<div>
+								<FileUploadBox
+									acceptedTypes={[
+										"image/png",
+										"image/jpeg",
+										"image/gif",
+										"application/pdf",
+									]}
+									maxSizeMB={10}
+									onFileSelected={async (file) => {
+										if (file)
+											await handleFileUpload(file, "ProdutoMusicalClipagem");
+									}}
+								/>
+							</div>
+
+							{clippings.length > 0 && (
+								<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+									{clippings.map((file, index) => (
+										<div
+											key={index}
+											className="relative aspect-square rounded-lg overflow-hidden border border-gray-200"
+										>
+											<div className="relative w-full h-full">
+												{!loadedFiles[file.link] && (
+													<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+														<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+													</div>
+												)}
+
+												{isPdfFile(file.link) ? (
+													<>
+														<iframe
+															src={`${file.link}#toolbar=0`}
+															onLoad={() => {
+																handleFileLoad(file.link);
+															}}
+															className={`w-full h-full object-cover transition-opacity duration-300 ${
+																loadedFiles[file.link]
+																	? "opacity-100"
+																	: "opacity-0"
+															}`}
+														/>
+													</>
+												) : (
+													<img
+														src={file.link}
+														alt={`Imagem ${index + 1}`}
+														onLoad={() => {
+															handleFileLoad(file.link);
+														}}
+														className={`w-full h-full object-cover transition-opacity duration-300 ${
+															loadedFiles[file.link]
+																? "opacity-100"
+																: "opacity-0"
+														}`}
+													/>
+												)}
+											</div>
+
+											<button
+												type="button"
+												onClick={async () => {
+													await removeClipping(file.id, index);
+												}}
+												className="absolute top-1 right-1 bg-gray-400 hover:bg-gray-300  text-gray-800 rounded-full p-1 transition-colors"
+											>
+												<X className="w-3 h-3" />
+											</button>
+										</div>
+									))}
+								</div>
+							)}
+						</div>
+					</div>
+
+					{/* Section of the Rider */}
 					<div className={styles.sectionContainer}>
 						<div className={styles.sectionTitle}>
 							<h2 className={styles.titleText}>Rider Técnico</h2>
@@ -606,7 +798,7 @@ export default function TechnicalStep() {
 						</div>
 					</div>
 
-					{/* Seção do Camarim */}
+					{/* Section of the Dressing Room */}
 					<div className={styles.sectionContainer}>
 						<div className={styles.sectionTitle}>
 							<h2 className={styles.titleText}>Camarim</h2>
@@ -657,7 +849,7 @@ export default function TechnicalStep() {
 						)}
 					</div>
 
-					{/* Seção do Mapa de Palco */}
+					{/* Section of the Stage Map */}
 					<div className={styles.sectionContainer}>
 						<div className={styles.sectionTitle}>
 							<h2 className={styles.titleText}>Mapa de Palco</h2>
