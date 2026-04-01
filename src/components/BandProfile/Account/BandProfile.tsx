@@ -59,7 +59,7 @@ export const BandProfile = ({
 	bandLoading,
 }: BandProfileProps) => {
 	const navigate = useNavigate();
-	const [activeTab, setActiveTab] = useState("stageMap");
+	const [activeTab, setActiveTab] = useState("clipping");
 	const [isConversationModalOpen, setIsConversationModalOpen] = useState(false);
 
 	// Auth and favorites
@@ -74,6 +74,7 @@ export const BandProfile = ({
 
 	// Secondary tabs for gallery
 	const secondaryTabs = [
+		{ label: "Clipagem", value: "clipping" },
 		{ label: "Mapa de Palco", value: "stageMap" },
 		{ label: "Rider Técnico", value: "technicalRider" },
 		{ label: "Camarim", value: "dressingRoom" },
@@ -96,25 +97,77 @@ export const BandProfile = ({
 		setIsConversationModalOpen(true);
 	};
 
+	const isPdfFile = (link: string): boolean => {
+		const regex = /\.pdf$/i;
+
+		return regex.test(link);
+	};
+
 	const renderTabContent = (): ReactNode => {
 		switch (activeTab) {
-			case "stageMap":
-				if (musicalProduct?.mapaPalco.length === 0) {
+			case "clipping":
+				if (musicalProduct?.clipagem.length === 0) {
 					return (
 						<div className="flex items-center justify-center w-full min-h-[380px] bg-gray-100">
 							<span className="block text-center text-sm text-gray-600">
-								Nenhum mapa de palco definido
+								Nenhum arquivo de clipagem foi adicionado
 							</span>
 						</div>
 					);
 				} else {
 					return (
 						<>
-							<StageMapArea
-								musicalProduct={musicalProduct}
-								instrumentsData={instrumentsData}
-							/>
+							<div className="w-full flex items-center justify-center">
+								{musicalProduct && musicalProduct?.imagens.length > 0 && (
+									<Carousel>
+										{musicalProduct.clipagem.map((file, index) => (
+											<CarouselItem
+												key={index}
+												className=" basis-full md:basis-1/2 lg:basis-1/3"
+											>
+												{isPdfFile(file.link) ? (
+													<embed
+														key={file.id || index}
+														className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] "
+														src={`${file.link}#toolbar=0`}
+													/>
+												) : (
+													<LazyImage
+														key={file.id || index}
+														alt="Band clipping photo"
+														className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-cover"
+														src={file.link}
+													/>
+												)}
+											</CarouselItem>
+										))}
+									</Carousel>
+								)}
+							</div>
 						</>
+					);
+				}
+			case "stageMap":
+				if (musicalProduct && musicalProduct?.mapaPalco.length > 0) {
+					return (
+						<StageMapArea
+							musicalProduct={musicalProduct}
+							instrumentsData={instrumentsData}
+						/>
+					);
+				} else if (musicalProduct?.mapaPalcoLink) {
+					return (
+						<div className="flex w-full min-h-[680px]">
+							<embed className="w-full" src={musicalProduct.mapaPalcoLink} />
+						</div>
+					);
+				} else {
+					return (
+						<div className="flex items-center justify-center w-full min-h-[380px] bg-gray-100">
+							<span className="block text-center text-sm text-gray-600">
+								Nenhum mapa de palco foi adicionado
+							</span>
+						</div>
 					);
 				}
 			case "technicalRider":
@@ -126,9 +179,8 @@ export const BandProfile = ({
 					);
 				} else if (musicalProduct?.riderTexto) {
 					return (
-						<div className="flex justify-center items-center p-4 max-w-screen-md min-h-[480px]">
+						<div className="flex justify-center items-center p-4 max-w-screen-md min-h-[480px] bg-gray-100 w-full">
 							<div
-								className="bg-gray-100"
 								dangerouslySetInnerHTML={{ __html: musicalProduct.riderTexto }}
 							/>
 						</div>
@@ -137,7 +189,7 @@ export const BandProfile = ({
 					return (
 						<div className="flex items-center justify-center w-full min-h-[380px] bg-gray-100">
 							<span className="block text-center text-sm text-gray-600">
-								Nenhum texto ou arquivo de rider técnico definido
+								Nenhum texto ou arquivo de rider técnico foi adicionado
 							</span>
 						</div>
 					);
@@ -151,9 +203,8 @@ export const BandProfile = ({
 					);
 				} else if (musicalProduct?.infraCamarimTexto) {
 					return (
-						<div className="flex justify-center items-center p-4 max-w-screen-md min-h-[480px]">
+						<div className="flex justify-center items-center p-4 max-w-screen-md min-h-[480px] bg-gray-100 w-full">
 							<div
-								className="bg-gray-100"
 								dangerouslySetInnerHTML={{
 									__html: musicalProduct.infraCamarimTexto,
 								}}
@@ -164,7 +215,8 @@ export const BandProfile = ({
 					return (
 						<div className="flex items-center justify-center w-full min-h-[380px] bg-gray-100">
 							<span className="block text-center text-sm text-gray-600">
-								Nenhum texto ou arquivo de infraestrutura de camarim definido
+								Nenhum texto ou arquivo de infraestrutura de camarim foi
+								adicionado
 							</span>
 						</div>
 					);
@@ -377,7 +429,7 @@ export const BandProfile = ({
 								onChange={setActiveTab}
 							/>
 
-							<div className="flex flex-col bg-gray-100 lg:flex-row w-full items-start gap-4 lg:gap-8 justify-start lg:justify-center max-w-9xl overflow-auto">
+							<div className="flex flex-col lg:flex-row w-full items-start gap-4 lg:gap-8 justify-start lg:justify-center max-w-9xl overflow-auto">
 								{renderTabContent()}
 							</div>
 
