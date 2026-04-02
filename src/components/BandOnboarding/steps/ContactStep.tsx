@@ -27,7 +27,7 @@ import { StepLayout } from "../layout/StepLayout/StepLayout";
 import {
 	useOnboardingData,
 	useSaveOnboardingContact,
-} from "../../../hooks/useMusicalProducts";
+} from "../../../hooks/useOnboarding";
 import { toast } from "sonner";
 import type { OnboardingApiResponse } from "@/api/types";
 import { decryptValue } from "@/utils/encryptValue";

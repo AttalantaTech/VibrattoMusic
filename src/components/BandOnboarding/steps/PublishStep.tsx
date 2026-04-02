@@ -11,7 +11,7 @@ import {
 import { onboardingService } from "../../../api";
 import { Button } from "../../ui/Button/Button";
 import { StepLayout } from "../layout/StepLayout/StepLayout";
-import { useOnboardingData } from "@/hooks/useMusicalProducts";
+import { useOnboardingData } from "@/hooks/useOnboarding";
 import { toast } from "sonner";
 import type { OnboardingApiResponse } from "@/api/types";
 import { decryptValue } from "@/utils/encryptValue";
@@ -69,7 +69,7 @@ export default function PublishStep() {
 		setLoading(true);
 		try {
 			await onboardingService
-				.publish(Number(produtoMusicalId))
+				.publishOnboarding(Number(produtoMusicalId))
 				.then(async (id) => {
 					await queryClient.invalidateQueries({
 						queryKey: profileKeys.musicalProducts(user?.id),

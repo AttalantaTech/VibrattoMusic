@@ -1,15 +1,8 @@
-import type { OnboardingContactData } from "@/utils/validation";
 import type { ApiClient } from "../core/client";
 import type {
 	MusicalProductSearchRequest,
 	MusicalProductListApiResponse,
 	MusicalProductApiResponse,
-	MusicalProductDetails,
-	MusicalProductMedia,
-	MusicalProductImages,
-	MusicalProductTechnicalConfig,
-	MusicalProductSchedule,
-	OnboardingApiResponse,
 } from "../types";
 
 export class MusicalProductService {
@@ -93,100 +86,6 @@ export class MusicalProductService {
 		);
 
 		return response.dados ?? [];
-	}
-
-	/**
-	 * Get onboarding data for a product
-	 */
-	public async getOnboardingData(
-		productId: number
-	): Promise<OnboardingApiResponse> {
-		return this.apiClient.get(`produtomusical/onboarding/${productId}`);
-	}
-
-	/**
-	 * Save onboarding contact information (Step 1)
-	 */
-	public async saveOnboardingContact(
-		contactData: OnboardingContactData
-	): Promise<{ id: number }> {
-		return this.apiClient.post<{ id: number }>(
-			"produtomusical/onboarding/contato",
-			contactData
-		);
-	}
-
-	/**
-	 * Save onboarding details (Step 2)
-	 */
-	public async saveOnboardingDetails(
-		productId: number,
-		detailsData: MusicalProductDetails
-	): Promise<void> {
-		return this.apiClient.post<void>(
-			`produtomusical/onboarding/${productId}/detalhes`,
-			detailsData
-		);
-	}
-
-	/**
-	 * Save onboarding media information (Step 3)
-	 */
-	public async saveOnboardingMedia(
-		productId: number,
-		mediaData: MusicalProductMedia
-	): Promise<void> {
-		return this.apiClient.post<void>(
-			`produtomusical/onboarding/${productId}/media`,
-			mediaData
-		);
-	}
-
-	/**
-	 * Save onboarding images (Step 3)
-	 */
-	public async saveOnboardingImages(
-		productId: number,
-		imagesData: MusicalProductImages
-	): Promise<void> {
-		return this.apiClient.post<void>(
-			`produtomusical/onboarding/${productId}/imagens`,
-			imagesData
-		);
-	}
-
-	/**
-	 * Save onboarding technical configuration (Step 4)
-	 */
-	public async saveOnboardingTechnicalConfig(
-		productId: number,
-		technicalData: MusicalProductTechnicalConfig
-	): Promise<void> {
-		return this.apiClient.post<void>(
-			`produtomusical/onboarding/${productId}/configuracao-tecnica`,
-			technicalData
-		);
-	}
-	/**
-	 * Save onboarding schedule (Step 5)
-	 */
-	public async saveOnboardingSchedule(
-		productId: number,
-		scheduleData: MusicalProductSchedule
-	): Promise<void> {
-		return this.apiClient.post<void>(
-			`produtomusical/onboarding/${productId}/agenda`,
-			scheduleData
-		);
-	}
-
-	/**
-	 * Publish the musical product after completing onboarding
-	 */
-	public async publishMusicalProduct(productId: number): Promise<void> {
-		return this.apiClient.post<void>(
-			`produtomusical/onboarding/${productId}/publicar`
-		);
 	}
 
 	/**

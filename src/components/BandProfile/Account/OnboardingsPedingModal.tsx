@@ -15,7 +15,7 @@ import { DialogDescription } from "@radix-ui/react-dialog";
 import type { OnboardingApiResponse } from "@/api/types";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { useDisableOnboarding } from "@/hooks/useMusicalProducts";
+import { useDisableOnboarding } from "@/hooks/useOnboarding";
 import { LoadingSpinner } from "@/components/ui/LoadingStates";
 
 interface OnboardingsPedingTableProps {

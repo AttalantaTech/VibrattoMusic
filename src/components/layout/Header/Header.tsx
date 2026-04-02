@@ -16,7 +16,7 @@ import { MessageBell } from "../MessageBell";
 import { useAuthStore } from "../../../store/authStore";
 import { useState, useRef, useEffect } from "react";
 import { BandProfileSwitcher } from "../../BandProfileSwitcher";
-import { useOnboardingData } from "@/hooks/useMusicalProducts";
+import { useOnboardingData } from "@/hooks/useOnboarding";
 import { useSyncMusicalProducts } from "@/hooks/useSyncMusicalProducts";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { userKeys } from "@/hooks/useUser";

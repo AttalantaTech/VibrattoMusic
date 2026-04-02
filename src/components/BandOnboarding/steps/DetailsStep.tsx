@@ -24,7 +24,7 @@ import { Button } from "../../ui/Button/Button";
 import {
 	useOnboardingData,
 	useSaveOnboardingDetails,
-} from "../../../hooks/useMusicalProducts";
+} from "../../../hooks/useOnboarding";
 import { toast } from "sonner";
 import { decryptValue } from "@/utils/encryptValue";
 

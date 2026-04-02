@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CheckboxField } from "../../forms/CheckBoxField/CheckBoxField";
 import { Button } from "../../ui/Button/Button";
-import { usePublishMusicalProduct } from "../../../hooks/useMusicalProducts";
+import { usePublishOnboarding } from "../../../hooks/useOnboarding";
 import { useBandRegistration } from "../../../contexts/BandRegistrationContext";
 import { useNavigate } from "@tanstack/react-router";
 import { useProfileStatus } from "../../../hooks/useProfileStatus";
@@ -22,7 +22,7 @@ export const FinishStep = ({
 	const [acceptedTerms, setAcceptedTerms] = useState(false);
 	const [isPublishing, setIsPublishing] = useState(false);
 	const [isSkipping, setIsSkipping] = useState(false);
-	const publishMutation = usePublishMusicalProduct();
+	const publishMutation = usePublishOnboarding();
 	const { state } = useBandRegistration();
 	const navigate = useNavigate();
 	const { user } = useProfileStatus();

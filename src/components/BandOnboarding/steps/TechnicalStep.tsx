@@ -31,7 +31,7 @@ import {
 	STAGE_COLORS,
 } from "@/components/StageMap/types";
 import { TooltipCustom } from "@/components/ui/TooltipCustom/TooltipCustom";
-import { useOnboardingData } from "@/hooks/useMusicalProducts";
+import { useOnboardingData } from "@/hooks/useOnboarding";
 import { SimpleEditor } from "@/components/forms/SimpleEditor/SimpleEditor";
 import { FileCard } from "@/components/cards/FileCard/FileCard";
 import { ToggleSwitch } from "@/components/forms/ToggleSwitch/ToggleSwitch";
@@ -321,7 +321,7 @@ export default function TechnicalStep() {
 				(eventType === "ProdutoMusicalOnboardingMapaPalco" &&
 					onboardingData?.mapaPalcoLink)
 			) {
-				await onboardingService.deleteImage({
+				await imageUploadService.deleteImage({
 					idCadastro: produtoMusicalId,
 					evento: eventType,
 				});
@@ -462,7 +462,7 @@ export default function TechnicalStep() {
 			if (riderFile) {
 				// Reset the uploaded URL if needed
 				if (finalRiderUrl) {
-					await onboardingService.deleteImage({
+					await imageUploadService.deleteImage({
 						evento: "ProdutoMusicalOnboardingRider",
 						idCadastro: produtoMusicalId,
 					});
@@ -482,7 +482,7 @@ export default function TechnicalStep() {
 			if (dressingRoomFile) {
 				// Handle file upload for Dressing Room if needed
 				if (finalDressingRoomUrl) {
-					await onboardingService.deleteImage({
+					await imageUploadService.deleteImage({
 						evento: "ProdutoMusicalOnboardingInfraCamarim",
 						idCadastro: produtoMusicalId,
 					});
@@ -558,7 +558,10 @@ export default function TechnicalStep() {
 				clipagem: clippings.map((file) => file.link) ?? [],
 			};
 
-			await onboardingService.updateTechnical(produtoMusicalId, data);
+			await onboardingService.saveOnboardingTechnicalConfig(
+				produtoMusicalId,
+				data
+			);
 
 			updateData("technical", data);
 			markStepComplete("4");

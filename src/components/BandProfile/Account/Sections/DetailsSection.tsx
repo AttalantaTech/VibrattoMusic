@@ -15,7 +15,7 @@ import { Button } from "../../../ui/Button/Button";
 import { toast } from "sonner";
 import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { useUpdateMusicalProduct } from "@/hooks/useProfileStatus";
+import { useUpdateMusicalProduct } from "@/hooks/useMusicalProducts";
 
 const detailsSchema = z.object({
 	nome: z.string().min(1, "Nome é obrigatório"),
