@@ -44,7 +44,7 @@ import type {
 import { useInstrumentos } from "@/hooks/useFilters";
 import { toast } from "sonner";
 import { decryptValue } from "@/utils/encryptValue";
-import { isPdfFile } from "@/utils/validation";
+import { isPdfFile, isPngImage } from "@/utils/validation";
 
 // Define styles consistent with modern interface pattern
 const styles = {
@@ -731,11 +731,9 @@ export default function TechnicalStep() {
 														onLoad={() => {
 															handleFileLoad(file.link);
 														}}
-														className={`w-full h-full object-contain transition-opacity duration-300 ${
-															loadedFiles[file.link]
-																? "opacity-100"
-																: "opacity-0"
-														}`}
+														className={`w-full h-full object-contain transition-opacity duration-300
+															${isPngImage(file.link) ? "bg-white" : "bg-black"} 
+															${loadedFiles[file.link] ? "opacity-100" : "opacity-0"}`}
 													/>
 												)}
 											</div>

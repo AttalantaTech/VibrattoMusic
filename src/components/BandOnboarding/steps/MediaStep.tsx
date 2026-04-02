@@ -56,6 +56,7 @@ import { ImageUploadArea } from "@/components/ImageUploadArea/ImageUploadArea";
 import { toast } from "sonner";
 import { useSocialNetworks } from "@/hooks/useFilters";
 import { decryptValue } from "@/utils/encryptValue";
+import { isPngImage } from "@/utils/validation";
 
 // Define media schema types
 const mediaSchema = z.object({
@@ -796,11 +797,9 @@ export default function MediaStep() {
 														onLoad={() => {
 															handleImageLoad(img.link);
 														}}
-														className={`w-full h-full object-contain transition-opacity duration-300 ${
-															loadedImages[img.link]
-																? "opacity-100"
-																: "opacity-0"
-														}`}
+														className={`w-full h-full object-contain transition-opacity duration-300
+															${isPngImage(img.link) ? "bg-white" : "bg-black"}  
+															${loadedImages[img.link] ? "opacity-100" : "opacity-0"}`}
 													/>
 												</div>
 
