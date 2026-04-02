@@ -72,14 +72,24 @@ export const Chat = () => {
 							)}
 							<div className="relative">
 								<UserImageContainer>
-									{getParticipantInitials(currentChatUser?.name || "Usuário")}
+									{getParticipantInitials(
+										currentUserId === selectedConversation.contratanteId
+											? selectedConversation.participanteNome
+											: (selectedConversation.produtoMusicalContratanteNome ??
+													selectedConversation.contratanteNome) ||
+													"Usuário"
+									)}
 								</UserImageContainer>
 								{selectedConversation.online && (
 									<Circle className="absolute bottom-0 right-0 w-3 h-3 text-green-500 fill-current" />
 								)}
 							</div>
 							<h2 className="text-md md:text-lg whitespace-nowrap text-ellipsis overflow-hidden font-semibold text-gray-900">
-								{currentChatUser?.name || "Usuário"}
+								{currentUserId === selectedConversation.contratanteId
+									? selectedConversation.participanteNome
+									: (selectedConversation.produtoMusicalContratanteNome ??
+											selectedConversation.contratanteNome) ||
+										"Usuário"}
 							</h2>
 						</div>
 						{activeProduct && !isProfileComplete && (
