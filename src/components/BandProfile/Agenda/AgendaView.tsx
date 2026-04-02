@@ -212,7 +212,10 @@ export const AgendaView = ({
 			})),
 		};
 
-		await onboardingService.updateSchedule(produtoMusicalId, scheduleData);
+		await onboardingService.saveOnboardingSchedule(
+			produtoMusicalId,
+			scheduleData
+		);
 	};
 
 	const handleDragEnd = async (event: DragEndEvent) => {
