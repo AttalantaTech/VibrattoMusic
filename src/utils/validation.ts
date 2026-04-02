@@ -371,3 +371,9 @@ export type OnboardingContactData = z.infer<typeof ContactValidationSchema> & {
 	id: number;
 	email?: string;
 };
+
+export const isPdfFile = (link: string): boolean => {
+	const regex = /\.pdf$/i;
+
+	return regex.test(link);
+};

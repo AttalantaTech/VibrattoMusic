@@ -44,6 +44,7 @@ import type {
 import { useInstrumentos } from "@/hooks/useFilters";
 import { toast } from "sonner";
 import { decryptValue } from "@/utils/encryptValue";
+import { isPdfFile } from "@/utils/validation";
 
 // Define styles consistent with modern interface pattern
 const styles = {
@@ -374,12 +375,6 @@ export default function TechnicalStep() {
 			.trim();
 	};
 
-	const isPdfFile = (link: string): boolean => {
-		const regex = /\.pdf$/i;
-
-		return regex.test(link);
-	};
-
 	const handleFileLoad = (link: string) => {
 		setLoadedFiles((previous) => ({
 			...previous,
@@ -390,7 +385,7 @@ export default function TechnicalStep() {
 	// Handle file upload using Azure Blob Storage
 	const handleFileUpload = async (file: File, type: FileEventType) => {
 		if (!onboardingData?.id) {
-			toast.error("Perfil não encontrado");
+			toast.error("Onboarding não encontrado");
 
 			return;
 		}
@@ -693,7 +688,10 @@ export default function TechnicalStep() {
 									maxSizeMB={10}
 									onFileSelected={async (file) => {
 										if (file)
-											await handleFileUpload(file, "ProdutoMusicalClipagem");
+											await handleFileUpload(
+												file,
+												"ProdutoMusicalOnboardingClipagem"
+											);
 									}}
 								/>
 							</div>
@@ -713,8 +711,8 @@ export default function TechnicalStep() {
 												)}
 
 												{isPdfFile(file.link) ? (
-													<>
-														<iframe
+													<div className="w-full">
+														<embed
 															src={`${file.link}#toolbar=0`}
 															onLoad={() => {
 																handleFileLoad(file.link);
@@ -725,7 +723,7 @@ export default function TechnicalStep() {
 																	: "opacity-0"
 															}`}
 														/>
-													</>
+													</div>
 												) : (
 													<img
 														src={file.link}
@@ -733,7 +731,7 @@ export default function TechnicalStep() {
 														onLoad={() => {
 															handleFileLoad(file.link);
 														}}
-														className={`w-full h-full object-cover transition-opacity duration-300 ${
+														className={`w-full h-full object-contain transition-opacity duration-300 ${
 															loadedFiles[file.link]
 																? "opacity-100"
 																: "opacity-0"
@@ -747,7 +745,7 @@ export default function TechnicalStep() {
 												onClick={async () => {
 													await removeClipping(file.id, index);
 												}}
-												className="absolute top-1 right-1 bg-gray-400 hover:bg-gray-300  text-gray-800 rounded-full p-1 transition-colors"
+												className="absolute top-1 right-1 bg-gray-200 hover:bg-gray-300  text-gray-800 rounded-full p-1 transition-colors"
 											>
 												<X className="w-3 h-3" />
 											</button>
