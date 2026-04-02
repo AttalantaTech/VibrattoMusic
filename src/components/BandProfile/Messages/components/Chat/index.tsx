@@ -28,7 +28,6 @@ export const Chat = () => {
 
 	const messagesContext = useMessagesContext();
 	const {
-		currentChatUser,
 		messageInput,
 		setMessageInput,
 		messages,
