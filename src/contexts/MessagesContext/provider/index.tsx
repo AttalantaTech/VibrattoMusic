@@ -112,13 +112,6 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 	const filteredConversations = useMemo(() => {
 		return (
 			conversations.filter((conversation: Conversation) => {
-				if (
-					![conversation.contratanteId, conversation.participanteId].includes(
-						currentChatUser.id
-					)
-				) {
-					return false;
-				}
 				if (!searchQuery) return true;
 				const searchLower = searchQuery.toLowerCase();
 				return (

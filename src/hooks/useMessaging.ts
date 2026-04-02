@@ -40,10 +40,7 @@ export const useConversations = (
 			if (!IdProdutoMusical) {
 				return messagingService.getConversations(undefined, parameters);
 			}
-			return [
-				...(await messagingService.getConversations(IdProdutoMusical, parameters)),
-				...(await messagingService.getConversations(undefined, parameters)),
-			];
+			return messagingService.getConversations(IdProdutoMusical, parameters);
 		},
 		enabled,
 		staleTime: 30 * 1000, // 30 seconds
@@ -141,10 +138,12 @@ export const useStartConversation = () => {
 		mutationFn: ({
 			participanteId,
 			conteudo,
+			produtoMusicalContratanteId,
 		}: {
 			participanteId: number;
 			conteudo: string;
-		}) => messagingService.startConversation(participanteId, conteudo),
+			produtoMusicalContratanteId: number | null;
+		}) => messagingService.startConversation(participanteId, conteudo, produtoMusicalContratanteId),
 		onSuccess: () => {
 			// Invalidate conversations list
 			void queryClient.invalidateQueries({

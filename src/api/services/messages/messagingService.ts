@@ -133,6 +133,10 @@ export class MessagingService {
 						id: number;
 						nome: string;
 					};
+					produtoMusicalContratante: {
+						id: number;
+						nome: string;
+					} | null;
 					ultimaConversa: Message | null;
 					numeroMensagensNãoLidasContratado: number;
 					numeroMensagensNãoLidasContratante: number;
@@ -171,9 +175,15 @@ export class MessagingService {
 						participanteNome: item.produtoMusical.nome,
 						contratanteId: item.contratante.id,
 						contratanteNome: item.contratante.nome,
+						produtoMusicalContratanteId:
+							item.produtoMusicalContratante?.id || null,
+						produtoMusicalContratanteNome:
+							item.produtoMusicalContratante?.nome || null,
 						ultimaMensagem: lastMessage,
-						numeroMensagensNãoLidasContratante: item.numeroMensagensNãoLidasContratante,
-						numeroMensagensNãoLidasContratado: item.numeroMensagensNãoLidasContratado,
+						numeroMensagensNãoLidasContratante:
+							item.numeroMensagensNãoLidasContratante,
+						numeroMensagensNãoLidasContratado:
+							item.numeroMensagensNãoLidasContratado,
 						online: false, // This would need to be determined from online status API
 					};
 				});
@@ -198,12 +208,14 @@ export class MessagingService {
 	 */
 	public async startConversation(
 		participanteId: number,
-		conteudo: string
+		conteudo: string,
+		produtoMusicalContratanteId: number | null
 	): Promise<Conversation> {
 		// First, get or create conversation with the product
 		// API returns conversation ID directly as a number
 		const conversationId = await this.apiClient.post<number>("chat/obter", {
 			IdProdutoMusical: participanteId,
+			IdProdutoMusicalContratante: produtoMusicalContratanteId,
 		});
 
 		// Save conversation ID to localStorage for future retrieval
@@ -226,6 +238,8 @@ export class MessagingService {
 			participanteNome: "",
 			contratanteId: 0,
 			contratanteNome: "",
+			produtoMusicalContratanteId,
+			produtoMusicalContratanteNome: "",
 			ultimaMensagem: undefined,
 			numeroMensagensNãoLidasContratado: 0,
 			numeroMensagensNãoLidasContratante: 0,

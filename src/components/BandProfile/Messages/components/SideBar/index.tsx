@@ -13,11 +13,8 @@ import {
 import { formatMessageTime, getParticipantInitials } from "../../utils/Message";
 import type { Conversation } from "@/api/services/messages/types";
 import { useMessagesContext } from "@/contexts/MessagesContext";
-import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 export const SideBar = () => {
-	const { activeProduct } = useMusicalProductStore();
-	const currentProductId = activeProduct?.id;
 	const messagesContext = useMessagesContext();
 	const {
 		currentChatUser,
@@ -95,9 +92,9 @@ export const SideBar = () => {
 				{filteredConversations?.map((conversation: Conversation) => {
 					const isSelected = selectedConversation?.id === conversation.id;
 					const unreadCount =
-						currentProductId === conversation.participanteId
-							? conversation.numeroMensagensNãoLidasContratante || 0
-							: conversation.numeroMensagensNãoLidasContratado || 0;
+						currentChatUser?.id === conversation.participanteId
+							? conversation.numeroMensagensNãoLidasContratado || 0
+							: conversation.numeroMensagensNãoLidasContratante || 0;
 
 					return (
 						<ConversationTabContainer
@@ -115,7 +112,8 @@ export const SideBar = () => {
 								<UserImageContainer size={12}>
 									{getParticipantInitials(
 										currentChatUser?.id === conversation.participanteId
-											? conversation.contratanteNome
+											? (conversation.produtoMusicalContratanteNome ??
+													conversation.contratanteNome)
 											: conversation.participanteNome
 									)}
 								</UserImageContainer>
@@ -129,7 +127,8 @@ export const SideBar = () => {
 							<ConversationInfoContainer>
 								<h4 className="font-medium text-gray-900 truncate">
 									{currentChatUser?.id === conversation.participanteId
-										? conversation.contratanteNome
+										? (conversation.produtoMusicalContratanteNome ??
+											conversation.contratanteNome)
 										: conversation.participanteNome}
 								</h4>
 								<p className="text-sm text-gray-500 truncate">
