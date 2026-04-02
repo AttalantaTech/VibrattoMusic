@@ -11,7 +11,7 @@ import { ProposalsTab } from "../../components/BandProfile/Proposals/ProposalsTa
 import { ContractsTab } from "../../components/BandProfile/Contracts/ContractsTab";
 import { SalesTab } from "../../components/BandProfile/Sales/SalesTab";
 import { ProfileTab } from "@/components/BandProfile/Account/ProfileTab";
-import { useOnboardingData } from "@/hooks/useMusicalProducts";
+import { useOnboardingData } from "@/hooks/useOnboarding";
 import { TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/Button/Button";
 import { OnboardingsPedingModal } from "@/components/BandProfile/Account/OnboardingsPedingModal";
@@ -28,18 +28,12 @@ export const BandProfile = () => {
 	const [openOnboardingsPending, setOpenOnboardingsPending] =
 		useState<boolean>(false);
 
-	// Get active musical product state
-	// const { activeProduct } = useActiveMusicalProduct();
-
 	const { activeProduct } = useMusicalProductStore();
 
 	const { data: onboardingData } = useOnboardingData();
 
 	// Get the active product ID for child components
 	const activeProductId = activeProduct?.id ? activeProduct.id : undefined;
-
-	// Check if user has musical products to show sales tab
-	// const hasMusicalProducts = myProducts?.data && myProducts.data.length > 0;
 
 	const mainTabs = activeProduct
 		? [
@@ -69,7 +63,7 @@ export const BandProfile = () => {
 	const renderTabContent = () => {
 		switch (activeMainTab) {
 			case "bookings":
-				return <AgendaTab productId={activeProductId} />;
+				return <AgendaTab />;
 			case "settings":
 				return (
 					<OnboardingProvider>

@@ -22,9 +22,9 @@ import type { AgendaEvent } from "../../BandProfile/Agenda/types";
 import CalendarCustom from "@/components/CalendarCustom/CalendarCustom";
 import { CreateEventModal } from "@/components/BandProfile/Agenda";
 import {
-	useMusicalProductSchedule,
+	useOnboardingSchedule,
 	useOnboardingData,
-} from "@/hooks/useMusicalProducts";
+} from "@/hooks/useOnboarding";
 import { ptBR } from "date-fns/locale";
 import { decryptValue } from "@/utils/encryptValue";
 
@@ -58,7 +58,7 @@ export default function ScheduleStep() {
 
 	const produtoMusicalId = onboardingData ? onboardingData.id : 0;
 
-	const { data: dataSchedule } = useMusicalProductSchedule(produtoMusicalId);
+	const { data: dataSchedule } = useOnboardingSchedule(produtoMusicalId);
 
 	const navigate = useNavigate();
 	const { updateData, markStepComplete } = useOnboarding();
@@ -165,7 +165,7 @@ export default function ScheduleStep() {
 				compromissos,
 			};
 
-			await onboardingService.updateSchedule(
+			await onboardingService.saveOnboardingSchedule(
 				Number(produtoMusicalId),
 				scheduleData
 			);

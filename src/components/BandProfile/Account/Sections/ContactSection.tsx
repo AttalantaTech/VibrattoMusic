@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
 import type { MusicalProductContact } from "@/api/types";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { useUpdateMusicalProduct } from "@/hooks/useProfileStatus";
+import { useUpdateMusicalProduct } from "@/hooks/useMusicalProducts";
 
 // helper text matching Step1
 const helperText =

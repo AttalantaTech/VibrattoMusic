@@ -47,7 +47,7 @@ import type {
 	OnboardingApiResponse,
 	RedeSocial,
 } from "../../../api/types";
-import { useOnboardingData } from "@/hooks/useMusicalProducts";
+import { useOnboardingData } from "@/hooks/useOnboarding";
 import { Label } from "@/components/ui/Label/Label";
 import { Input } from "@/components/ui/Input/Input";
 import { FileUploadBox } from "@/components/forms/FileUploadBox/FileUploadBox";
@@ -301,7 +301,7 @@ export default function MediaStep() {
 				evento === "ProdutoMusicalOnboardingFotoPerfil" &&
 				onboardingData?.fotoPerfil
 			) {
-				await onboardingService.deleteImage({
+				await imageUploadService.deleteImage({
 					idCadastro: Number(produtoMusicalId),
 					evento,
 				});
@@ -311,7 +311,7 @@ export default function MediaStep() {
 				evento === "ProdutoMusicalOnboardingLogomarca" &&
 				onboardingData?.logomarca
 			) {
-				await onboardingService.deleteImage({
+				await imageUploadService.deleteImage({
 					idCadastro: Number(produtoMusicalId),
 					evento,
 				});
@@ -354,7 +354,7 @@ export default function MediaStep() {
 			let newImages: Array<FilePropsLocal> = [];
 			// Optionally delete the image from Azure Blob Storage
 			if (imgId) {
-				await onboardingService.deleteImage({
+				await imageUploadService.deleteImage({
 					idCadastro: Number(produtoMusicalId),
 					evento: "ProdutoMusicalOnboardingCarrossel",
 					idLista: imgId,
@@ -381,7 +381,7 @@ export default function MediaStep() {
 				(eventType === "ProdutoMusicalOnboardingLogomarca" &&
 					onboardingData?.logomarca)
 			) {
-				await onboardingService.deleteImage({
+				await imageUploadService.deleteImage({
 					idCadastro: produtoMusicalId,
 					evento: eventType,
 				});
@@ -419,7 +419,10 @@ export default function MediaStep() {
 			};
 
 			// Save media data
-			await onboardingService.updateMedia(Number(produtoMusicalId), mediaData);
+			await onboardingService.saveOnboardingMedia(
+				Number(produtoMusicalId),
+				mediaData
+			);
 
 			const imageData = {
 				FotoPerfil: profilePhoto ?? null,
@@ -435,7 +438,7 @@ export default function MediaStep() {
 					imageData.Logomarca !== onboardingData?.logomarca) ||
 				imageData.ImagensCarrossel.length > 0
 			) {
-				await onboardingService.updateImages(
+				await onboardingService.saveOnboardingImages(
 					Number(produtoMusicalId),
 					imageData
 				);

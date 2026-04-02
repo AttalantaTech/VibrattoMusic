@@ -38,7 +38,7 @@ import { useInstrumentos } from "@/hooks/useFilters";
 import { toast } from "sonner";
 import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { useUpdateMusicalProduct } from "@/hooks/useProfileStatus";
+import { useUpdateMusicalProduct } from "@/hooks/useMusicalProducts";
 import { isPdfFile, isPngImage } from "@/utils/validation";
 
 // Define styles consistent with modern interface pattern

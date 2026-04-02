@@ -51,7 +51,7 @@ import { useSocialNetworks } from "@/hooks/useFilters";
 import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { imageUploadService } from "@/api";
-import { useUpdateMusicalProduct } from "@/hooks/useProfileStatus";
+import { useUpdateMusicalProduct } from "@/hooks/useMusicalProducts";
 import { isPngImage } from "@/utils/validation";
 
 // Define media schema types

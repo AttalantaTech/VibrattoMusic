@@ -1,16 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { musicalProductService, onboardingService } from "../api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { musicalProductService } from "../api";
 import type {
 	MusicalProductSearchRequest,
 	MusicalProductListApiResponse,
-	MusicalProductDetails,
-	MusicalProductMedia,
-	MusicalProductImages,
-	MusicalProductTechnicalConfig,
-	MusicalProductSchedule,
-	OnboardingApiResponse,
 } from "../api/types";
-import type { OnboardingContactData } from "@/utils/validation";
+import { useAuthStore } from "@/store/authStore";
 
 // Query Keys
 export const musicalProductKeys = {
@@ -19,10 +13,8 @@ export const musicalProductKeys = {
 	list: (filters: MusicalProductSearchRequest) =>
 		[...musicalProductKeys.lists(), filters] as const,
 	detail: (id: number) => [...musicalProductKeys.all, "detail", id] as const,
-	onboarding: (id: number) =>
-		[...musicalProductKeys.all, "onboarding", id] as const,
-	pending: () => [...musicalProductKeys.all, "pending"] as const,
-	schedule: () => [...musicalProductKeys.all, "schedule"] as const,
+	updateActiveProfile: (userId?: number) =>
+		[...musicalProductKeys.all, "updateActiveProfile", userId] as const,
 };
 
 /**
@@ -78,200 +70,19 @@ export const useMusicalProduct = (
 };
 
 /**
- * Hook to GET schedule
+ * Hook to update musical product
  */
-export const useMusicalProductSchedule = (
-	productId: number,
-	enabled: boolean = true
-) => {
-	return useQuery({
-		queryKey: musicalProductKeys.schedule(),
-		queryFn: () => {
-			return onboardingService.getSchedule(productId);
-		},
-		enabled: enabled && productId > 0,
-		staleTime: 5 * 60 * 1000, // 5 minutes
-	});
-};
+export const useUpdateMusicalProduct = () => {
+	const { user } = useAuthStore();
 
-/**
- * Hook to get onboarding data
- */
-export const useOnboardingData = (enabled: boolean = true) => {
-	return useQuery<Array<OnboardingApiResponse>>({
-		queryKey: musicalProductKeys.pending(),
-		queryFn: async () => {
-			const response = await onboardingService.getOnboardingPending();
-			return response;
-		},
-		enabled,
-	});
-};
-
-/**
- * Hook to save onboarding contact (Step 1)
- */
-export const useSaveOnboardingContact = () => {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: (contactData: OnboardingContactData) =>
-			musicalProductService.saveOnboardingContact(contactData),
-
-		onSuccess: () => {
-			// Invalidate onboarding queries
-			void queryClient.invalidateQueries({
-				queryKey: musicalProductKeys.pending(),
-			});
-		},
-	});
-};
-
-/**
- * Hook to save onboarding details (Step 2)
- */
-export const useSaveOnboardingDetails = () => {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: ({
-			productId,
-			detailsData,
-		}: {
-			productId: number;
-			detailsData: MusicalProductDetails;
-		}) => musicalProductService.saveOnboardingDetails(productId, detailsData),
-		onSuccess: () => {
-			// Invalidate onboarding queries
-			void queryClient.invalidateQueries({
-				queryKey: musicalProductKeys.pending(),
-			});
-		},
-	});
-};
-
-/**
- * Hook to save onboarding media (Step 3)
- */
-export const useSaveOnboardingMedia = () => {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: ({
-			productId,
-			mediaData,
-		}: {
-			productId: number;
-			mediaData: MusicalProductMedia;
-		}) => musicalProductService.saveOnboardingMedia(productId, mediaData),
-		onSuccess: () => {
-			// Invalidate onboarding queries
-			void queryClient.invalidateQueries({
-				queryKey: musicalProductKeys.pending(),
-			});
-		},
-	});
-};
-
-/**
- * Hook to save onboarding images (Step 3)
- */
-export const useSaveOnboardingImages = () => {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: ({
-			productId,
-			imagesData,
-		}: {
-			productId: number;
-			imagesData: MusicalProductImages;
-		}) => musicalProductService.saveOnboardingImages(productId, imagesData),
-		onSuccess: () => {
-			// Invalidate onboarding queries
-			void queryClient.invalidateQueries({
-				queryKey: musicalProductKeys.pending(),
-			});
-		},
-	});
-};
-
-/**
- * Hook to save onboarding technical configuration (Step 4)
- */
-export const useSaveOnboardingTechnicalConfig = () => {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: ({
-			productId,
-			technicalData,
-		}: {
-			productId: number;
-			technicalData: MusicalProductTechnicalConfig;
-		}) =>
-			musicalProductService.saveOnboardingTechnicalConfig(
-				productId,
-				technicalData
-			),
-		onSuccess: () => {
-			// Invalidate onboarding queries
-			void queryClient.invalidateQueries({
-				queryKey: musicalProductKeys.pending(),
-			});
-		},
-	});
-};
-
-/**
- * Hook to save onboarding schedule (Step 5)
- */
-export const useSaveOnboardingSchedule = () => {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: ({
-			productId,
-			scheduleData,
-		}: {
-			productId: number;
-			scheduleData: MusicalProductSchedule;
-		}) => musicalProductService.saveOnboardingSchedule(productId, scheduleData),
-		onSuccess: () => {
-			// Invalidate onboarding queries
-			void queryClient.invalidateQueries({
-				queryKey: musicalProductKeys.pending(),
-			});
-		},
-	});
-};
-
-/**
- * Hook to save onboarding schedule (Step 5)
- */
-export const useDisableOnboarding = () => {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: ({ onboardingId }: { onboardingId: number }) =>
-			onboardingService.disableOnboarding(onboardingId),
-		onSuccess: () => {
-			// Invalidate onboarding queries
-			void queryClient.invalidateQueries({
-				queryKey: musicalProductKeys.pending(),
-			});
-		},
-	});
-};
-
-/**
- * Hook to publish musical product after completing onboarding
- */
-export const usePublishMusicalProduct = () => {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: (productId: number) =>
-			musicalProductService.publishMusicalProduct(productId),
+		mutationFn: (musicalProduct: { [key: string]: unknown }) =>
+			musicalProductService.updateMusicalProduct(musicalProduct),
 		onSuccess: () => {
 			// Invalidate related queries
 			void queryClient.invalidateQueries({
-				queryKey: musicalProductKeys.pending(),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: musicalProductKeys.all,
+				queryKey: musicalProductKeys.updateActiveProfile(user?.id),
 			});
 		},
 	});

@@ -8,7 +8,7 @@ import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProduct
 import { useState } from "react";
 import { EditAccount } from "./EditAccount";
 import { useSearchMusicalProducts } from "@/hooks/useMusicalProducts";
-import { useUpdateMusicalProduct } from "@/hooks/useProfileStatus";
+import { useUpdateMusicalProduct } from "@/hooks/useMusicalProducts";
 import { ShareLink } from "@/components/ui/ShareLink/ShareLink";
 
 export const ProfileTab = () => {

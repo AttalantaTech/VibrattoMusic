@@ -1,6 +1,6 @@
 import { useAuthStore } from "../store/authStore";
 import type { MusicalProductApiResponse, User } from "../api/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { musicalProductService } from "../api";
 
 // Query keys for better organization
@@ -8,8 +8,6 @@ export const profileKeys = {
 	all: ["profile"] as const,
 	musicalProducts: (userId?: number) =>
 		[...profileKeys.all, "musicalProducts", userId] as const,
-	updateActiveProfile: () =>
-		[...profileKeys.all, "updateActiveProfile"] as const,
 };
 
 export type ProfileStatus = "COMPLETE" | "INCOMPLETE";
@@ -116,25 +114,6 @@ export const useProfileStatus = () => {
 		isLoading,
 		refetch,
 	};
-};
-
-/**
- * Hook to publish musical product after completing onboarding
- */
-export const useUpdateMusicalProduct = () => {
-	const { user } = useAuthStore();
-
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: (musicalProduct: { [key: string]: unknown }) =>
-			musicalProductService.updateMusicalProduct(musicalProduct),
-		onSuccess: () => {
-			// Invalidate related queries
-			void queryClient.invalidateQueries({
-				queryKey: profileKeys.musicalProducts(user?.id),
-			});
-		},
-	});
 };
 
 /**
