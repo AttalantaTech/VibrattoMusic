@@ -13,6 +13,8 @@ export interface Conversation {
 	id: number;
 	contratanteNome: string;
 	contratanteId: number;
+	produtoMusicalContratanteNome: string | null;
+	produtoMusicalContratanteId: number | null;
 	participanteNome: string;
 	participanteId: number;
 	ultimaMensagem?: Message;

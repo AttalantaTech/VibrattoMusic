@@ -150,7 +150,8 @@ export const Chat = () => {
 													userName={
 														currentUserId === selectedConversation.contratanteId
 															? selectedConversation.participanteNome
-															: selectedConversation.contratanteNome
+															: (selectedConversation.produtoMusicalContratanteNome ??
+																selectedConversation.contratanteNome)
 													}
 												/>
 											)}
