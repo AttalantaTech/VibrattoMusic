@@ -1,3 +1,4 @@
+import { isPngImage } from "@/utils/validation";
 import { Camera, Loader2, Trash2, Upload } from "lucide-react";
 import type { DragEvent } from "react";
 import { useRef, useState, type ChangeEvent } from "react";
@@ -72,7 +73,7 @@ export const ImageUploadArea = ({
 				className={`relative ${aspectRatio} w-full border-2 border-dashed border-gray-200 rounded-lg transition-colors`}
 			>
 				<div
-					className={` ${aspectRatio} ${
+					className={`rounded-lg ${aspectRatio} ${
 						isDragging
 							? "border border-primary-500 bg-primary-50"
 							: "border border-gray-200 hover:border-gray-300"
@@ -97,7 +98,8 @@ export const ImageUploadArea = ({
 								onLoad={() => {
 									setImageLoaded(true);
 								}}
-								className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${
+								className={`w-full h-full object-contain border border-black-200 ${isPngImage(currentImage) ? "bg-white" : "bg-black"} 
+								rounded-lg transition-opacity duration-300 ${
 									imageLoaded ? "opacity-100" : "opacity-0"
 								}`}
 							/>

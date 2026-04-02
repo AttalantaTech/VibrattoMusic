@@ -377,3 +377,9 @@ export const isPdfFile = (link: string): boolean => {
 
 	return regex.test(link);
 };
+
+export const isPngImage = (link: string): boolean => {
+	const regex = /\.png$/i;
+
+	return regex.test(link);
+};

@@ -39,7 +39,7 @@ import { toast } from "sonner";
 import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useUpdateMusicalProduct } from "@/hooks/useProfileStatus";
-import { isPdfFile } from "@/utils/validation";
+import { isPdfFile, isPngImage } from "@/utils/validation";
 
 // Define styles consistent with modern interface pattern
 const styles = {
@@ -686,11 +686,12 @@ export default function TechnicalSection({
 														onLoad={() => {
 															handleFileLoad(file.link);
 														}}
-														className={`w-full h-full object-contain transition-opacity duration-300 ${
-															loadedFiles[file.link]
-																? "opacity-100"
-																: "opacity-0"
-														}`}
+														className={`w-full h-full object-contain transition-opacity duration-300 
+															${isPngImage(file.link) ? "bg-white" : "bg-black"} ${
+																loadedFiles[file.link]
+																	? "opacity-100"
+																	: "opacity-0"
+															}`}
 													/>
 												)}
 											</div>

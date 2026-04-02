@@ -37,7 +37,7 @@ import { CarouselItem } from "@/components/ui/carousel";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { StageMapArea } from "@/components/StageMap/StageMapArea";
 import { useInstrumentos } from "@/hooks/useFilters";
-import { isPdfFile } from "@/utils/validation";
+import { isPdfFile, isPngImage } from "@/utils/validation";
 import { ViewFileModal } from "@/components/ViewFileModal/ViewFileModal";
 
 const styles = {
@@ -147,7 +147,8 @@ export const BandProfile = ({
 														<LazyImage
 															key={file.id || index}
 															alt="Band clipping photo"
-															className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-cover"
+															className={`rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200
+																${isPngImage(file.link) ? "bg-white" : "bg-black"}`}
 															src={file.link}
 														/>
 
@@ -288,7 +289,8 @@ export const BandProfile = ({
 						<section className="flex flex-col lg:flex-row pt-0 lg:pt-6 w-full items-center lg:items-start justify-start gap-4 lg:gap-6">
 							<LazyImage
 								alt="Band cover"
-								className="rounded-lg w-full max-w-sm lg:w-72 h-40 sm:h-48 lg:h-52 object-cover"
+								className={`rounded-lg w-full max-w-sm lg:w-72 h-40 sm:h-48 lg:h-52 object-contain border border-gray-200
+									${isPngImage(musicalProduct.fotoPerfil ?? "") ? "bg-white" : "bg-black"}`}
 								src={musicalProduct.fotoPerfil}
 							/>
 							<div className="flex flex-col w-full h-full items-center lg:items-start justify-center gap-4">
@@ -426,7 +428,8 @@ export const BandProfile = ({
 												<LazyImage
 													key={image.id || index}
 													alt="Band gallery photo"
-													className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-cover"
+													className={`rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200
+														${isPngImage(image.link) ? "bg-white" : "bg-black"}`}
 													src={image.link}
 												/>
 											</CarouselItem>

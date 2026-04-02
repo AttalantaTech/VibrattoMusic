@@ -52,6 +52,7 @@ import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { imageUploadService } from "@/api";
 import { useUpdateMusicalProduct } from "@/hooks/useProfileStatus";
+import { isPngImage } from "@/utils/validation";
 
 // Define media schema types
 const mediaSchema = z.object({
@@ -775,11 +776,12 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 														onLoad={() => {
 															handleImageLoad(img.link);
 														}}
-														className={`w-full h-full object-contain transition-opacity duration-300 ${
-															loadedImages[img.link]
-																? "opacity-100"
-																: "opacity-0"
-														}`}
+														className={`w-full h-full object-contain border border-gray-200 
+															${isPngImage(img.link) ? "bg-white" : "bg-black"}  transition-opacity duration-300 ${
+																loadedImages[img.link]
+																	? "opacity-100"
+																	: "opacity-0"
+															}`}
 													/>
 												</div>
 
