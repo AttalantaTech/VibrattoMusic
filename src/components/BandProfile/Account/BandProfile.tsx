@@ -23,6 +23,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useToggleFavorite, useFavorites } from "@/hooks/useUser";
 import { extractYouTubeId } from "@/lib/utils/cn";
 import type {
+	FileProps,
 	MusicalProduct,
 	MusicalProductListApiResponse,
 } from "@/api/types";
@@ -36,6 +37,8 @@ import { CarouselItem } from "@/components/ui/carousel";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { StageMapArea } from "@/components/StageMap/StageMapArea";
 import { useInstrumentos } from "@/hooks/useFilters";
+import { isPdfFile } from "@/utils/validation";
+import { ViewFileModal } from "@/components/ViewFileModal/ViewFileModal";
 
 const styles = {
 	genre: "font-medium text-[#085EC5] bg-[#D6F2FF] py-[2x] px-2 rounded-2xl",
@@ -61,6 +64,10 @@ export const BandProfile = ({
 	const navigate = useNavigate();
 	const [activeTab, setActiveTab] = useState("clipping");
 	const [isConversationModalOpen, setIsConversationModalOpen] = useState(false);
+	const [viewFile, setViewFile] = useState<{
+		isOpen: boolean;
+		file: FileProps | null;
+	}>({ isOpen: false, file: null });
 
 	// Auth and favorites
 	const { isAuthenticated } = useAuthStore();
@@ -97,12 +104,6 @@ export const BandProfile = ({
 		setIsConversationModalOpen(true);
 	};
 
-	const isPdfFile = (link: string): boolean => {
-		const regex = /\.pdf$/i;
-
-		return regex.test(link);
-	};
-
 	const renderTabContent = (): ReactNode => {
 		switch (activeTab) {
 			case "clipping":
@@ -118,26 +119,40 @@ export const BandProfile = ({
 					return (
 						<>
 							<div className="w-full flex items-center justify-center">
-								{musicalProduct && musicalProduct?.imagens.length > 0 && (
+								{musicalProduct && musicalProduct?.clipagem.length > 0 && (
 									<Carousel>
 										{musicalProduct.clipagem.map((file, index) => (
 											<CarouselItem
 												key={index}
-												className=" basis-full md:basis-1/2 lg:basis-1/3"
+												className=" basis-full md:basis-1/2 lg:basis-1/3 cursor-pointer"
+												onClick={() => {
+													setViewFile({
+														isOpen: true,
+														file,
+													});
+												}}
 											>
 												{isPdfFile(file.link) ? (
-													<embed
-														key={file.id || index}
-														className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] "
-														src={`${file.link}#toolbar=0`}
-													/>
+													<div className="relative group">
+														<iframe
+															key={file.id || index}
+															className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] pointer-events-none"
+															src={`${file.link}#toolbar=0`}
+														/>
+
+														<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
+													</div>
 												) : (
-													<LazyImage
-														key={file.id || index}
-														alt="Band clipping photo"
-														className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-cover"
-														src={file.link}
-													/>
+													<div className="relative group">
+														<LazyImage
+															key={file.id || index}
+															alt="Band clipping photo"
+															className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-cover"
+															src={file.link}
+														/>
+
+														<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/20 transition-colors rounded-lg" />
+													</div>
 												)}
 											</CarouselItem>
 										))}
@@ -786,6 +801,12 @@ export const BandProfile = ({
 					)}
 				</div>
 			</main>
+
+			<ViewFileModal
+				isOpen={viewFile.isOpen}
+				setViewFile={setViewFile}
+				file={viewFile.file}
+			/>
 
 			{/* Start Conversation Modal */}
 			<StartConversationModal

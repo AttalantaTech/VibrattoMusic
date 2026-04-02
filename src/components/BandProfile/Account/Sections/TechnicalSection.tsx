@@ -39,6 +39,7 @@ import { toast } from "sonner";
 import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useUpdateMusicalProduct } from "@/hooks/useProfileStatus";
+import { isPdfFile } from "@/utils/validation";
 
 // Define styles consistent with modern interface pattern
 const styles = {
@@ -333,12 +334,6 @@ export default function TechnicalSection({
 			.replace(/<[^>]+>/g, "")
 			.replace(/&nbsp;/g, " ")
 			.trim();
-	};
-
-	const isPdfFile = (link: string): boolean => {
-		const regex = /\.pdf$/i;
-
-		return regex.test(link);
 	};
 
 	const handleFileLoad = (link: string) => {
@@ -661,7 +656,7 @@ export default function TechnicalSection({
 									{clippings.map((file, index) => (
 										<div
 											key={index}
-											className="relative aspect-square rounded-lg overflow-hidden border border-gray-200"
+											className="relative aspect-square rounded-lg overflow-hidden border border-white-200 bg-white"
 										>
 											<div className="relative w-full h-full">
 												{!loadedFiles[file.link] && (
@@ -671,19 +666,19 @@ export default function TechnicalSection({
 												)}
 
 												{isPdfFile(file.link) ? (
-													<>
-														<iframe
+													<div className="w-full">
+														<embed
 															src={`${file.link}#toolbar=0`}
 															onLoad={() => {
 																handleFileLoad(file.link);
 															}}
-															className={`w-full h-full object-cover transition-opacity duration-300 ${
+															className={`w-full h-full object-contain transition-opacity duration-300 ${
 																loadedFiles[file.link]
 																	? "opacity-100"
 																	: "opacity-0"
 															}`}
 														/>
-													</>
+													</div>
 												) : (
 													<img
 														src={file.link}
@@ -691,7 +686,7 @@ export default function TechnicalSection({
 														onLoad={() => {
 															handleFileLoad(file.link);
 														}}
-														className={`w-full h-full object-cover transition-opacity duration-300 ${
+														className={`w-full h-full object-contain transition-opacity duration-300 ${
 															loadedFiles[file.link]
 																? "opacity-100"
 																: "opacity-0"
@@ -705,7 +700,7 @@ export default function TechnicalSection({
 												onClick={async () => {
 													await removeClipping(file.id, index);
 												}}
-												className="absolute top-1 right-1 bg-gray-400 hover:bg-gray-300  text-gray-800 rounded-full p-1 transition-colors"
+												className="absolute top-1 right-1 bg-gray-200 hover:bg-gray-300  text-gray-800 rounded-full p-1 transition-colors"
 											>
 												<X className="w-3 h-3" />
 											</button>

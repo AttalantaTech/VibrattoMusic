@@ -760,7 +760,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 										{carouselImages.map((img, index) => (
 											<div
 												key={index}
-												className="relative aspect-square rounded-lg overflow-hidden border border-gray-200"
+												className="relative aspect-square rounded-lg overflow-hidden border border-white-200 bg-white"
 											>
 												<div className="relative w-full h-full">
 													{!loadedImages[img.link] && (
@@ -775,7 +775,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 														onLoad={() => {
 															handleImageLoad(img.link);
 														}}
-														className={`w-full h-full object-cover transition-opacity duration-300 ${
+														className={`w-full h-full object-contain transition-opacity duration-300 ${
 															loadedImages[img.link]
 																? "opacity-100"
 																: "opacity-0"
@@ -788,7 +788,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 													onClick={async () => {
 														await removeCarouselImage(img.id, index);
 													}}
-													className="absolute top-1 right-1 bg-gray-400 hover:bg-gray-300  text-gray-800 rounded-full p-1 transition-colors"
+													className="absolute top-1 right-1 bg-gray-200 hover:bg-gray-300  text-gray-800 rounded-full p-1 transition-colors"
 												>
 													<X className="w-3 h-3" />
 												</button>
