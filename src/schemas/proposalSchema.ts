@@ -5,7 +5,7 @@ export const createProposalSchema = z.object({
 	nomeContratante: z.string().min(1, "O campo Nome Contratante é obrigatório."),
 	idProdutoMusical: z.number().min(1, "Produto musical é obrigatório"),
 	idTipoEvento: z.number().min(1, "Tipo de evento é obrigatório"),
-	descricao: z.string().min(10, "Descrição deve ter pelo menos 10 caracteres"),
+	descricao: z.string().trim().min(10, "Descrição deve ter pelo menos 10 caracteres"),
 	valor: z.number().min(0.01, "Valor deve ser maior que zero"),
 	local: z.string().min(5, "Local é obrigatório"),
 	dataInicio: z.string().min(1, "Data de início é obrigatória"),
