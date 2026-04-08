@@ -4,11 +4,11 @@ import { Button } from "../../ui/Button/Button";
 import { Badge } from "../../ui/Badge/Badge";
 import { ContractViewer } from "./ContractViewer";
 import { ContractEditor } from "./ContractEditor";
-import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
 import { useProductProposals } from "../../../hooks/useProposals";
 import { useContract, useContractPDF } from "../../../hooks/useContracts";
 import { useNavigate } from "@tanstack/react-router";
 import { formatCurrency, formatDate } from "../../../utils/validation";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 const statusConfig = {
 	aceito: {
@@ -39,7 +39,7 @@ export const ContractsTab = () => {
 	const [isEditorOpen, setIsEditorOpen] = useState(false);
 
 	const navigate = useNavigate();
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 	const activeProductId = activeProduct?.id
 		? Number(activeProduct.id)
 		: undefined;

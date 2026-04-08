@@ -9,7 +9,6 @@ import { Button } from "../../ui/Button/Button";
 import { FilterSelector } from "../../ui/FilterSelector/FilterSelector";
 import { useCallback, useMemo, useState } from "react";
 import { UpdateButton } from "../../ui/UpdateButton/UpdateButton";
-import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
 import { Reports } from "./Reports";
 import { EventsTable } from "./components/EventsTable";
 import { PaymentStatusCard } from "./components/EventsTable/components/PaymentStatusCard";
@@ -29,6 +28,7 @@ import type { ProposalResponse } from "../../../api/types";
 import { ProposalDetailsModal } from "./components/ProposalDetailsModal";
 import { ProposalRejectionModal } from "../Proposals/ProposalRejectionModal";
 import { SendProposalModal } from "../Messages/components/SendProposalModal";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 interface AbaVendasProps {
 	productId?: number;
@@ -49,7 +49,7 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 	const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
 	const chartFilters = [{ id: "sales", label: "Vendas" }];
 
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	const currentUser = useAuthStore((state) => state.user);
 

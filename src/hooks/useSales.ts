@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { salesService } from "../api/services/salesService";
-import { useActiveMusicalProduct } from "./useActiveMusicalProduct";
 import type { ChartPeriod } from "../api/types";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 /**
  * Hook to fetch sales chart data for the current user
  */
 export const useSalesChart = (periodo: ChartPeriod = "30d") => {
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	return useQuery({
 		queryKey: ["sales-chart", periodo, activeProduct?.id],
@@ -31,7 +31,7 @@ export const useSalesChart = (periodo: ChartPeriod = "30d") => {
  * Hook to fetch sales summary for the current user
  */
 export const useSalesSummary = (periodo: ChartPeriod = "30d") => {
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	return useQuery({
 		queryKey: ["sales-summary", periodo, activeProduct?.id],
@@ -52,7 +52,7 @@ export const useSalesSummary = (periodo: ChartPeriod = "30d") => {
  * Hook to fetch sales by status for the current user
  */
 export const useSalesByStatus = (periodo: ChartPeriod = "30d") => {
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	return useQuery({
 		queryKey: ["sales-by-status", periodo, activeProduct?.id],
@@ -73,7 +73,7 @@ export const useSalesByStatus = (periodo: ChartPeriod = "30d") => {
  * Hook to fetch sales trends for the current user
  */
 export const useSalesTrends = (periodo: ChartPeriod = "30d") => {
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	return useQuery({
 		queryKey: ["sales-trends", periodo, activeProduct?.id],
@@ -94,7 +94,7 @@ export const useSalesTrends = (periodo: ChartPeriod = "30d") => {
  * Hook to fetch top selling periods for the current user
  */
 export const useTopSellingPeriods = (periodo: ChartPeriod = "1y") => {
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	return useQuery({
 		queryKey: ["top-selling-periods", periodo, activeProduct?.id],
@@ -140,7 +140,7 @@ export const useFormattedChartData = (periodo: ChartPeriod = "30d") => {
  * Hook to export sales data
  */
 export const useExportSalesData = () => {
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	const exportData = async (filters: {
 		periodo: ChartPeriod;

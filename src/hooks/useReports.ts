@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { reportsService } from "../api/services/reportsService";
-import { useActiveMusicalProduct } from "./useActiveMusicalProduct";
 import type { ReportPeriod, ReportType } from "../api/types";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 /**
  * Hook to fetch sales reports for the current user
@@ -10,7 +10,7 @@ export const useSalesReports = (
 	periodo: ReportPeriod = "30d",
 	tipo: ReportType = "vendas"
 ) => {
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	return useQuery({
 		queryKey: ["sales-reports", periodo, tipo, activeProduct?.id],
@@ -34,7 +34,7 @@ export const useSalesReports = (
  * Hook to fetch dashboard metrics for the current user
  */
 export const useDashboardMetrics = () => {
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	return useQuery({
 		queryKey: ["dashboard-metrics", activeProduct?.id],
@@ -55,7 +55,7 @@ export const useDashboardMetrics = () => {
  * Hook to fetch sales performance metrics
  */
 export const useSalesPerformance = (periodo: ReportPeriod = "30d") => {
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	return useQuery({
 		queryKey: ["sales-performance", periodo, activeProduct?.id],
@@ -76,7 +76,7 @@ export const useSalesPerformance = (periodo: ReportPeriod = "30d") => {
  * Hook to fetch profile analytics
  */
 export const useProfileAnalytics = (periodo: ReportPeriod = "30d") => {
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	return useQuery({
 		queryKey: ["profile-analytics", periodo, activeProduct?.id],

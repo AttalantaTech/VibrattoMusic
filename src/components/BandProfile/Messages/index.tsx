@@ -42,6 +42,14 @@ const MessagesTab = () => {
 					onClose={() => setIsProposalModalOpen?.(false)}
 					recipientId={selectedConversation.participanteId}
 					conversationId={selectedConversation.id}
+					contractorId={
+						selectedConversation.produtoMusicalContratanteId ??
+						selectedConversation.contratanteId
+					}
+					contractorName={
+						selectedConversation.produtoMusicalContratanteNome ??
+						selectedConversation.contratanteNome
+					}
 					onProposalSent={async (proposalDetails: string) => {
 						// Send the proposal notification message to the chat
 						if (handleSendMessage) {

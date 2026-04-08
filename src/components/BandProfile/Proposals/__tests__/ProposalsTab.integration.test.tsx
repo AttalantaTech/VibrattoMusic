@@ -7,8 +7,8 @@ import { useAuthStore } from '../../../../store/authStore';
 
 // Mock dependencies
 vi.mock('../../../../store/authStore');
-vi.mock('../../../../hooks/useActiveMusicalProduct', () => ({
-	useActiveMusicalProduct: () => ({ activeProduct: { id: 1 } }),
+vi.mock('../../../../hooks/useMusicalProductStore', () => ({
+	useMusicalProductStore: () => ({ activeProduct: { id: 1 } }),
 }));
 const mockProposals = [
 	{

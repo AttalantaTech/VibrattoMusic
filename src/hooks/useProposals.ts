@@ -7,7 +7,7 @@ import type {
 } from "../api/types";
 import { toast } from "sonner";
 import { useAuthStore } from "../store/authStore";
-import { useActiveMusicalProduct } from "./useActiveMusicalProduct";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 const PROPOSAL_QUERY_KEYS = {
 	all: ["proposals"] as const,
@@ -156,7 +156,7 @@ export const useFilteredProposals = (filters: {
 	limite?: number;
 	IdProdutoMusical?: number;
 }) => {
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	// Prefer explicit product id; fallback to active product
 	const productId =
@@ -288,7 +288,7 @@ export const useFilteredProposals = (filters: {
  * Hook to fetch proposal statistics
  */
 export const useProposalStatistics = (periodo: string = "30d") => {
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 	const user = useAuthStore((state) => state.user);
 
 	return useQuery({

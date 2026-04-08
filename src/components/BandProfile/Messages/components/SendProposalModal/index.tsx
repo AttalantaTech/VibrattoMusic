@@ -38,7 +38,7 @@ import {
 import { toast } from "sonner";
 import { useProfileStatus } from "../../../../../hooks/useProfileStatus";
 import { ProfileIncompleteModal } from "../../../../ui/ProfileIncompleteModal/ProfileIncompleteModal";
-import { useActiveMusicalProduct } from "../../../../../hooks/useActiveMusicalProduct";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 type AccordionSectionProps = {
 	title: string;
@@ -96,6 +96,7 @@ interface SendProposalModalProps {
 	onClose: () => void;
 	recipientId?: number; // ID do destinatário da proposta (opcional para contexto)
 	contractorId?: number;
+	contractorName?: string;
 	conversationId?: number; // ID da conversa para enviar mensagem
 	onProposalSent?: (proposalDetails: string) => Promise<void>; // Callback para enviar mensagem após proposta
 }
@@ -105,6 +106,7 @@ export const SendProposalModal = ({
 	onClose,
 	// recipientId: _recipientId, // Prefixed with _ to indicate it's intentionally unused for now
 	contractorId,
+	contractorName,
 	conversationId,
 	onProposalSent,
 }: SendProposalModalProps) => {
@@ -128,7 +130,7 @@ export const SendProposalModal = ({
 	});
 
 	// Use the currently active musical product
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 	const userProductId = activeProduct?.id
 		? Number(activeProduct.id)
 		: undefined;
@@ -206,7 +208,7 @@ export const SendProposalModal = ({
 
 	const [formData, setFormData] = useState<ProposalFormData>({
 		IdContratante: getContractorId(),
-		NomeContratante: user?.nome || "",
+		NomeContratante: contractorName || "",
 		TipoDocumentoContratante: "",
 		DocumentoContratante: "",
 		IdTipoEvento: 0,
@@ -249,7 +251,7 @@ export const SendProposalModal = ({
 		if (!isOpen) return;
 		setFormData({
 			IdContratante: getContractorId(),
-			NomeContratante: user?.nome || "",
+			NomeContratante: contractorName || "",
 			TipoDocumentoContratante: "",
 			DocumentoContratante: "",
 			IdTipoEvento: 0,
@@ -265,7 +267,7 @@ export const SendProposalModal = ({
 			IdFormaPagamento: 0,
 			IdCondicoesPagamento: 0,
 		});
-	}, [getContractorId, isOpen, user?.nome]);
+	}, [getContractorId, isOpen, contractorName]);
 
 	const handleInputChange = (
 		field: keyof ProposalFormData,
@@ -695,9 +697,18 @@ export const SendProposalModal = ({
 						return timeString.substring(0, 5);
 					};
 
+					const description = proposalData.descricao;
+					const paymentMethod = paymentMethods.find(
+						(method) => method.Id === proposalData.idFormaPagamento
+					)?.Nome;
+					const paymentCondition = paymentConditions.find(
+						(condition) => condition.Id === proposalData.idCondicoesPagamento
+					)?.Nome;
+
 					const proposalMessage =
 						`📋 Proposta enviada!\n\n` +
 						`🎵 Tipo de Evento: ${eventTypeName}\n` +
+						`📝 Descrição: ${description}\n` +
 						`📅 Data: ${formatDate(proposalData.dataInicio)}` +
 						(proposalData.dataFim !== proposalData.dataInicio
 							? ` até ${formatDate(proposalData.dataFim)}`
@@ -706,6 +717,8 @@ export const SendProposalModal = ({
 						`⏰ Horário: ${formatTime(proposalData.horaInicio)} - ${formatTime(proposalData.horaFim)}\n` +
 						`📍 Local: ${proposalData.local}\n` +
 						`💰 Valor: R$ ${proposalData.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n` +
+						paymentMethod ? `💳 Forma de Pagamento: ${paymentMethod}\n` : "" +
+						paymentCondition ? `📜 Condições de Pagamento: ${paymentCondition}\n` : "" +
 						(proposalData.transporteIncluso || proposalData.acomodacaoInclusa
 							? `\n✅ Inclui: ${[
 									proposalData.transporteIncluso && "Transporte",
