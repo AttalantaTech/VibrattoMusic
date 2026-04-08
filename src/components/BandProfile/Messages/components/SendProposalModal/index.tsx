@@ -38,7 +38,7 @@ import {
 import { toast } from "sonner";
 import { useProfileStatus } from "../../../../../hooks/useProfileStatus";
 import { ProfileIncompleteModal } from "../../../../ui/ProfileIncompleteModal/ProfileIncompleteModal";
-import { useActiveMusicalProduct } from "../../../../../hooks/useActiveMusicalProduct";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 type AccordionSectionProps = {
 	title: string;
@@ -128,7 +128,7 @@ export const SendProposalModal = ({
 	});
 
 	// Use the currently active musical product
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 	const userProductId = activeProduct?.id
 		? Number(activeProduct.id)
 		: undefined;

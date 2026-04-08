@@ -7,7 +7,7 @@ import type {
 } from "../api/types";
 import { toast } from "sonner";
 import { useAuthStore } from "../store/authStore";
-import { useActiveMusicalProduct } from "./useActiveMusicalProduct";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 const CONTRACT_QUERY_KEYS = {
 	all: ["contracts"] as const,
@@ -105,7 +105,7 @@ export const useMyContracts = (): ReturnType<
 	typeof useQuery<Array<ContractResponse>>
 > => {
 	const user = useAuthStore((state) => state.user);
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	return useQuery({
 		queryKey: CONTRACT_QUERY_KEYS.mine(),

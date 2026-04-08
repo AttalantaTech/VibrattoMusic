@@ -8,7 +8,7 @@ import { useState } from "react";
 import { UpdateButton } from "../../ui/UpdateButton/UpdateButton";
 import { dates, values, myEvents } from "./data";
 import { SendProposalModal } from "../Messages/components/SendProposalModal";
-import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 interface MySalesTabProps {
 	productId?: number;
@@ -22,7 +22,7 @@ export const MySalesTab = ({ productId }: MySalesTabProps) => {
 	const chartFilters = [{ id: "sales", label: "Vendas" }];
 
 	// Get active product from centralized hook
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 
 	// Use prop productId if provided, otherwise use active product
 	const currentProductId =

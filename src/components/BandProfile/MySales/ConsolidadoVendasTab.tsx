@@ -25,7 +25,6 @@ import { FilterSelector } from "../../ui/FilterSelector/FilterSelector";
 import { LineChartComponent } from "../../charts/line/LineChart";
 import { SendProposalModal } from "../Messages/components/SendProposalModal";
 import { ProposalRejectionModal } from "../Proposals/ProposalRejectionModal";
-import { useActiveMusicalProduct } from "../../../hooks/useActiveMusicalProduct";
 import {
 	useFilteredProposals,
 	useUpdateProposalStatus,
@@ -39,6 +38,7 @@ import { cn } from "../../../lib/utils/cn";
 import { TableSkeleton, ErrorState, EmptyState } from "../../ui/LoadingStates";
 import { useAuthStore } from "../../../store/authStore";
 import { toast } from "sonner";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 const isAcceptedStatus = (statusKey: string) => {
 	return statusKey === "aceito" || statusKey === "aceita";
@@ -415,7 +415,7 @@ export const ConsolidadoVendasTab = ({
 	const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 	const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("30d");
 
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 	const currentProductId =
 		productId || (activeProduct?.id ? Number(activeProduct.id) : undefined);
 

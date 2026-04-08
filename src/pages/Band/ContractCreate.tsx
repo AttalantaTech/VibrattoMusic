@@ -5,10 +5,10 @@ import { Button } from "../../components/ui/Button/Button";
 import { Input } from "../../components/ui/Input/Input";
 import { Textarea } from "../../components/ui/Textarea/Textarea";
 import { MainLayout } from "../../components/layout/MainLayout/MainLayout";
-import { useActiveMusicalProduct } from "../../hooks/useActiveMusicalProduct";
 import { useUpdateContractSections } from "../../hooks/useContracts";
 import { toast } from "sonner";
 import type { ContractSectionUpdateRequest } from "../../api/types";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 interface ContractSection {
 	numero: number;
@@ -87,7 +87,7 @@ const defaultSections: Array<ContractSection> = [
 
 export const ContractCreate = () => {
 	const navigate = useNavigate();
-	const { activeProduct } = useActiveMusicalProduct();
+	const { activeProduct } = useMusicalProductStore();
 	const updateSections = useUpdateContractSections();
 
 	const [sections, setSections] =
