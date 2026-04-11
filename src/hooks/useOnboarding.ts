@@ -48,7 +48,7 @@ export const useOnboardingSchedule = (
 	return useQuery({
 		queryKey: onboardingKeys.schedule(),
 		queryFn: () => {
-			return onboardingService.getSchedule(productId);
+			return onboardingService.getOnboardingSchedule(productId);
 		},
 		enabled: enabled && productId > 0,
 		staleTime: 5 * 60 * 1000, // 5 minutes
