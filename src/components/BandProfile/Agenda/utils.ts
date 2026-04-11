@@ -1,11 +1,14 @@
+/* eslint-disable unicorn/prevent-abbreviations */
 import type { AgendaEvent } from "./types";
 
 // Helper functions for event positioning and calculations
 export const getEventHeight = (event: AgendaEvent): number => {
 	const [startHour = 0, startMinute = 0] = event.startTime
-		.split(":")
-		.map(Number);
-	const [endHour = 0, endMinute = 0] = event.endTime.split(":").map(Number);
+		? event.startTime.split(":").map(Number)
+		: "".split(":").map(Number);
+	const [endHour = 0, endMinute = 0] = event.endTime
+		? event.endTime.split(":").map(Number)
+		: "".split(":").map(Number);
 
 	const startInMinutes = startHour * 60 + startMinute;
 	const endInMinutes = endHour * 60 + endMinute;
@@ -15,8 +18,9 @@ export const getEventHeight = (event: AgendaEvent): number => {
 
 export const getEventTopPosition = (event: AgendaEvent): number => {
 	const [startHour = 0, startMinute = 0] = event.startTime
-		.split(":")
-		.map(Number);
+		? event.startTime.split(":").map(Number)
+		: "".split(":").map(Number);
+
 	return (((startHour - 7) * 60 + startMinute) / 60) * 80; // 7h is grid start
 };
 
@@ -46,7 +50,7 @@ export const filterEventsByType = (
 	filterType: string
 ): Array<AgendaEvent> => {
 	if (filterType === "all") return events;
-	return events.filter((event) => event.type === filterType);
+	return events.filter(() => "show" === filterType);
 };
 
 export const getEventsForDay = (
@@ -120,9 +124,13 @@ export const calculateNewEventPosition = (
 ): Partial<AgendaEvent> => {
 	// Calculate duration
 	const [startHour = 0, startMinute = 0] = event.startTime
-		.split(":")
-		.map(Number);
-	const [endHour = 0, endMinute = 0] = event.endTime.split(":").map(Number);
+		? event.startTime.split(":").map(Number)
+		: "".split(":").map(Number);
+
+	const [endHour = 0, endMinute = 0] = event.endTime
+		? event.endTime.split(":").map(Number)
+		: "".split(":").map(Number);
+
 	const durationMinutes =
 		endHour * 60 + endMinute - (startHour * 60 + startMinute);
 

@@ -492,32 +492,40 @@ export interface MusicalProductTechnicalConfig {
 	clipagem: Array<string>;
 }
 
+export interface Commitment {
+	id: number;
+	titulo: string;
+	descricao: string;
+	localizacao: string;
+	data: string;
+	horaInicio: string;
+	horaFim: string;
+	disponibilidadeOutrosEventos: boolean;
+}
+
+export interface CommitmentAPI {
+	id: number;
+	titulo: string;
+	descricao: string;
+	localizacao: string;
+	data: string;
+	horaInicio: string | null;
+	horaFim: string | null;
+	disponibilidadeOutrosEventos: boolean;
+}
+
 export interface MusicalProductSchedule {
 	id: number;
 	inicioCalendario?: string | null;
 	finalCalendario?: string | null;
-	compromissos: Array<{
-		data: string;
-		horaInicio: string;
-		horaFim: string;
-		disponibilidadeOutrosEventos: boolean;
-		titulo: string;
-		descricao?: string;
-	}>;
+	compromissos: Array<CommitmentAPI>;
 }
 
 // API Response format for schedule (GET)
 export interface ScheduleApiResponse {
 	data: string;
 	status: "Livre" | "Ocupado";
-	compromissos: Array<{
-		id: number;
-		horaInicio: string;
-		horaFim: string;
-		disponibilidadeOutrosEventos: boolean;
-		titulo: string;
-		descricao?: string;
-	}>;
+	compromissos: Array<CommitmentAPI>;
 }
 
 // ===== Favorites Types =====
@@ -800,8 +808,8 @@ export interface ProposalResponse {
 	local: string;
 	dataInicio: string;
 	dataFim: string;
-	horaInicio: string;
-	horaFim: string;
+	horaInicio: string | null;
+	horaFim: string | null;
 	transporteIncluso: boolean;
 	acomodacaoInclusa: boolean;
 	camarimIncluso: boolean;

@@ -52,6 +52,7 @@ const unifiedStatusConfig = {
 		color: "text-yellow-600",
 		bgColor: "bg-yellow-50",
 	},
+	// eslint-disable-next-line camelcase
 	aguardando_pagamento: {
 		label: "Aguardando Pagamento",
 		icon: Clock,
@@ -272,16 +273,21 @@ const ProposalDetailsModal = ({
 										</p>
 									</div>
 								</div>
-								<div className="flex items-start gap-3">
-									<Clock className="h-5 w-5 text-gray-400 mt-0.5" />
-									<div>
-										<p className="text-sm font-medium text-gray-700">Horário</p>
-										<p className="text-gray-900">
-											{formatTime(proposal.horaInicio)} -{" "}
-											{formatTime(proposal.horaFim)}
-										</p>
+
+								{proposal.horaInicio && proposal.horaFim && (
+									<div className="flex items-start gap-3">
+										<Clock className="h-5 w-5 text-gray-400 mt-0.5" />
+										<div>
+											<p className="text-sm font-medium text-gray-700">
+												Horário
+											</p>
+											<p className="text-gray-900">
+												{formatTime(proposal.horaInicio)} -{" "}
+												{formatTime(proposal.horaFim)}
+											</p>
+										</div>
 									</div>
-								</div>
+								)}
 								<div className="flex items-start gap-3">
 									<MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
 									<div>
@@ -425,7 +431,7 @@ export const ConsolidadoVendasTab = ({
 		Parameters<typeof useFilteredProposals>[0]
 	>(() => {
 		const filters: Parameters<typeof useFilteredProposals>[0] = {
-			IdProdutoMusical: currentProductId as number | undefined,
+			IdProdutoMusical: currentProductId,
 		};
 
 		if (statusFilter !== "all") {
@@ -502,7 +508,7 @@ export const ConsolidadoVendasTab = ({
 
 	const handleSignContract = (proposal: ProposalResponse) => {
 		if (proposal.identificadorUnico) {
-			navigate({
+			void navigate({
 				to: "/band/contract/$id",
 				params: { id: proposal.identificadorUnico },
 			});
@@ -531,7 +537,7 @@ export const ConsolidadoVendasTab = ({
 
 	const handleSort = (field: SortField) => {
 		if (sortField === field) {
-			setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+			setSortOrder((previous) => (previous === "asc" ? "desc" : "asc"));
 		} else {
 			setSortField(field);
 			setSortOrder("desc");
@@ -554,7 +560,11 @@ export const ConsolidadoVendasTab = ({
 		<div className="w-full h-full flex flex-col gap-6">
 			<div className="flex w-full items-center justify-between">
 				<h1 className="font-bold text-2xl">Vendas</h1>
-				<Button onClick={() => setIsProposalModalOpen(true)}>
+				<Button
+					onClick={() => {
+						setIsProposalModalOpen(true);
+					}}
+				>
 					<Plus className="h-4 w-4 mr-2" />
 					Nova Proposta
 				</Button>
@@ -571,7 +581,9 @@ export const ConsolidadoVendasTab = ({
 							type="text"
 							placeholder="Buscar vendas/propostas..."
 							value={searchTerm}
-							onChange={(e) => setSearchTerm(e.target.value)}
+							onChange={(event) => {
+								setSearchTerm(event.target.value);
+							}}
 							className="pl-10"
 						/>
 					</div>
@@ -609,7 +621,9 @@ export const ConsolidadoVendasTab = ({
 						].map((status) => (
 							<button
 								key={status}
-								onClick={() => setStatusFilter(status as UnifiedStatusFilter)}
+								onClick={() => {
+									setStatusFilter(status as UnifiedStatusFilter);
+								}}
 								className={cn(
 									"w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100",
 									statusFilter === status && "bg-gray-100 font-medium"
@@ -676,7 +690,9 @@ export const ConsolidadoVendasTab = ({
 						].map(({ field, label }) => (
 							<button
 								key={field}
-								onClick={() => handleSort(field)}
+								onClick={() => {
+									handleSort(field);
+								}}
 								className="w-full text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 flex items-center justify-between"
 							>
 								<span>{label}</span>
@@ -707,7 +723,9 @@ export const ConsolidadoVendasTab = ({
 			{error && !isLoading && (
 				<ErrorState
 					message="Erro ao carregar vendas e propostas"
-					onRetry={() => window.location.reload()}
+					onRetry={() => {
+						window.location.reload();
+					}}
 				/>
 			)}
 
@@ -728,7 +746,9 @@ export const ConsolidadoVendasTab = ({
 					action={
 						!(searchTerm || statusFilter !== "all") ? (
 							<Button
-								onClick={() => setIsProposalModalOpen(true)}
+								onClick={() => {
+									setIsProposalModalOpen(true);
+								}}
 								className="flex items-center gap-2 bg-primary-600 hover:bg-blue-700"
 							>
 								<Plus className="h-4 w-4" />
@@ -781,7 +801,9 @@ export const ConsolidadoVendasTab = ({
 							<div
 								key={proposal.id}
 								className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-all duration-200 cursor-pointer"
-								onClick={() => setSelectedProposal(proposal)}
+								onClick={() => {
+									setSelectedProposal(proposal);
+								}}
 							>
 								<div className="flex flex-col lg:flex-row justify-between gap-4">
 									{/* Main Content */}
@@ -839,13 +861,15 @@ export const ConsolidadoVendasTab = ({
 											</div>
 
 											{/* Time */}
-											<div className="flex items-center gap-2 text-gray-600">
-												<Clock className="h-4 w-4 text-gray-400" />
-												<span>
-													{formatTime(proposal.horaInicio)} -{" "}
-													{formatTime(proposal.horaFim)}
-												</span>
-											</div>
+											{proposal.horaInicio && proposal.horaFim && (
+												<div className="flex items-center gap-2 text-gray-600">
+													<Clock className="h-4 w-4 text-gray-400" />
+													<span>
+														{formatTime(proposal.horaInicio)} -{" "}
+														{formatTime(proposal.horaFim)}
+													</span>
+												</div>
+											)}
 
 											{/* Location */}
 											<div className="flex items-center gap-2 text-gray-600 lg:col-span-1">
@@ -988,7 +1012,9 @@ export const ConsolidadoVendasTab = ({
 			{/* SendProposalModal */}
 			<SendProposalModal
 				isOpen={isProposalModalOpen}
-				onClose={() => setIsProposalModalOpen(false)}
+				onClose={() => {
+					setIsProposalModalOpen(false);
+				}}
 				recipientId={currentProductId}
 			/>
 
@@ -997,7 +1023,9 @@ export const ConsolidadoVendasTab = ({
 				<ProposalDetailsModal
 					proposal={selectedProposal}
 					isOpen={!!selectedProposal}
-					onClose={() => setSelectedProposal(null)}
+					onClose={() => {
+						setSelectedProposal(null);
+					}}
 					onStatusUpdate={handleStatusUpdate}
 					currentUserId={currentUser?.id}
 					onSignContract={handleSignContract}

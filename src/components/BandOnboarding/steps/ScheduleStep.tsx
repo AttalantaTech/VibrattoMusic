@@ -7,26 +7,27 @@ import {
 	ChevronLeft,
 	ChevronRight,
 } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { toast } from "sonner";
 import { onboardingService } from "../../../api";
 import { Button } from "../../ui/Button/Button";
 import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
 import { StepLayout } from "../layout/StepLayout/StepLayout";
 import type {
+	CommitmentAPI,
 	MusicalProductSchedule,
 	OnboardingApiResponse,
-	ScheduleApiResponse,
 } from "../../../api/types";
-import type { AgendaEvent } from "../../BandProfile/Agenda/types";
-import CalendarCustom from "@/components/CalendarCustom/CalendarCustom";
-import { CreateEventModal } from "@/components/BandProfile/Agenda";
+import type { AgendaEvent, ModalMode } from "../../BandProfile/Agenda/types";
+import { DatePicker } from "@/components/CalendarCustom/DatePicker";
 import {
 	useOnboardingSchedule,
 	useOnboardingData,
 } from "@/hooks/useOnboarding";
 import { ptBR } from "date-fns/locale";
 import { decryptValue } from "@/utils/encryptValue";
+import { mapAgendaEventToFormData } from "@/utils/mapAgendaEventToFormData";
+import { EventModal } from "@/components/BandProfile/Agenda/CreateAndEditEventModal/EventModal";
 
 // Define styles consistent with modern interface pattern
 const styles = {
@@ -66,30 +67,10 @@ export default function ScheduleStep() {
 	const [loading, setLoading] = useState(false);
 	const [events, setEvents] = useState<Array<AgendaEvent>>([]);
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-	const [showCreateModal, setShowCreateModal] = useState(false);
-
-	const [createEventData, setCreateEventData] = useState<{
-		date?: Date;
-		startTime?: string;
-		endTime?: string;
-	}>({});
-
-	const mapScheduleFromApi = (
-		data: Array<ScheduleApiResponse>
-	): Array<AgendaEvent> => {
-		return data.flatMap((day) =>
-			day.compromissos.map((comp) => ({
-				id: comp.id,
-				title: comp.titulo,
-				description: comp.descricao || "",
-				date: parseISO(day.data),
-				startTime: comp.horaInicio,
-				endTime: comp.horaFim,
-				type: comp.disponibilidadeOutrosEventos ? "personal" : "show",
-				status: "confirmed",
-			}))
-		);
-	};
+	const [showEventModal, setShowEventModal] = useState(false);
+	const [modalMode, setModalMode] = useState<ModalMode>("create");
+	const [selectedEventsDay, setSelectedEventsDay] =
+		useState<Array<AgendaEvent> | null>(null);
 
 	const loadSchedule = useCallback(() => {
 		if (!produtoMusicalId) return;
@@ -98,7 +79,7 @@ export default function ScheduleStep() {
 			setLoading(true);
 
 			if (Array.isArray(dataSchedule)) {
-				setEvents(mapScheduleFromApi(dataSchedule));
+				setEvents(mapAgendaEventToFormData(dataSchedule));
 			} else {
 				setEvents([]);
 			}
@@ -114,8 +95,10 @@ export default function ScheduleStep() {
 		return format(date, "dd/MM/yyyy", { locale: ptBR });
 	};
 
-	const handleSelectedEvent = (eventData: Partial<AgendaEvent>) => {
-		setEvents((state) => [...state, eventData as AgendaEvent]);
+	const handleSelectedEvent = (eventData: AgendaEvent) => {
+		setEvents((state) => [...state, eventData]);
+
+		setShowEventModal(false);
 	};
 
 	const handleRemoveEventSimple = (index: number) => {
@@ -139,16 +122,19 @@ export default function ScheduleStep() {
 		}
 
 		setLoading(true);
+
 		try {
-			const compromissos = events
+			const compromissos: Array<CommitmentAPI> = events
 				.sort((a, b) => a.date.getTime() - b.date.getTime())
 				.map((event) => ({
+					id: 0,
 					titulo: event.title.trim(),
 					descricao: event.description?.trim() || "",
 					data: format(event.date, "yyyy-MM-dd"),
-					horaInicio: event.startTime,
-					horaFim: event.endTime,
-					disponibilidadeOutrosEventos: event.type !== "show",
+					horaInicio: event.startTime || null,
+					horaFim: event.endTime || null,
+					disponibilidadeOutrosEventos: event.availabilityOtherEvents,
+					localizacao: event.location ?? "",
 				}));
 
 			// Convert events to API format
@@ -165,17 +151,40 @@ export default function ScheduleStep() {
 				compromissos,
 			};
 
-			await onboardingService.saveOnboardingSchedule(
-				Number(produtoMusicalId),
-				scheduleData
-			);
+			await onboardingService
+				.saveOnboardingSchedule(Number(produtoMusicalId), scheduleData)
+				.then(async () => {
+					setShowEventModal(false);
+					setSelectedEventsDay(null);
+					setSelectedDate(null);
 
-			// Update context
-			updateData("schedule", scheduleData);
-			markStepComplete("5");
+					// Update context
+					updateData("schedule", scheduleData);
+					markStepComplete("5");
 
-			toast.success("Agenda salva com sucesso");
-			await navigate({ to: "/band/register/onboarding/6" });
+					toast.success("Agenda salva com sucesso");
+					await navigate({ to: "/band/register/onboarding/6" });
+				})
+				.catch((error: any) => {
+					if (
+						error?.name === "VibrattoApiError" ||
+						error?.code === "INVALID_REQUEST"
+					) {
+						const errorMessage = error.data?.mensagem as string | undefined;
+
+						if (errorMessage && errorMessage.includes("ConflitoHorario")) {
+							toast.error(
+								"Não foi possível criar os eventos da agenda. Você possui conflito de horário entre os eventos.",
+								{ duration: 10000 }
+							);
+						} else {
+							toast.error("Ocorreu um erro. Tente novamente mais tarde!");
+						}
+
+						return;
+					}
+					toast.error("Ocorreu um erro. Tente novamente mais tarde!");
+				});
 		} catch (error: any) {
 			console.error("Error saving schedule:", error);
 			toast.error("Erro ao salvar agenda. Tente novamente.");
@@ -209,10 +218,10 @@ export default function ScheduleStep() {
 
 						{/* Agenda Component */}
 						<div className=" border border-gray-200 rounded-lg">
-							<CalendarCustom
+							<DatePicker
 								onSelectDate={setSelectedDate}
 								onModal={() => {
-									setShowCreateModal((state) => !state);
+									setShowEventModal((state) => !state);
 								}}
 							/>
 						</div>
@@ -288,16 +297,21 @@ export default function ScheduleStep() {
 				</div>
 			</StepLayout>
 
-			<CreateEventModal
-				isOpen={showCreateModal}
+			<EventModal
+				isOpen={showEventModal}
+				mode={modalMode}
+				setMode={setModalMode}
 				onClose={() => {
-					setShowCreateModal(false);
-					setCreateEventData({});
+					setShowEventModal(false);
+					setSelectedEventsDay(null);
+					setSelectedDate(null);
+					setShowEventModal(false);
 				}}
-				onSubmit={handleSelectedEvent}
+				selectedEventsDay={selectedEventsDay}
+				onSubmit={(event) => {
+					handleSelectedEvent(event);
+				}}
 				initialDate={selectedDate}
-				initialStartTime={createEventData.startTime}
-				initialEndTime={createEventData.endTime}
 			/>
 		</>
 	);
