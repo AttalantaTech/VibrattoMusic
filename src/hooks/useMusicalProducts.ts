@@ -3,6 +3,7 @@ import { musicalProductService } from "../api";
 import type {
 	MusicalProductSearchRequest,
 	MusicalProductListApiResponse,
+	MusicalProductSchedule,
 } from "../api/types";
 import { useAuthStore } from "@/store/authStore";
 
@@ -15,6 +16,9 @@ export const musicalProductKeys = {
 	detail: (id: number) => [...musicalProductKeys.all, "detail", id] as const,
 	updateActiveProfile: (userId?: number) =>
 		[...musicalProductKeys.all, "updateActiveProfile", userId] as const,
+	saveSchedule: () => [...musicalProductKeys.all, "schedule"] as const,
+	getSchedule: (productId: number, currentMonth: Date) =>
+		[...musicalProductKeys.all, "schedule", productId, currentMonth] as const,
 };
 
 /**
@@ -66,6 +70,46 @@ export const useMusicalProduct = (
 		queryFn: () => musicalProductService.getProductById(productId),
 		enabled: enabled && productId > 0,
 		staleTime: 5 * 60 * 1000, // 5 minutes
+	});
+};
+
+/**
+ * Hook to GET schedule
+ */
+export const useSchedule = (
+	productId: number,
+	currentMonth: Date,
+	enabled: boolean = true
+) => {
+	return useQuery({
+		queryKey: musicalProductKeys.getSchedule(productId, currentMonth),
+		queryFn: () => {
+			return musicalProductService.getSchedule(productId, currentMonth);
+		},
+		enabled: enabled && productId > 0,
+		staleTime: 5 * 60 * 1000, // 5 minutes
+	});
+};
+
+/**
+ * Hook to save schedule
+ */
+export const useSaveSchedule = () => {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: ({
+			productId,
+			scheduleData,
+		}: {
+			productId: number;
+			scheduleData: MusicalProductSchedule;
+		}) => musicalProductService.saveSchedule(productId, scheduleData),
+		onSuccess: () => {
+			// Invalidate onboarding queries
+			void queryClient.invalidateQueries({
+				queryKey: musicalProductKeys.saveSchedule(),
+			});
+		},
 	});
 };
 

@@ -32,7 +32,7 @@ export class OnboardingService {
 	/**
 	 * Get available schedule for a product
 	 */
-	public async getSchedule(
+	public async getOnboardingSchedule(
 		productId: number
 	): Promise<Array<ScheduleApiResponse>> {
 		return this.apiClient.get(`/produtomusical/onboarding/${productId}/agenda`);

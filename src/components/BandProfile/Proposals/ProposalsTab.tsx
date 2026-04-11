@@ -171,16 +171,22 @@ const ProposalDetailsModal = ({
 										</p>
 									</div>
 								</div>
-								<div className="flex items-start gap-3">
-									<Clock className="h-5 w-5 text-gray-400 mt-0.5" />
-									<div>
-										<p className="text-sm font-medium text-gray-700">Horário</p>
-										<p className="text-gray-900">
-											{formatTime(proposal.horaInicio)} -{" "}
-											{formatTime(proposal.horaFim)}
-										</p>
+
+								{proposal.horaInicio && proposal.horaFim && (
+									<div className="flex items-start gap-3">
+										<Clock className="h-5 w-5 text-gray-400 mt-0.5" />
+										<div>
+											<p className="text-sm font-medium text-gray-700">
+												Horário
+											</p>
+											<p className="text-gray-900">
+												{formatTime(proposal.horaInicio)} -{" "}
+												{formatTime(proposal.horaFim)}
+											</p>
+										</div>
 									</div>
-								</div>
+								)}
+
 								<div className="flex items-start gap-3">
 									<MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
 									<div>
@@ -675,13 +681,15 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 											</div>
 
 											{/* Time */}
-											<div className="flex items-center gap-2 text-gray-600">
-												<Clock className="h-4 w-4 text-gray-400" />
-												<span>
-													{formatTime(proposal.horaInicio)} -{" "}
-													{formatTime(proposal.horaFim)}
-												</span>
-											</div>
+											{proposal.horaInicio && proposal.horaFim && (
+												<div className="flex items-center gap-2 text-gray-600">
+													<Clock className="h-4 w-4 text-gray-400" />
+													<span>
+														{formatTime(proposal.horaInicio)} -{" "}
+														{formatTime(proposal.horaFim)}
+													</span>
+												</div>
+											)}
 
 											{/* Location */}
 											<div className="flex items-center gap-2 text-gray-600 lg:col-span-1">

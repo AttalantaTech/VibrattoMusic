@@ -11,7 +11,6 @@ export { HiringService } from "./services/hiringService";
 export { MessagingService } from "./services/messages/messagingService";
 export { UtilityService } from "./services/utilityService";
 export { OnboardingService } from "./services/onboardingService";
-export { EventService } from "./services/eventService";
 export { proposalService } from "./services/proposalService";
 export { ImageUploadService } from "./services/imageUploadService";
 
@@ -108,7 +107,6 @@ import { HiringService } from "./services/hiringService";
 import { MessagingService } from "./services/messages/messagingService";
 import { UtilityService } from "./services/utilityService";
 import { OnboardingService } from "./services/onboardingService";
-import { EventService } from "./services/eventService";
 import { ImageUploadService } from "./services/imageUploadService";
 import { getWebSocketService } from "./websocket/old/client";
 import {
@@ -131,7 +129,6 @@ export const hiringService = new HiringService(apiClient);
 export const messagingService = new MessagingService(apiClient);
 export const utilityService = new UtilityService(apiClient);
 export const onboardingService = new OnboardingService(apiClient);
-export const eventService = new EventService(apiClient);
 export const imageUploadService = new ImageUploadService(apiClient);
 
 // WebSocket service instance

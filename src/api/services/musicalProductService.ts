@@ -1,8 +1,11 @@
+import { endOfMonth, format, startOfMonth } from "date-fns";
 import type { ApiClient } from "../core/client";
 import type {
 	MusicalProductSearchRequest,
 	MusicalProductListApiResponse,
 	MusicalProductApiResponse,
+	ScheduleApiResponse,
+	MusicalProductSchedule,
 } from "../types";
 
 export class MusicalProductService {
@@ -121,6 +124,36 @@ export class MusicalProductService {
 			});
 			throw error;
 		}
+	}
+
+	/**
+	 * Get available schedule for a product
+	 */
+	public async getSchedule(
+		productId: number,
+		currentMonth: Date
+	): Promise<Array<ScheduleApiResponse>> {
+		const monthStart = startOfMonth(currentMonth);
+		const monthEnd = endOfMonth(monthStart);
+		const dataInicio = format(monthStart, "yyyy-MM-dd");
+		const dataFim = format(monthEnd, "yyyy-MM-dd");
+
+		return this.apiClient.get(
+			`/produtomusical/${productId}/agenda?dataInicio=${dataInicio}&dataFim=${dataFim}`
+		);
+	}
+
+	/**
+	 * Save schedule
+	 */
+	public async saveSchedule(
+		productId: number,
+		scheduleData: MusicalProductSchedule
+	): Promise<void> {
+		return this.apiClient.post<void>(
+			`produtomusical/${productId}/agenda`,
+			scheduleData
+		);
 	}
 
 	public async updateMusicalProduct(musicalProduct: {

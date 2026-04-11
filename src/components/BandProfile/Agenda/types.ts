@@ -1,22 +1,23 @@
 // Enhanced Event interface for the agenda system
 export interface AgendaEvent {
-	id: number | string;
+	id: number;
 	title: string;
 	description?: string;
 	date: Date;
-	startTime: string;
-	endTime: string;
+	startTime: string | null;
+	endTime: string | null;
 	location?: string;
-	type: "show" | "rehearsal" | "meeting" | "personal";
-	status?: "confirmed" | "pending" | "cancelled";
+	availabilityOtherEvents: boolean;
 }
+
+export type ModalMode = "list" | "create" | "edit";
 
 // Event type for external use (backward compatibility)
 export type Event = AgendaEvent;
 
 // Event Types
-export type EventType = AgendaEvent["type"];
-export type EventStatus = AgendaEvent["status"];
+export type EventType = "show" | "rehearsal" | "meeting" | "personal";
+export type EventStatus = "confirmed" | "pending" | "cancelled";
 
 // Event Type Configuration
 export interface EventTypeConfig {
@@ -63,12 +64,6 @@ export const eventTypeConfig: Record<EventType, EventTypeConfig> = {
 	},
 } as const;
 
-export interface CreateEventModalProps {
-	onClose: () => void;
-	onSubmit: (event: Partial<AgendaEvent>) => void;
-	initialDate?: Date | null;
-}
-
 export interface DraggableEventProps {
 	event: AgendaEvent;
 	style?: React.CSSProperties;
@@ -94,16 +89,6 @@ export interface AgendaViewProps {
 	filterTypes?: Array<string>;
 	readonly?: boolean;
 	produtoMusicalId?: number;
-}
-
-export interface CreateEventModalProps {
-	isOpen: boolean;
-	onClose: () => void;
-	onSubmit: (event: Partial<AgendaEvent>) => void;
-	initialDate?: Date | null;
-	initialType?: AgendaEvent["type"];
-	initialStartTime?: string;
-	initialEndTime?: string;
 }
 
 export interface EventDetailsModalProps {
