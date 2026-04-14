@@ -470,7 +470,6 @@ export interface MusicalProductMedia {
 		idRedeSocial: number;
 		link: string;
 	}>;
-	clipagem: Array<string>;
 }
 
 export interface MusicalProductImages {

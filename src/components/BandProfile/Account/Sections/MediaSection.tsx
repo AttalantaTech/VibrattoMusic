@@ -400,7 +400,6 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 						: null
 					: null, // Default value since we moved this to schedule
 				redeSocial: data.redeSocial ?? [],
-				clipagem: clippings.map((file) => file.link) ?? [],
 			};
 
 			// Save media data
@@ -411,6 +410,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 
 			const imageData = {
 				FotoPerfil: profilePhoto ?? null,
+				Clipagem: clippings.map((file) => file.link) ?? [],
 				ImagensCarrossel: carouselImages.map((img) => img.link) ?? [],
 			};
 
@@ -418,6 +418,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 			if (
 				(imageData.FotoPerfil &&
 					imageData.FotoPerfil !== activeProduct?.fotoPerfil) ||
+				imageData.Clipagem.length > 0 ||
 				imageData.ImagensCarrossel.length > 0
 			) {
 				await updateMusicalProductMutation.mutateAsync({
@@ -679,7 +680,9 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 						<div className={styles.sectionContainer}>
 							<div className="space-y-4">
 								<div className={styles.sectionTitle}>
-									<h2 className={styles.titleText}>Clipagem</h2>
+									<h2 className={styles.titleText}>
+										Upload de Materiais de Divulgação
+									</h2>
 
 									<TooltipCustom
 										trigger={<HelpCircle className="w-4 h-4 cursor-pointer" />}

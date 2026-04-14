@@ -353,7 +353,6 @@ export default function TechnicalStep() {
 					infraCamarim && infraCamarim.trim() !== "" ? infraCamarim : null,
 				camarimIncluso: hasDressingRoom,
 				mapaPalco: stageElements,
-				clipagem: [],
 			};
 			updateData("technical", updatedTechnicalData);
 		}

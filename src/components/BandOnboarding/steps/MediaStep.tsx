@@ -469,7 +469,6 @@ export default function MediaStep() {
 				exibirValorServico: showPriceTab, // Default value since we moved this to schedule
 				valorServico: data.valorServico ? Number(data.valorServico) : null, // Default value since we moved this to schedule
 				redeSocial: data.redeSocial ?? [],
-				clipagem: clippings.map((file) => file.link) ?? [],
 			};
 
 			// Save media data
@@ -480,6 +479,7 @@ export default function MediaStep() {
 
 			const imageData = {
 				FotoPerfil: profilePhoto ?? null,
+				Clipagem: clippings.map((file) => file.link) ?? [],
 				ImagensCarrossel: carouselImages.map((img) => img.link) ?? [],
 			};
 
@@ -487,6 +487,7 @@ export default function MediaStep() {
 			if (
 				(imageData.FotoPerfil &&
 					imageData.FotoPerfil !== onboardingData?.fotoPerfil) ||
+				imageData.Clipagem.length > 0 ||
 				imageData.ImagensCarrossel.length > 0
 			) {
 				await onboardingService.saveOnboardingImages(
@@ -692,7 +693,9 @@ export default function MediaStep() {
 						<div className={styles.sectionContainer}>
 							<div className="space-y-4">
 								<div className={styles.sectionTitle}>
-									<h2 className={styles.titleText}>Clipagem</h2>
+									<h2 className={styles.titleText}>
+										Upload de Materiais de Divulgação
+									</h2>
 
 									<TooltipCustom
 										trigger={<HelpCircle className="w-4 h-4 cursor-pointer" />}

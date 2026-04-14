@@ -6,6 +6,7 @@ import type {
 	MusicalProductSchedule,
 } from "../api/types";
 import { useAuthStore } from "@/store/authStore";
+import { profileKeys } from "./useProfileStatus";
 
 // Query Keys
 export const musicalProductKeys = {
@@ -126,7 +127,7 @@ export const useUpdateMusicalProduct = () => {
 		onSuccess: () => {
 			// Invalidate related queries
 			void queryClient.invalidateQueries({
-				queryKey: musicalProductKeys.updateActiveProfile(user?.id),
+				queryKey: profileKeys.musicalProducts(user?.id),
 			});
 		},
 	});
