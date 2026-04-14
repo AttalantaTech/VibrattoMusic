@@ -81,7 +81,7 @@ export const BandProfile = ({
 
 	// Secondary tabs for gallery
 	const secondaryTabs = [
-		{ label: "Clipagem", value: "clipping" },
+		{ label: "Materiais de Divulgação", value: "clipping" },
 		{ label: "Mapa de Palco", value: "stageMap" },
 		{ label: "Rider Técnico", value: "technicalRider" },
 		{ label: "Camarim", value: "dressingRoom" },
