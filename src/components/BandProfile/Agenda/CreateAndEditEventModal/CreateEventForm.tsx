@@ -68,14 +68,14 @@ export const CreateEventForm = ({
 			setValue("startTime", "");
 			setValue("endTime", "");
 		} else {
-			const startTime =
-				currentEvent?.startTime ||
-				format(
-					new Date().toLocaleString("pt-BR", {
-						timeZone: "America/Sao_Paulo",
-					}),
-					"HH:mm"
-				);
+			const hourPtBR = new Date().toLocaleString("pt-BR", {
+				timeZone: "America/Sao_Paulo",
+				hour: "2-digit",
+				minute: "2-digit",
+				hour12: false,
+			});
+
+			const startTime = currentEvent?.startTime || hourPtBR;
 
 			const [hours = 0, minutes = 0] = startTime.split(":").map(Number);
 

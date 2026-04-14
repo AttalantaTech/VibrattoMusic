@@ -14,6 +14,7 @@ import {
 	Eye,
 	EyeOff,
 	ChevronLeft,
+	HelpCircle,
 } from "lucide-react";
 import {
 	FormField,
@@ -40,6 +41,7 @@ import type {
 	FileEventType,
 	RedeSocial,
 	FilePropsLocal,
+	MusicalProductMedia,
 } from "../../../../api/types";
 import { Label } from "@/components/ui/Label/Label";
 import { Input } from "@/components/ui/Input/Input";
@@ -52,7 +54,8 @@ import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { imageUploadService } from "@/api";
 import { useUpdateMusicalProduct } from "@/hooks/useMusicalProducts";
-import { isPngImage } from "@/utils/validation";
+import { isPdfFile, isPngImage } from "@/utils/validation";
+import { TooltipCustom } from "@/components/ui/TooltipCustom/TooltipCustom";
 
 // Define media schema types
 const mediaSchema = z.object({
@@ -92,7 +95,6 @@ interface MediaData {
 	spotifyPlaylistId?: string;
 	redeSocial?: Array<RedeSocial>;
 	fotoPerfil?: string | null;
-	logomarca?: string | null;
 	exibirValorServico: boolean;
 	valorServico?: string | null;
 	imagensCarrossel?: Array<{ id: number | null; link: string }>;
@@ -118,6 +120,7 @@ const styles = {
 	sectionContainer: "bg-gray-50 py-6 border-b-2 border-gray-200",
 	sectionHeader: "mb-4",
 	sectionIcon: "text-primary-600",
+	sectionTitle: "flex items-center gap-2 mb-3 sm:mb-4",
 	subtitle: "block text-gray-500 text-sm my-4",
 };
 
@@ -197,13 +200,13 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 			spotifyPlaylistId: activeProduct?.spotifyPlaylistId ?? "",
 			redeSocial: activeProduct?.redeSocial ?? [],
 			fotoPerfil: activeProduct?.fotoPerfil ?? null,
-			logomarca: activeProduct?.logomarca ?? null,
 			valorServico: activeProduct?.valorServico?.toString() ?? null,
 			exibirValorServico: activeProduct?.exibirValorServico ?? false,
 			imagensCarrossel: activeProduct?.imagens ?? [],
 		};
 	}, [activeProduct]);
 
+	const [loadedFiles, setLoadedFiles] = useState<Record<string, boolean>>({});
 	const [loading, setLoading] = useState(false);
 	const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
 
@@ -218,12 +221,13 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 	const [profilePhoto, setProfilePhoto] = useState<string | null>(
 		initialMediaData.fotoPerfil || null
 	);
-	const [logoImage, setLogoImage] = useState<string | null>(
-		initialMediaData.logomarca || null
-	);
 	const [carouselImages, setCarouselImages] = useState<
 		Array<{ id: number | null; link: string }>
 	>(activeProduct?.imagens || []);
+
+	const [clippings, setClippings] = useState<Array<FilePropsLocal>>(
+		activeProduct?.clipagem || []
+	);
 
 	const [uploadingImage, setUploadingImage] = useState<string | null>(null);
 
@@ -253,6 +257,13 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 		}));
 	};
 
+	const handleFileLoad = (link: string) => {
+		setLoadedFiles((previous) => ({
+			...previous,
+			[link]: true,
+		}));
+	};
+
 	// Handle image upload using Azure Blob Storage
 	const handleImageUpload = async (file: File, type: FileEventType) => {
 		if (!activeProduct?.id) {
@@ -270,8 +281,6 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 
 			if (type === "ProdutoMusicalFotoPerfil") {
 				evento = "ProdutoMusicalFotoPerfil";
-			} else if (type === "ProdutoMusicalLogomarca") {
-				evento = "ProdutoMusicalLogomarca";
 			} else {
 				evento = "ProdutoMusicalCarrossel";
 				// For carousel images, use the current array length as the index
@@ -280,13 +289,6 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 
 			// If you have an image in Azure, it will delete it before you can upload a new image.
 			if (evento === "ProdutoMusicalFotoPerfil" && activeProduct?.fotoPerfil) {
-				await imageUploadService.deleteImage({
-					idCadastro: activeProduct.id,
-					evento,
-				});
-			}
-
-			if (evento === "ProdutoMusicalLogomarca" && activeProduct?.logomarca) {
 				await imageUploadService.deleteImage({
 					idCadastro: activeProduct.id,
 					evento,
@@ -305,9 +307,6 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 			if (type === "ProdutoMusicalFotoPerfil") {
 				setProfilePhoto(blobUrl);
 				setValue("fotoPerfil", blobUrl);
-			} else if (type === "ProdutoMusicalLogomarca") {
-				setLogoImage(blobUrl);
-				setValue("logomarca", blobUrl);
 			} else if (type === "ProdutoMusicalCarrossel") {
 				const newImages = [...carouselImages, { id: null, link: blobUrl }];
 				setCarouselImages(newImages);
@@ -363,9 +362,8 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 		try {
 			// It only makes a request to remove an image from Azure if it exists there.
 			if (
-				(eventType === "ProdutoMusicalFotoPerfil" &&
-					activeProduct?.fotoPerfil) ||
-				(eventType === "ProdutoMusicalLogomarca" && activeProduct?.logomarca)
+				eventType === "ProdutoMusicalFotoPerfil" &&
+				activeProduct?.fotoPerfil
 			) {
 				await imageUploadService.deleteImage({
 					idCadastro: activeProduct.id,
@@ -375,10 +373,6 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 
 			if (eventType === "ProdutoMusicalFotoPerfil") {
 				setProfilePhoto(null);
-			}
-
-			if (eventType === "ProdutoMusicalLogomarca") {
-				setLogoImage(null);
 			}
 		} catch (error) {
 			console.error(error);
@@ -395,7 +389,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 		setLoading(true);
 		try {
 			// Filter out empty YouTube URLs and structure data correctly for API
-			const media = {
+			const media: MusicalProductMedia = {
 				videosYouTube:
 					data.videosYouTube?.filter((url: string) => url.trim() !== "") ?? [],
 				spotifyPlaylistId: data.spotifyPlaylistId ?? null,
@@ -406,6 +400,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 						: null
 					: null, // Default value since we moved this to schedule
 				redeSocial: data.redeSocial ?? [],
+				clipagem: clippings.map((file) => file.link) ?? [],
 			};
 
 			// Save media data
@@ -416,7 +411,6 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 
 			const imageData = {
 				FotoPerfil: profilePhoto ?? null,
-				Logomarca: logoImage ?? null,
 				ImagensCarrossel: carouselImages.map((img) => img.link) ?? [],
 			};
 
@@ -424,8 +418,6 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 			if (
 				(imageData.FotoPerfil &&
 					imageData.FotoPerfil !== activeProduct?.fotoPerfil) ||
-				(imageData.Logomarca &&
-					imageData.Logomarca !== activeProduct?.logomarca) ||
 				imageData.ImagensCarrossel.length > 0
 			) {
 				await updateMusicalProductMutation.mutateAsync({
@@ -445,6 +437,68 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 			toast.error(String(errorMessage));
 		} finally {
 			setLoading(false);
+		}
+	};
+
+	// Handle file upload using Azure Blob Storage
+	const handleFileUpload = async (file: File, type: FileEventType) => {
+		if (!activeProduct?.id) {
+			toast.error("Perfil não encontrado");
+
+			return;
+		}
+
+		try {
+			// Upload the image using the image upload service
+			const blobUrl = await imageUploadService.uploadImage({
+				file,
+				evento: "ProdutoMusicalClipagem",
+				idCadastro: activeProduct.id,
+				idLista: clippings.length,
+			});
+
+			if (type === "ProdutoMusicalClipagem") {
+				const newFiles = [...clippings, { id: null, link: blobUrl }];
+				setClippings(newFiles);
+			}
+		} catch (error) {
+			console.error("Erro ao fazer upload do arquivo:", error);
+			toast.error(
+				error instanceof Error
+					? `Erro ao fazer upload: ${error.message}`
+					: "Erro ao fazer upload do arquivo"
+			);
+		}
+	};
+
+	// Remove Clipping
+	const removeClipping = async (fileId: number | null, index: number) => {
+		if (!activeProduct?.id) {
+			toast.error("Perfil não encontrado");
+
+			return;
+		}
+		try {
+			let newImages: Array<FilePropsLocal> = [];
+
+			// Optionally delete the file from Azure Blob Storage
+			if (fileId) {
+				await imageUploadService.deleteImage({
+					idCadastro: activeProduct.id,
+					evento: "ProdutoMusicalClipagem",
+					idLista: fileId,
+				});
+
+				newImages = clippings.filter((file) => file.id !== fileId);
+			} else {
+				newImages = clippings.filter(
+					(_, clippingIndex) => clippingIndex !== index
+				);
+			}
+
+			setClippings(newImages);
+		} catch (error) {
+			console.error("Erro ao remover arquivo:", error);
 		}
 	};
 
@@ -514,7 +568,6 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 	// Update imagens
 	useEffect(() => {
 		setProfilePhoto(initialMediaData.fotoPerfil || null);
-		setLogoImage(initialMediaData.logomarca || null);
 		setCarouselImages(activeProduct?.imagens || []);
 
 		if (initialMediaData.videosYouTube?.[0]) {
@@ -598,36 +651,118 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 							</div>
 
 							{/* Main images */}
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-								<ImageUploadArea
-									title="Foto de Perfil"
-									description="JPG, PNG até 5MB"
-									currentImage={profilePhoto}
-									isUploading={uploadingImage === "ProdutoMusicalFotoPerfil"}
-									onDelete={async () => {
-										await removeImage("ProdutoMusicalFotoPerfil");
-									}}
-									onFileSelect={async (file) => {
-										if (file)
-											await handleImageUpload(file, "ProdutoMusicalFotoPerfil");
-									}}
-									aspectRatio="aspect-square"
-								/>
+							<div className="flex flex-col items-center">
+								<div className="max-w-[300px] w-full">
+									{/* <div> */}
+									<ImageUploadArea
+										title="Foto de Perfil"
+										description="JPG, PNG até 5MB"
+										currentImage={profilePhoto}
+										isUploading={uploadingImage === "ProdutoMusicalFotoPerfil"}
+										onDelete={async () => {
+											await removeImage("ProdutoMusicalFotoPerfil");
+										}}
+										onFileSelect={async (file) => {
+											if (file)
+												await handleImageUpload(
+													file,
+													"ProdutoMusicalFotoPerfil"
+												);
+										}}
+										aspectRatio="aspect-square"
+									/>
+								</div>
+							</div>
+						</div>
 
-								<ImageUploadArea
-									title="Logomarca"
-									description="JPG, PNG até 5MB"
-									currentImage={logoImage}
-									isUploading={uploadingImage === "ProdutoMusicalLogomarca"}
-									onDelete={async () => {
-										await removeImage("ProdutoMusicalLogomarca");
-									}}
-									onFileSelect={async (file) => {
-										if (file)
-											await handleImageUpload(file, "ProdutoMusicalLogomarca");
-									}}
-									aspectRatio="aspect-square"
-								/>
+						{/* Section of the Clipping */}
+						<div className={styles.sectionContainer}>
+							<div className="space-y-4">
+								<div className={styles.sectionTitle}>
+									<h2 className={styles.titleText}>Clipagem</h2>
+
+									<TooltipCustom
+										trigger={<HelpCircle className="w-4 h-4 cursor-pointer" />}
+										content="Faça upload de materiais de divulgação, como PDFs de artigos,
+                 reportagens, críticas ou qualquer outra publicação que destaque sua banda.
+                  Isso ajuda a construir sua reputação e a mostrar seu impacto na mídia."
+									/>
+								</div>
+
+								<div>
+									<FileUploadBox
+										acceptedTypes={[
+											"image/png",
+											"image/jpeg",
+											"image/gif",
+											"application/pdf",
+										]}
+										maxSizeMB={10}
+										onFileSelected={async (file) => {
+											if (file)
+												await handleFileUpload(file, "ProdutoMusicalClipagem");
+										}}
+									/>
+								</div>
+
+								{clippings.length > 0 && (
+									<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+										{clippings.map((file, index) => (
+											<div
+												key={index}
+												className="relative aspect-square rounded-lg overflow-hidden border border-white-200 bg-white"
+											>
+												<div className="relative w-full h-full">
+													{!loadedFiles[file.link] && (
+														<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+															<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+														</div>
+													)}
+
+													{isPdfFile(file.link) ? (
+														<div className="w-full">
+															<embed
+																src={`${file.link}#toolbar=0`}
+																onLoad={() => {
+																	handleFileLoad(file.link);
+																}}
+																className={`w-full h-full object-contain transition-opacity duration-300 ${
+																	loadedFiles[file.link]
+																		? "opacity-100"
+																		: "opacity-0"
+																}`}
+															/>
+														</div>
+													) : (
+														<img
+															src={file.link}
+															alt={`Imagem ${index + 1}`}
+															onLoad={() => {
+																handleFileLoad(file.link);
+															}}
+															className={`w-full h-full object-contain transition-opacity duration-300 
+															${isPngImage(file.link) ? "bg-white" : "bg-black"} ${
+																loadedFiles[file.link]
+																	? "opacity-100"
+																	: "opacity-0"
+															}`}
+														/>
+													)}
+												</div>
+
+												<button
+													type="button"
+													onClick={async () => {
+														await removeClipping(file.id, index);
+													}}
+													className="absolute top-1 right-1 bg-gray-200 hover:bg-gray-300  text-gray-800 rounded-full p-1 transition-colors"
+												>
+													<X className="w-3 h-3" />
+												</button>
+											</div>
+										))}
+									</div>
+								)}
 							</div>
 						</div>
 
