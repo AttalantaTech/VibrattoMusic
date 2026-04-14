@@ -15,7 +15,6 @@ import {
 	Music,
 	HelpCircle,
 	ChevronLeft,
-	X,
 } from "lucide-react";
 import { imageUploadService } from "../../../../api";
 import { Button } from "../../../ui/Button/Button";
@@ -29,17 +28,12 @@ import { TooltipCustom } from "@/components/ui/TooltipCustom/TooltipCustom";
 import { SimpleEditor } from "@/components/forms/SimpleEditor/SimpleEditor";
 import { FileCard } from "@/components/cards/FileCard/FileCard";
 import { ToggleSwitch } from "@/components/forms/ToggleSwitch/ToggleSwitch";
-import type {
-	FileEventType,
-	FilePropsLocal,
-	FilterOptionInstrument,
-} from "@/api/types";
+import type { FileEventType, FilterOptionInstrument } from "@/api/types";
 import { useInstrumentos } from "@/hooks/useFilters";
 import { toast } from "sonner";
 import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useUpdateMusicalProduct } from "@/hooks/useMusicalProducts";
-import { isPdfFile, isPngImage } from "@/utils/validation";
 
 // Define styles consistent with modern interface pattern
 const styles = {
@@ -196,11 +190,6 @@ export default function TechnicalSection({
 	// Step4 UI pattern state
 	const [loading, setLoading] = useState(false);
 	const [isStageBuilderOpen, setIsStageBuilderOpen] = useState(false);
-	const [loadedFiles, setLoadedFiles] = useState<Record<string, boolean>>({});
-
-	const [clippings, setClippings] = useState<Array<FilePropsLocal>>(
-		activeProduct?.clipagem || []
-	);
 
 	const [riderTab, setRiderTab] = useState("upload");
 	const [riderFile, setRiderFile] = useState<File | null>(null);
@@ -336,75 +325,6 @@ export default function TechnicalSection({
 			.trim();
 	};
 
-	const handleFileLoad = (link: string) => {
-		setLoadedFiles((previous) => ({
-			...previous,
-			[link]: true,
-		}));
-	};
-
-	// Handle file upload using Azure Blob Storage
-	const handleFileUpload = async (file: File, type: FileEventType) => {
-		if (!activeProduct?.id) {
-			toast.error("Perfil não encontrado");
-
-			return;
-		}
-
-		try {
-			// Upload the image using the image upload service
-			const blobUrl = await imageUploadService.uploadImage({
-				file,
-				evento: "ProdutoMusicalClipagem",
-				idCadastro: activeProduct.id,
-				idLista: clippings.length,
-			});
-
-			if (type === "ProdutoMusicalClipagem") {
-				const newFiles = [...clippings, { id: null, link: blobUrl }];
-				setClippings(newFiles);
-			}
-		} catch (error) {
-			console.error("Erro ao fazer upload do arquivo:", error);
-			toast.error(
-				error instanceof Error
-					? `Erro ao fazer upload: ${error.message}`
-					: "Erro ao fazer upload do arquivo"
-			);
-		}
-	};
-
-	// Remove Clipping
-	const removeClipping = async (fileId: number | null, index: number) => {
-		if (!activeProduct?.id) {
-			toast.error("Perfil não encontrado");
-
-			return;
-		}
-		try {
-			let newImages: Array<FilePropsLocal> = [];
-
-			// Optionally delete the file from Azure Blob Storage
-			if (fileId) {
-				await imageUploadService.deleteImage({
-					idCadastro: activeProduct.id,
-					evento: "ProdutoMusicalClipagem",
-					idLista: fileId,
-				});
-
-				newImages = clippings.filter((file) => file.id !== fileId);
-			} else {
-				newImages = clippings.filter(
-					(_, clippingIndex) => clippingIndex !== index
-				);
-			}
-
-			setClippings(newImages);
-		} catch (error) {
-			console.error("Erro ao remover arquivo:", error);
-		}
-	};
-
 	const onSubmit = async (technicalData: TechnicalFormData) => {
 		if (!activeProduct?.id) {
 			console.error("ID do produto musical não encontrado");
@@ -516,7 +436,6 @@ export default function TechnicalSection({
 				camarimIncluso: hasDressingRoom,
 				mapaPalco: stageMapData,
 				mapaPalcoLink: finalStageMapUrl ?? null,
-				clipagem: clippings.map((file) => file.link) ?? [],
 			};
 
 			await updateMusicalProductMutation.mutateAsync({
@@ -621,97 +540,6 @@ export default function TechnicalSection({
 					className="flex flex-col w-full h-full gap-4 lg:gap-6"
 					onSubmit={handleSubmit(onSubmit)}
 				>
-					{/* Section of the Clipping */}
-					<div className={styles.sectionContainer}>
-						<div className="space-y-4">
-							<div className={styles.sectionTitle}>
-								<h2 className={styles.titleText}>Clipagem</h2>
-
-								<TooltipCustom
-									trigger={<HelpCircle className="w-4 h-4 cursor-pointer" />}
-									content="Faça upload de materiais de divulgação, como PDFs de artigos,
-                 reportagens, críticas ou qualquer outra publicação que destaque sua banda.
-                  Isso ajuda a construir sua reputação e a mostrar seu impacto na mídia."
-								/>
-							</div>
-
-							<div>
-								<FileUploadBox
-									acceptedTypes={[
-										"image/png",
-										"image/jpeg",
-										"image/gif",
-										"application/pdf",
-									]}
-									maxSizeMB={10}
-									onFileSelected={async (file) => {
-										if (file)
-											await handleFileUpload(file, "ProdutoMusicalClipagem");
-									}}
-								/>
-							</div>
-
-							{clippings.length > 0 && (
-								<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
-									{clippings.map((file, index) => (
-										<div
-											key={index}
-											className="relative aspect-square rounded-lg overflow-hidden border border-white-200 bg-white"
-										>
-											<div className="relative w-full h-full">
-												{!loadedFiles[file.link] && (
-													<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-														<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-													</div>
-												)}
-
-												{isPdfFile(file.link) ? (
-													<div className="w-full">
-														<embed
-															src={`${file.link}#toolbar=0`}
-															onLoad={() => {
-																handleFileLoad(file.link);
-															}}
-															className={`w-full h-full object-contain transition-opacity duration-300 ${
-																loadedFiles[file.link]
-																	? "opacity-100"
-																	: "opacity-0"
-															}`}
-														/>
-													</div>
-												) : (
-													<img
-														src={file.link}
-														alt={`Imagem ${index + 1}`}
-														onLoad={() => {
-															handleFileLoad(file.link);
-														}}
-														className={`w-full h-full object-contain transition-opacity duration-300 
-															${isPngImage(file.link) ? "bg-white" : "bg-black"} ${
-																loadedFiles[file.link]
-																	? "opacity-100"
-																	: "opacity-0"
-															}`}
-													/>
-												)}
-											</div>
-
-											<button
-												type="button"
-												onClick={async () => {
-													await removeClipping(file.id, index);
-												}}
-												className="absolute top-1 right-1 bg-gray-200 hover:bg-gray-300  text-gray-800 rounded-full p-1 transition-colors"
-											>
-												<X className="w-3 h-3" />
-											</button>
-										</div>
-									))}
-								</div>
-							)}
-						</div>
-					</div>
-
 					{/* Section of the Rider */}
 					<div className={styles.sectionContainer}>
 						<div className={styles.sectionTitle}>
