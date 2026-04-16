@@ -19,7 +19,7 @@ import type {
 	OnboardingApiResponse,
 } from "../../../api/types";
 import type { AgendaEvent, ModalMode } from "../../BandProfile/Agenda/types";
-import { DatePicker } from "@/components/CalendarCustom/DatePicker";
+import { DatePicker } from "@/components/Calendar/DatePicker";
 import {
 	useOnboardingSchedule,
 	useOnboardingData,

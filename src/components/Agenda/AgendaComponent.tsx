@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import type { AgendaEvent, ModalMode } from "../BandProfile/Agenda/types";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useSaveSchedule, useSchedule } from "@/hooks/useMusicalProducts";
-import { CalendarCustom } from "../CalendarCustom/CalendarCustom";
+import { CalendarCustom } from "../Calendar/CalendarCustom";
 import { mapAgendaEventToFormData } from "@/utils/mapAgendaEventToFormData";
 import type { CommitmentAPI, MusicalProductSchedule } from "@/api/types";
 import { format } from "date-fns";

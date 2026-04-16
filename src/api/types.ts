@@ -520,10 +520,12 @@ export interface MusicalProductSchedule {
 	compromissos: Array<CommitmentAPI>;
 }
 
+export type AgendaDateStatus = "Livre" | "Ocupado" | "OcupadoComEspaco";
+
 // API Response format for schedule (GET)
 export interface ScheduleApiResponse {
 	data: string;
-	status: "Livre" | "Ocupado";
+	status: AgendaDateStatus;
 	compromissos: Array<CommitmentAPI>;
 }
 

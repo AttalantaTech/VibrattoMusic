@@ -1,6 +1,6 @@
 import React from "react";
 
-type ButtonVariant = "primary" | "secondary" | "outline";
+type ButtonVariant = "primary" | "secondary" | "outline" | "none";
 
 interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 	variant?: ButtonVariant;
@@ -17,9 +17,10 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
 			primary:
 				"bg-primary-600 text-white border border-primary-600 shadow-sm hover:bg-primary-700",
 			secondary:
-				"bg-white text-primary-600 border border-primary-600 hover:bg-primary-50",
+				"bg-primary-100/50 text-primary-900 border border-primary-300 hover:bg-primary-100/75",
 			outline:
 				"border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus-visible:ring-gray-500",
+			none: "",
 		};
 
 		return (

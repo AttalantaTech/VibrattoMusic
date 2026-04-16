@@ -10,6 +10,7 @@ import {
 	Star,
 	TrendingUp,
 	Verified,
+	BookCheck,
 } from "lucide-react";
 
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -39,6 +40,7 @@ import { StageMapArea } from "@/components/StageMap/StageMapArea";
 import { useInstrumentos } from "@/hooks/useFilters";
 import { isPdfFile, isPngImage } from "@/utils/validation";
 import { ViewFileModal } from "@/components/ViewFileModal/ViewFileModal";
+import { CheckAvailabilityModal } from "../Agenda/CheckAvailabilityModal";
 
 const styles = {
 	genre: "font-medium text-[#085EC5] bg-[#D6F2FF] py-[2x] px-2 rounded-2xl",
@@ -64,6 +66,7 @@ export const BandProfile = ({
 	const navigate = useNavigate();
 	const [activeTab, setActiveTab] = useState("clipping");
 	const [isConversationModalOpen, setIsConversationModalOpen] = useState(false);
+	const [isCheckAvailabilityOpen, setIsCheckAvailabilityOpen] = useState(false);
 	const [viewFile, setViewFile] = useState<{
 		isOpen: boolean;
 		file: FileProps | null;
@@ -92,6 +95,16 @@ export const BandProfile = ({
 		if (isAuthenticated) {
 			toggleFavoriteMutation.mutate({ produtoMusicalId: productId });
 		}
+	};
+
+	const handleRequestCheckAvailability = () => {
+		if (!isAuthenticated) {
+			toast.error("Você precisa estar logado para solicitar um orçamento");
+			void navigate({ to: "/login" });
+			return;
+		}
+
+		setIsCheckAvailabilityOpen(true);
 	};
 
 	// Handler for request quote button
@@ -677,6 +690,17 @@ export const BandProfile = ({
 
 							{/* Action buttons */}
 							<IconButton
+								icon={<BookCheck size={20} />}
+								onClick={handleRequestCheckAvailability}
+								disabled={startConversationMutation.isPending}
+							>
+								{startConversationMutation.isPending
+									? "Carregando..."
+									: "Verificar Disponibilidade"}
+							</IconButton>
+							<IconButton
+								variant="none"
+								className="bg-green-700 text-white border border-green-300 hover:bg-green-700/90"
 								icon={<MessageCircle size={20} />}
 								onClick={handleRequestQuote}
 								disabled={startConversationMutation.isPending}
@@ -804,6 +828,12 @@ export const BandProfile = ({
 					)}
 				</div>
 			</main>
+
+			<CheckAvailabilityModal
+				isOpen={isCheckAvailabilityOpen}
+				onClose={setIsCheckAvailabilityOpen}
+				musicalProduct={musicalProduct}
+			/>
 
 			<ViewFileModal
 				isOpen={viewFile.isOpen}

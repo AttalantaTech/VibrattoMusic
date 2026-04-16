@@ -17,6 +17,7 @@ type SelectProps = {
 	setSelectedOptions: (options: Array<Option>) => void;
 	className?: string;
 	multiple?: boolean;
+	disabled?: boolean;
 };
 
 const ALL_OPTION: Option = {
@@ -33,6 +34,7 @@ export const Select = ({
 	setSelectedOptions,
 	className,
 	multiple,
+	disabled = false,
 }: SelectProps): FunctionComponent => {
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
@@ -131,10 +133,19 @@ export const Select = ({
 				<div
 					id={name}
 					className={cn(
-						"w-full bg-white rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 cursor-pointer flex items-center justify-between",
+						`w-full bg-white rounded-md border border-gray-300 px-4 py-2 text-sm 
+						text-gray-900 placeholder-gray-400 shadow-sm focus:border-primary-500 
+						focus:outline-none focus:ring-1 focus:ring-primary-500 cursor-pointer flex 
+						items-center justify-between
+						${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+						`,
 						className
 					)}
-					onClick={toggleDropdown}
+					onClick={() => {
+						if (!disabled) {
+							toggleDropdown();
+						}
+					}}
 				>
 					<span
 						className={
