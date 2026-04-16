@@ -14,6 +14,8 @@ import {
 import { ptBR } from "date-fns/locale/pt-BR";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { AgendaDateStatus, ScheduleApiResponse } from "@/api/types";
+import { formatInTimeZone, toZonedTime } from "date-fns-tz";
+import { TIME_ZONE } from "@/utils";
 
 interface DatePickerProps {
 	onSelectDate: (value: SetStateAction<Date | null>) => void;
@@ -55,11 +57,13 @@ export function DatePicker({
 		const formattedSelected = format(date, "dd/MM/yyyy");
 
 		const foundEvent = events.find((event) => {
-			return format(event.data, "dd/MM/yyyy") === formattedSelected;
+			return (
+				formatInTimeZone(event.data, TIME_ZONE, "dd/MM/yyyy") ===
+				formattedSelected
+			);
 		});
 
 		if (foundEvent) {
-			console.log(foundEvent);
 			setCheckDate({
 				date: new Date(foundEvent.data),
 				status: foundEvent.status,
@@ -128,6 +132,8 @@ export function DatePicker({
 		return <div className="grid grid-cols-7 mb-2">{days}</div>;
 	};
 
+	const toBR = (date: Date) => toZonedTime(date, TIME_ZONE);
+
 	const renderCells = () => {
 		const monthStart = startOfMonth(currentMonth);
 		const monthEnd = endOfMonth(monthStart);
@@ -138,7 +144,7 @@ export function DatePicker({
 		let days = [];
 		let day = startDate;
 
-		const currentDate = new Date();
+		const currentDate = toZonedTime(new Date(), TIME_ZONE);
 
 		if (mode === "default") {
 			while (day <= endDate) {
@@ -153,7 +159,7 @@ export function DatePicker({
 							}}
 							className={`h-10 w-10 flex items-center justify-center cursor-pointer rounded-full
               ${
-								isSameDay(cloneDay, selectedDate)
+								isSameDay(toBR(cloneDay), toBR(selectedDate as Date))
 									? "bg-primary-50 rounded-full border-2 border-primary-500"
 									: isSameMonth(cloneDay, monthStart)
 										? "text-gray-900"
@@ -161,7 +167,7 @@ export function DatePicker({
 							}
             `}
 						>
-							{format(cloneDay, "d")}
+							{formatInTimeZone(cloneDay, TIME_ZONE, "d")}
 						</div>
 					);
 
@@ -205,7 +211,7 @@ export function DatePicker({
 							}
             `}
 						>
-							{format(cloneDay, "d")}
+							{formatInTimeZone(cloneDay, TIME_ZONE, "d")}
 						</div>
 					);
 
