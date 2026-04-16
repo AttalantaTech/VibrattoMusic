@@ -11,7 +11,7 @@ import { Dialog, DialogContent } from "./../../ui/dialog";
 import { DatePicker } from "@/components/Calendar/DatePicker";
 import { format } from "date-fns";
 import { Select, type Option } from "./../../forms/Select/Select";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, MapPin } from "lucide-react";
 import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +32,7 @@ const checkAvailabilityValidationSchema = z.object({
 	eventType: z.array(z.number()).min(1, "Selecione um tipo de evento"),
 	startTime: z.string().min(4, "Preencha a data de início do evento"),
 	endTime: z.string().min(4, "Preencha a data de término evento"),
+	location: z.string().trim().min(3, "Informe a localização"),
 });
 
 type CheckAvailabilityForm = z.infer<typeof checkAvailabilityValidationSchema>;
@@ -67,7 +68,7 @@ export const CheckAvailabilityModal = ({
 		currentMonth
 	);
 	const { activeProduct } = useMusicalProductStore();
-	const { mutate: startConversation } = useStartConversation();
+	const { mutate: startConversation, isPending } = useStartConversation();
 
 	const handleDefaultTime = (): { startTime: string; endTime: string } => {
 		const startTime = new Date().toLocaleString("pt-BR", {
@@ -96,6 +97,7 @@ export const CheckAvailabilityModal = ({
 		eventType: [],
 		startTime,
 		endTime,
+		location: "",
 	};
 
 	const {
@@ -134,6 +136,7 @@ export const CheckAvailabilityModal = ({
 		const message = `
     Olá ${musicalProduct?.nome ?? ""}, que boa notícia! Você recebeu uma solicitação de orçamento :
      🎵 Tipo de Evento: ${eventType?.label ?? ""} 📅 Data: ${formatInTimeZone(formData.date, TIME_ZONE, "dd/MM/yyyy")} 
+		 🎈 Local: ${formData.location ?? ""} 
      ⏰ Horário: ${formData.startTime} - ${formData.endTime}
     `;
 
@@ -324,29 +327,67 @@ export const CheckAvailabilityModal = ({
 									<Label className="text-sm font-medium block text-gray-700 cursor-pointer pb-2">
 										Fim <span className="text-red-500">*</span>
 									</Label>
-									<Input
-										type="time"
-										value={watch("endTime")}
-										onChange={(event) => {
-											const endTime = event.target.value;
 
-											const [hours = 0, minutes = 0] = endTime
-												.split(":")
-												.map(Number);
+									<div className="relative flex-1">
+										<Clock
+											className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+											size={18}
+										/>
+										<Input
+											type="time"
+											value={watch("endTime")}
+											onChange={(event) => {
+												const endTime = event.target.value;
 
-											const endDate = new Date();
-											endDate.setHours(hours, minutes, 0, 0);
-											setValue("endTime", format(endDate, "HH:mm"));
-										}}
-										disabled={selectedDate === null}
-										className={`flex-1 ${errors.endTime ? "border-red-500" : ""}`}
-									/>
+												const [hours = 0, minutes = 0] = endTime
+													.split(":")
+													.map(Number);
 
-									{errors.endTime && (
-										<div className="text-red-500 text-sm">
-											{errors.endTime.message}
-										</div>
-									)}
+												const endDate = new Date();
+												endDate.setHours(hours, minutes, 0, 0);
+												setValue("endTime", format(endDate, "HH:mm"));
+											}}
+											disabled={selectedDate === null}
+											className={`pl-10 ${errors.endTime ? "border-red-500" : ""}`}
+										/>
+
+										{errors.endTime && (
+											<div className="text-red-500 text-sm">
+												{errors.endTime.message}
+											</div>
+										)}
+									</div>
+								</div>
+							</div>
+
+							<div className="grid grid-cols-1 gap-4">
+								<div>
+									<Label
+										htmlFor="location"
+										className="text-sm font-medium text-gray-700 mb-2 block"
+									>
+										Local
+									</Label>
+
+									<div className="relative flex-1">
+										<MapPin
+											className="absolute left-3 top-1/3 transform -translate-y-1/2 text-gray-400"
+											size={18}
+										/>
+										<Input
+											id="location"
+											type="text"
+											placeholder="Ex: Teatro Municipal de São Paulo"
+											{...register("location")}
+											className={`pl-10 ${errors.location ? "border-red-500" : ""}`}
+										/>
+
+										{errors.location && (
+											<p className="mt-1 text-sm text-red-600">
+												{errors.location.message}
+											</p>
+										)}
+									</div>
 								</div>
 							</div>
 							{/* Footer */}
@@ -364,10 +405,10 @@ export const CheckAvailabilityModal = ({
 								<Button
 									type="submit"
 									variant="primary"
-									disabled={selectedDate === null}
+									disabled={selectedDate === null || isPending}
 									className="px-4 py-2 w-full max-w-[400px]:w-[50%] md:w-[30%]"
 								>
-									Verificar
+									{isPending ? "Carregando..." : "Verificar"}
 								</Button>
 							</div>
 						</>
