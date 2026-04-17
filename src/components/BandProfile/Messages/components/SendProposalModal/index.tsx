@@ -717,8 +717,10 @@ export const SendProposalModal = ({
 						`⏰ Horário: ${formatTime(proposalData.horaInicio)} - ${formatTime(proposalData.horaFim)}\n` +
 						`📍 Local: ${proposalData.local}\n` +
 						`💰 Valor: R$ ${proposalData.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n` +
-						paymentMethod ? `💳 Forma de Pagamento: ${paymentMethod}\n` : "" +
-						paymentCondition ? `📜 Condições de Pagamento: ${paymentCondition}\n` : "" +
+						(paymentMethod ? `💳 Forma de Pagamento: ${paymentMethod}\n` : "") +
+						(paymentCondition
+							? `📜 Condições de Pagamento: ${paymentCondition}\n`
+							: "") +
 						(proposalData.transporteIncluso || proposalData.acomodacaoInclusa
 							? `\n✅ Inclui: ${[
 									proposalData.transporteIncluso && "Transporte",
