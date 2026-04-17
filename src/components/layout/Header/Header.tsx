@@ -1,7 +1,6 @@
 import {
 	HelpCircle,
 	Search,
-	LogOut,
 	User,
 	Music,
 	Music2Icon,
@@ -19,12 +18,11 @@ import { BandProfileSwitcher } from "../../BandProfileSwitcher";
 import { useOnboardingData } from "@/hooks/useOnboarding";
 import { useSyncMusicalProducts } from "@/hooks/useSyncMusicalProducts";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { userKeys } from "@/hooks/useUser";
-import { useQueryClient } from "@tanstack/react-query";
+
 import { OnboardingsPedingModal } from "@/components/BandProfile/Account/OnboardingsPedingModal";
 
 export const Header = () => {
-	const { isAuthenticated, logout } = useAuthStore();
+	const { isAuthenticated } = useAuthStore();
 	const location = useLocation();
 	const navigate = useNavigate();
 	const [showDropdown, setShowDropdown] = useState(false);
@@ -37,7 +35,6 @@ export const Header = () => {
 		useMusicalProductStore();
 
 	const { data: onboardings } = useOnboardingData();
-	const queryClient = useQueryClient();
 
 	const isOnboardingPage = location.pathname.includes("/onboarding");
 	const showNotifications = isAuthenticated && !isOnboardingPage;
@@ -62,16 +59,6 @@ export const Header = () => {
 
 	const handleCreateProfessionalProfile = () => {
 		setOpenOnboardingsPending(true);
-	};
-
-	const handleLogout = async () => {
-		logout();
-
-		await queryClient.resetQueries({
-			queryKey: userKeys.all,
-		});
-
-		await navigate({ to: "/" });
 	};
 
 	const handleProfile = async () => {
@@ -169,13 +156,6 @@ export const Header = () => {
 										<HelpCircle className="w-4 h-4" />
 										<span>Preciso de ajuda</span>
 									</a>
-									<button
-										onClick={handleLogout}
-										className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-red-600"
-									>
-										<LogOut className="w-4 h-4" />
-										<span>Sair</span>
-									</button>
 								</div>
 							)}
 						</div>

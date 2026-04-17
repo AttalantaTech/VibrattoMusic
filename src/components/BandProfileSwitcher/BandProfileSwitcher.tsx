@@ -1,11 +1,14 @@
 import type React from "react";
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown, Check, LogOut } from "lucide-react";
 import { Avatar } from "../Avatar/Avatar";
 import { cn } from "../../lib/utils/cn";
 import type { ActiveMusicalProduct } from "@/hooks/useActiveMusicalProduct";
 import { useUser } from "@/hooks/useUser";
 import { useLocation, useNavigate } from "@tanstack/react-router";
+import { userKeys } from "@/hooks/useUser";
+import { useAuthStore } from "@/store/authStore";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type MusicalProduct = ActiveMusicalProduct;
 
@@ -25,6 +28,8 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { data: userData } = useUser();
+	const { logout } = useAuthStore();
+	const queryClient = useQueryClient();
 
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
@@ -66,6 +71,16 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 
 	const handleTriggerClick = () => {
 		setIsOpen(!isOpen);
+	};
+
+	const handleLogout = async () => {
+		logout();
+
+		await queryClient.resetQueries({
+			queryKey: userKeys.all,
+		});
+
+		await navigate({ to: "/" });
 	};
 
 	return (
@@ -153,6 +168,14 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 								</span>
 							</div>
 						)}
+
+						<button
+							onClick={handleLogout}
+							className="w-full  text-left px-4 py-2  flex items-center justify-center gap-2 bg-red-900 text-white hover:bg-red-900/90"
+						>
+							<LogOut className="w-4 h-4" />
+							<span>Sair</span>
+						</button>
 					</div>
 				</div>
 			)}
