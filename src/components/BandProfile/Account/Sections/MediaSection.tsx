@@ -400,6 +400,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 						: null
 					: null, // Default value since we moved this to schedule
 				redeSocial: data.redeSocial ?? [],
+				clipagem: clippings.map((file) => file.link) ?? [],
 			};
 
 			// Save media data
@@ -410,7 +411,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 
 			const imageData = {
 				FotoPerfil: profilePhoto ?? null,
-				Clipagem: clippings.map((file) => file.link) ?? [],
+
 				ImagensCarrossel: carouselImages.map((img) => img.link) ?? [],
 			};
 
@@ -418,7 +419,6 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 			if (
 				(imageData.FotoPerfil &&
 					imageData.FotoPerfil !== activeProduct?.fotoPerfil) ||
-				imageData.Clipagem.length > 0 ||
 				imageData.ImagensCarrossel.length > 0
 			) {
 				await updateMusicalProductMutation.mutateAsync({

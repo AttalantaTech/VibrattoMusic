@@ -469,6 +469,7 @@ export default function MediaStep() {
 				exibirValorServico: showPriceTab, // Default value since we moved this to schedule
 				valorServico: data.valorServico ? Number(data.valorServico) : null, // Default value since we moved this to schedule
 				redeSocial: data.redeSocial ?? [],
+				clipagem: clippings.map((file) => file.link) ?? [],
 			};
 
 			// Save media data
@@ -479,7 +480,6 @@ export default function MediaStep() {
 
 			const imageData = {
 				FotoPerfil: profilePhoto ?? null,
-				Clipagem: clippings.map((file) => file.link) ?? [],
 				ImagensCarrossel: carouselImages.map((img) => img.link) ?? [],
 			};
 
@@ -487,7 +487,6 @@ export default function MediaStep() {
 			if (
 				(imageData.FotoPerfil &&
 					imageData.FotoPerfil !== onboardingData?.fotoPerfil) ||
-				imageData.Clipagem.length > 0 ||
 				imageData.ImagensCarrossel.length > 0
 			) {
 				await onboardingService.saveOnboardingImages(
