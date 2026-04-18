@@ -94,8 +94,6 @@ export function DatePicker({
 	};
 
 	const dateStatusLegend = (status: AgendaDateStatus): string => {
-		console.log(status);
-
 		switch (status) {
 			case "Livre": {
 				return "Disponível";
@@ -206,13 +204,13 @@ export function DatePicker({
 
 					days.push(
 						<Popover
+							key={cloneDay.toString()}
 							content={
 								checkDate?.status ? dateStatusLegend(checkDate.status) : ""
 							}
 							disabled={isSameMonth(cloneDay, monthStart)}
 							trigger={
 								<div
-									key={cloneDay.toString()}
 									onClick={() => {
 										if (isSameMonth(cloneDay, monthStart)) {
 											handleSelectedDate(cloneDay);
