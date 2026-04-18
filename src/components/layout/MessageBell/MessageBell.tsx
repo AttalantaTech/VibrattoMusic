@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import type { Conversation } from "@/api/services/messages/types";
 
 export const MessageBell = () => {
-	const { user, isAuthenticated } = useAuthStore();
+	const { isAuthenticated } = useAuthStore();
 	const navigate = useNavigate();
 	const messagesContext = useMessagesContext();
 	const { conversations } = messagesContext || {};
@@ -15,11 +15,7 @@ export const MessageBell = () => {
 		return (conversations as Array<Conversation>)?.reduce(
 			(total: number, conversation: Conversation) => {
 				return (
-					total +
-					(!conversation.ultimaMensagem?.lida &&
-					conversation.ultimaMensagem?.idRemetente !== user?.id
-						? 1
-						: 0)
+					total + ((conversation.numeroMensagensNaoLidas || 0) > 0 ? 1 : 0)
 				);
 			},
 			0

@@ -4,6 +4,8 @@ export type ChatUser = {
 	id: number;
 	name: string;
 	type: "user" | "product";
+	isContractor?: boolean;
+	profileImageUrl?: string | null;
 };
 
 export type MessagesContextType = {

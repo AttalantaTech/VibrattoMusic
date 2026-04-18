@@ -7,6 +7,8 @@ import type {
 } from "../../types";
 import { ConversationStorage } from "../../../utils/conversationStorage";
 import { Conversation, Message } from "./types";
+import { ChatUser } from "@/contexts/MessagesContext/types";
+import { musicalProductService } from "@/api";
 
 export class MessagingService {
 	public constructor(private readonly apiClient: ApiClient) {}
@@ -115,7 +117,7 @@ export class MessagingService {
 	 * Uses the direct API endpoint chat/listaConversas
 	 */
 	public async getConversations(
-		IdProdutoMusical: number | null | undefined,
+		IdProdutoMusical?: number | null,
 		parameters?: PaginationParameters
 	): Promise<Conversation[]> {
 		try {
@@ -150,8 +152,8 @@ export class MessagingService {
 			const conversationsData = Array.isArray(response) ? response : [];
 
 			// Transform API response to Conversation format
-			const transformedConversations: Array<Conversation> =
-				conversationsData.map((item) => {
+			const transformedConversations: Array<Conversation> = await Promise.all(
+				conversationsData.map(async (item) => {
 					// Transform last message if it exists
 					let lastMessage: Message | undefined;
 					if (item.ultimaConversa) {
@@ -168,6 +170,40 @@ export class MessagingService {
 						};
 					}
 
+					const currentUserType = IdProdutoMusical ? "product" : "user";
+					const isCurrentUserContractor =
+						currentUserType === "user" ||
+						item.produtoMusicalContratante?.id === IdProdutoMusical;
+
+					const pair: ChatUser = {
+						id: isCurrentUserContractor
+							? item.produtoMusical.id
+							: (item.produtoMusicalContratante?.id ?? item.contratante.id),
+						name: isCurrentUserContractor
+							? item.produtoMusical.nome
+							: (item.produtoMusicalContratante?.nome ?? item.contratante.nome),
+						type:
+							currentUserType === "user"
+								? "product"
+								: isCurrentUserContractor ||
+									  (!isCurrentUserContractor &&
+											item.produtoMusicalContratante !== null)
+									? "product"
+									: "user",
+						isContractor: !isCurrentUserContractor,
+					};
+
+					if (pair.type === "product") {
+						pair.profileImageUrl = await musicalProductService
+							.getProductById(pair.id)
+							.then((products) => {
+								if (products.length > 0) {
+									return products[0]?.fotoPerfil || null;
+								}
+								return null;
+							});
+					}
+
 					// Build conversation object
 					return {
 						id: item.idConversa,
@@ -179,14 +215,15 @@ export class MessagingService {
 							item.produtoMusicalContratante?.id || null,
 						produtoMusicalContratanteNome:
 							item.produtoMusicalContratante?.nome || null,
+						pair,
 						ultimaMensagem: lastMessage,
-						numeroMensagensNãoLidasContratante:
-							item.numeroMensagensNãoLidasContratante,
-						numeroMensagensNãoLidasContratado:
-							item.numeroMensagensNãoLidasContratado,
+						numeroMensagensNaoLidas: isCurrentUserContractor
+							? item.numeroMensagensNãoLidasContratante
+							: item.numeroMensagensNãoLidasContratado,
 						online: false, // This would need to be determined from online status API
 					};
-				});
+				})
+			);
 
 			return transformedConversations;
 		} catch (error) {
@@ -240,9 +277,13 @@ export class MessagingService {
 			contratanteNome: "",
 			produtoMusicalContratanteId,
 			produtoMusicalContratanteNome: "",
+			pair: {
+				id: participanteId,
+				name: "",
+				type: "product",
+			},
 			ultimaMensagem: undefined,
-			numeroMensagensNãoLidasContratado: 0,
-			numeroMensagensNãoLidasContratante: 0,
+			numeroMensagensNaoLidas: 0,
 			online: false,
 			mensagens: undefined,
 			totalMensagens: undefined,

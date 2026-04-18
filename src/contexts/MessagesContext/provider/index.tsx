@@ -14,6 +14,7 @@ import type { Conversation, Message } from "@/api/services/messages/types";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { playNotificationSound } from "@/components/BandProfile/Messages/utils/Message";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { ChatUser } from "../types";
 
 export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 	const queryClient = useQueryClient();
@@ -24,7 +25,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		? Number(activeProduct.id)
 		: undefined;
 
-	const currentChatUser = activeProduct
+	const currentChatUser : ChatUser = activeProduct
 		? {
 				id: activeProduct.id,
 				name: activeProduct.nome,
@@ -34,6 +35,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 				id: user?.id || 0,
 				name: user?.nome || "Usuário",
 				type: "user" as const,
+				isContractor: true,
 			};
 
 	const [messageInput, setMessageInput] = useState("");
@@ -255,11 +257,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 				previousConversations.map((conversation) => {
 					if (conversation.ultimaMensagem?.id === messageId) {
 						conversation.ultimaMensagem.lida = true;
-						if (conversation.contratanteId === currentUserId) {
-							conversation.numeroMensagensNãoLidasContratante = 0;
-						} else {
-							conversation.numeroMensagensNãoLidasContratado = 0;
-						}
+						conversation.numeroMensagensNaoLidas = 0;
 					}
 					return conversation;
 				})

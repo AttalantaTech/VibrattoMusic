@@ -1,3 +1,5 @@
+import { ChatUser } from "@/contexts/MessagesContext/types";
+
 export interface Message {
 	id: number;
 	idConversa: number;
@@ -17,10 +19,10 @@ export interface Conversation {
 	produtoMusicalContratanteId: number | null;
 	participanteNome: string;
 	participanteId: number;
+	pair: ChatUser;
 	ultimaMensagem?: Message;
 	mensagens?: Message[];
 	totalMensagens?: number;
-	numeroMensagensNãoLidasContratante?: number;
-	numeroMensagensNãoLidasContratado?: number;
+	numeroMensagensNaoLidas?: number;
 	online?: boolean;
 }

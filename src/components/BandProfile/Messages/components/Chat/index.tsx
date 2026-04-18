@@ -71,12 +71,16 @@ export const Chat = () => {
 							)}
 							<div className="relative">
 								<UserImageContainer>
-									{getParticipantInitials(
-										currentUserId === selectedConversation.contratanteId
-											? selectedConversation.participanteNome
-											: (selectedConversation.produtoMusicalContratanteNome ??
-													selectedConversation.contratanteNome) ||
-													"Usuário"
+									{selectedConversation.pair.profileImageUrl ? (
+										<img
+											src={selectedConversation.pair.profileImageUrl}
+											alt={selectedConversation.pair.name}
+											className="w-full h-full object-cover rounded-full"
+										/>
+									) : (
+										getParticipantInitials(
+											selectedConversation.pair.name || "U"
+										)
 									)}
 								</UserImageContainer>
 								{selectedConversation.online && (
@@ -84,11 +88,7 @@ export const Chat = () => {
 								)}
 							</div>
 							<h2 className="text-md md:text-lg whitespace-nowrap text-ellipsis overflow-hidden font-semibold text-gray-900">
-								{currentUserId === selectedConversation.contratanteId
-									? selectedConversation.participanteNome
-									: (selectedConversation.produtoMusicalContratanteNome ??
-											selectedConversation.contratanteNome) ||
-										"Usuário"}
+								{selectedConversation.pair.name ?? "Usuário"}
 							</h2>
 						</div>
 						{activeProduct && !isProfileComplete && (
@@ -156,11 +156,9 @@ export const Chat = () => {
 											) : (
 												<MessageElement
 													message={message}
-													userName={
-														currentUserId === selectedConversation.contratanteId
-															? selectedConversation.participanteNome
-															: (selectedConversation.produtoMusicalContratanteNome ??
-																selectedConversation.contratanteNome)
+													userName={selectedConversation.pair.name || "Usuário"}
+													userProfileImageUrl={
+														selectedConversation.pair.profileImageUrl || null
 													}
 												/>
 											)}

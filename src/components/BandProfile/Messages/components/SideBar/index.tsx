@@ -91,10 +91,8 @@ export const SideBar = () => {
 				)}
 				{filteredConversations?.map((conversation: Conversation) => {
 					const isSelected = selectedConversation?.id === conversation.id;
-					const unreadCount =
-						currentChatUser?.id === conversation.participanteId
-							? conversation.numeroMensagensNãoLidasContratado || 0
-							: conversation.numeroMensagensNãoLidasContratante || 0;
+
+					const unreadCount = conversation.numeroMensagensNaoLidas || 0;
 
 					return (
 						<ConversationTabContainer
@@ -110,11 +108,14 @@ export const SideBar = () => {
 						>
 							<div className="relative">
 								<UserImageContainer size={12}>
-									{getParticipantInitials(
-										currentChatUser?.id === conversation.participanteId
-											? (conversation.produtoMusicalContratanteNome ??
-													conversation.contratanteNome)
-											: conversation.participanteNome
+									{conversation.pair.profileImageUrl ? (
+										<img
+											src={conversation.pair.profileImageUrl}
+											alt={conversation.pair.name}
+											className="w-full h-full object-cover rounded-full"
+										/>
+									) : (
+										getParticipantInitials(conversation.pair.name || "U")
 									)}
 								</UserImageContainer>
 								{unreadCount > 0 && (
@@ -126,10 +127,7 @@ export const SideBar = () => {
 							</div>
 							<ConversationInfoContainer>
 								<h4 className="font-medium text-gray-900 truncate">
-									{currentChatUser?.id === conversation.participanteId
-										? (conversation.produtoMusicalContratanteNome ??
-											conversation.contratanteNome)
-										: conversation.participanteNome}
+									{conversation.pair.name}
 								</h4>
 								<p className="text-sm text-gray-500 truncate">
 									{conversation.ultimaMensagem
