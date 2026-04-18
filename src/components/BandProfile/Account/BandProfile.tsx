@@ -19,7 +19,6 @@ import { useAuthStore } from "@/store/authStore";
 import { useToggleFavorite, useFavorites } from "@/hooks/useUser";
 import { extractYouTubeId } from "@/lib/utils/cn";
 import type {
-	FileProps,
 	MusicalProduct,
 	MusicalProductListApiResponse,
 } from "@/api/types";
@@ -29,7 +28,6 @@ import { toast } from "sonner";
 import { RatingBars } from "@/components/RatingBars/RatingBars";
 import { RatingComment } from "@/components/RatingComment/RatingComment";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
-import { ViewFileModal } from "@/components/ViewFileModal/ViewFileModal";
 import { CheckAvailabilityModal } from "../Agenda/CheckAvailabilityModal";
 import { ProfileDetails } from "./ProfileDetails";
 
@@ -57,10 +55,6 @@ export const BandProfile = ({
 	const navigate = useNavigate();
 	const [isConversationModalOpen, setIsConversationModalOpen] = useState(false);
 	const [isCheckAvailabilityOpen, setIsCheckAvailabilityOpen] = useState(false);
-	const [viewFile, setViewFile] = useState<{
-		isOpen: boolean;
-		file: FileProps | null;
-	}>({ isOpen: false, file: null });
 
 	// Auth and favorites
 	const { isAuthenticated } = useAuthStore();
@@ -511,12 +505,6 @@ export const BandProfile = ({
 				isOpen={isCheckAvailabilityOpen}
 				onClose={setIsCheckAvailabilityOpen}
 				musicalProduct={musicalProduct}
-			/>
-
-			<ViewFileModal
-				isOpen={viewFile.isOpen}
-				setViewFile={setViewFile}
-				file={viewFile.file}
 			/>
 
 			{/* Start Conversation Modal */}
