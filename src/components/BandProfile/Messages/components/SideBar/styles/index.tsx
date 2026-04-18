@@ -30,10 +30,10 @@ export const UserImageContainer = ({
 	size = 10,
 }: PropsWithChildren & { size?: number }) => {
 	return (
-		<div
-			className={`w-${size} h-${size} bg-gray-300 rounded-full flex items-center justify-center`}
-		>
-			<span className="text-sm font-medium text-gray-600 ">{children}</span>
+		<div className={`w-${size} h-${size} bg-gray-300 rounded-full`}>
+			<span className="w-full h-full text-sm font-medium text-gray-600 flex items-center justify-center">
+				{children}
+			</span>
 		</div>
 	);
 };

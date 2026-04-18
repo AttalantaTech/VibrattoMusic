@@ -93,15 +93,25 @@ export const OwnMessageElement = ({
 export const MessageElement = ({
 	message,
 	userName,
+	userProfileImageUrl,
 }: {
 	message: Message;
 	userName: string;
+	userProfileImageUrl?: string | null;
 }) => {
 	return (
 		<div className="flex items-start space-x-3 max-w-xs lg:max-w-md">
-			<div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
-				<span className="text-xs font-semibold text-white">
-					{getParticipantInitials(userName)}
+			<div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex-shrink-0 shadow-md">
+				<span className="w-full h-full text-xs font-semibold text-white flex items-center justify-center">
+					{userProfileImageUrl ? (
+						<img
+							src={userProfileImageUrl}
+							alt={userName}
+							className="w-full h-full object-cover rounded-full"
+						/>
+					) : (
+						getParticipantInitials(userName || "U")
+					)}
 				</span>
 			</div>
 			<div className="flex flex-col">
