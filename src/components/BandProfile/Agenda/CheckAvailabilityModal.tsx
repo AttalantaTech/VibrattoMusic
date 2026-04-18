@@ -21,21 +21,11 @@ import { filterService } from "@/api";
 import { toast } from "sonner";
 import { useSchedule } from "@/hooks/useMusicalProducts";
 import { useStartConversation } from "@/hooks/useMessaging";
-// import type { Conversation } from "@/api/services/messages/types";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useNavigate } from "@tanstack/react-router";
 import { TIME_ZONE } from "@/utils";
 import { formatInTimeZone } from "date-fns-tz";
-
-const checkAvailabilityValidationSchema = z.object({
-	date: z.string().min(1, "Selecione uma data disponível"),
-	eventType: z.array(z.number()).min(1, "Selecione um tipo de evento"),
-	startTime: z.string().min(4, "Preencha a data de início do evento"),
-	endTime: z.string().min(4, "Preencha a data de término evento"),
-	location: z.string().trim().min(3, "Informe a localização"),
-});
-
-type CheckAvailabilityForm = z.infer<typeof checkAvailabilityValidationSchema>;
+import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
 
 export interface CheckAvailabilityModalProps {
 	isOpen: boolean;
@@ -69,6 +59,37 @@ export const CheckAvailabilityModal = ({
 	);
 	const { activeProduct } = useMusicalProductStore();
 	const { mutate: startConversation, isPending } = useStartConversation();
+
+	const [hasDefineEventTime, setHasDefineEventTime] = useState(false);
+
+	const checkAvailabilityValidationSchema = z
+		.object({
+			date: z.string().min(1, "Selecione uma data disponível"),
+			eventType: z.array(z.number()).min(1, "Selecione um tipo de evento"),
+			startTime: z.string().min(4, "Preencha a data de início do evento"),
+			endTime: z.string().min(4, "Preencha a data de término evento"),
+			location: z.string().trim().min(3, "Informe a localização"),
+		})
+		.superRefine((data, context) => {
+			const requiredFields = [
+				{ key: "startTime", label: "Horário inicial" },
+				{ key: "endTime", label: "Horário final" },
+			] as const;
+
+			requiredFields.forEach(({ key, label }) => {
+				if (!data[key] || data[key]?.trim() === "" || data[key]?.length < 4) {
+					context.addIssue({
+						path: [key],
+						message: `${label} é obrigatório`,
+						code: z.ZodIssueCode.custom,
+					});
+				}
+			});
+		});
+
+	type CheckAvailabilityForm = z.infer<
+		typeof checkAvailabilityValidationSchema
+	>;
 
 	const handleDefaultTime = (): { startTime: string; endTime: string } => {
 		const startTime = new Date().toLocaleString("pt-BR", {
@@ -137,7 +158,7 @@ export const CheckAvailabilityModal = ({
     Olá ${musicalProduct?.nome ?? ""}, que boa notícia! Você recebeu uma solicitação de orçamento :
      🎵 Tipo de Evento: ${eventType?.label ?? ""} 📅 Data: ${formatInTimeZone(formData.date, TIME_ZONE, "dd/MM/yyyy")} 
 		 🎈 Local: ${formData.location ?? ""} 
-     ⏰ Horário: ${formData.startTime} - ${formData.endTime}
+     ⏰ Horário: ${hasDefineEventTime ? `${formData.startTime} - ${formData.endTime}` : `Sem horário definido`} 
     `;
 
 		startConversation(
@@ -191,6 +212,33 @@ export const CheckAvailabilityModal = ({
 			setValue("date", "");
 		}
 	}, [selectedDate, setError, setValue]);
+
+	const handleHasDefineEventTime = (state: boolean) => {
+		setHasDefineEventTime(state);
+
+		if (hasDefineEventTime) {
+			setValue("startTime", "");
+			setValue("endTime", "");
+		} else {
+			const hourPtBR = new Date().toLocaleString("pt-BR", {
+				timeZone: "America/Sao_Paulo",
+				hour: "2-digit",
+				minute: "2-digit",
+				hour12: false,
+			});
+
+			const startTime = hourPtBR;
+
+			const [hours = 0, minutes = 0] = startTime.split(":").map(Number);
+
+			const startDate = new Date();
+			startDate.setHours(hours, minutes, 0, 0);
+			const endDate = new Date(startDate.getTime() + 120 * 60000);
+
+			setValue("startTime", format(startDate, "HH:mm"));
+			setValue("endTime", format(endDate, "HH:mm"));
+		}
+	};
 
 	return (
 		<Dialog open={isOpen} onOpenChange={handleClose}>
@@ -247,7 +295,7 @@ export const CheckAvailabilityModal = ({
 								</div>
 							</div>
 
-							<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 								<div>
 									<Label className="text-sm font-medium block text-gray-700 cursor-pointer">
 										Tipos de Eventos <span className="text-red-500">*</span>
@@ -283,85 +331,6 @@ export const CheckAvailabilityModal = ({
 								</div>
 
 								<div>
-									<Label className="text-sm font-medium block text-gray-700 cursor-pointer pb-2">
-										Início <span className="text-red-500">*</span>
-									</Label>
-
-									<div className="relative flex-1">
-										<Clock
-											className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-											size={18}
-										/>
-										<Input
-											type="time"
-											value={watch("startTime")}
-											onChange={(event) => {
-												const startTime = event.target.value;
-
-												const [hours = 0, minutes = 0] = startTime
-													.split(":")
-													.map(Number);
-
-												const startDate = new Date();
-												startDate.setHours(hours, minutes, 0, 0);
-												const endDate = new Date(
-													startDate.getTime() + 120 * 60000
-												);
-
-												setValue("startTime", format(startDate, "HH:mm"));
-												setValue("endTime", format(endDate, "HH:mm"));
-											}}
-											disabled={selectedDate === null}
-											className={`pl-10 ${errors.startTime ? "border-red-500" : ""}`}
-										/>
-									</div>
-
-									{errors.startTime && (
-										<div className="text-red-500 text-sm">
-											{errors.startTime.message}
-										</div>
-									)}
-								</div>
-
-								<div>
-									<Label className="text-sm font-medium block text-gray-700 cursor-pointer pb-2">
-										Fim <span className="text-red-500">*</span>
-									</Label>
-
-									<div className="relative flex-1">
-										<Clock
-											className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-											size={18}
-										/>
-										<Input
-											type="time"
-											value={watch("endTime")}
-											onChange={(event) => {
-												const endTime = event.target.value;
-
-												const [hours = 0, minutes = 0] = endTime
-													.split(":")
-													.map(Number);
-
-												const endDate = new Date();
-												endDate.setHours(hours, minutes, 0, 0);
-												setValue("endTime", format(endDate, "HH:mm"));
-											}}
-											disabled={selectedDate === null}
-											className={`pl-10 ${errors.endTime ? "border-red-500" : ""}`}
-										/>
-
-										{errors.endTime && (
-											<div className="text-red-500 text-sm">
-												{errors.endTime.message}
-											</div>
-										)}
-									</div>
-								</div>
-							</div>
-
-							<div className="grid grid-cols-1 gap-4">
-								<div>
 									<Label
 										htmlFor="location"
 										className="text-sm font-medium text-gray-700 mb-2 block"
@@ -390,6 +359,89 @@ export const CheckAvailabilityModal = ({
 									</div>
 								</div>
 							</div>
+
+							<div className="grid grid-cols-1 gap-4">
+								<div>
+									<Label className="text-sm font-medium text-gray-700 mb-2 block">
+										Horário
+									</Label>
+
+									<div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+										<div className="flex items-center gap-3">
+											<Checkbox
+												id="hasDefineEventTime"
+												checked={hasDefineEventTime}
+												onCheckedChange={(checked) => {
+													handleHasDefineEventTime(Boolean(checked));
+												}}
+											/>
+											<Label
+												htmlFor="availabilityOtherEvents"
+												className="text-sm font-medium text-gray-700 cursor-pointer"
+											>
+												Definir horário do Evento
+											</Label>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							{hasDefineEventTime && (
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+									<div className="relative flex-1">
+										<Clock
+											className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+											size={18}
+										/>
+										<Input
+											type="time"
+											value={watch("startTime")}
+											onChange={(event) => {
+												const startTime = event.target.value;
+
+												const [hours = 0, minutes = 0] = startTime
+													.split(":")
+													.map(Number);
+
+												const startDate = new Date();
+												startDate.setHours(hours, minutes, 0, 0);
+												const endDate = new Date(
+													startDate.getTime() + 120 * 60000
+												);
+
+												setValue("startTime", format(startDate, "HH:mm"));
+												setValue("endTime", format(endDate, "HH:mm"));
+											}}
+											className={`pl-10 ${errors.startTime ? "border-red-500" : ""}`}
+										/>
+
+										{errors.startTime && (
+											<div className="text-red-500 text-sm">
+												{errors.startTime.message}
+											</div>
+										)}
+									</div>
+
+									<div className="relative flex-1">
+										<Clock
+											className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+											size={18}
+										/>
+										<Input
+											type="time"
+											{...register("endTime")}
+											className={`pl-10 ${errors["endTime"] ? "border-red-500" : ""}`}
+										/>
+
+										{errors.endTime && (
+											<div className="text-red-500 text-sm">
+												{errors.endTime.message}
+											</div>
+										)}
+									</div>
+								</div>
+							)}
+
 							{/* Footer */}
 							<div className="flex pb-4 max-xs:flex-col justify-center gap-2">
 								<Button
