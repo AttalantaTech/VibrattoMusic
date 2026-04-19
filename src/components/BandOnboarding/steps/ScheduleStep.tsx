@@ -27,7 +27,7 @@ import {
 import { ptBR } from "date-fns/locale";
 import { decryptValue } from "@/utils/encryptValue";
 import { mapAgendaEventToFormData } from "@/utils/mapAgendaEventToFormData";
-import { EventModal } from "@/components/BandProfile/Agenda/CreateAndEditEventModal/EventModal";
+import { EventModal } from "@/components/BandProfile/Agenda/EventModal/EventModal";
 
 // Define styles consistent with modern interface pattern
 const styles = {

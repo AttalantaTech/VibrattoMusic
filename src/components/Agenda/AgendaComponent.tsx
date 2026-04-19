@@ -6,7 +6,7 @@ import { CalendarCustom } from "../Calendar/CalendarCustom";
 import { mapAgendaEventToFormData } from "@/utils/mapAgendaEventToFormData";
 import type { CommitmentAPI, MusicalProductSchedule } from "@/api/types";
 import { format } from "date-fns";
-import { EventModal } from "../BandProfile/Agenda/CreateAndEditEventModal/EventModal";
+import { EventModal } from "../BandProfile/Agenda/EventModal/EventModal";
 import { toast } from "sonner";
 
 // Define styles consistent with modern interface pattern
