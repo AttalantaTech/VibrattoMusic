@@ -8,24 +8,16 @@ import {
 	ExternalLink,
 	ChevronLeft,
 } from "lucide-react";
-import { onboardingService } from "../../../api";
 import { Button } from "../../ui/Button/Button";
 import { StepLayout } from "../layout/StepLayout/StepLayout";
 import { useOnboardingData } from "@/hooks/useOnboarding";
-import { toast } from "sonner";
 import type { OnboardingApiResponse } from "@/api/types";
 import { decryptValue } from "@/utils/encryptValue";
-import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { profileKeys, useProfileStatus } from "@/hooks/useProfileStatus";
-import { useQueryClient } from "@tanstack/react-query";
+import { PreviewProfileModal } from "../PreviewProfileModal";
 
 export default function PublishStep() {
-	const [loading, setLoading] = useState(false);
 	const navigate = useNavigate();
-	const queryClient = useQueryClient();
 
-	const { setNewProductCreated } = useMusicalProductStore();
-	const { user } = useProfileStatus();
 	const { data, isFetching } = useOnboardingData();
 
 	const searchParameters = useSearch({ from: "/band/register/onboarding/6" });
@@ -51,45 +43,10 @@ export default function PublishStep() {
 
 	const allStepsCompleted = onboardingData?.etapaCadastro === 6;
 
+	const [openPreviewProfile, setOpenPreviewProfile] = useState(false);
+
 	const getStepUrl = (stepNumber: number) => {
 		return `/band/register/onboarding/${stepNumber}`;
-	};
-
-	const handlePublish = async () => {
-		if (!produtoMusicalId) {
-			toast.error("Erro: ID do produto musical não encontrado");
-			return;
-		}
-
-		if (!allStepsCompleted) {
-			toast.warning("Atenção: Complete todos os passos antes de publicar");
-			return;
-		}
-
-		setLoading(true);
-		try {
-			await onboardingService
-				.publishOnboarding(Number(produtoMusicalId))
-				.then(async (id) => {
-					await queryClient.invalidateQueries({
-						queryKey: profileKeys.musicalProducts(user?.id),
-					});
-
-					setNewProductCreated(id);
-
-					toast.success("Produto musical publicado com sucesso");
-
-					await navigate({
-						to: "/band/me",
-						search: { tab: "account" },
-					});
-				});
-		} catch (error: any) {
-			console.error("Error publishing:", error);
-			toast.error("Erro ao publicar produto musical");
-		} finally {
-			setLoading(false);
-		}
 	};
 
 	const stepNames: Record<number, string> = {
@@ -260,20 +217,29 @@ export default function PublishStep() {
 							</Button>
 
 							<Button
-								onClick={handlePublish}
-								disabled={loading || !allStepsCompleted}
+								// onClick={handlePublish}
+								onClick={() => {
+									setOpenPreviewProfile(true);
+								}}
+								disabled={!allStepsCompleted}
 								className="w-full sm:w-auto min-h-[44px]"
 							>
-								{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-
-								<div className="flex items-center gap-1">
-									{loading ? "Finalizando..." : "Finalizar"}
-								</div>
+								Visualizar Perfil
 							</Button>
 						</div>
 					</>
 				)}
 			</div>
+
+			{onboardingData && (
+				<PreviewProfileModal
+					isOpen={openPreviewProfile}
+					setIsOpen={setOpenPreviewProfile}
+					musicalProduct={onboardingData}
+					allStepsCompleted={allStepsCompleted}
+					produtoMusicalId={produtoMusicalId}
+				/>
+			)}
 		</StepLayout>
 	);
 }

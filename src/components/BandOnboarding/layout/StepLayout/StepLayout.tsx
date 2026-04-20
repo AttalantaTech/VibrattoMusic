@@ -72,7 +72,7 @@ export const StepLayout = ({
 					<div className="flex flex-col items-center justify-center w-full gap-3 my-4 md:my-8">
 						<AudioLines className="text-primary-500" size={40} />
 						<h1 className="text-gray-900 font-bold text-xl md:text-2xl">
-							Cadastre sua banda
+							Perfil Profissional
 						</h1>
 
 						<div className="max-w-screen-md">

@@ -240,8 +240,15 @@ export default function ScheduleStep() {
 												<div>
 													<div className="font-medium">{event.title}</div>
 													<div className="text-sm">
-														{formatDate(event.date)} • {event.startTime} -{" "}
-														{event.endTime}
+														{formatDate(event.date)} •{" "}
+														{event.startTime && event.endTime ? (
+															`${event.startTime} - 
+											${event.endTime}`
+														) : (
+															<span className="font-light italic">
+																Sem horário definido
+															</span>
+														)}
 													</div>
 												</div>
 

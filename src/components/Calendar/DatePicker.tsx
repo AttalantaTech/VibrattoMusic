@@ -16,6 +16,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { AgendaDateStatus, ScheduleApiResponse } from "@/api/types";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { TIME_ZONE } from "@/utils";
+import { Popover } from "../ui/Popover/Popover";
 
 interface DatePickerProps {
 	onSelectDate: (value: SetStateAction<Date | null>) => void;
@@ -78,7 +79,7 @@ export function DatePicker({
 		}
 	};
 
-	const dateStatus = (status: AgendaDateStatus): string => {
+	const dateStatusStyle = (status: AgendaDateStatus): string => {
 		switch (status) {
 			case "Livre": {
 				return "bg-[#039855] text-white rounded-full";
@@ -88,6 +89,20 @@ export function DatePicker({
 			}
 			case "OcupadoComEspaco": {
 				return "bg-[#FEF0C7] text-[#DC6803] rounded-full";
+			}
+		}
+	};
+
+	const dateStatusLegend = (status: AgendaDateStatus): string => {
+		switch (status) {
+			case "Livre": {
+				return "Disponível";
+			}
+			case "Ocupado": {
+				return "Indisponível";
+			}
+			case "OcupadoComEspaco": {
+				return "A Consultar";
 			}
 		}
 	};
@@ -188,20 +203,33 @@ export function DatePicker({
 					const cloneDay = day;
 
 					days.push(
-						<div
+						<Popover
 							key={cloneDay.toString()}
-							onClick={() => {
-								if (isSameMonth(cloneDay, monthStart)) {
-									handleSelectedDate(cloneDay);
+							content={
+								checkDate?.status ? dateStatusLegend(checkDate.status) : ""
+							}
+							disabled={isSameMonth(cloneDay, monthStart)}
+							trigger={
+								<div
+									onClick={() => {
+										if (isSameMonth(cloneDay, monthStart)) {
+											handleSelectedDate(cloneDay);
+										}
+									}}
+									className={`h-10 w-10 flex items-center justify-center rounded-full
+								${
+									checkDate?.date &&
+									checkDate.date instanceof Date &&
+									!isSameDay(cloneDay, checkDate.date) &&
+									isSameDay(cloneDay, currentDate)
+										? "bg-primary-50 rounded-full border-2 border-primary-500"
+										: ""
 								}
-							}}
-							className={`h-10 w-10 flex items-center justify-center rounded-full
-								${isSameDay(cloneDay, currentDate) ? "bg-primary-50 rounded-full border-2 border-primary-500" : ""}
 								${
 									checkDate?.date &&
 									checkDate.date instanceof Date &&
 									isSameDay(cloneDay, checkDate.date)
-										? dateStatus(checkDate.status)
+										? dateStatusStyle(checkDate.status)
 										: ""
 								} 
               ${
@@ -210,9 +238,11 @@ export function DatePicker({
 									: "text-gray-400 cursor-not-allowed"
 							}
             `}
-						>
-							{formatInTimeZone(cloneDay, TIME_ZONE, "d")}
-						</div>
+								>
+									{formatInTimeZone(cloneDay, TIME_ZONE, "d")}
+								</div>
+							}
+						/>
 					);
 
 					day = addDays(day, 1);
