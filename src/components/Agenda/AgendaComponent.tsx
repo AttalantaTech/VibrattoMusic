@@ -307,7 +307,8 @@ export const AgendaComponent = () => {
 
 								setShowEventModal(true);
 							}}
-							events={events}
+							agendaData={agendaData}
+							eventsAgendaFormat={events}
 						/>
 					</div>
 				</div>
