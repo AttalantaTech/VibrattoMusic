@@ -28,6 +28,7 @@ import { ptBR } from "date-fns/locale";
 import { decryptValue } from "@/utils/encryptValue";
 import { mapAgendaEventToFormData } from "@/utils/mapAgendaEventToFormData";
 import { EventModal } from "@/components/BandProfile/Agenda/EventModal/EventModal";
+import { calculateDuration } from "@/components/BandProfile/Agenda/utils";
 
 // Define styles consistent with modern interface pattern
 const styles = {
@@ -132,7 +133,7 @@ export default function ScheduleStep() {
 					descricao: event.description?.trim() || "",
 					data: format(event.date, "yyyy-MM-dd"),
 					horaInicio: event.startTime || null,
-					horaFim: event.endTime || null,
+					duracao: calculateDuration(event.startTime, event.endTime),
 					disponibilidadeOutrosEventos: event.availabilityOtherEvents,
 					localizacao: event.location ?? "",
 				}));
