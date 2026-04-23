@@ -30,8 +30,12 @@ export const EventsList = ({
 
 	const hasAvailabilityOtherEvents =
 		events && events?.length > 0
-			? events.some((event) => event.availabilityOtherEvents)
-			: true;
+			? events.every((event) => {
+					console.log(event.availabilityOtherEvents);
+
+					return event.availabilityOtherEvents;
+				})
+			: undefined;
 
 	return (
 		<div className="flex flex-col justify-end px-6 pt-6 border-b border-gray-200">
@@ -119,7 +123,7 @@ export const EventsList = ({
 				<div className="flex flex-col sm:flex-row items-center justify-center gap-2 py-4 mt-2">
 					<AlertCircleIcon fill="#148bc2" className="h-6 w-6 text-white" />
 					<p className="text-xs text-gray-400 text-justify">
-						Certifique-se de que o dia
+						Certifique-se que a agenda deste dia
 						<span className="font-semibold text-gray-500">
 							{" "}
 							permite a criação de outros eventos
