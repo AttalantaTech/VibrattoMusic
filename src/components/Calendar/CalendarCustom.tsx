@@ -9,26 +9,30 @@ import {
 	addDays,
 	isSameMonth,
 	isToday,
+	isSameDay,
 } from "date-fns";
 import { ptBR } from "date-fns/locale/pt-BR";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { AgendaEvent } from "../BandProfile/Agenda";
 import { sortByDate } from "@/utils/sortByDate";
+import type { AgendaDateStatus, ScheduleApiResponse } from "@/api/types";
 
 interface CalendarProps {
 	onSelectDate: (date: Date) => void;
 	onHasDateForDay?: (event: Array<AgendaEvent> | null) => void;
-	events: Array<AgendaEvent>;
+	eventsAgendaFormat: Array<AgendaEvent>;
 	currentMonth: Date;
 	setCurrentMonth: (date: Date) => void;
+	agendaData?: Array<ScheduleApiResponse>;
 }
 
 export const CalendarCustom = ({
 	onSelectDate,
 	onHasDateForDay = () => null,
-	events,
+	eventsAgendaFormat,
 	currentMonth = new Date(),
 	setCurrentMonth,
+	agendaData = [],
 }: CalendarProps) => {
 	const nextMonth = () => {
 		setCurrentMonth(addMonths(currentMonth, 1));
@@ -40,12 +44,44 @@ export const CalendarCustom = ({
 	const handleSelectedDate = (date: Date) => {
 		onSelectDate(date);
 
-		const hasEventForDay = events.filter(
+		const hasEventForDay = eventsAgendaFormat.filter(
 			(event) => format(event.date, "dd/MM/yyyy") === format(date, "dd/MM/yyyy")
 		);
 
 		if (onHasDateForDay) {
 			onHasDateForDay(hasEventForDay.length > 0 ? hasEventForDay : null);
+		}
+	};
+
+	const dateStatusStyle = (status: AgendaDateStatus): string => {
+		switch (status) {
+			case "Livre": {
+				return "bg-[#039855] text-white rounded-full";
+			}
+			case "Ocupado": {
+				return "bg-[#D92D20] opacity-50 text-white rounded-full";
+			}
+			case "OcupadoComEspaco": {
+				return "bg-[#FEF0C7] text-[#DC6803] rounded-full";
+			}
+			default:
+				return "";
+		}
+	};
+
+	const todayStatusCollor = (status: AgendaDateStatus): string => {
+		switch (status) {
+			case "Livre": {
+				return "bg-[#039855] w-7 h-1 rounded-full";
+			}
+			case "Ocupado": {
+				return "bg-[#D92D20] opacity-50  w-7 h-1 rounded-full";
+			}
+			case "OcupadoComEspaco": {
+				return "bg-[#DC6803]  w-7 h-1 rounded-full";
+			}
+			default:
+				return "";
 		}
 	};
 
@@ -112,29 +148,53 @@ export const CalendarCustom = ({
 				const cloneDay = day;
 				const isCurrentMonth = isSameMonth(cloneDay, monthStart);
 
-				const eventsForDay = events.filter(
+				const eventsForDay = eventsAgendaFormat.filter(
 					(event) =>
 						format(event.date, "dd/MM/yyyy") === format(cloneDay, "dd/MM/yyyy")
 				);
+
+				const agendaDateStatus = agendaData.find((eventApi) => {
+					return (
+						format(eventApi.data, "dd/MM/yyyy") ===
+						format(cloneDay, "dd/MM/yyyy")
+					);
+				});
 
 				daysInWeek.push(
 					<div
 						key={cloneDay.toString()}
 						onClick={() => {
-							handleSelectedDate(cloneDay);
+							if (isCurrentMonth) {
+								handleSelectedDate(cloneDay);
+							}
 						}}
-						className={`min-h-[120px] border-r border-b p-2 transition-colors cursor-pointer hover:bg-gray-50 flex flex-col
-              ${!isCurrentMonth ? "bg-gray-50/50 text-gray-400" : "bg-white text-gray-700"}
+						className={`min-h-[120px] border-r border-b p-2 transition-colors  flex flex-col
+              ${!isCurrentMonth ? "bg-gray-50/50 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 cursor-pointer hover:bg-gray-50"}
             `}
 					>
 						<span
 							className={`
-              text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full
-              ${isToday(cloneDay) ? "bg-primary-500 text-white" : ""}
+              text-sm font-medium w-7 h-7 border border-white flex items-center justify-center rounded-full
+							${agendaDateStatus && isSameDay(cloneDay, dateStatusStyle(agendaDateStatus.status))}
+							${
+								agendaDateStatus && isSameDay(cloneDay, agendaDateStatus.data)
+									? dateStatusStyle(agendaDateStatus.status)
+									: ""
+							}
             `}
 						>
 							{format(cloneDay, "d")}
 						</span>
+
+						{isToday(cloneDay) && (
+							<span
+								className={
+									agendaDateStatus
+										? todayStatusCollor(agendaDateStatus.status)
+										: ""
+								}
+							/>
+						)}
 
 						{/* Event Space */}
 						<div className="mt-1 flex-1 overflow-y-auto">

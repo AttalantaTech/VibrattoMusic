@@ -498,8 +498,8 @@ export interface Commitment {
 	descricao: string;
 	localizacao: string;
 	data: string;
-	horaInicio: string;
-	horaFim: string;
+	horaInicio: string | null;
+	horaFim: string | null;
 	disponibilidadeOutrosEventos: boolean;
 }
 
@@ -510,7 +510,7 @@ export interface CommitmentAPI {
 	localizacao: string;
 	data: string;
 	horaInicio: string | null;
-	horaFim: string | null;
+	duracao: string | null;
 	disponibilidadeOutrosEventos: boolean;
 }
 
@@ -527,7 +527,7 @@ export type AgendaDateStatus = "Livre" | "Ocupado" | "OcupadoComEspaco";
 export interface ScheduleApiResponse {
 	data: string;
 	status: AgendaDateStatus;
-	compromissos: Array<CommitmentAPI>;
+	compromissos: Array<Commitment>;
 }
 
 // ===== Favorites Types =====

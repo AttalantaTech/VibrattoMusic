@@ -6,8 +6,12 @@ import { CalendarCustom } from "../Calendar/CalendarCustom";
 import { mapAgendaEventToFormData } from "@/utils/mapAgendaEventToFormData";
 import type { CommitmentAPI, MusicalProductSchedule } from "@/api/types";
 import { format } from "date-fns";
-import { EventModal } from "../BandProfile/Agenda/CreateAndEditEventModal/EventModal";
+import { EventModal } from "../BandProfile/Agenda/EventModal/EventModal";
 import { toast } from "sonner";
+import {
+	calculateDuration,
+	calculateEndTime,
+} from "../BandProfile/Agenda/utils";
 
 // Define styles consistent with modern interface pattern
 const styles = {
@@ -78,16 +82,18 @@ export const AgendaComponent = () => {
 
 		const commitments: Array<CommitmentAPI> = mergedEvents
 			.sort((a, b) => a.date.getTime() - b.date.getTime())
-			.map((event) => ({
-				id: event.id,
-				titulo: event.title.trim(),
-				descricao: event.description?.trim() || "",
-				localizacao: event.location ?? "",
-				data: format(event.date, "yyyy-MM-dd"),
-				horaInicio: event.startTime || null,
-				horaFim: event.endTime || null,
-				disponibilidadeOutrosEventos: event.availabilityOtherEvents,
-			}));
+			.map((event) => {
+				return {
+					id: event.id,
+					titulo: event.title.trim(),
+					descricao: event.description?.trim() || "",
+					localizacao: event.location ?? "",
+					data: format(event.date, "yyyy-MM-dd"),
+					horaInicio: event.startTime || null,
+					duracao: calculateDuration(event.startTime, event.endTime),
+					disponibilidadeOutrosEventos: event.availabilityOtherEvents,
+				};
+			});
 
 		// Convert events to API format
 		const scheduleData: MusicalProductSchedule = {
@@ -190,7 +196,7 @@ export const AgendaComponent = () => {
 					descricao: event.description?.trim() || "",
 					data: format(event.date, "yyyy-MM-dd"),
 					horaInicio: event.startTime || null,
-					horaFim: event.endTime || null,
+					duracao: calculateDuration(event.startTime, event.endTime),
 					localizacao: event.location || "",
 					disponibilidadeOutrosEventos: event.availabilityOtherEvents,
 				}));
@@ -222,10 +228,13 @@ export const AgendaComponent = () => {
 								title: commitment.titulo,
 								description: commitment.descricao,
 								date: new Date(
-									`${commitment.data}${commitment.horaInicio ? `T${commitment.horaFim}` : "T00:00"}`
+									`${commitment.data}${commitment.horaInicio ? `T${commitment.horaInicio}` : "T00:00"}`
 								),
 								startTime: commitment.horaInicio,
-								endTime: commitment.horaFim,
+								endTime: calculateEndTime(
+									commitment.horaInicio,
+									commitment.duracao
+								),
 								location: commitment.descricao,
 								availabilityOtherEvents:
 									commitment.disponibilidadeOutrosEventos,
@@ -298,7 +307,8 @@ export const AgendaComponent = () => {
 
 								setShowEventModal(true);
 							}}
-							events={events}
+							agendaData={agendaData}
+							eventsAgendaFormat={events}
 						/>
 					</div>
 				</div>

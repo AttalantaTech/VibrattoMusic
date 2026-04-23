@@ -36,8 +36,6 @@ export const EventModal = ({
 	currentEvent,
 	setCurrentEvent,
 }: EventModalProps) => {
-	// const [currentEvent, setCurrentEvent] = useState<AgendaEvent | null>(null);
-
 	const { form, setQuickDuration, handleSubmitEvent, resetForm } = useEventForm(
 		{
 			initialDate,

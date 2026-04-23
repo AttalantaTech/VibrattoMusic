@@ -81,17 +81,59 @@ export const validateTimeRange = (
 
 // Event creation helpers
 export const calculateEndTime = (
-	startTime: string,
-	durationMinutes: number
-): string => {
+	startTime: string | null,
+	duration: string | null
+): string | null => {
+	if (!startTime || !duration) return null;
+
 	const [startHour = 0, startMinute = 0] = startTime.split(":").map(Number);
-	const startInMinutes = startHour * 60 + startMinute;
-	const endInMinutes = startInMinutes + durationMinutes;
+	const [durationHour = 0, durationMinute = 0] = startTime
+		.split(":")
+		.map(Number);
 
-	const endHour = Math.floor(endInMinutes / 60);
-	const endMinute = endInMinutes % 60;
+	const startTotalMinutes = startHour * 60 + startMinute;
+	const durationTotalMinutes = durationHour * 60 + durationMinute;
 
-	return `${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}`;
+	let endTotalMinutes = startTotalMinutes + durationTotalMinutes;
+
+	endTotalMinutes = endTotalMinutes % (24 * 60);
+
+	const hours = Math.floor(endTotalMinutes / 60)
+		.toString()
+		.padStart(2, "0");
+	const minutes = Math.floor(endTotalMinutes % 60)
+		.toString()
+		.padStart(2, "0");
+
+	return `${hours}:${minutes}`;
+};
+
+export const calculateDuration = (
+	startTime: string | null,
+	endTime: string | null
+): string | null => {
+	if (!startTime || !endTime) return null;
+
+	const [startHour = 0, startMinute = 0] = startTime.split(":").map(Number);
+	const [endHour = 0, endMinute = 0] = endTime.split(":").map(Number);
+
+	const startTotalMinutes = startHour * 60 + startMinute;
+	const endTotalMinutes = endHour * 60 + endMinute;
+
+	let diff = endTotalMinutes - startTotalMinutes;
+
+	if (diff < 0) {
+		diff += 24 * 60;
+	}
+
+	const hours = Math.floor(diff / 60)
+		.toString()
+		.padStart(2, "0");
+	const minutes = Math.floor(diff % 60)
+		.toString()
+		.padStart(2, "0");
+
+	return `${hours}:${minutes}`;
 };
 
 // Date utilities
@@ -123,19 +165,9 @@ export const calculateNewEventPosition = (
 	targetHour: number
 ): Partial<AgendaEvent> => {
 	// Calculate duration
-	const [startHour = 0, startMinute = 0] = event.startTime
-		? event.startTime.split(":").map(Number)
-		: "".split(":").map(Number);
-
-	const [endHour = 0, endMinute = 0] = event.endTime
-		? event.endTime.split(":").map(Number)
-		: "".split(":").map(Number);
-
-	const durationMinutes =
-		endHour * 60 + endMinute - (startHour * 60 + startMinute);
 
 	const newStartTime = `${String(targetHour).padStart(2, "0")}:00`;
-	const newEndTime = calculateEndTime(newStartTime, durationMinutes);
+	const newEndTime = calculateEndTime(newStartTime, event.endTime);
 
 	return {
 		date: targetDay,

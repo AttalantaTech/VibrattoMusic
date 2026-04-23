@@ -1,4 +1,4 @@
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, AlertCircleIcon } from "lucide-react";
 import { Button } from "../../../ui/Button/Button";
 import type { Dispatch, SetStateAction } from "react";
 import type { AgendaEvent } from "../types";
@@ -27,6 +27,15 @@ export const EventsList = ({
 	const formatDate = (date: Date) => {
 		return format(date, "dd/MM/yyyy", { locale: ptBR });
 	};
+
+	const hasAvailabilityOtherEvents =
+		events && events?.length > 0
+			? events.every((event) => {
+					console.log(event.availabilityOtherEvents);
+
+					return event.availabilityOtherEvents;
+				})
+			: undefined;
 
 	return (
 		<div className="flex flex-col justify-end px-6 pt-6 border-b border-gray-200">
@@ -110,8 +119,21 @@ export const EventsList = ({
 				</div>
 			)}
 
-			{/* Footer */}
+			{!hasAvailabilityOtherEvents ? (
+				<div className="flex flex-col sm:flex-row items-center justify-center gap-2 py-4 mt-2">
+					<AlertCircleIcon fill="#148bc2" className="h-6 w-6 text-white" />
+					<p className="text-xs text-gray-400 text-justify">
+						Certifique-se que a agenda deste dia
+						<span className="font-semibold text-gray-500">
+							{" "}
+							permite a criação de outros eventos
+						</span>
+						.
+					</p>
+				</div>
+			) : null}
 
+			{/* Footer */}
 			<div className="flex justify-end gap-3 py-6">
 				<Button
 					type="button"
@@ -126,6 +148,7 @@ export const EventsList = ({
 				<Button
 					variant="primary"
 					className="px-4 py-2"
+					disabled={!hasAvailabilityOtherEvents}
 					onClick={() => {
 						onCreate();
 					}}
