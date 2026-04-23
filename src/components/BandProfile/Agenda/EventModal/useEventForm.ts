@@ -13,7 +13,10 @@ const createAndEditEventValidationSchema = z.object({
 	endTime: z.string(),
 	location: z.string(),
 	reminder: z.string(),
-	availabilityOtherEvents: z.boolean(),
+	availabilityOtherEvents: z.enum([
+		"availability-other-events",
+		"no-availability-other-events",
+	]),
 });
 
 export type EventForm = z.infer<typeof createAndEditEventValidationSchema>;
@@ -44,7 +47,7 @@ export const useEventForm = ({
 			startTime: "",
 			endTime: "",
 			location: "",
-			availabilityOtherEvents: false,
+			availabilityOtherEvents: "availability-other-events",
 			reminder: "15",
 		},
 	});
@@ -76,7 +79,7 @@ export const useEventForm = ({
 			startTime: "",
 			endTime: "",
 			location: "",
-			availabilityOtherEvents: false,
+			availabilityOtherEvents: "availability-other-events",
 			reminder: "15",
 		});
 	};
@@ -92,7 +95,10 @@ export const useEventForm = ({
 			startTime: data.startTime,
 			endTime: data.endTime,
 			location: data.location,
-			availabilityOtherEvents: data.availabilityOtherEvents,
+			availabilityOtherEvents:
+				data.availabilityOtherEvents === "availability-other-events"
+					? true
+					: false,
 		};
 
 		onSubmit(event);
@@ -111,7 +117,9 @@ export const useEventForm = ({
 				startTime: currentEvent.startTime || "",
 				endTime: currentEvent.endTime || "",
 				location: currentEvent.location || "",
-				availabilityOtherEvents: currentEvent.availabilityOtherEvents || false,
+				availabilityOtherEvents: currentEvent.availabilityOtherEvents
+					? "availability-other-events"
+					: "no-availability-other-events",
 				reminder: "15",
 			});
 		} else {

@@ -285,20 +285,30 @@ export const CreateEventForm = ({
 					<div className="border-t pt-4">
 						<div className="grid grid-cols-1 md:grid-cols-1 gap-4">
 							{/* Availability Other Events toggle */}
-							<div className="flex items-center gap-3">
-								<Checkbox
-									id="availabilityOtherEvents"
-									checked={watch("availabilityOtherEvents")}
-									onCheckedChange={(checked) => {
-										setValue("availabilityOtherEvents", Boolean(checked));
-									}}
-								/>
-								<Label
-									htmlFor="availabilityOtherEvents"
-									className="text-sm font-medium text-gray-700 cursor-pointer"
-								>
-									Disponibilidade para outros eventos neste dia
-								</Label>
+							<div className="flex flex-col gap-3">
+								<label>
+									<input
+										className="cursor-pointer"
+										type="radio"
+										value="availability-other-events"
+										{...register("availabilityOtherEvents")}
+									/>
+									<span className="pl-2 cursor-pointer">
+										Disponibilidade para outros eventos neste dia
+									</span>
+								</label>
+
+								<label>
+									<input
+										className="cursor-pointer"
+										type="radio"
+										value="no-availability-other-events"
+										{...register("availabilityOtherEvents")}
+									/>
+									<span className="pl-2 cursor-pointer">
+										Sem disponibilidade para outros eventos neste dia
+									</span>
+								</label>
 							</div>
 
 							{/* Reminder */}
