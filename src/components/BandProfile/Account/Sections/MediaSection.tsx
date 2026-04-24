@@ -390,8 +390,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 		try {
 			// Filter out empty YouTube URLs and structure data correctly for API
 			const media: MusicalProductMedia = {
-				videosYouTube:
-					data.videosYouTube?.filter((url: string) => url.trim() !== "") ?? [],
+				videosYouTube: youtubeUrl.trim() !== "" ? [youtubeUrl] : [],
 				spotifyPlaylistId: data.spotifyPlaylistId ?? null,
 				exibirValorServico: showPriceTab, // Default value since we moved this to schedule
 				valorServico: showPriceTab
