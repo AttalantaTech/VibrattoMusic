@@ -644,7 +644,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 											"image/gif",
 											"application/pdf",
 										]}
-										maxSizeMB={10}
+										maxSizeMB={100}
 										onFileSelected={async (file) => {
 											if (file)
 												await handleFileUpload(file, "ProdutoMusicalClipagem");
@@ -827,7 +827,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 											"image/gif",
 											"video/mp4",
 										]}
-										maxSizeMB={10}
+										maxSizeMB={100}
 										onFileSelected={async (file) => {
 											if (file)
 												await handleImageUpload(

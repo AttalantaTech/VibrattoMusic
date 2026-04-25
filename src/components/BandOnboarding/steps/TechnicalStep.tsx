@@ -517,7 +517,7 @@ export default function TechnicalStep() {
 			return (
 				<FileUploadBox
 					acceptedTypes={["application/pdf"]}
-					maxSizeMB={10}
+					maxSizeMB={100}
 					onFileSelected={handleRiderFileUpload}
 				/>
 			);
@@ -543,7 +543,7 @@ export default function TechnicalStep() {
 			return (
 				<FileUploadBox
 					acceptedTypes={["application/pdf"]}
-					maxSizeMB={10}
+					maxSizeMB={100}
 					onFileSelected={handleCamarimFileUpload}
 				/>
 			);
@@ -569,7 +569,7 @@ export default function TechnicalStep() {
 			return (
 				<FileUploadBox
 					acceptedTypes={["application/pdf"]}
-					maxSizeMB={10}
+					maxSizeMB={100}
 					onFileSelected={handleStageMapFileUpload}
 				/>
 			);

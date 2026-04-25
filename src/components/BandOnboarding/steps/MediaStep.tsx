@@ -657,7 +657,7 @@ export default function MediaStep() {
 											"image/gif",
 											"application/pdf",
 										]}
-										maxSizeMB={10}
+										maxSizeMB={100}
 										onFileSelected={async (file) => {
 											if (file)
 												await handleFileUpload(
@@ -839,7 +839,7 @@ export default function MediaStep() {
 											"image/gif",
 											"video/mp4",
 										]}
-										maxSizeMB={10}
+										maxSizeMB={100}
 										onFileSelected={async (file) => {
 											if (file)
 												await handleImageUpload(
