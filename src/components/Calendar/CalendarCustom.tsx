@@ -128,7 +128,7 @@ export const CalendarCustom = ({
 
 				<div className="flex items-center gap-1">
 					<span className="block">Indisponível</span>
-					<span className="block h-3 w-3 rounded-full bg-[#D92D20] border border-[#D92D20]" />
+					<span className="block h-3 w-3 rounded-full bg-[#D92D20] opacity-50 border border-[#D92D20]" />
 				</div>
 			</div>
 		</div>
