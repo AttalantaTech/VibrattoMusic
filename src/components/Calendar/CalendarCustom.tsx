@@ -193,7 +193,6 @@ export const CalendarCustom = ({
 						<span
 							className={`
               text-sm font-medium w-7 h-7 border border-white flex items-center justify-center rounded-full
-							${agendaDateStatus && isSameDay(cloneDay, dateStatusStyle(agendaDateStatus.status))}
 							${
 								agendaDateStatus && isSameDay(cloneDay, agendaDateStatus.data)
 									? dateStatusStyle(agendaDateStatus.status)
