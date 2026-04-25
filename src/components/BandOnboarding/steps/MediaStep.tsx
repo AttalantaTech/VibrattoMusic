@@ -925,9 +925,9 @@ export default function MediaStep() {
 								<div className="flex flex-col gap-2 mt-4">
 									<IconInput
 										className="w-full"
-										icon={<FaSoundcloud color="#FF5500" size={24} />}
-										name="soundcloudlink"
-										placeholder="https://soundcloud.com/..."
+										icon={<FaSpotify color="#1DB954" size={24} />}
+										name="spotifylink"
+										placeholder="https://open.spotify.com/..."
 										value={spotifyUrl ?? ""}
 										onChange={setSpotifyUrl}
 									/>
@@ -944,10 +944,8 @@ export default function MediaStep() {
 										</div>
 									) : (
 										<div className="p-6 bg-gray-50 text-gray-500 rounded-lg flex flex-col items-center gap-3 text-center">
-											<FaSoundcloud size={40} className="text-gray-400" />
-											<p className="text-sm">
-												Cole uma URL do SoundCloud acima
-											</p>
+											<FaSpotify size={40} className="text-gray-400" />
+											<p className="text-sm">Cole uma URL do Spotify acima</p>
 										</div>
 									)}
 								</div>
