@@ -17,7 +17,7 @@ import { ArtistCard } from "@/components/cards/ArtistCard/ArtistCard";
 
 import { useAuthStore } from "@/store/authStore";
 import { useToggleFavorite, useFavorites } from "@/hooks/useUser";
-import { extractYouTubeId } from "@/lib/utils/cn";
+import { extractYouTubeId, extractSpotifyResource } from "@/lib/utils/cn";
 import type {
 	MusicalProduct,
 	MusicalProductListApiResponse,
@@ -64,6 +64,10 @@ export const BandProfile = ({
 
 	// Start conversation hook
 	const startConversationMutation = useStartConversation();
+
+	const spotifyResource = extractSpotifyResource(
+		musicalProduct?.spotifyPlaylistId || ""
+	);
 
 	// Handler for favorite toggle
 	const handleFavoriteToggle = (productId: number) => {
@@ -344,7 +348,7 @@ export const BandProfile = ({
 							) : musicalProduct.spotifyPlaylistId ? (
 								<div className="w-full rounded-lg overflow-hidden">
 									<iframe
-										src={`https://open.spotify.com/embed/playlist/${musicalProduct.spotifyPlaylistId}`}
+										src={`https://open.spotify.com/embed/${spotifyResource?.type}/${spotifyResource?.id}`}
 										width="100%"
 										height="352"
 										frameBorder="0"
@@ -481,7 +485,7 @@ export const BandProfile = ({
 							) : musicalProduct.spotifyPlaylistId ? (
 								<div className="w-full rounded-lg overflow-hidden">
 									<iframe
-										src={`https://open.spotify.com/embed/playlist/${musicalProduct.spotifyPlaylistId}`}
+										src={`https://open.spotify.com/embed/${spotifyResource?.type}/${spotifyResource?.id}`}
 										width="100%"
 										height="352"
 										frameBorder="0"
