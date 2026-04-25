@@ -10,6 +10,7 @@ import {
 	addDays,
 	isSameMonth,
 	isSameDay,
+	isToday,
 } from "date-fns";
 import { ptBR } from "date-fns/locale/pt-BR";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -159,8 +160,6 @@ export function DatePicker({
 		let days = [];
 		let day = startDate;
 
-		const currentDate = toZonedTime(new Date(), TIME_ZONE);
-
 		if (mode === "default") {
 			while (day <= endDate) {
 				for (let index = 0; index < 7; index++) {
@@ -217,18 +216,18 @@ export function DatePicker({
 										}
 									}}
 									className={`h-10 w-10 flex items-center justify-center rounded-full
+								
+
 								${
-									checkDate?.date &&
-									checkDate.date instanceof Date &&
-									!isSameDay(cloneDay, checkDate.date) &&
-									isSameDay(cloneDay, currentDate)
-										? "bg-primary-50 rounded-full border-2 border-primary-500"
+									isToday(cloneDay)
+										? checkDate?.date && isSameDay(cloneDay, checkDate.date)
+											? dateStatusStyle(checkDate.status)
+											: "bg-primary-50 rounded-full border-2 border-primary-500"
 										: ""
 								}
+
 								${
-									checkDate?.date &&
-									checkDate.date instanceof Date &&
-									isSameDay(cloneDay, checkDate.date)
+									checkDate?.date && isSameDay(cloneDay, checkDate.date)
 										? dateStatusStyle(checkDate.status)
 										: ""
 								} 
