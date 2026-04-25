@@ -7,6 +7,7 @@ import { ptBR } from "date-fns/locale";
 import { DialogDescription, DialogHeader } from "@/components/ui/dialog";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { sortByDate } from "@/utils/sortByDate";
+import { didPassMidnight } from "../utils";
 
 interface EventsListProps {
 	date: Date;
@@ -31,8 +32,6 @@ export const EventsList = ({
 	const hasAvailabilityOtherEvents =
 		events && events?.length > 0
 			? events.every((event) => {
-					console.log(event.availabilityOtherEvents);
-
 					return event.availabilityOtherEvents;
 				})
 			: undefined;
@@ -92,6 +91,20 @@ export const EventsList = ({
 												</span>
 											)}
 										</div>
+
+										{event.startTime &&
+											event.endTime &&
+											didPassMidnight(event.startTime, event.endTime) && (
+												<div className="text-xs flex mt-1 gap-1">
+													<span className="block font-bold">
+														Obs sobre o evento:
+													</span>
+													<span className="block font-sans">
+														{" "}
+														Madrugada do dia posterior.
+													</span>
+												</div>
+											)}
 									</div>
 
 									<div className="flex gap-4">
