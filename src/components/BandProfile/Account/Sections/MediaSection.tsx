@@ -393,7 +393,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 
 		try {
 			const spotifyPlaylistId = spotifyResource
-				? `spotify:${spotifyResource?.type}/${spotifyResource?.id}`
+				? `spotify:${spotifyResource?.type}:${spotifyResource?.id}`
 				: "";
 
 			// Filter out empty YouTube URLs and structure data correctly for API

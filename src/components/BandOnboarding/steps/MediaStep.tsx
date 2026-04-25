@@ -466,7 +466,7 @@ export default function MediaStep() {
 		setLoading(true);
 		try {
 			const spotifyPlaylistId = spotifyResource
-				? `spotify:${spotifyResource?.type}/${spotifyResource?.id}`
+				? `spotify:${spotifyResource?.type}:${spotifyResource?.id}`
 				: "";
 
 			// Filter out empty YouTube URLs and structure data correctly for API
