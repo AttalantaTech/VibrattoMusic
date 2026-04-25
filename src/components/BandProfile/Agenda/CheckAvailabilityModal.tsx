@@ -165,13 +165,13 @@ export const CheckAvailabilityModal = ({
 			{
 				// onSuccess: (data: Conversation) => {
 				onSuccess: () => {
-					toast.success("Conversa iniciada com sucesso!");
+					toast.success("Orçamento Solicitado.");
 					// Navigate to band me messages tab
 					void navigate({ to: "/band/me", search: { tab: "messages" } });
 					handleClose();
 				},
 				onError: () => {
-					toast.error("Erro ao iniciar conversa");
+					toast.error("Erro ao solicitar orçamento");
 				},
 			}
 		);
