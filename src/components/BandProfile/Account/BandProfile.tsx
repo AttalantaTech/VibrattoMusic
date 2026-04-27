@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
 	Clock4,
@@ -62,6 +62,9 @@ export const BandProfile = ({
 	const toggleFavoriteMutation = useToggleFavorite();
 	const { user } = useProfileStatus();
 
+	const urlParameters = new URLSearchParams(window.location.search);
+	const customRedirect = urlParameters.get("action");
+
 	// Start conversation hook
 	const startConversationMutation = useStartConversation();
 
@@ -77,9 +80,13 @@ export const BandProfile = ({
 	};
 
 	const handleRequestCheckAvailability = () => {
+		const redirectTo = window.location.pathname + "?action=check-availability";
+
 		if (!isAuthenticated) {
-			toast.error("Você precisa estar logado para solicitar um orçamento");
-			void navigate({ to: "/login" });
+			toast.error("Você precisa estar logado para verificar disponibilidade");
+			void navigate({
+				to: `/login?redirect=${encodeURIComponent(redirectTo)}`,
+			});
 			return;
 		}
 
@@ -88,13 +95,25 @@ export const BandProfile = ({
 
 	// Handler for request quote button
 	const handleRequestQuote = () => {
+		const redirectTo = window.location.pathname + "?action=conversation";
+
 		if (!isAuthenticated) {
-			toast.error("Você precisa estar logado para solicitar um orçamento");
-			void navigate({ to: "/login" });
+			toast.error("Você precisa estar logado para usar o chat");
+			void navigate({
+				to: `/login?redirect=${encodeURIComponent(redirectTo)}`,
+			});
 			return;
 		}
 		setIsConversationModalOpen(true);
 	};
+
+	useEffect(() => {
+		if (customRedirect === "conversation") {
+			setIsConversationModalOpen(true);
+		} else if (customRedirect === "check-availability") {
+			setIsCheckAvailabilityOpen(true);
+		}
+	}, [customRedirect]);
 
 	// Loading state
 	if (bandLoading) {
