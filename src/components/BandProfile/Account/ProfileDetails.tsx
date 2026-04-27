@@ -183,7 +183,7 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 			<section className="flex flex-col lg:flex-row pt-0 lg:pt-6 w-full items-center lg:items-start justify-start gap-4 lg:gap-6">
 				<LazyImage
 					alt="Band cover"
-					className={`rounded-lg w-full max-w-sm lg:w-72 h-40 sm:h-48 lg:h-52 object-contain border border-gray-200
+					className={`rounded-lg w-40 h-40 lg:w-72 sm:h-48 lg:h-52 object-contain border border-gray-200
 									${isPngImage(musicalProduct.fotoPerfil ?? "") ? "bg-white" : "bg-black"}`}
 					src={musicalProduct.fotoPerfil}
 				/>

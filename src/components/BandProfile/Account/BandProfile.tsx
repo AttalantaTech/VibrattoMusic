@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
 	Clock4,
@@ -17,7 +17,7 @@ import { ArtistCard } from "@/components/cards/ArtistCard/ArtistCard";
 
 import { useAuthStore } from "@/store/authStore";
 import { useToggleFavorite, useFavorites } from "@/hooks/useUser";
-import { extractYouTubeId } from "@/lib/utils/cn";
+import { extractYouTubeId, extractSpotifyResource } from "@/lib/utils/cn";
 import type {
 	MusicalProduct,
 	MusicalProductListApiResponse,
@@ -62,8 +62,15 @@ export const BandProfile = ({
 	const toggleFavoriteMutation = useToggleFavorite();
 	const { user } = useProfileStatus();
 
+	const urlParameters = new URLSearchParams(window.location.search);
+	const customRedirect = urlParameters.get("action");
+
 	// Start conversation hook
 	const startConversationMutation = useStartConversation();
+
+	const spotifyResource = extractSpotifyResource(
+		musicalProduct?.spotifyPlaylistId || ""
+	);
 
 	// Handler for favorite toggle
 	const handleFavoriteToggle = (productId: number) => {
@@ -73,9 +80,13 @@ export const BandProfile = ({
 	};
 
 	const handleRequestCheckAvailability = () => {
+		const redirectTo = window.location.pathname + "?action=check-availability";
+
 		if (!isAuthenticated) {
-			toast.error("Você precisa estar logado para solicitar um orçamento");
-			void navigate({ to: "/login" });
+			toast.error("Você precisa estar logado para verificar disponibilidade");
+			void navigate({
+				to: `/login?redirect=${encodeURIComponent(redirectTo)}`,
+			});
 			return;
 		}
 
@@ -84,13 +95,25 @@ export const BandProfile = ({
 
 	// Handler for request quote button
 	const handleRequestQuote = () => {
+		const redirectTo = window.location.pathname + "?action=conversation";
+
 		if (!isAuthenticated) {
-			toast.error("Você precisa estar logado para solicitar um orçamento");
-			void navigate({ to: "/login" });
+			toast.error("Você precisa estar logado para usar o chat");
+			void navigate({
+				to: `/login?redirect=${encodeURIComponent(redirectTo)}`,
+			});
 			return;
 		}
 		setIsConversationModalOpen(true);
 	};
+
+	useEffect(() => {
+		if (customRedirect === "conversation") {
+			setIsConversationModalOpen(true);
+		} else if (customRedirect === "check-availability") {
+			setIsCheckAvailabilityOpen(true);
+		}
+	}, [customRedirect]);
 
 	// Loading state
 	if (bandLoading) {
@@ -344,7 +367,7 @@ export const BandProfile = ({
 							) : musicalProduct.spotifyPlaylistId ? (
 								<div className="w-full rounded-lg overflow-hidden">
 									<iframe
-										src={`https://open.spotify.com/embed/playlist/${musicalProduct.spotifyPlaylistId}`}
+										src={`https://open.spotify.com/embed/${spotifyResource?.type}/${spotifyResource?.id}`}
 										width="100%"
 										height="352"
 										frameBorder="0"
@@ -481,7 +504,7 @@ export const BandProfile = ({
 							) : musicalProduct.spotifyPlaylistId ? (
 								<div className="w-full rounded-lg overflow-hidden">
 									<iframe
-										src={`https://open.spotify.com/embed/playlist/${musicalProduct.spotifyPlaylistId}`}
+										src={`https://open.spotify.com/embed/${spotifyResource?.type}/${spotifyResource?.id}`}
 										width="100%"
 										height="352"
 										frameBorder="0"

@@ -2,6 +2,7 @@ import { BadgeCheck, Heart, MapPin, Star } from "lucide-react";
 import { Button } from "../../ui/Button/Button";
 import { LazyImage } from "../../ui/LazyImage/LazyImage";
 import { useAuthCheck } from "../../../hooks/useAuthCheck";
+import { isPngImage } from "@/utils/validation";
 
 interface ArtistCardProps {
 	imgSrc?: string;
@@ -52,7 +53,9 @@ export const ArtistCard = ({
 			<div className="h-[180px] w-full relative overflow-hidden">
 				<LazyImage
 					alt={`Foto de ${name}`}
-					className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+					className={`w-full h-full object-contain group-hover:scale-105 transition-transform duration-300
+						${isPngImage(imgSrc || "") ? "bg-white" : "bg-black"}
+						`}
 					src={imgSrc}
 				/>
 				<div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />

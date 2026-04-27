@@ -278,14 +278,13 @@ export const AgendaComponent = () => {
 		<div className="flex justify-center w-full">
 			<div className="flex flex-col justify-center items-center w-full gap-4 lg:gap-6  px-1 sm:px-0">
 				{/* Section of the Agenda */}
-				<div>
+				<div className="w-full">
 					<div className={styles.sectionTitle}>
 						<h2 className={styles.titleText}>Agenda</h2>
 					</div>
 					<p className="text-gray-600 text-xs sm:text-base mb-8 sm:mb-10 leading-relaxed">
-						Adicione eventos à sua agenda. Os contratantes poderão verificar sua
-						disponibilidade através dos indicadores de "Ocupado", mas os
-						detalhes dos eventos permanecerão privados.
+						Adicione eventos à sua agenda. Os contratantes só poderão visualizar
+						a disponibilidade da agenda clicando em uma data por vez.
 					</p>
 
 					{/* Agenda Component */}

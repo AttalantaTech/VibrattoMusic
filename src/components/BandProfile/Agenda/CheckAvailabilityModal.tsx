@@ -67,13 +67,11 @@ export const CheckAvailabilityModal = ({
 			date: z.string().min(1, "Selecione uma data disponível"),
 			eventType: z.array(z.number()).min(1, "Selecione um tipo de evento"),
 			startTime: z.string().min(4, "Preencha a data de início do evento"),
-			endTime: z.string().min(4, "Preencha a data de término evento"),
 			location: z.string().trim().min(3, "Informe a localização"),
 		})
 		.superRefine((data, context) => {
 			const requiredFields = [
 				{ key: "startTime", label: "Horário inicial" },
-				{ key: "endTime", label: "Horário final" },
 			] as const;
 
 			requiredFields.forEach(({ key, label }) => {
@@ -91,7 +89,7 @@ export const CheckAvailabilityModal = ({
 		typeof checkAvailabilityValidationSchema
 	>;
 
-	const handleDefaultTime = (): { startTime: string; endTime: string } => {
+	const handleDefaultTime = (): { startTime: string } => {
 		const startTime = new Date().toLocaleString("pt-BR", {
 			timeZone: "America/Sao_Paulo",
 			hour: "2-digit",
@@ -103,21 +101,18 @@ export const CheckAvailabilityModal = ({
 
 		const startDate = new Date();
 		startDate.setHours(hours, minutes, 0, 0);
-		const endDate = new Date(startDate.getTime() + 120 * 60000);
 
 		return {
 			startTime: format(startDate, "HH:mm"),
-			endTime: format(endDate, "HH:mm"),
 		};
 	};
 
-	const { startTime, endTime } = handleDefaultTime();
+	const { startTime } = handleDefaultTime();
 
 	const defaultValues: CheckAvailabilityForm = {
 		date: "",
 		eventType: [],
 		startTime,
-		endTime,
 		location: "",
 	};
 
@@ -158,7 +153,7 @@ export const CheckAvailabilityModal = ({
     Olá ${musicalProduct?.nome ?? ""}, que boa notícia! Você recebeu uma solicitação de orçamento :
      🎵 Tipo de Evento: ${eventType?.label ?? ""} 📅 Data: ${formatInTimeZone(formData.date, TIME_ZONE, "dd/MM/yyyy")} 
 		 🎈 Local: ${formData.location ?? ""} 
-     ⏰ Horário: ${hasDefineEventTime ? `${formData.startTime} - ${formData.endTime}` : `Sem horário definido`} 
+     ⏰ Horário: ${hasDefineEventTime ? `${formData.startTime}` : `Sem horário definido`} 
     `;
 
 		startConversation(
@@ -170,13 +165,13 @@ export const CheckAvailabilityModal = ({
 			{
 				// onSuccess: (data: Conversation) => {
 				onSuccess: () => {
-					toast.success("Conversa iniciada com sucesso!");
+					toast.success("Orçamento Solicitado.");
 					// Navigate to band me messages tab
 					void navigate({ to: "/band/me", search: { tab: "messages" } });
 					handleClose();
 				},
 				onError: () => {
-					toast.error("Erro ao iniciar conversa");
+					toast.error("Erro ao solicitar orçamento");
 				},
 			}
 		);
@@ -218,7 +213,6 @@ export const CheckAvailabilityModal = ({
 
 		if (hasDefineEventTime) {
 			setValue("startTime", "");
-			setValue("endTime", "");
 		} else {
 			const hourPtBR = new Date().toLocaleString("pt-BR", {
 				timeZone: "America/Sao_Paulo",
@@ -233,10 +227,8 @@ export const CheckAvailabilityModal = ({
 
 			const startDate = new Date();
 			startDate.setHours(hours, minutes, 0, 0);
-			const endDate = new Date(startDate.getTime() + 120 * 60000);
 
 			setValue("startTime", format(startDate, "HH:mm"));
-			setValue("endTime", format(endDate, "HH:mm"));
 		}
 	};
 
@@ -379,7 +371,7 @@ export const CheckAvailabilityModal = ({
 												htmlFor="availabilityOtherEvents"
 												className="text-sm font-medium text-gray-700 cursor-pointer"
 											>
-												Definir horário do Evento
+												Definir horário do inicio do show
 											</Label>
 										</div>
 									</div>
@@ -405,12 +397,8 @@ export const CheckAvailabilityModal = ({
 
 												const startDate = new Date();
 												startDate.setHours(hours, minutes, 0, 0);
-												const endDate = new Date(
-													startDate.getTime() + 120 * 60000
-												);
 
 												setValue("startTime", format(startDate, "HH:mm"));
-												setValue("endTime", format(endDate, "HH:mm"));
 											}}
 											className={`pl-10 ${errors.startTime ? "border-red-500" : ""}`}
 										/>
@@ -418,24 +406,6 @@ export const CheckAvailabilityModal = ({
 										{errors.startTime && (
 											<div className="text-red-500 text-sm">
 												{errors.startTime.message}
-											</div>
-										)}
-									</div>
-
-									<div className="relative flex-1">
-										<Clock
-											className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-											size={18}
-										/>
-										<Input
-											type="time"
-											{...register("endTime")}
-											className={`pl-10 ${errors["endTime"] ? "border-red-500" : ""}`}
-										/>
-
-										{errors.endTime && (
-											<div className="text-red-500 text-sm">
-												{errors.endTime.message}
 											</div>
 										)}
 									</div>

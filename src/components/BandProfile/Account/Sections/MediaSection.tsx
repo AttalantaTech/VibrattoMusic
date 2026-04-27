@@ -56,6 +56,7 @@ import { imageUploadService } from "@/api";
 import { useUpdateMusicalProduct } from "@/hooks/useMusicalProducts";
 import { isPdfFile, isPngImage } from "@/utils/validation";
 import { TooltipCustom } from "@/components/ui/TooltipCustom/TooltipCustom";
+import { extractSpotifyResource } from "@/lib/utils/cn";
 
 // Define media schema types
 const mediaSchema = z.object({
@@ -210,8 +211,6 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 	const [loading, setLoading] = useState(false);
 	const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
 
-	// State for Step3-style UI
-	const [currentMediaTab, setCurrentMediaTab] = useState<string>("youtube");
 	const [youtubeUrl, setYoutubeUrl] = useState("");
 	const [spotifyUrl, setSpotifyUrl] = useState<string | null>(null);
 
@@ -234,6 +233,10 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 	const [socialNetworkList, setSocialNetworkList] = useState<
 		Array<SocialNetworkList>
 	>([]);
+
+	const spotifyResource = useMemo(() => {
+		return extractSpotifyResource(spotifyUrl || "");
+	}, [spotifyUrl]);
 
 	const form = useForm<MediaData>({
 		resolver: zodResolver(mediaSchema),
@@ -387,12 +390,16 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 		}
 
 		setLoading(true);
+
 		try {
+			const spotifyPlaylistId = spotifyResource
+				? `spotify:${spotifyResource?.type}:${spotifyResource?.id}`
+				: "";
+
 			// Filter out empty YouTube URLs and structure data correctly for API
 			const media: MusicalProductMedia = {
-				videosYouTube:
-					data.videosYouTube?.filter((url: string) => url.trim() !== "") ?? [],
-				spotifyPlaylistId: data.spotifyPlaylistId ?? null,
+				videosYouTube: youtubeUrl.trim() !== "" ? [youtubeUrl] : [],
+				spotifyPlaylistId,
 				exibirValorServico: showPriceTab, // Default value since we moved this to schedule
 				valorServico: showPriceTab
 					? data.valorServico
@@ -500,69 +507,6 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 			setClippings(newImages);
 		} catch (error) {
 			console.error("Erro ao remover arquivo:", error);
-		}
-	};
-
-	// Tab definitions for Step3-style UI
-	const mediaTabs = [
-		{
-			label: "Vídeo",
-			value: "youtube",
-			icon: <FaYoutube size={20} />,
-		},
-		{
-			label: "Áudio",
-			value: "soundcloud",
-			icon: <FaSoundcloud size={20} />,
-		},
-	];
-
-	const displayCurrentMediaTab = () => {
-		switch (currentMediaTab) {
-			case "youtube":
-				return (
-					<>
-						<IconInput
-							className="w-full"
-							icon={<FaYoutube color="#FF0000" size={24} />}
-							name="youtubelink"
-							placeholder="https://www.youtube.com/watch?v=..."
-							value={youtubeUrl}
-							onChange={setYoutubeUrl}
-						/>
-						{youtubeUrl ? (
-							<div className="w-full aspect-video rounded-lg overflow-hidden shadow-lg">
-								<MediaPlayer src={youtubeUrl} />
-							</div>
-						) : (
-							<div className="p-6 bg-gray-50 text-gray-500 rounded-lg flex flex-col items-center gap-3 text-center">
-								<FaYoutube size={40} className="text-gray-400" />
-								<p className="text-sm">
-									Cole uma URL do YouTube acima para visualizar
-								</p>
-							</div>
-						)}
-					</>
-				);
-			case "soundcloud":
-				return (
-					<>
-						<IconInput
-							className="w-full"
-							icon={<FaSoundcloud color="#FF5500" size={24} />}
-							name="soundcloudlink"
-							placeholder="https://soundcloud.com/..."
-							value={spotifyUrl ?? ""}
-							onChange={setSpotifyUrl}
-						/>
-						<div className="p-6 bg-gray-50 text-gray-500 rounded-lg flex flex-col items-center gap-3 text-center">
-							<FaSoundcloud size={40} className="text-gray-400" />
-							<p className="text-sm">Cole uma URL do SoundCloud acima</p>
-						</div>
-					</>
-				);
-			default:
-				return null;
 		}
 	};
 
@@ -700,7 +644,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 											"image/gif",
 											"application/pdf",
 										]}
-										maxSizeMB={10}
+										maxSizeMB={100}
 										onFileSelected={async (file) => {
 											if (file)
 												await handleFileUpload(file, "ProdutoMusicalClipagem");
@@ -883,7 +827,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 											"image/gif",
 											"video/mp4",
 										]}
-										maxSizeMB={10}
+										maxSizeMB={100}
 										onFileSelected={async (file) => {
 											if (file)
 												await handleImageUpload(
@@ -942,19 +886,60 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 						{/*  Main media section */}
 						<div className={styles.sectionContainer}>
 							<div className={styles.sectionHeader}>
-								<h2 className={styles.titleText}>Mídia Principal</h2>
+								<h2 className={styles.titleText}>Mídias Principais</h2>
 							</div>
-							<p className="text-gray-600 text-sm mb-4">
-								Adicione um vídeo, áudio ou playlist para destacar seu trabalho.
-							</p>
-							<IconTabNavigation
-								currentTab={currentMediaTab}
-								tabs={mediaTabs}
-								variant="default"
-								onChange={setCurrentMediaTab}
-							/>
+
 							<div className="flex flex-col w-full gap-4 mt-4">
-								{displayCurrentMediaTab()}
+								<div className="flex flex-col gap-2">
+									<IconInput
+										className="w-full"
+										icon={<FaYoutube color="#FF0000" size={24} />}
+										name="youtubelink"
+										placeholder="https://www.youtube.com/watch?v=..."
+										value={youtubeUrl}
+										onChange={setYoutubeUrl}
+									/>
+									{youtubeUrl ? (
+										<div className="w-full aspect-video rounded-lg overflow-hidden shadow-lg">
+											<MediaPlayer src={youtubeUrl} />
+										</div>
+									) : (
+										<div className="p-6 bg-gray-50 text-gray-500 rounded-lg flex flex-col items-center gap-3 text-center">
+											<FaYoutube size={40} className="text-gray-400" />
+											<p className="text-sm">
+												Cole uma URL do YouTube acima para visualizar
+											</p>
+										</div>
+									)}
+								</div>
+
+								<div className="flex flex-col gap-2 mt-4">
+									<IconInput
+										className="w-full"
+										icon={<FaSpotify color="#1DB954" size={24} />}
+										name="spotifylink"
+										placeholder="https://open.spotify.com/..."
+										value={spotifyUrl ?? ""}
+										onChange={setSpotifyUrl}
+									/>
+									{spotifyResource ? (
+										<div>
+											<iframe
+												src={`https://open.spotify.com/embed/${spotifyResource?.type}/${spotifyResource?.id}`}
+												width="100%"
+												height="352"
+												frameBorder="0"
+												allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+												loading="lazy"
+											/>
+										</div>
+									) : (
+										<div className="p-6 bg-gray-50 text-gray-500 rounded-lg flex flex-col items-center gap-3 text-center">
+											<FaSpotify size={40} className="text-gray-400" />
+											<p className="text-sm">Cole uma URL do Spotify acima</p>
+										</div>
+									)}
+								</div>
 							</div>
 						</div>
 

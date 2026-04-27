@@ -68,3 +68,42 @@ export const extractYouTubeId = (url: string): string | null => {
 		return null;
 	}
 };
+
+type SpotifyResourceType = "track" | "playlist" | "album" | "artist";
+
+type SpotifyResource = {
+	type: SpotifyResourceType;
+	id: string;
+} | null;
+
+export function extractSpotifyResource(input: string): SpotifyResource {
+	const cleanUrl = input.split("?")[0];
+
+	if (!cleanUrl) return null;
+
+	// URL
+	const urlMatch = cleanUrl.match(
+		/open\.spotify\.com\/(?:intl-[a-z]{2}\/)?(track|playlist|album|artist)\/([a-zA-Z0-9]+)/
+	);
+
+	if (urlMatch?.[1] && urlMatch?.[2]) {
+		return {
+			type: urlMatch[1] as SpotifyResourceType,
+			id: urlMatch[2],
+		};
+	}
+
+	// URI
+	const uriMatch = input.match(
+		/spotify:(track|playlist|album|artist):([a-zA-Z0-9]+)/
+	);
+
+	if (uriMatch?.[1] && uriMatch?.[2]) {
+		return {
+			type: uriMatch[1] as SpotifyResourceType,
+			id: uriMatch[2],
+		};
+	}
+
+	return null;
+}

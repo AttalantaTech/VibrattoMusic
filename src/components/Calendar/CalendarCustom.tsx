@@ -87,7 +87,8 @@ export const CalendarCustom = ({
 
 	// Renders the Top (Month, Year, and Navigation)
 	const renderHeader = () => (
-		<div className="flex items-center justify-center px-6 py-4 border-b bg-white">
+		<div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between px-6 py-4 border-b bg-white">
+			<div className="ml-6" />
 			<div className="flex gap-2">
 				<button
 					onClick={previousMonth}
@@ -112,6 +113,23 @@ export const CalendarCustom = ({
 				>
 					<ChevronRight size={20} />
 				</button>
+			</div>
+
+			<div className="grid grid-cols-2 min-[420px]:grid-cols-3 items-end gap-6 sm:gap-1 text-xs text-gray-500 sm:flex sm:flex-col">
+				<div className="flex items-center gap-1">
+					<span className="block">Disponível</span>
+					<span className="block h-3 w-3 rounded-full bg-[#039855] border border-[#039855]" />
+				</div>
+
+				<div className="flex items-center gap-1">
+					<span className="block">A Consultar</span>
+					<span className="block h-3 w-3 rounded-full bg-[#FEF0C7] border border-orange-300" />
+				</div>
+
+				<div className="flex items-center gap-1">
+					<span className="block">Indisponível</span>
+					<span className="block h-3 w-3 rounded-full bg-[#D92D20] opacity-50 border border-[#D92D20]" />
+				</div>
 			</div>
 		</div>
 	);
@@ -175,7 +193,6 @@ export const CalendarCustom = ({
 						<span
 							className={`
               text-sm font-medium w-7 h-7 border border-white flex items-center justify-center rounded-full
-							${agendaDateStatus && isSameDay(cloneDay, dateStatusStyle(agendaDateStatus.status))}
 							${
 								agendaDateStatus && isSameDay(cloneDay, agendaDateStatus.data)
 									? dateStatusStyle(agendaDateStatus.status)

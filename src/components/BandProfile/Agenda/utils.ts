@@ -79,6 +79,24 @@ export const validateTimeRange = (
 	return endInMinutes > startInMinutes;
 };
 
+export const parseTimeToMinutes = (time: string) => {
+	const [h = 0, m = 0, s = 0] = time.split(":").map(Number);
+	return h * 60 + m + s / 60;
+};
+
+export const didPassMidnight = (
+	startTime: string,
+	endTime: string
+): boolean => {
+	const toMinutes = (time: string): number => {
+		const [h = 0, m = 0] = time.split(":").map(Number);
+
+		return h * 60 + m;
+	};
+
+	return toMinutes(endTime) < toMinutes(startTime);
+};
+
 // Event creation helpers
 export const calculateEndTime = (
 	startTime: string | null,
@@ -87,25 +105,26 @@ export const calculateEndTime = (
 	if (!startTime || !duration) return null;
 
 	const [startHour = 0, startMinute = 0] = startTime.split(":").map(Number);
-	const [durationHour = 0, durationMinute = 0] = startTime
+	const [durationHour = 0, durationMinute = 0] = duration
 		.split(":")
 		.map(Number);
 
 	const startTotalMinutes = startHour * 60 + startMinute;
 	const durationTotalMinutes = durationHour * 60 + durationMinute;
 
-	let endTotalMinutes = startTotalMinutes + durationTotalMinutes;
+	const endTotalMinutes = startTotalMinutes + durationTotalMinutes;
 
-	endTotalMinutes = endTotalMinutes % (24 * 60);
+	const normalizedMinutes = endTotalMinutes % (24 * 60);
 
-	const hours = Math.floor(endTotalMinutes / 60)
-		.toString()
-		.padStart(2, "0");
-	const minutes = Math.floor(endTotalMinutes % 60)
+	const hours = Math.floor(normalizedMinutes / 60)
 		.toString()
 		.padStart(2, "0");
 
-	return `${hours}:${minutes}`;
+	const minutes = Math.floor(normalizedMinutes % 60)
+		.toString()
+		.padStart(2, "0");
+
+	return `${hours}:${minutes}:00`;
 };
 
 export const calculateDuration = (
@@ -114,11 +133,8 @@ export const calculateDuration = (
 ): string | null => {
 	if (!startTime || !endTime) return null;
 
-	const [startHour = 0, startMinute = 0] = startTime.split(":").map(Number);
-	const [endHour = 0, endMinute = 0] = endTime.split(":").map(Number);
-
-	const startTotalMinutes = startHour * 60 + startMinute;
-	const endTotalMinutes = endHour * 60 + endMinute;
+	const startTotalMinutes = parseTimeToMinutes(startTime);
+	const endTotalMinutes = parseTimeToMinutes(endTime);
 
 	let diff = endTotalMinutes - startTotalMinutes;
 
@@ -133,7 +149,7 @@ export const calculateDuration = (
 		.toString()
 		.padStart(2, "0");
 
-	return `${hours}:${minutes}`;
+	return `${hours}:${minutes}:00`;
 };
 
 // Date utilities
