@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
@@ -30,6 +31,8 @@ import { RatingComment } from "@/components/RatingComment/RatingComment";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { CheckAvailabilityModal } from "../Agenda/CheckAvailabilityModal";
 import { ProfileDetails } from "./ProfileDetails";
+import { TabNavigation } from "@/components/ui/TabNavigation/TabNavigation";
+import { MediaPlayer } from "@/components/MediaPlayer/MediaPlayer";
 
 const styles = {
 	genre: "font-medium text-[#085EC5] bg-[#D6F2FF] py-[2x] px-2 rounded-2xl",
@@ -46,6 +49,11 @@ interface BandProfileProps {
 	bandLoading: boolean;
 }
 
+const tabs = [
+	{ label: "Youtube", value: "youtube" },
+	{ label: "Spotify", value: "spotify" },
+];
+
 export const BandProfile = ({
 	musicalProduct,
 	similarArtists,
@@ -55,6 +63,9 @@ export const BandProfile = ({
 	const navigate = useNavigate();
 	const [isConversationModalOpen, setIsConversationModalOpen] = useState(false);
 	const [isCheckAvailabilityOpen, setIsCheckAvailabilityOpen] = useState(false);
+	const [activeTab, setActiveTab] = useState("youtube");
+	const [loadingYoutube, setLoadingYoutube] = useState(true);
+	const [loadingSpotify, setLoadingSpotify] = useState(true);
 
 	// Auth and favorites
 	const { isAuthenticated } = useAuthStore();
@@ -114,6 +125,78 @@ export const BandProfile = ({
 			setIsCheckAvailabilityOpen(true);
 		}
 	}, [customRedirect]);
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			if (activeTab === "youtube") {
+				setLoadingYoutube(false);
+			} else {
+				setLoadingSpotify(false);
+			}
+		}, 500);
+
+		return () => {
+			clearTimeout(timer);
+		};
+	}, [activeTab]);
+
+	const renderTabContent = (tab: string): ReactNode => {
+		switch (tab) {
+			case "youtube": {
+				const video =
+					musicalProduct?.videosYouTube.find((item) => item)?.link ?? "";
+				const videoId = extractYouTubeId(video);
+
+				return videoId ? (
+					<div className="relative w-full rounded-lg overflow-hidden">
+						{loadingYoutube && (
+							<div className="absolute inset-0 bg-gray-200 animate-pulse z-10" />
+						)}
+						<MediaPlayer
+							className="aspect-video"
+							src={`https://www.youtube.com/embed/${videoId}`}
+						/>
+					</div>
+				) : (
+					<a
+						href={video}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="block"
+					>
+						<LazyImage
+							alt="Video"
+							className="rounded-lg h-40 sm:h-48 lg:h-[180px] w-full object-cover hover:opacity-90 transition-opacity"
+							src={musicalProduct?.fotoPerfil || ""}
+						/>
+					</a>
+				);
+			}
+
+			case "spotify": {
+				return (
+					<div className="relative aspect-video h-full w-full rounded-lg overflow-auto">
+						{loadingSpotify && (
+							<div className="absolute inset-0 bg-gray-200 animate-pulse z-10" />
+						)}
+						<iframe
+							src={`https://open.spotify.com/embed/${spotifyResource?.type}/${spotifyResource?.id}`}
+							allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+							width="100%"
+							height="352"
+							allowFullScreen
+							onLoad={() => {
+								setLoadingSpotify(false);
+							}}
+						/>
+					</div>
+				);
+			}
+
+			default:
+				return "";
+		}
+	};
 
 	// Loading state
 	if (bandLoading) {
@@ -325,62 +408,42 @@ export const BandProfile = ({
 
 					{/* Side Card */}
 					{musicalProduct.usuario.id !== user?.id ? (
-						<div className="w-full lg:w-80 xl:w-96 border border-gray-200 rounded-lg flex flex-col gap-4 lg:gap-6 p-4 lg:p-6 shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08)] order-1 lg:order-2 lg:sticky lg:top-4 lg:self-start">
+						<div className="w-full lg:w-80 xl:w-96 border border-gray-200 rounded-lg flex flex-col gap-4 lg:gap-6 pb-4 px-4 lg:pb-4 lg:px-4 shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08)] order-1 lg:order-2 lg:sticky lg:top-4 lg:self-start">
 							{/* Media content (YouTube or Spotify) */}
-							{musicalProduct.videosYouTube &&
-							musicalProduct.videosYouTube.length > 0 ? (
-								(() => {
-									const video =
-										musicalProduct.videosYouTube.find((item) => item)?.link ??
-										"";
-									const videoId = extractYouTubeId(video);
 
-									return videoId ? (
-										<div
-											className="relative w-full rounded-lg overflow-hidden"
-											style={{ paddingBottom: "56.25%" }}
-										>
-											<iframe
-												className="absolute top-0 left-0 w-full h-full"
-												src={`https://www.youtube.com/embed/${videoId}`}
-												title="YouTube video"
-												frameBorder="0"
-												allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-												allowFullScreen
-											/>
-										</div>
-									) : (
-										<a
-											href={video}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="block"
-										>
-											<LazyImage
-												alt="Video"
-												className="rounded-lg h-40 sm:h-48 lg:h-[180px] w-full object-cover hover:opacity-90 transition-opacity"
-												src={musicalProduct.fotoPerfil}
-											/>
-										</a>
-									);
-								})()
+							{musicalProduct.videosYouTube.length > 0 &&
+							musicalProduct.spotifyPlaylistId ? (
+								<div className="flex flex-col gap-2">
+									<div className="w-full h-16 sm:h-18 border-b border-gray-100 overflow-visible scrollbar-hide flex items-center">
+										<TabNavigation
+											currentTab={activeTab}
+											tabs={tabs}
+											variant="underline"
+											onChange={(tab) => {
+												if (tab === "youtube") {
+													setLoadingYoutube(true);
+												} else {
+													setLoadingSpotify(true);
+												}
+												setActiveTab(tab);
+											}}
+										/>
+									</div>
+
+									{renderTabContent(activeTab)}
+								</div>
+							) : musicalProduct.videosYouTube.length > 0 ? (
+								<div className="pt-4">{renderTabContent("youtube")}</div>
 							) : musicalProduct.spotifyPlaylistId ? (
-								<div className="w-full rounded-lg overflow-hidden">
-									<iframe
-										src={`https://open.spotify.com/embed/${spotifyResource?.type}/${spotifyResource?.id}`}
-										width="100%"
-										height="352"
-										frameBorder="0"
-										allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-										loading="lazy"
+								<div className="pt-4">{renderTabContent("spotify")}</div>
+							) : (
+								<div className="pt-4">
+									<LazyImage
+										alt="Band photo"
+										className="rounded-lg h-40 sm:h-48 lg:h-[180px] w-full object-cover"
+										src={musicalProduct.fotoPerfil}
 									/>
 								</div>
-							) : (
-								<LazyImage
-									alt="Band photo"
-									className="rounded-lg h-40 sm:h-48 lg:h-[180px] w-full object-cover"
-									src={musicalProduct.fotoPerfil}
-								/>
 							)}
 
 							{/* Action buttons */}
@@ -462,62 +525,41 @@ export const BandProfile = ({
 							) : null}
 						</div>
 					) : (
-						<div className="w-full lg:w-80 xl:w-96 border border-gray-200 rounded-lg flex flex-col gap-4 lg:gap-6 p-4 lg:p-6 shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08)] order-1 lg:order-2 lg:sticky lg:top-4 lg:self-start">
+						<div className="w-full lg:w-80 xl:w-96 border border-gray-200 rounded-lg flex flex-col gap-4 lg:gap-6 pb-4 px-4 lg:pb-4 lg:px-4 shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08)] order-1 lg:order-2 lg:sticky lg:top-4 lg:self-start">
 							{/* Media content (YouTube or Spotify) */}
-							{musicalProduct.videosYouTube &&
-							musicalProduct.videosYouTube.length > 0 ? (
-								(() => {
-									const video =
-										musicalProduct.videosYouTube.find((item) => item)?.link ??
-										"";
-									const videoId = extractYouTubeId(video);
+							{musicalProduct.videosYouTube.length > 0 &&
+							musicalProduct.spotifyPlaylistId ? (
+								<div className="flex flex-col gap-2">
+									<div className="w-full h-16 sm:h-18 border-b border-gray-100 overflow-visible scrollbar-hide flex items-center">
+										<TabNavigation
+											currentTab={activeTab}
+											tabs={tabs}
+											variant="underline"
+											onChange={(tab) => {
+												if (tab === "youtube") {
+													setLoadingYoutube(true);
+												} else {
+													setLoadingSpotify(true);
+												}
+												setActiveTab(tab);
+											}}
+										/>
+									</div>
 
-									return videoId ? (
-										<div
-											className="relative w-full rounded-lg overflow-hidden"
-											style={{ paddingBottom: "56.25%" }}
-										>
-											<iframe
-												className="absolute top-0 left-0 w-full h-full"
-												src={`https://www.youtube.com/embed/${videoId}`}
-												title="YouTube video"
-												frameBorder="0"
-												allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-												allowFullScreen
-											/>
-										</div>
-									) : (
-										<a
-											href={video}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="block"
-										>
-											<LazyImage
-												alt="Video"
-												className="rounded-lg h-40 sm:h-48 lg:h-[180px] w-full object-cover hover:opacity-90 transition-opacity"
-												src={musicalProduct.fotoPerfil}
-											/>
-										</a>
-									);
-								})()
+									{renderTabContent(activeTab)}
+								</div>
+							) : musicalProduct.videosYouTube.length > 0 ? (
+								<div className="pt-4">{renderTabContent("youtube")}</div>
 							) : musicalProduct.spotifyPlaylistId ? (
-								<div className="w-full rounded-lg overflow-hidden">
-									<iframe
-										src={`https://open.spotify.com/embed/${spotifyResource?.type}/${spotifyResource?.id}`}
-										width="100%"
-										height="352"
-										frameBorder="0"
-										allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-										loading="lazy"
+								<div className="pt-4">{renderTabContent("spotify")}</div>
+							) : (
+								<div className="pt-4">
+									<LazyImage
+										alt="Band photo"
+										className="rounded-lg h-40 sm:h-48 lg:h-[180px] w-full object-cover"
+										src={musicalProduct.fotoPerfil}
 									/>
 								</div>
-							) : (
-								<LazyImage
-									alt="Band photo"
-									className="rounded-lg h-40 sm:h-48 lg:h-[180px] w-full object-cover"
-									src={musicalProduct.fotoPerfil}
-								/>
 							)}
 						</div>
 					)}
