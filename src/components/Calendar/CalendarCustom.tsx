@@ -10,6 +10,8 @@ import {
 	isSameMonth,
 	isToday,
 	isSameDay,
+	isBefore,
+	startOfDay,
 } from "date-fns";
 import { ptBR } from "date-fns/locale/pt-BR";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -53,16 +55,20 @@ export const CalendarCustom = ({
 		}
 	};
 
-	const dateStatusStyle = (status: AgendaDateStatus): string => {
+	const dateStatusStyle = (
+		status: AgendaDateStatus,
+		isBefore: boolean,
+		isToday: boolean
+	): string => {
 		switch (status) {
 			case "Livre": {
-				return "bg-[#039855] text-white rounded-full";
+				return `${isBefore || isToday ? "bg-[#039855]" : "bg-[#039855]/50"} text-white rounded-full`;
 			}
 			case "Ocupado": {
-				return "bg-[#D92D20] opacity-50 text-white rounded-full";
+				return `${isBefore || isToday ? "bg-[#D92D20] opacity-50" : "bg-[#D92D20]/40 opacity-50"} text-white rounded-full`;
 			}
 			case "OcupadoComEspaco": {
-				return "bg-[#FEF0C7] text-[#DC6803] rounded-full";
+				return `${isBefore || isToday ? "bg-[#FEF0C7] text-[#DC6803]" : "bg-[#FEF0C7]/50 text-[#DC6803]/40"} rounded-full`;
 			}
 			default:
 				return "";
@@ -178,6 +184,8 @@ export const CalendarCustom = ({
 					);
 				});
 
+				const currentDate = startOfDay(new Date());
+
 				daysInWeek.push(
 					<div
 						key={cloneDay.toString()}
@@ -187,7 +195,13 @@ export const CalendarCustom = ({
 							}
 						}}
 						className={`min-h-[120px] border-r border-b p-2 transition-colors  flex flex-col
-              ${!isCurrentMonth ? "bg-gray-50/50 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 cursor-pointer hover:bg-gray-50"}
+              ${
+								!isCurrentMonth
+									? "bg-gray-50/50 text-gray-400 cursor-not-allowed"
+									: `${isBefore(currentDate, monthStart) ? "bg-gray-50/50 text-gray-400" : "bg-white text-gray-700 cursor-pointer hover:bg-gray-50"}`
+							}
+							
+							
             `}
 					>
 						<span
@@ -195,7 +209,11 @@ export const CalendarCustom = ({
               text-sm font-medium w-7 h-7 border border-white flex items-center justify-center rounded-full
 							${
 								agendaDateStatus && isSameDay(cloneDay, agendaDateStatus.data)
-									? dateStatusStyle(agendaDateStatus.status)
+									? dateStatusStyle(
+											agendaDateStatus.status,
+											isBefore(currentDate, monthStart),
+											isToday(cloneDay)
+										)
 									: ""
 							}
             `}
