@@ -166,6 +166,8 @@ export const CalendarCustom = ({
 		const calendarRows = [];
 		let day = startDate;
 
+		const currentDate = startOfDay(new Date());
+
 		while (day <= endDate) {
 			const daysInWeek = [];
 			for (let index = 0; index < 7; index++) {
@@ -183,8 +185,6 @@ export const CalendarCustom = ({
 						format(cloneDay, "dd/MM/yyyy")
 					);
 				});
-
-				const currentDate = startOfDay(new Date());
 
 				daysInWeek.push(
 					<div
