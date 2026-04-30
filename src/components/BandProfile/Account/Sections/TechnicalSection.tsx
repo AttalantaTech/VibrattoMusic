@@ -4,18 +4,7 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import {
-	Guitar,
-	Loader2,
-	MapIcon,
-	Drum,
-	MicVocal,
-	Volume2,
-	KeyboardMusic,
-	Music,
-	HelpCircle,
-	ChevronLeft,
-} from "lucide-react";
+import { Loader2, MapIcon, HelpCircle, ChevronLeft } from "lucide-react";
 import { imageUploadService } from "../../../../api";
 import { Button } from "../../../ui/Button/Button";
 import { IconTabNavigation } from "../../../ui/IconTabNavigation/IconTabNavigation";
@@ -43,24 +32,6 @@ const styles = {
 	sectionIcon: "text-primary-600 flex-shrink-0",
 };
 
-// Helper function to get icon for instrument
-function getInstrumentIcon(instrumentName: string) {
-	const name = instrumentName.toLowerCase();
-	if (name.includes("guitarra") || name.includes("guitar"))
-		return <Guitar size={24} />;
-	if (name.includes("bateria") || name.includes("drum"))
-		return <Drum size={24} />;
-	if (name.includes("microfone") || name.includes("mic"))
-		return <MicVocal size={24} />;
-	if (name.includes("teclado") || name.includes("keyboard"))
-		return <KeyboardMusic size={24} />;
-	if (name.includes("baixo") || name.includes("bass"))
-		return <Music size={24} />;
-	if (name.includes("amplificador") || name.includes("amp"))
-		return <Volume2 size={24} />;
-	return <MicVocal size={24} />;
-}
-
 // Helper function to convert saved StageMapData back to StageElement format
 function convertStageMapDataToElements(
 	stageMapData: Array<StageMapData>,
@@ -80,7 +51,7 @@ function convertStageMapDataToElements(
 				name: instrument.Nome,
 				x: item.posicaoX,
 				y: item.posicaoY,
-				icon: getInstrumentIcon(instrument.Nome),
+				icon: instrument.Icone,
 				category:
 					instrument.IdTipoEquipamento === 1
 						? ("instrument" as const)

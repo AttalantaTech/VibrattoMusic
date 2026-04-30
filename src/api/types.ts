@@ -56,6 +56,7 @@ export interface FilterOptionInstrument {
 	Nome: string;
 	IdTipoEquipamento: number;
 	NomeTipoEquipamento: string;
+	Icone: string;
 }
 
 export interface FilterHomeImage {

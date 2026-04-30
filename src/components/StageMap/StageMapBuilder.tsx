@@ -1,26 +1,13 @@
-import {
-	useState,
-	useRef,
-	useEffect,
-	useCallback,
-	useMemo,
-	type ReactNode,
-} from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
 	X,
 	Save,
-	Guitar,
-	Drum,
-	MicVocal,
-	Volume2,
-	KeyboardMusic,
 	Undo,
 	Redo,
 	ZoomIn,
 	ZoomOut,
 	Grid3x3,
 	Layers,
-	Music,
 	Search,
 } from "lucide-react";
 import {
@@ -196,24 +183,6 @@ export function StageMapBuilder({
 		setElements(initialElements);
 	}, [initialElements]);
 
-	// Get icon for instrument
-	function getInstrumentIcon(instrumentName: string): ReactNode {
-		const name = instrumentName.toLowerCase();
-		if (name.includes("guitarra") || name.includes("guitar"))
-			return <Guitar size={24} />;
-		if (name.includes("bateria") || name.includes("drum"))
-			return <Drum size={24} />;
-		if (name.includes("microfone") || name.includes("mic"))
-			return <MicVocal size={24} />;
-		if (name.includes("teclado") || name.includes("keyboard"))
-			return <KeyboardMusic size={24} />;
-		if (name.includes("baixo") || name.includes("bass"))
-			return <Music size={24} />;
-		if (name.includes("amplificador") || name.includes("amp"))
-			return <Volume2 size={24} />;
-		return <MicVocal size={24} />;
-	}
-
 	// Instrument elements from API
 	const instrumentElements: Array<StageElement> = useMemo(() => {
 		if (!instrumentsData) return [];
@@ -223,7 +192,7 @@ export function StageMapBuilder({
 			name: instrument.Nome,
 			x: 0,
 			y: 0,
-			icon: getInstrumentIcon(instrument.Nome),
+			icon: instrument.Icone,
 			category:
 				instrument.IdTipoEquipamento === 1
 					? ("instrument" as const)
@@ -427,7 +396,7 @@ export function StageMapBuilder({
 									onChange={(event) => {
 										setInfrastructureSearch(event.target.value);
 									}}
-									className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-transparent"
+									className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-transparent"
 								/>
 							</div>
 
@@ -436,7 +405,7 @@ export function StageMapBuilder({
 								<div className="grid grid-cols-3 gap-3">
 									{loadingInstruments ? (
 										<div className="col-span-3 text-center py-4">
-											<div className="animate-spin rounded-full h-8 w-8 border-b-2  border-green-600 mx-auto"></div>
+											<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-300 mx-auto"></div>
 										</div>
 									) : filteredInstrumentElements.length > 0 ? (
 										filteredInstrumentElements
@@ -448,10 +417,14 @@ export function StageMapBuilder({
 													onDragStart={() => {
 														handleDragStart(element);
 													}}
-													className="p-3 bg-white hover:bg-green-50 border border-gray-200 hover:border-green-300 rounded-lg cursor-grab transition-all duration-200 flex flex-col items-center gap-2"
+													className="p-3 bg-white hover:bg-primary-50/50 border border-gray-200 hover:border-primary-300 rounded-lg cursor-grab transition-all duration-200 flex flex-col items-center gap-2"
 												>
-													<div style={{ color: element.color }}>
-														{element.icon}
+													<div>
+														<img
+															className="w-10 h-10"
+															src={element.icon}
+															alt={element.name}
+														/>
 													</div>
 													<span className="text-xs text-gray-600 text-center leading-tight">
 														{element.name}
@@ -490,7 +463,7 @@ export function StageMapBuilder({
 									onChange={(event) => {
 										setInstrumentSearch(event.target.value);
 									}}
-									className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+									className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 hover:border-primary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-transparent"
 								/>
 							</div>
 
@@ -511,10 +484,14 @@ export function StageMapBuilder({
 													onDragStart={() => {
 														handleDragStart(element);
 													}}
-													className="p-3 bg-white hover:bg-primary-50 border border-gray-200 hover:border-primary-300 rounded-lg cursor-grab transition-all duration-200 flex flex-col items-center gap-2"
+													className="p-3 bg-white hover:bg-primary-50/75 border border-gray-200 hover:border-primary-300 rounded-lg cursor-grab transition-all duration-200 flex flex-col items-center gap-2"
 												>
-													<div style={{ color: element.color }}>
-														{element.icon}
+													<div>
+														<img
+															className="w-10 h-10"
+															src={element.icon}
+															alt={element.name}
+														/>
 													</div>
 													<span className="text-xs text-gray-600 text-center leading-tight">
 														{element.name}
@@ -625,27 +602,16 @@ export function StageMapBuilder({
 
 								{/* Stage Elements */}
 								{elements.map((element) => {
-									const isSelected = selectedElementId === element.id;
-
 									return (
 										<div
 											role="button"
 											key={element.id}
-											className={`absolute rounded-lg flex flex-col items-center justify-center transition-all duration-200 ${
-												isSelected
-													? `ring-2 ${element.idTipoEquipamento === 1 ? "ring-blue-500" : "ring-green-600"} shadow-xl scale-105 z-10`
-													: "hover:shadow-lg hover:scale-102 shadow-md"
-											}`}
+											className={`absolute rounded-lg flex flex-col items-center justify-center transition-all duration-200 hover:bg-primary-50/75`}
 											style={{
 												left: element.x,
 												top: element.y,
 												width: element.width,
 												height: element.height,
-												backgroundColor: isSelected
-													? `${element.color}20`
-													: "white",
-												borderWidth: "2px",
-												borderColor: element.color,
 											}}
 											onClick={(event) => {
 												handleElementClick(event, element.id);
@@ -699,7 +665,13 @@ export function StageMapBuilder({
 												document.addEventListener("mouseup", handleMouseUp);
 											}}
 										>
-											<div style={{ color: element.color }}>{element.icon}</div>
+											<div>
+												<img
+													className="w-10 h-10"
+													src={element.icon}
+													alt={element.name}
+												/>
+											</div>
 											<span className="text-xs text-center font-medium text-gray-700 mt-1">
 												{element.name}
 											</span>
@@ -709,7 +681,7 @@ export function StageMapBuilder({
 												onClick={() => {
 													deleteElement(element.id);
 												}}
-												className={`absolute top-0 right-0 ${element.idTipoEquipamento === 1 ? "text-blue-500 hover:text-blue-700" : "text-green-600 hover:text-green-700"}  rounded-full p-1 transition-colors`}
+												className={`absolute top-0 right-0 text-primary-500`}
 											>
 												<X className="w-5 h-5" />
 											</button>
@@ -769,7 +741,7 @@ export function StageMapBuilder({
 											}}
 											className={`p-2 rounded-lg transition-all ${
 												showGrid
-													? "bg-primary-100 text-primary-600"
+													? "bg-primary-50 text-primary-500"
 													: "bg-gray-200 text-gray-400 hover:bg-gray-300"
 											}`}
 										>
@@ -816,9 +788,9 @@ export function StageMapBuilder({
 									Informações
 								</h4>
 								<div className="space-y-3">
-									<div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+									<div className="flex justify-between items-center p-3 bg-primary-50/50 border border-primary-50 rounded-lg">
 										<span className="text-sm text-gray-700">Instrumentos</span>
-										<span className="text-lg font-bold text-blue-600">
+										<span className="text-lg font-bold text-primary-500">
 											{
 												elements.filter(
 													(element) => element.idTipoEquipamento === 1
@@ -826,7 +798,7 @@ export function StageMapBuilder({
 											}
 										</span>
 									</div>
-									<div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+									<div className="flex justify-between items-center p-3 bg-green-50 border border-gray-200 rounded-lg">
 										<span className="text-sm text-gray-700">
 											Infraestrutura
 										</span>

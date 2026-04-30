@@ -1,12 +1,10 @@
-import type { ReactNode } from "react";
-
 // Core stage element interface
 export interface StageElement {
 	id: string;
 	name: string;
 	x: number;
 	y: number;
-	icon: ReactNode;
+	icon: string;
 	category: "instrument" | "infrastructure" | "equipment";
 	color: string;
 	instrumentId?: number;

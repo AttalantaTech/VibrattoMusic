@@ -27,7 +27,7 @@ export const StageMapViewer = ({
 					y: item.posicaoY,
 					width: 8,
 					height: 8,
-					icon: <div>🎵</div>, // Placeholder icon
+					icon: "",
 					category: "instrument" as const,
 					color: "#FF6B35",
 					instrumentId: item.idInstrumento,
