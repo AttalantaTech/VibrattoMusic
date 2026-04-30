@@ -1,37 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { StageElement, StageMapData } from "./types";
 import { STAGE_COLORS, STAGE_CONFIG } from "./types";
-import {
-	Drum,
-	Guitar,
-	KeyboardMusic,
-	MicVocal,
-	Music,
-	Volume2,
-} from "lucide-react";
+
 import type { FilterOptionInstrument } from "@/api/types";
 import type { MusicalProduct } from "@/components/BandProfileSwitcher";
 
 interface StageMapAreaProps {
 	musicalProduct: MusicalProduct | null;
 	instrumentsData: Array<FilterOptionInstrument> | undefined;
-}
-
-function getInstrumentIcon(instrumentName: string) {
-	const name = instrumentName.toLowerCase();
-	if (name.includes("guitarra") || name.includes("guitar"))
-		return <Guitar size={24} />;
-	if (name.includes("bateria") || name.includes("drum"))
-		return <Drum size={24} />;
-	if (name.includes("microfone") || name.includes("mic"))
-		return <MicVocal size={24} />;
-	if (name.includes("teclado") || name.includes("keyboard"))
-		return <KeyboardMusic size={24} />;
-	if (name.includes("baixo") || name.includes("bass"))
-		return <Music size={24} />;
-	if (name.includes("amplificador") || name.includes("amp"))
-		return <Volume2 size={24} />;
-	return <MicVocal size={24} />;
 }
 
 function convertStageMapDataToElements(
@@ -52,7 +28,7 @@ function convertStageMapDataToElements(
 				name: instrument.Nome,
 				x: item.posicaoX,
 				y: item.posicaoY,
-				icon: getInstrumentIcon(instrument.Nome),
+				icon: instrument.Icone,
 				category:
 					instrument.IdTipoEquipamento === 1
 						? ("instrument" as const)
@@ -105,10 +81,7 @@ export const StageMapArea = ({
 	}, []);
 
 	return (
-		<div
-			ref={containerRef}
-			className="flex-1 bg-gray-100 p-6 overflow-auto scroll-smooth"
-		>
+		<div ref={containerRef} className="flex-1 p-6 overflow-auto scroll-smooth">
 			<div
 				className="mx-auto"
 				style={{
@@ -150,12 +123,15 @@ export const StageMapArea = ({
 									top: element.y,
 									width: element.width,
 									height: element.height,
-									backgroundColor: "white",
-									borderWidth: "2px",
-									borderColor: element.color,
 								}}
 							>
-								<div style={{ color: element.color }}>{element.icon}</div>
+								<div>
+									<img
+										className="w-10 h-10"
+										src={element.icon}
+										alt={element.name}
+									/>
+								</div>
 								<span className="text-xs text-center font-medium text-gray-700 mt-1">
 									{element.name}
 								</span>
