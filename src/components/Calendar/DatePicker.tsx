@@ -11,6 +11,8 @@ import {
 	isSameMonth,
 	isSameDay,
 	isToday,
+	isBefore,
+	startOfDay,
 } from "date-fns";
 import { ptBR } from "date-fns/locale/pt-BR";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -41,13 +43,21 @@ export function DatePicker({
 	setCurrentMonth,
 	events = [],
 }: DatePickerProps) {
-	const [selectedDate, setSelectedDate] = useState<string | number | Date>("");
+	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 	const [checkDate, setCheckDate] = useState<{
 		date: Date;
 		status: AgendaDateStatus;
 	} | null>(null);
 
-	const handleSelectedDate = (date: Date) => {
+	const handleSelectedDate = (date: Date | null) => {
+		if (!date) {
+			onSelectDate(null);
+			setSelectedDate(null);
+			setCheckDate(null);
+
+			return;
+		}
+
 		if (mode === "default") {
 			setSelectedDate(date);
 			onSelectDate(date);
@@ -175,7 +185,7 @@ export function DatePicker({
               ${
 								isSameDay(toBR(cloneDay), toBR(selectedDate as Date))
 									? "bg-primary-50 rounded-full border-2 border-primary-500"
-									: isSameMonth(cloneDay, monthStart)
+									: isSameMonth(toBR(cloneDay), toBR(monthStart))
 										? "text-gray-900"
 										: "text-gray-400"
 							}
@@ -197,27 +207,41 @@ export function DatePicker({
 				days = [];
 			}
 		} else {
+			const today = toBR(new Date());
+			const currentDate = startOfDay(today);
+
 			while (day <= endDate) {
 				for (let index = 0; index < 7; index++) {
 					const cloneDay = day;
 
+					const eventForDay = events.find((event) =>
+						isSameDay(
+							toZonedTime(event.data, TIME_ZONE),
+							toZonedTime(cloneDay, TIME_ZONE)
+						)
+					);
+
 					days.push(
 						<Popover
-							key={cloneDay.toString()}
+							key={formatInTimeZone(cloneDay, TIME_ZONE, "yyyy-MM-dd")}
 							content={
-								checkDate?.status ? dateStatusLegend(checkDate.status) : ""
+								!isBefore(toBR(cloneDay), toBR(currentDate)) &&
+								eventForDay?.status
+									? dateStatusLegend(eventForDay?.status || "Livre")
+									: ""
 							}
-							disabled={isSameMonth(cloneDay, monthStart)}
+							disabled={isBefore(toBR(cloneDay), toBR(currentDate))}
 							trigger={
 								<div
 									onClick={() => {
-										if (isSameMonth(cloneDay, monthStart)) {
+										if (!isBefore(toBR(cloneDay), toBR(currentDate))) {
 											handleSelectedDate(cloneDay);
+										} else {
+											handleSelectedDate(null);
 										}
 									}}
 									className={`h-10 w-10 flex items-center justify-center rounded-full
 								
-
 								${
 									isToday(cloneDay)
 										? checkDate?.date && isSameDay(cloneDay, checkDate.date)
@@ -227,12 +251,16 @@ export function DatePicker({
 								}
 
 								${
-									checkDate?.date && isSameDay(cloneDay, checkDate.date)
+									checkDate?.date &&
+									isSameDay(cloneDay, checkDate.date) &&
+									isBefore(toBR(currentDate), toBR(cloneDay))
 										? dateStatusStyle(checkDate.status)
 										: ""
 								} 
               ${
-								isSameMonth(cloneDay, monthStart)
+								(isSameMonth(toBR(cloneDay), toBR(monthStart)) &&
+									isBefore(toBR(currentDate), toBR(cloneDay))) ||
+								isToday(cloneDay)
 									? "text-gray-900 cursor-pointer"
 									: "text-gray-400 cursor-not-allowed"
 							}
