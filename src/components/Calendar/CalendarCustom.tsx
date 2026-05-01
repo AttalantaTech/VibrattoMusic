@@ -18,6 +18,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { AgendaEvent } from "../BandProfile/Agenda";
 import { sortByDate } from "@/utils/sortByDate";
 import type { AgendaDateStatus, ScheduleApiResponse } from "@/api/types";
+import { toZonedTime } from "date-fns-tz";
+import { TIME_ZONE } from "@/utils";
 
 interface CalendarProps {
 	onSelectDate: (date: Date) => void;
@@ -180,9 +182,9 @@ export const CalendarCustom = ({
 				);
 
 				const agendaDateStatus = agendaData.find((eventApi) => {
-					return (
-						format(eventApi.data, "dd/MM/yyyy") ===
-						format(cloneDay, "dd/MM/yyyy")
+					return isSameDay(
+						toZonedTime(eventApi.data, TIME_ZONE),
+						toZonedTime(cloneDay, TIME_ZONE)
 					);
 				});
 
@@ -211,7 +213,7 @@ export const CalendarCustom = ({
 								agendaDateStatus && isSameDay(cloneDay, agendaDateStatus.data)
 									? dateStatusStyle(
 											agendaDateStatus.status,
-											isBefore(currentDate, monthStart),
+											isBefore(currentDate, cloneDay),
 											isToday(cloneDay)
 										)
 									: ""
