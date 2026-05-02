@@ -23,7 +23,7 @@ import { useSchedule } from "@/hooks/useMusicalProducts";
 import { useStartConversation } from "@/hooks/useMessaging";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useNavigate } from "@tanstack/react-router";
-import { TIME_ZONE } from "@/utils";
+import { TIME_ZONE, toBR } from "@/utils";
 import { formatInTimeZone } from "date-fns-tz";
 import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
 
@@ -45,7 +45,7 @@ export const CheckAvailabilityModal = ({
 	const [selectedEventTypes, setSelectedEventTypes] = useState<Array<Option>>(
 		[]
 	);
-	const [currentMonth, setCurrentMonth] = useState(new Date());
+	const [currentMonth, setCurrentMonth] = useState(toBR(new Date()));
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
 	const tipoEventoOptions: Array<Option> = (eventTypes || []).map((tipo) => ({
