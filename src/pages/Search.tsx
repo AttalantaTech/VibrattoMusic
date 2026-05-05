@@ -141,10 +141,10 @@ export const SearchPage = () => {
 						</div>
 						<div className="text-center mb-6 sm:mb-8">
 							<h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-								Encontre o Artista Perfeito
+								Encontre o profissional da música ideal para você
 							</h1>
 							<p className="text-gray-600 text-base sm:text-lg px-2">
-								Descubra talentos musicais incríveis para seu evento
+								Utilize filtros para que se enquadre perfeitamente no seu evento ou na sua banda
 							</p>
 						</div>
 						{/* Mobile-first responsive search layout */}
