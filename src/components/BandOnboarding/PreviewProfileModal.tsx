@@ -62,7 +62,7 @@ export const PreviewProfileModal = ({
 
 					setNewProductCreated(id);
 
-					toast.success("Produto musical publicado com sucesso");
+					toast.success("Perfil Profissional publicado com Sucesso");
 
 					await navigate({
 						to: "/band/me",
