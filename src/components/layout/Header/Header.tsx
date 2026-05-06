@@ -1,6 +1,5 @@
 import {
 	HelpCircle,
-	Search,
 	User,
 	Music,
 	Music2Icon,
@@ -38,8 +37,6 @@ export const Header = () => {
 
 	const isOnboardingPage = location.pathname.includes("/onboarding");
 	const showNotifications = isAuthenticated && !isOnboardingPage;
-	const showSearchButton =
-		!isOnboardingPage && !location.pathname.includes("/search");
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -87,15 +84,6 @@ export const Header = () => {
 
 				{/* Actions */}
 				<div className="flex flex-row items-center gap-1 sm:gap-3 flex-shrink-0">
-					{/* Search button - Always visible */}
-					{showSearchButton && (
-						<Link to="/search">
-							<Button variant="transparent" size="sm" className="p-2">
-								<Search className="w-4 h-4 sm:w-4 sm:h-4 text-gray-600" />
-							</Button>
-						</Link>
-					)}
-
 					{/* Messages */}
 					{showNotifications && <MessageBell />}
 

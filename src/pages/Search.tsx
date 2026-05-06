@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Search, MapPin, Filter, X, ArrowLeft } from "lucide-react";
+import { Search, MapPin, X, ArrowLeft } from "lucide-react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { Button } from "../components/ui/Button/Button";
 import { InputField } from "../components/forms/InputField/InputField";
@@ -41,7 +41,6 @@ export const SearchPage = () => {
 	// Local state for search input with debounce
 	const [searchInput, setSearchInput] = useState(filters.NomeOuDescricao ?? "");
 	const debouncedSearchTerm = useDebounce(searchInput, 500);
-	const [showFilters, setShowFilters] = useState(false);
 
 	const handleClearFilters = () => {
 		clearFilters();
@@ -53,13 +52,6 @@ export const SearchPage = () => {
 	const { data: categorias } = useCategorias();
 	const { data: tiposEvento } = useTiposEvento();
 	const { data: generos } = useGenerosMusicais();
-
-	// Show filters automatically if user comes with pre-applied filters (only once on mount)
-	useEffect(() => {
-		if (hasActiveFilters && !showFilters) {
-			setShowFilters(true);
-		}
-	}, [hasActiveFilters, showFilters]); // Empty dependency array to run only on mount
 
 	// Focar no input de busca quando o componente for montado
 	useEffect(() => {
@@ -141,10 +133,11 @@ export const SearchPage = () => {
 						</div>
 						<div className="text-center mb-6 sm:mb-8">
 							<h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-								Encontre o Artista Perfeito
+								Encontre o profissional da música ideal para você
 							</h1>
 							<p className="text-gray-600 text-base sm:text-lg px-2">
-								Descubra talentos musicais incríveis para seu evento
+								Utilize filtros para que se enquadre perfeitamente no seu evento
+								ou na sua banda
 							</p>
 						</div>
 						{/* Mobile-first responsive search layout */}
@@ -187,147 +180,110 @@ export const SearchPage = () => {
 										}}
 									/>
 								</div>
-
-								{/* Filters Toggle */}
-								<div className="flex justify-center sm:justify-start sm:items-end">
-									<Button
-										className={`flex items-center gap-2 relative w-full sm:w-auto transition-all duration-200 ${
-											hasActiveFilters
-												? "border-primary-500 bg-primary-50 text-primary-700 hover:bg-primary-100"
-												: ""
-										}`}
-										variant="outline"
-										size="sm"
-										onClick={() => {
-											setShowFilters(!showFilters);
-										}}
-									>
-										<Filter
-											size={18}
-											className={hasActiveFilters ? "text-primary-600" : ""}
-										/>
-										<span>Filtros Avançados</span>
-										{hasActiveFilters && (
-											<span className="ml-1 bg-primary-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-												{(() => {
-													let count = 0;
-													if (filters.categorias?.length) count++;
-													if (filters.tiposEvento?.length) count++;
-													if (filters.generosMusicais?.length) count++;
-													if (filters.codigoMunicipio) count++;
-													if (filters.NomeOuDescricao) count++;
-													return count;
-												})()}
-											</span>
-										)}
-									</Button>
-								</div>
 							</div>
 						</div>
 
 						{/* Advanced Filters - Responsive Layout */}
-						{showFilters && (
-							<div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-primary-50/20 rounded-lg border border-primary-50">
-								<div className="space-y-4">
-									<h3 className="text-lg font-semibold text-gray-900 mb-3">
-										Filtros Avançados
-									</h3>
+						<div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-primary-50/20 rounded-lg border border-primary-50">
+							<div className="space-y-4">
+								<h3 className="text-lg font-semibold text-gray-900 mb-3">
+									Filtros Avançados
+								</h3>
 
-									{/* Mobile: Stack filters vertically, Desktop: 3 columns */}
-									<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-										{/* Category Filter - Multiple Selection */}
-										<div className="space-y-2">
-											<Select
-												label="Categoria"
-												name="categorias"
-												placeholder="Todas as categorias"
-												options={
-													categorias?.map((cat) => ({
-														value: cat.Id.toString(),
-														label: cat.Nome,
-													})) ?? []
-												}
-												selectedOptions={arrayToOptions(
-													filters.categorias,
-													categorias ?? []
-												)}
-												setSelectedOptions={(options) => {
-													updateFilters({
-														categorias: optionsToArray(options),
-														pagina: 1,
-													});
-												}}
-											/>
-										</div>
-
-										{/* Event Type Filter - Multiple Selection */}
-										<div className="space-y-2">
-											<Select
-												label="Tipo de Evento"
-												name="tipos-evento"
-												placeholder="Todos os tipos"
-												options={
-													tiposEvento?.map((tipo) => ({
-														value: tipo.Id.toString(),
-														label: tipo.Nome,
-													})) ?? []
-												}
-												selectedOptions={arrayToOptions(
-													filters.tiposEvento,
-													tiposEvento ?? []
-												)}
-												setSelectedOptions={(options) => {
-													updateFilters({
-														tiposEvento: optionsToArray(options),
-														pagina: 1,
-													});
-												}}
-											/>
-										</div>
-
-										{/* Genre Filter - Multiple Selection */}
-										<div className="space-y-2 sm:col-span-2 lg:col-span-1">
-											<Select
-												label="Gênero Musical"
-												name="generos"
-												placeholder="Todos os gêneros"
-												options={
-													generos?.map((genero) => ({
-														value: genero.Id.toString(),
-														label: genero.Nome,
-													})) ?? []
-												}
-												selectedOptions={arrayToOptions(
-													filters.generosMusicais,
-													generos ?? []
-												)}
-												setSelectedOptions={(options) => {
-													updateFilters({
-														generosMusicais: optionsToArray(options),
-														pagina: 1,
-													});
-												}}
-											/>
-										</div>
+								{/* Mobile: Stack filters vertically, Desktop: 3 columns */}
+								<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+									{/* Category Filter - Multiple Selection */}
+									<div className="space-y-2">
+										<Select
+											label="Categoria"
+											name="categorias"
+											placeholder="Todas as categorias"
+											options={
+												categorias?.map((cat) => ({
+													value: cat.Id.toString(),
+													label: cat.Nome,
+												})) ?? []
+											}
+											selectedOptions={arrayToOptions(
+												filters.categorias,
+												categorias ?? []
+											)}
+											setSelectedOptions={(options) => {
+												updateFilters({
+													categorias: optionsToArray(options),
+													pagina: 1,
+												});
+											}}
+										/>
 									</div>
 
-									{/* Filter Actions */}
-									<div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-4">
-										{hasActiveFilters && (
-											<Button
-												className="flex items-center gap-2 w-full sm:w-auto"
-												size="sm"
-												variant="outline"
-												onClick={handleClearFilters}
-											>
-												<X size={16} />
-												Limpar filtros
-											</Button>
-										)}
+									{/* Event Type Filter - Multiple Selection */}
+									<div className="space-y-2">
+										<Select
+											label="Tipo de Evento"
+											name="tipos-evento"
+											placeholder="Todos os tipos"
+											options={
+												tiposEvento?.map((tipo) => ({
+													value: tipo.Id.toString(),
+													label: tipo.Nome,
+												})) ?? []
+											}
+											selectedOptions={arrayToOptions(
+												filters.tiposEvento,
+												tiposEvento ?? []
+											)}
+											setSelectedOptions={(options) => {
+												updateFilters({
+													tiposEvento: optionsToArray(options),
+													pagina: 1,
+												});
+											}}
+										/>
+									</div>
+
+									{/* Genre Filter - Multiple Selection */}
+									<div className="space-y-2 sm:col-span-2 lg:col-span-1">
+										<Select
+											label="Gênero Musical"
+											name="generos"
+											placeholder="Todos os gêneros"
+											options={
+												generos?.map((genero) => ({
+													value: genero.Id.toString(),
+													label: genero.Nome,
+												})) ?? []
+											}
+											selectedOptions={arrayToOptions(
+												filters.generosMusicais,
+												generos ?? []
+											)}
+											setSelectedOptions={(options) => {
+												updateFilters({
+													generosMusicais: optionsToArray(options),
+													pagina: 1,
+												});
+											}}
+										/>
 									</div>
 								</div>
+
+								{/* Filter Actions */}
+								<div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-4">
+									{hasActiveFilters && (
+										<Button
+											className="flex items-center gap-2 w-full sm:w-auto"
+											size="sm"
+											variant="outline"
+											onClick={handleClearFilters}
+										>
+											<X size={16} />
+											Limpar filtros
+										</Button>
+									)}
+								</div>
 							</div>
-						)}
+						</div>
 					</div>
 				</div>
 
