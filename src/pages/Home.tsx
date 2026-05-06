@@ -1,11 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
 	ArrowLeft,
 	ArrowRight,
 	Facebook,
+	SlidersHorizontal,
 	Instagram,
 	MapPin,
+	Search,
 } from "lucide-react";
 
 import { LazyImage } from "../components/ui/LazyImage/LazyImage";
@@ -31,6 +33,8 @@ import {
 import { useSearchMusicalProducts } from "../hooks/useMusicalProducts";
 import type { MusicalProductSearchRequest } from "@/api/types";
 import { useUser } from "@/hooks/useUser";
+import { InputField } from "@/components/forms/InputField/InputField";
+import { useDebounce } from "@/hooks/useDebounceSimple";
 // import { Carousel } from "@/components/ui/Carousel/Carousel";
 // import { CarouselItem } from "@/components/ui/carousel";
 
@@ -100,7 +104,12 @@ export const Home = (): FunctionComponent => {
 	const [category, setCategory] = useState("");
 	const [genre, setGenre] = useState("");
 	const [currentTestimonyIndex, setCurrentTestimonyIndex] = useState(0);
+	const [searchInput, setSearchInput] = useState("");
+	const debouncedSearchTerm = useDebounce(searchInput, 500);
+
 	const totalTestimonyCards = 3;
+
+	const searchInputRef = useRef<HTMLInputElement>(null);
 
 	const { data: cidades } = useCidades();
 	const { data: categorias } = useCategorias();
@@ -116,6 +125,7 @@ export const Home = (): FunctionComponent => {
 			ordenarPorAvaliacao: true,
 			tamanhoPagina: 4,
 			pagina: 1,
+			NomeOuDescricao: debouncedSearchTerm || undefined,
 			// codigoMunicipio: 3550308, // São Paulo - SP as default
 		};
 
@@ -140,7 +150,7 @@ export const Home = (): FunctionComponent => {
 		}
 
 		return filters;
-	}, [place, category, type, genre]);
+	}, [debouncedSearchTerm, place, category, type, genre]);
 
 	// Fetch featured bands from API with dynamic filters
 	const { data: featuredBands, isLoading: bandsLoading } =
@@ -161,7 +171,11 @@ export const Home = (): FunctionComponent => {
 
 	// Check if any filters are applied
 	const hasActiveFilters =
-		place !== "" || category !== "" || type !== "" || genre !== "";
+		place !== "" ||
+		category !== "" ||
+		type !== "" ||
+		genre !== "" ||
+		debouncedSearchTerm !== "";
 
 	// Transform API data to dropdown options
 	const cidadesOptions =
@@ -188,71 +202,146 @@ export const Home = (): FunctionComponent => {
 			value: genero.Id.toString(),
 		})) || [];
 
+	useEffect(() => {
+		if (searchInputRef.current) {
+			searchInputRef.current.focus();
+		}
+	}, []);
+
 	return (
 		<MainLayout>
 			<div className="flex flex-col justify-start items-center py-3 gap-5">
+				<div className="flex flex-col xs:flex-row max-w-2xl w-full px-2 gap-2">
+					<div className="w-full">
+						<InputField
+							ref={searchInputRef}
+							icon={<Search size={20} />}
+							placeholder="Busque profissionais da Música"
+							value={searchInput}
+							onChange={(event) => {
+								setSearchInput(event.target.value);
+							}}
+							className="text-sm"
+						/>
+					</div>
+
+					<Button
+						className={`flex items-center gap-2 relative transition-all duration-200`}
+						variant="outline"
+						size="sm"
+						onClick={async () => {
+							if (debouncedSearchTerm) {
+								await navigate({
+									to: "/search",
+									search: { q: debouncedSearchTerm },
+								});
+							} else {
+								await navigate({
+									to: "/search",
+								});
+							}
+						}}
+					>
+						<SlidersHorizontal
+							size={18}
+							className="hover:text-white transition-all duration-200"
+						/>
+						<span>Filtros</span>
+					</Button>
+				</div>
+
 				{/* Filters*/}
-				<div className="flex flex-col sm:flex-row w-full min-h-14 justify-center items-center gap-3 sm:gap-4 lg:gap-6 font-normal text-base px-4 max-w-9xl mx-auto">
-					<DropdownSelect
-						icon={<MapPin size={18} />}
-						id="place"
-						openDropdown={openDropdown}
-						options={cidadesOptions}
-						selected={place}
-						setOpenDropdown={setOpenDropdown}
-						onChange={setPlace}
-					/>
-					<DropdownSelect
-						id="categories"
-						label="Categorias"
-						openDropdown={openDropdown}
-						options={categoriasOptions}
-						selected={category}
-						setOpenDropdown={setOpenDropdown}
-						onChange={async (value) => {
-							setCategory(value);
-							if (value) {
-								await navigate({
-									to: "/search",
-									search: { categorias: [value] },
-								});
-							}
-						}}
-					/>{" "}
-					<DropdownSelect
-						id="types"
-						label="Tipo de Evento"
-						openDropdown={openDropdown}
-						options={tiposEventoOptions}
-						selected={type}
-						setOpenDropdown={setOpenDropdown}
-						onChange={async (value) => {
-							setType(value);
-							if (value) {
-								await navigate({
-									to: "/search",
-									search: { tipos: [value] },
-								});
-							}
-						}}
-					/>
-					<DropdownSelect
-						id="genres"
-						label="Gênero Musical"
-						openDropdown={openDropdown}
-						options={generosMusicaisOptions}
-						selected={genre}
-						setOpenDropdown={setOpenDropdown}
-						onChange={async (value) => {
-							setGenre(value);
-							if (value) {
-								await navigate({
-									to: "/search",
-									search: { generos: [value] },
-								});
-							}
-						}}
-					/>
+				<div className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:flex sm:flex-row min-h-14 justify-center items-center gap-3 sm:gap-4 lg:gap-6 font-normal text-base px-4 max-w-9xl mx-auto">
+					<div className="m-auto">
+						<DropdownSelect
+							icon={<MapPin size={18} />}
+							id="place"
+							label="Localidade"
+							openDropdown={openDropdown}
+							options={cidadesOptions}
+							selected={place}
+							setOpenDropdown={setOpenDropdown}
+							onChange={setPlace}
+						/>
+					</div>
+					<div className="m-auto">
+						<DropdownSelect
+							id="categories"
+							label="Categorias"
+							openDropdown={openDropdown}
+							options={categoriasOptions}
+							selected={category}
+							setOpenDropdown={setOpenDropdown}
+							onChange={async (value) => {
+								setCategory(value);
+								if (value) {
+									if (debouncedSearchTerm) {
+										await navigate({
+											to: "/search",
+											search: { categorias: [value], q: debouncedSearchTerm },
+										});
+									} else {
+										await navigate({
+											to: "/search",
+											search: { categorias: [value] },
+										});
+									}
+								}
+							}}
+						/>
+					</div>
+					<div className="m-auto">
+						<DropdownSelect
+							id="types"
+							label="Tipo de Evento"
+							openDropdown={openDropdown}
+							options={tiposEventoOptions}
+							selected={type}
+							setOpenDropdown={setOpenDropdown}
+							onChange={async (value) => {
+								setType(value);
+								if (value) {
+									if (debouncedSearchTerm) {
+										await navigate({
+											to: "/search",
+											search: { tipos: [value], q: debouncedSearchTerm },
+										});
+									} else {
+										await navigate({
+											to: "/search",
+											search: { tipos: [value] },
+										});
+									}
+								}
+							}}
+						/>
+					</div>
+					<div className="m-auto">
+						<DropdownSelect
+							id="genres"
+							label="Gênero Musical"
+							openDropdown={openDropdown}
+							options={generosMusicaisOptions}
+							selected={genre}
+							setOpenDropdown={setOpenDropdown}
+							onChange={async (value) => {
+								setGenre(value);
+								if (value) {
+									if (debouncedSearchTerm) {
+										await navigate({
+											to: "/search",
+											search: { generos: [value], q: debouncedSearchTerm },
+										});
+									} else {
+										await navigate({
+											to: "/search",
+											search: { generos: [value] },
+										});
+									}
+								}
+							}}
+						/>
+					</div>
 				</div>
 
 				{/* Content */}
