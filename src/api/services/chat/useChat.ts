@@ -1,10 +1,14 @@
 import { useAuthStore } from "@/store/authStore";
 import { apiClient } from "../../core/client";
 import { SignalRService } from "../../websocket/SignalRService";
-import { WebSocketI } from "@/api/websocket/WebSocketI";
-import { Dispatch, SetStateAction, useRef } from "react";
-import { WebSocketEvent, WebSocketEventHandler } from "@/api/websocket/types";
-import { Message } from "../messages/types";
+import type { WebSocketI } from "@/api/websocket/WebSocketI";
+import type { Dispatch, SetStateAction } from "react";
+import { useRef } from "react";
+import type {
+	WebSocketEvent,
+	WebSocketEventHandler,
+} from "@/api/websocket/types";
+import type { Message } from "../messages/types";
 
 export const useChat = (
 	currentConversationIdRef: React.MutableRefObject<number | null>,
@@ -51,17 +55,46 @@ export const useChat = (
 		}
 	};
 
-	const sendMessage = async (content: string): Promise<void> => {
-		if (connection.current?.isConnected()) {
-			await connection.current.invoke(
-				"EnviarMensagem",
-				currentConversationIdRef.current || 0,
-				content
-			);
-			return;
+	const sendMessageViaREST = async (
+		content: string,
+		senderType: number,
+		idMusicalProduct: number | null
+	): Promise<void> => {
+		await apiClient.get(`chat/mensagem?`, {
+			params: {
+				idConversa: currentConversationIdRef.current || 0,
+				conteudo: content,
+				tipoRemetente: senderType,
+				idProdutoMusical: idMusicalProduct,
+			},
+		});
+	};
+
+	const sendMessage = async (
+		content: string,
+		senderType: number,
+		idMusicalProduct: number | null
+	): Promise<void> => {
+		if (connection.current) {
+			try {
+				await connection.current.invoke(
+					"EnviarMensagem",
+					currentConversationIdRef.current || 0,
+					content,
+					senderType,
+					idMusicalProduct
+				);
+				return;
+			} catch (error) {
+				console.error(error);
+			}
 		}
 
-		await sendMessageViaREST(content);
+		await sendMessageViaREST(content, senderType, idMusicalProduct);
+	};
+
+	const markMessageAsReadViaREST = async (messageId: number): Promise<void> => {
+		await apiClient.post(`chat/lida/${messageId}`, {});
 	};
 
 	const markMessageAsRead = async (messageId: number): Promise<void> => {
@@ -102,17 +135,6 @@ export const useChat = (
 			connection.current?.off(event, handler);
 		});
 		handlers.current.clear();
-	};
-
-	const sendMessageViaREST = async (content: string): Promise<void> => {
-		await apiClient.post("chat/mensagem", {
-			IdConversa: currentConversationIdRef.current || 0,
-			Conteudo: content,
-		});
-	};
-
-	const markMessageAsReadViaREST = async (messageId: number): Promise<void> => {
-		await apiClient.post(`chat/lida/${messageId}`, {});
 	};
 
 	const isConnected = (): boolean => {

@@ -6,8 +6,8 @@ import type {
 	PaginatedResponse,
 } from "../../types";
 import { ConversationStorage } from "../../../utils/conversationStorage";
-import { Conversation, Message } from "./types";
-import { ChatUser } from "@/contexts/MessagesContext/types";
+import type { Conversation, Message } from "./types";
+import type { ChatUser } from "@/contexts/MessagesContext/types";
 import { musicalProductService } from "@/api";
 
 export class MessagingService {
@@ -119,7 +119,7 @@ export class MessagingService {
 	public async getConversations(
 		IdProdutoMusical?: number | null,
 		parameters?: PaginationParameters
-	): Promise<Conversation[]> {
+	): Promise<Array<Conversation>> {
 		try {
 			const limit = parameters?.limit || 20;
 			const cursorQuery = parameters?.page ? `&_t=${parameters.page}` : "";
@@ -167,6 +167,11 @@ export class MessagingService {
 							lida: item.ultimaConversa.lida,
 							dataEnvio:
 								item.ultimaConversa.dataEnvio || new Date().toISOString(),
+
+							// REVER ISSO
+							idDestinatario: item.contratante.id,
+							tipoDestinatario: IdProdutoMusical ? 2 : 1,
+							tipoRemetente: IdProdutoMusical ? 2 : 1,
 						};
 					}
 
@@ -246,6 +251,7 @@ export class MessagingService {
 	public async startConversation(
 		participanteId: number,
 		conteudo: string,
+		senderType: number,
 		produtoMusicalContratanteId: number | null
 	): Promise<Conversation> {
 		// First, get or create conversation with the product
@@ -266,6 +272,8 @@ export class MessagingService {
 		await this.apiClient.post<Message>("chat/mensagem", {
 			IdConversa: conversationId,
 			Conteudo: conteudo,
+			TipoRemetente: senderType,
+			IdProdutoMusical: produtoMusicalContratanteId,
 		});
 
 		// Return a minimal conversation object for compatibility
@@ -297,7 +305,7 @@ export class MessagingService {
 	public async getConversationMessages(
 		conversationId: number,
 		parameters?: PaginationParameters
-	): Promise<Message[]> {
+	): Promise<Array<Message>> {
 		try {
 			if (conversationId <= 0) return [];
 
@@ -322,6 +330,9 @@ export class MessagingService {
 					lida: message.lida,
 					dataEnvio: message.dataEnvio || new Date().toISOString(),
 					type: "text",
+					tipoDestinatario: message.tipoDestinatario,
+					idDestinatario: message.idDestinatario,
+					tipoRemetente: message.tipoRemetente,
 				})
 			);
 

@@ -6,4 +6,4 @@ export type WebSocketTrigger =
 	| "EnviarMensagem"
 	| "MarcarMensagemComoLida";
 
-export type WebSocketEventHandler = (...args: any[]) => any;
+export type WebSocketEventHandler = (...args: Array<any>) => any;

@@ -52,8 +52,14 @@ const MessagesTab = () => {
 					}
 					onProposalSent={async (proposalDetails: string) => {
 						// Send the proposal notification message to the chat
+
+						// REVER ISSO
 						if (handleSendMessage) {
-							await handleSendMessage(proposalDetails);
+							await handleSendMessage(
+								proposalDetails,
+								selectedConversation.produtoMusicalContratanteId ? 2 : 1,
+								selectedConversation.produtoMusicalContratanteId
+							);
 						}
 					}}
 				/>

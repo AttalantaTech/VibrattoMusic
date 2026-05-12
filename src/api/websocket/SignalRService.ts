@@ -1,11 +1,16 @@
-import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
+import type { HubConnection } from "@microsoft/signalr";
+import {
+	HubConnectionBuilder,
+	HubConnectionState,
+	LogLevel,
+} from "@microsoft/signalr";
 import { getEnvironmentConfig } from "../config/environment";
-import { WebSocketI } from "./WebSocketI";
+import type { WebSocketI } from "./WebSocketI";
 
 export class SignalRService implements WebSocketI {
 	private signalRConnection?: HubConnection;
 
-	createConnection = async (endpoint: string, token?: string) => {
+	createConnection = (endpoint: string, token?: string) => {
 		const envConfig = getEnvironmentConfig();
 		const baseUrl = envConfig.apiBaseUrl.endsWith("/api/")
 			? envConfig.apiBaseUrl.slice(0, -4)
@@ -17,6 +22,7 @@ export class SignalRService implements WebSocketI {
 			.withUrl(`${baseUrl}/${endpoint}`, {
 				accessTokenFactory: () => token || "",
 			})
+			.configureLogging(LogLevel.Trace)
 			.withAutomaticReconnect()
 			.build();
 	};
@@ -33,19 +39,20 @@ export class SignalRService implements WebSocketI {
 		this.signalRConnection?.onclose(handler);
 	};
 
-	on = (event: string, action: (...args: any[]) => any): void => {
+	on = (event: string, action: (...args: Array<any>) => any): void => {
 		this.signalRConnection?.on(event, action);
 	};
 
-	off = (event: string, action: (...args: any[]) => any): void => {
+	off = (event: string, action: (...args: Array<any>) => any): void => {
 		this.signalRConnection?.off(event, action);
 	};
 
-	invoke = async (event: string, ...args: any[]): Promise<void> => {
+	invoke = async (event: string, ...args: Array<any>): Promise<void> => {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		await this.signalRConnection?.invoke(event, ...args);
 	};
 
 	isConnected = (): boolean => {
-		return this.signalRConnection?.state === "Connected";
+		return this.signalRConnection?.state === HubConnectionState.Connected;
 	};
 }

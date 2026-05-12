@@ -14,7 +14,7 @@ import type { Conversation, Message } from "@/api/services/messages/types";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { playNotificationSound } from "@/components/BandProfile/Messages/utils/Message";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { ChatUser } from "../types";
+import type { ChatUser } from "../types";
 
 export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 	const queryClient = useQueryClient();
@@ -25,7 +25,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		? Number(activeProduct.id)
 		: undefined;
 
-	const currentChatUser : ChatUser = activeProduct
+	const currentChatUser: ChatUser = activeProduct
 		? {
 				id: activeProduct.id,
 				name: activeProduct.nome,
@@ -152,11 +152,14 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		removeHandlers,
 	} = useChat(currentConversationId, setShouldLoadConversations);
 
-	const handleEnterConversation = async (conversationId: number) => {
-		await enterConversation(conversationId).catch((error) => {
-			console.error("Erro ao entrar na conversa:", error);
-		});
-	};
+	const handleEnterConversation = useCallback(
+		async (conversationId: number) => {
+			await enterConversation(conversationId).catch((error) => {
+				console.error("Erro ao entrar na conversa:", error);
+			});
+		},
+		[enterConversation]
+	);
 
 	const conversationsRef = useRef<Array<Conversation>>(conversations);
 
@@ -164,10 +167,14 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		conversationsRef.current = conversations;
 	}, [conversations]);
 
-	const handleSendMessage = async (content: string) => {
+	const handleSendMessage = async (
+		content: string,
+		senderType: number,
+		idMusicalProduct: number | null
+	) => {
 		if (!content.trim() || !currentConversationId.current) return;
 		try {
-			await sendMessage(content);
+			await sendMessage(content, senderType, idMusicalProduct);
 			setMessageInput("");
 		} catch (error) {
 			console.error("Erro ao enviar mensagem:", error);
@@ -192,21 +199,18 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 						...conversationToUpdate,
 						ultimaMensagem: message,
 					};
-					console.log([
-						...previousConversations.splice(conversationIndex, 1),
-						updatedConversation,
-					]);
+
 					return [
 						...previousConversations.splice(conversationIndex, 1),
 						updatedConversation,
 					];
 				} else {
-					refetchConversations();
+					void refetchConversations();
 				}
 				return previousConversations;
 			});
 		},
-		[setNewConversationData, currentUserId]
+		[refetchConversations]
 	);
 
 	const handleReceiveMessage = useCallback(
@@ -236,7 +240,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 			// Update conversation list
 			updateConversationWithNewMessage(message);
 		},
-		[newMessages, setNewMessages, currentConversationId.current]
+		[updateConversationWithNewMessage, newMessages]
 	);
 
 	const handleMarkMessageAsRead = useCallback(
@@ -280,7 +284,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 
 			setLastMessageAsRead(messageId);
 		},
-		[messages, setMessages]
+		[setLastMessageAsRead]
 	);
 
 	const handleConnect = useCallback(async () => {
@@ -308,7 +312,17 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 				console.error(`Erro ao entrar na conversa ${conversation.id}:`, error);
 			});
 		}
-	}, [connect, start]);
+	}, [
+		addMessageReadHandler,
+		addNotificationHandler,
+		addOnCloseHandler,
+		addReceiveMessageHandler,
+		connect,
+		enterConversation,
+		handleMessageRead,
+		handleReceiveMessage,
+		start,
+	]);
 
 	// const syncCache = () => {
 	// 	if (newMessages.length === 0 && newConversationData.length === 0) return;
@@ -399,7 +413,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		return () => {
 			observer.disconnect();
 		};
-	}, [messages, user, handleMarkMessageAsRead]);
+	}, [messages, user, handleMarkMessageAsRead, currentUserId]);
 
 	// Auto-scroll to bottom when new messages arrive
 	useEffect(() => {
@@ -415,12 +429,18 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		) {
 			currentConversationId.current = selectedConversation.id;
 			setShouldLoadCurrentConversation(true);
-			queryClient.invalidateQueries({
+			void queryClient.invalidateQueries({
 				queryKey: messagingKeys.conversationMessages(selectedConversation.id),
 			});
-			refetchMessages();
+			void refetchMessages();
 		}
-	}, [selectedConversation, user, handleEnterConversation]);
+	}, [
+		selectedConversation,
+		user,
+		handleEnterConversation,
+		queryClient,
+		refetchMessages,
+	]);
 
 	useEffect(() => {
 		if (!historyMessages) return;
@@ -440,7 +460,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 
 	useEffect(() => {
 		setNewMessages([]);
-	}, [currentConversationId.current]);
+	}, []);
 
 	useEffect(() => {
 		if (token && !isConversationsLoading) {
@@ -454,7 +474,7 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 				removeHandlers();
 			}
 		};
-	}, [token, isConversationsLoading]);
+	}, [token, isConversationsLoading, handleConnect, removeHandlers]);
 
 	return (
 		<MessagesContext.Provider

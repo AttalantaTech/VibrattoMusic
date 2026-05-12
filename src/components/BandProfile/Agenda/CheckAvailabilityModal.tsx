@@ -160,6 +160,7 @@ export const CheckAvailabilityModal = ({
 			{
 				participanteId: musicalProduct.id,
 				conteudo: message,
+				senderType: activeProduct?.id ? 2 : 1,
 				produtoMusicalContratanteId: activeProduct?.id || null,
 			},
 			{

@@ -74,7 +74,7 @@ export const OwnMessageElement = ({
 		);
 
 	return (
-		<div className="flex items-end space-x-2 max-w-xs lg:max-w-md">
+		<div className="flex items-end space-x-2">
 			<div className="flex flex-col">
 				<div className="bg-primary-600 text-white px-4 py-3 rounded-l-2xl rounded-tr-2xl rounded-br-md shadow-lg">
 					<p className="text-sm leading-relaxed">{message.conteudo}</p>
@@ -100,7 +100,7 @@ export const MessageElement = ({
 	userProfileImageUrl?: string | null;
 }) => {
 	return (
-		<div className="flex items-start space-x-3 max-w-xs lg:max-w-md">
+		<div className="flex items-start w-full space-x-3">
 			<div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex-shrink-0 shadow-md">
 				<span className="w-full h-full text-xs font-semibold text-white flex items-center justify-center">
 					{userProfileImageUrl ? (
