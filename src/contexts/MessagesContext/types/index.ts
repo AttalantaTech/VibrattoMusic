@@ -22,7 +22,11 @@ export type MessagesContextType = {
 	isConversationsLoading: boolean;
 	selectedConversation: Conversation | null;
 	setSelectedConversation: (value: Conversation | null) => void;
-	handleSendMessage: (content: string) => Promise<void>;
+	handleSendMessage: (
+		content: string,
+		senderType: number,
+		idMusicalProduct: number | null
+	) => Promise<void>;
 	handleMarkMessageAsRead: (messageId: number) => Promise<void>;
 	newConversationParticipant: { id: number; name: string } | null;
 	setNewConversationParticipant: (

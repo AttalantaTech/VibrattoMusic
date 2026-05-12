@@ -12,7 +12,7 @@ import type {
 	PaginationParameters,
 	PaginatedResponse,
 } from "../api/types";
-import { Conversation, Message } from "@/api/services/messages/types";
+import type { Conversation, Message } from "@/api/services/messages/types";
 
 // Query Keys
 export const messagingKeys = {
@@ -34,7 +34,7 @@ export const useConversations = (
 	parameters?: PaginationParameters,
 	enabled: boolean = true
 ) => {
-	return useQuery<Conversation[]>({
+	return useQuery<Array<Conversation>>({
 		queryKey: [...messagingKeys.conversations(), IdProdutoMusical],
 		queryFn: async () => {
 			if (!IdProdutoMusical) {
@@ -138,12 +138,20 @@ export const useStartConversation = () => {
 		mutationFn: ({
 			participanteId,
 			conteudo,
+			senderType,
 			produtoMusicalContratanteId,
 		}: {
 			participanteId: number;
 			conteudo: string;
+			senderType: number;
 			produtoMusicalContratanteId: number | null;
-		}) => messagingService.startConversation(participanteId, conteudo, produtoMusicalContratanteId),
+		}) =>
+			messagingService.startConversation(
+				participanteId,
+				conteudo,
+				senderType,
+				produtoMusicalContratanteId
+			),
 		onSuccess: () => {
 			// Invalidate conversations list
 			void queryClient.invalidateQueries({

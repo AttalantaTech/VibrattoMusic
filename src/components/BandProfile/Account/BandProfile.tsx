@@ -28,11 +28,11 @@ import { useStartConversation } from "@/hooks/useMessaging";
 import { toast } from "sonner";
 import { RatingBars } from "@/components/RatingBars/RatingBars";
 import { RatingComment } from "@/components/RatingComment/RatingComment";
-import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { CheckAvailabilityModal } from "../Agenda/CheckAvailabilityModal";
 import { ProfileDetails } from "./ProfileDetails";
 import { TabNavigation } from "@/components/ui/TabNavigation/TabNavigation";
 import { MediaPlayer } from "@/components/MediaPlayer/MediaPlayer";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 const styles = {
 	genre: "font-medium text-[#085EC5] bg-[#D6F2FF] py-[2x] px-2 rounded-2xl",
@@ -71,7 +71,8 @@ export const BandProfile = ({
 	const { isAuthenticated } = useAuthStore();
 	const { data: favorites } = useFavorites(isAuthenticated);
 	const toggleFavoriteMutation = useToggleFavorite();
-	const { user } = useProfileStatus();
+
+	const { activeProduct } = useMusicalProductStore();
 
 	const urlParameters = new URLSearchParams(window.location.search);
 	const customRedirect = urlParameters.get("action");
@@ -407,7 +408,7 @@ export const BandProfile = ({
 					</div>
 
 					{/* Side Card */}
-					{musicalProduct.usuario.id !== user?.id ? (
+					{musicalProduct.usuario.id !== activeProduct?.id ? (
 						<div className="w-full lg:w-80 xl:w-96 border border-gray-200 rounded-lg flex flex-col gap-4 lg:gap-6 pb-4 px-4 lg:pb-4 lg:px-4 shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08)] order-1 lg:order-2 lg:sticky lg:top-4 lg:self-start">
 							{/* Media content (YouTube or Spotify) */}
 

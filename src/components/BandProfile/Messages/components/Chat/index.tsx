@@ -20,7 +20,6 @@ import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProduct
 
 export const Chat = () => {
 	const { user } = useAuthStore();
-	const currentUserId = user?.id;
 
 	const { activeProduct } = useMusicalProductStore();
 	const currentProductId = activeProduct?.id;
@@ -142,16 +141,14 @@ export const Chat = () => {
 						{!isMessagesLoading && !messagesError && (
 							<>
 								{messages?.map((message: Message) => {
-									const isOwn = currentUserId
-										? message.idRemetente === currentUserId
-										: false;
 									return (
 										<MessageLine
 											key={message.id}
 											message={message}
-											isOwn={isOwn}
+											isOwn={!!message.idRemetente}
 										>
-											{isOwn ? (
+											{message.idRemetente === activeProduct?.id ||
+											message.idRemetente === user?.id ? (
 												<OwnMessageElement message={message} />
 											) : (
 												<MessageElement
@@ -176,7 +173,14 @@ export const Chat = () => {
 							onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
 								setMessageInput?.(event.target.value);
 							}}
-							onSend={handleSendMessage ?? (() => {})}
+							onSend={(content: string) => {
+								if (handleSendMessage)
+									void handleSendMessage(
+										content,
+										activeProduct?.id ? 2 : 1,
+										activeProduct?.id ? activeProduct.id : null
+									);
+							}}
 							disabled={isMessagesLoading}
 							placeholder={
 								isMessagesLoading ? "Carregando..." : "Digite sua mensagem..."

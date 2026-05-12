@@ -1,4 +1,4 @@
-import { ChatUser } from "@/contexts/MessagesContext/types";
+import type { ChatUser } from "@/contexts/MessagesContext/types";
 
 export interface Message {
 	id: number;
@@ -9,6 +9,9 @@ export interface Message {
 	type?: "text" | "image" | "audio" | "file";
 	lida: boolean;
 	dataEnvio: string;
+	idDestinatario: number;
+	tipoDestinatario: number;
+	tipoRemetente: number;
 }
 
 export interface Conversation {
@@ -21,7 +24,7 @@ export interface Conversation {
 	participanteId: number;
 	pair: ChatUser;
 	ultimaMensagem?: Message;
-	mensagens?: Message[];
+	mensagens?: Array<Message>;
 	totalMensagens?: number;
 	numeroMensagensNaoLidas?: number;
 	online?: boolean;

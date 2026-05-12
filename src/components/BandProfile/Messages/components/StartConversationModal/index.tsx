@@ -39,6 +39,7 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 			{
 				participanteId: participantId,
 				conteudo: message,
+				senderType: activeProduct?.id ? 2 : 1,
 				produtoMusicalContratanteId: activeProduct?.id || null,
 			},
 			{
@@ -112,4 +113,3 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 		</div>
 	);
 };
-
