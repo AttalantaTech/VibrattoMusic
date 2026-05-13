@@ -23,6 +23,7 @@ export const useSearchFiltersWithURL = () => {
 		},
 		[searchParameters]
 	);
+
 	// Parse URL parameters to initial state
 	const getInitialFilters = useCallback((): SearchFilters => {
 		const getCategorias = () => {
@@ -63,14 +64,14 @@ export const useSearchFiltersWithURL = () => {
 		};
 
 		const q = getSearchParameter("q");
-		const cidade = getSearchParameter("cidade");
+		const codigo = getSearchParameter("codigoMunicipio");
 		const ordenar = getSearchParameter("ordenar");
 		const pagina = getSearchParameter("pagina");
 
 		return {
 			NomeOuDescricao: typeof q === "string" ? q : undefined,
 			codigoMunicipio:
-				typeof cidade === "string" ? parseInt(cidade) : undefined,
+				typeof codigo === "string" ? parseInt(codigo) : undefined,
 			categorias: getCategorias(),
 			tiposEvento: getTiposEvento(),
 			generosMusicais: getGeneros(),
@@ -96,7 +97,8 @@ export const useSearchFiltersWithURL = () => {
 			}
 
 			if (newFilters.codigoMunicipio) {
-				urlSearchParameters["cidade"] = newFilters.codigoMunicipio.toString();
+				urlSearchParameters["codigoMunicipio"] =
+					newFilters.codigoMunicipio.toString();
 			}
 
 			if (newFilters.categorias.length > 0) {
