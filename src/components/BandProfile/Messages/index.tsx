@@ -32,7 +32,8 @@ const MessagesTab = () => {
 			setSelectedConversation?.(null);
 			setNewConversationParticipant?.(null);
 		};
-	}, []);
+	}, [setNewConversationParticipant, setSelectedConversation]);
+	// }, []);
 
 	return (
 		<div className="flex h-[75vh] w-full border bg-gray-50">
@@ -53,7 +54,7 @@ const MessagesTab = () => {
 					onProposalSent={async (proposalDetails: string) => {
 						// Send the proposal notification message to the chat
 
-						// REVER ISSO
+						// REVER
 						if (handleSendMessage) {
 							await handleSendMessage(
 								proposalDetails,
