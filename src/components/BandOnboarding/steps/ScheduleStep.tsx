@@ -29,6 +29,7 @@ import { decryptValue } from "@/utils/encryptValue";
 import { mapAgendaEventToFormData } from "@/utils/mapAgendaEventToFormData";
 import { EventModal } from "@/components/BandProfile/Agenda/EventModal/EventModal";
 import { calculateDuration } from "@/components/BandProfile/Agenda/utils";
+import { toBR } from "@/utils";
 
 // Define styles consistent with modern interface pattern
 const styles = {
@@ -67,11 +68,13 @@ export default function ScheduleStep() {
 
 	const [loading, setLoading] = useState(false);
 	const [events, setEvents] = useState<Array<AgendaEvent>>([]);
-	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 	const [showEventModal, setShowEventModal] = useState(false);
 	const [modalMode, setModalMode] = useState<ModalMode>("create");
 	const [selectedEventsDay, setSelectedEventsDay] =
 		useState<Array<AgendaEvent> | null>(null);
+
+	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+	const [currentMonth, setCurrentMonth] = useState(toBR(new Date()));
 
 	const loadSchedule = useCallback(() => {
 		if (!produtoMusicalId) return;
@@ -208,18 +211,23 @@ export default function ScheduleStep() {
 				<div className="flex flex-col w-full h-full gap-4 lg:gap-6  px-1 sm:px-0">
 					{/* Seção da Agenda */}
 					<div className={styles.sectionContainer}>
-						<div className={styles.sectionTitle}>
-							<h2 className={styles.titleText}>Minha Agenda</h2>
-						</div>
-						<p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
-							Adicione eventos à sua agenda. Os contratantes poderão verificar
-							sua disponibilidade através dos indicadores de "Ocupado", mas os
-							detalhes dos eventos permanecerão privados.
+						<div className={styles.sectionTitle}></div>
+						<p className="text-gray-600 text-justify text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
+							Adicione eventos à sua agenda. Os contratantes só poderão
+							visualizar a disponibilidade da agenda clicando em uma data por
+							vez.
+							<br />
+							<br />
+							Você pode adicionar eventos em um outro momento na edição do
+							perfil.
 						</p>
 
 						{/* Agenda Component */}
 						<div className=" border border-gray-200 rounded-lg">
 							<DatePicker
+								mode="default"
+								currentMonth={currentMonth}
+								setCurrentMonth={setCurrentMonth}
 								onSelectDate={setSelectedDate}
 								onModal={() => {
 									setShowEventModal((state) => !state);
