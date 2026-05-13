@@ -35,8 +35,6 @@ import type { MusicalProductSearchRequest } from "@/api/types";
 import { useUser } from "@/hooks/useUser";
 import { InputField } from "@/components/forms/InputField/InputField";
 import { useDebounce } from "@/hooks/useDebounceSimple";
-// import { Carousel } from "@/components/ui/Carousel/Carousel";
-// import { CarouselItem } from "@/components/ui/carousel";
 
 const promos = [
 	{
@@ -211,6 +209,7 @@ export const Home = (): FunctionComponent => {
 	return (
 		<MainLayout>
 			<div className="flex flex-col justify-start items-center py-3 gap-5">
+				{/* search field */}
 				<div className="flex flex-col xs:flex-row max-w-2xl w-full px-2 gap-2">
 					<div className="w-full">
 						<InputField
@@ -230,23 +229,23 @@ export const Home = (): FunctionComponent => {
 						variant="outline"
 						size="sm"
 						onClick={async () => {
-							if (debouncedSearchTerm) {
-								await navigate({
-									to: "/search",
-									search: { q: debouncedSearchTerm },
-								});
-							} else {
-								await navigate({
-									to: "/search",
-								});
-							}
+							await navigate({
+								to: "/search",
+								search: {
+									...(place && { codigoMunicipio: place }),
+									...(category && { categorias: [category] }),
+									...(type && { tipos: [type] }),
+									...(genre && { generos: [genre] }),
+									...(debouncedSearchTerm && { q: debouncedSearchTerm }),
+								},
+							});
 						}}
 					>
 						<SlidersHorizontal
 							size={18}
 							className="hover:text-white transition-all duration-200"
 						/>
-						<span>Filtros</span>
+						<span>Avançados</span>
 					</Button>
 				</div>
 
@@ -256,7 +255,7 @@ export const Home = (): FunctionComponent => {
 						<DropdownSelect
 							icon={<MapPin size={18} />}
 							id="place"
-							label="Localidade"
+							label="Localização"
 							openDropdown={openDropdown}
 							options={cidadesOptions}
 							selected={place}
@@ -272,22 +271,7 @@ export const Home = (): FunctionComponent => {
 							options={categoriasOptions}
 							selected={category}
 							setOpenDropdown={setOpenDropdown}
-							onChange={async (value) => {
-								setCategory(value);
-								if (value) {
-									if (debouncedSearchTerm) {
-										await navigate({
-											to: "/search",
-											search: { categorias: [value], q: debouncedSearchTerm },
-										});
-									} else {
-										await navigate({
-											to: "/search",
-											search: { categorias: [value] },
-										});
-									}
-								}
-							}}
+							onChange={setCategory}
 						/>
 					</div>
 					<div className="m-auto">
@@ -298,22 +282,7 @@ export const Home = (): FunctionComponent => {
 							options={tiposEventoOptions}
 							selected={type}
 							setOpenDropdown={setOpenDropdown}
-							onChange={async (value) => {
-								setType(value);
-								if (value) {
-									if (debouncedSearchTerm) {
-										await navigate({
-											to: "/search",
-											search: { tipos: [value], q: debouncedSearchTerm },
-										});
-									} else {
-										await navigate({
-											to: "/search",
-											search: { tipos: [value] },
-										});
-									}
-								}
-							}}
+							onChange={setType}
 						/>
 					</div>
 					<div className="m-auto">
@@ -324,22 +293,7 @@ export const Home = (): FunctionComponent => {
 							options={generosMusicaisOptions}
 							selected={genre}
 							setOpenDropdown={setOpenDropdown}
-							onChange={async (value) => {
-								setGenre(value);
-								if (value) {
-									if (debouncedSearchTerm) {
-										await navigate({
-											to: "/search",
-											search: { generos: [value], q: debouncedSearchTerm },
-										});
-									} else {
-										await navigate({
-											to: "/search",
-											search: { generos: [value] },
-										});
-									}
-								}
-							}}
+							onChange={setGenre}
 						/>
 					</div>
 				</div>
@@ -348,41 +302,9 @@ export const Home = (): FunctionComponent => {
 				<div className="w-full flex flex-col justify-center items-center gap-7">
 					{/* Hero Image */}
 					<div className="w-full max-w-9xl mx-auto">
-						{/* {homePageImages && homePageImages.length > 0 ? (
-							<Carousel>
-								<CarouselItem className="relative w-full max-h-[394px] xl:rounded-lg">
-									<div className="relative w-full h-full object-cover rounded-sm border">
-										<LazyImage
-											alt="Band gallery photo"
-											className="w-full h-full object-cover rounded-sm"
-											src={homePageImages[0]?.Link ?? ""}
-										/>
-									</div>
-
-									<div
-										style={{
-											background: `linear-gradient(90deg, rgba(19, 93, 173, 0.5) 0%, rgba(3, 40, 80, 0.5) 100%)`,
-										}}
-										className="absolute inset-0 overflow-hidden"
-									/>
-
-									<Button
-										variant="secondary"
-										className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-gray-300 text-gray-700"
-									>
-										Cadastre-se
-									</Button>
-								</CarouselItem>
-							</Carousel>
-						) : (
-							<LazyImage
-								alt="Imagem ilustrativa"
-								className="w-full h-full object-cover xl:rounded-lg"
-								src="" // Teste: string vazia deve mostrar fallback
-							/>
-						)} */}
-
-						{homePageImages && homePageImages.length > 0 ? (
+						{!hasActiveFilters &&
+						homePageImages &&
+						homePageImages.length > 0 ? (
 							<div className="relative w-full max-h-[394px] xl:rounded-lg">
 								<div className="relative w-full h-full object-cover rounded-sm border">
 									<LazyImage
@@ -411,9 +333,13 @@ export const Home = (): FunctionComponent => {
 								)}
 							</div>
 						) : (
-							<div className="animate-pulse w-full h-48 sm:h-64 md:h-80 lg:h-96 xl:h-[28rem] max-w-9xl">
-								<div className="bg-gray-300 h-full xl:rounded-lg w-full"></div>
-							</div>
+							<>
+								{!hasActiveFilters && (
+									<div className="animate-pulse w-full h-48 sm:h-64 md:h-80 lg:h-96 xl:h-[28rem] max-w-9xl">
+										<div className="bg-gray-300 h-full xl:rounded-lg w-full"></div>
+									</div>
+								)}
+							</>
 						)}
 					</div>
 					{/* Best Rated */}
@@ -425,10 +351,11 @@ export const Home = (): FunctionComponent => {
 							<Link
 								to="/search"
 								search={{
-									...(place && { codigoMunicipio: parseInt(place) }),
+									...(place && { codigoMunicipio: place }),
 									...(category && { categorias: [category] }),
 									...(type && { tipos: [type] }),
 									...(genre && { generos: [genre] }),
+									...(debouncedSearchTerm && { q: debouncedSearchTerm }),
 								}}
 							>
 								<Button variant="transparent" className="shrink-0">

@@ -30,7 +30,6 @@ import { RatingBars } from "@/components/RatingBars/RatingBars";
 import { RatingComment } from "@/components/RatingComment/RatingComment";
 import { CheckAvailabilityModal } from "../Agenda/CheckAvailabilityModal";
 import { ProfileDetails } from "./ProfileDetails";
-import { TabNavigation } from "@/components/ui/TabNavigation/TabNavigation";
 import { MediaPlayer } from "@/components/MediaPlayer/MediaPlayer";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
@@ -49,11 +48,6 @@ interface BandProfileProps {
 	bandLoading: boolean;
 }
 
-const tabs = [
-	{ label: "Youtube", value: "youtube" },
-	{ label: "Spotify", value: "spotify" },
-];
-
 export const BandProfile = ({
 	musicalProduct,
 	similarArtists,
@@ -63,7 +57,6 @@ export const BandProfile = ({
 	const navigate = useNavigate();
 	const [isConversationModalOpen, setIsConversationModalOpen] = useState(false);
 	const [isCheckAvailabilityOpen, setIsCheckAvailabilityOpen] = useState(false);
-	const [activeTab, setActiveTab] = useState("youtube");
 	const [loadingYoutube, setLoadingYoutube] = useState(true);
 	const [loadingSpotify, setLoadingSpotify] = useState(true);
 
@@ -79,10 +72,6 @@ export const BandProfile = ({
 
 	// Start conversation hook
 	const startConversationMutation = useStartConversation();
-
-	const spotifyResource = extractSpotifyResource(
-		musicalProduct?.spotifyPlaylistId || ""
-	);
 
 	// Handler for favorite toggle
 	const handleFavoriteToggle = (productId: number) => {
@@ -127,76 +116,62 @@ export const BandProfile = ({
 		}
 	}, [customRedirect]);
 
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			if (activeTab === "youtube") {
-				setLoadingYoutube(false);
-			} else {
-				setLoadingSpotify(false);
-			}
-		}, 500);
+	const renderYoutubeContent = (): ReactNode => {
+		const video =
+			musicalProduct?.videosYouTube.find((item) => item)?.link ?? "";
+		const videoId = extractYouTubeId(video);
 
-		return () => {
-			clearTimeout(timer);
-		};
-	}, [activeTab]);
+		return videoId ? (
+			<div className="relative w-full rounded-lg overflow-hidden">
+				{loadingYoutube && (
+					<div className="absolute inset-0 bg-gray-200 animate-pulse z-10" />
+				)}
+				<MediaPlayer
+					className="aspect-video"
+					src={`https://www.youtube.com/embed/${videoId}`}
+					onLoad={() => {
+						setLoadingYoutube(false);
+					}}
+				/>
+			</div>
+		) : (
+			<a
+				href={video}
+				target="_blank"
+				rel="noopener noreferrer"
+				className="block"
+			>
+				<LazyImage
+					alt="Video"
+					className="rounded-lg h-40 sm:h-48 lg:h-[180px] w-full object-cover hover:opacity-90 transition-opacity"
+					src={musicalProduct?.fotoPerfil || ""}
+				/>
+			</a>
+		);
+	};
 
-	const renderTabContent = (tab: string): ReactNode => {
-		switch (tab) {
-			case "youtube": {
-				const video =
-					musicalProduct?.videosYouTube.find((item) => item)?.link ?? "";
-				const videoId = extractYouTubeId(video);
+	const renderSpotifyContent = (): ReactNode => {
+		const spotifyResource = extractSpotifyResource(
+			musicalProduct?.spotifyPlaylistId || ""
+		);
 
-				return videoId ? (
-					<div className="relative w-full rounded-lg overflow-hidden">
-						{loadingYoutube && (
-							<div className="absolute inset-0 bg-gray-200 animate-pulse z-10" />
-						)}
-						<MediaPlayer
-							className="aspect-video"
-							src={`https://www.youtube.com/embed/${videoId}`}
-						/>
-					</div>
-				) : (
-					<a
-						href={video}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="block"
-					>
-						<LazyImage
-							alt="Video"
-							className="rounded-lg h-40 sm:h-48 lg:h-[180px] w-full object-cover hover:opacity-90 transition-opacity"
-							src={musicalProduct?.fotoPerfil || ""}
-						/>
-					</a>
-				);
-			}
-
-			case "spotify": {
-				return (
-					<div className="relative aspect-video h-full w-full rounded-lg overflow-auto">
-						{loadingSpotify && (
-							<div className="absolute inset-0 bg-gray-200 animate-pulse z-10" />
-						)}
-						<iframe
-							src={`https://open.spotify.com/embed/${spotifyResource?.type}/${spotifyResource?.id}`}
-							allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-							width="100%"
-							height="352"
-							allowFullScreen
-							onLoad={() => {
-								setLoadingSpotify(false);
-							}}
-						/>
-					</div>
-				);
-			}
-
-			default:
-				return "";
-		}
+		return (
+			<div className="relative aspect-video h-full w-full rounded-lg">
+				{loadingSpotify && (
+					<div className="absolute inset-0 bg-gray-200 animate-pulse z-10" />
+				)}
+				<iframe
+					src={`https://open.spotify.com/embed/${spotifyResource?.type}/${spotifyResource?.id}`}
+					allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+					width="100%"
+					height="152"
+					allowFullScreen
+					onLoad={() => {
+						setLoadingSpotify(false);
+					}}
+				/>
+			</div>
+		);
 	};
 
 	// Loading state
@@ -408,35 +383,21 @@ export const BandProfile = ({
 					</div>
 
 					{/* Side Card */}
-					{musicalProduct.usuario.id !== activeProduct?.id ? (
+					{musicalProduct?.id !== activeProduct?.id ? (
 						<div className="w-full lg:w-80 xl:w-96 border border-gray-200 rounded-lg flex flex-col gap-4 lg:gap-6 pb-4 px-4 lg:pb-4 lg:px-4 shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08)] order-1 lg:order-2 lg:sticky lg:top-4 lg:self-start">
 							{/* Media content (YouTube or Spotify) */}
-
 							{musicalProduct.videosYouTube.length > 0 &&
 							musicalProduct.spotifyPlaylistId ? (
 								<div className="flex flex-col gap-2">
-									<div className="w-full h-16 sm:h-18 border-b border-gray-100 overflow-visible scrollbar-hide flex items-center">
-										<TabNavigation
-											currentTab={activeTab}
-											tabs={tabs}
-											variant="underline"
-											onChange={(tab) => {
-												if (tab === "youtube") {
-													setLoadingYoutube(true);
-												} else {
-													setLoadingSpotify(true);
-												}
-												setActiveTab(tab);
-											}}
-										/>
+									<div className="flex flex-col gap-2">
+										{renderYoutubeContent()}
+										{renderSpotifyContent()}
 									</div>
-
-									{renderTabContent(activeTab)}
 								</div>
 							) : musicalProduct.videosYouTube.length > 0 ? (
-								<div className="pt-4">{renderTabContent("youtube")}</div>
+								<div className="pt-4">{renderYoutubeContent()}</div>
 							) : musicalProduct.spotifyPlaylistId ? (
-								<div className="pt-4">{renderTabContent("spotify")}</div>
+								<div className="pt-4">{renderSpotifyContent()}</div>
 							) : (
 								<div className="pt-4">
 									<LazyImage
@@ -448,41 +409,45 @@ export const BandProfile = ({
 							)}
 
 							{/* Action buttons */}
-							<IconButton
-								icon={<BookCheck size={20} />}
-								onClick={handleRequestCheckAvailability}
-								disabled={startConversationMutation.isPending}
-							>
-								{startConversationMutation.isPending
-									? "Carregando..."
-									: "Verificar Disponibilidade"}
-							</IconButton>
-							<IconButton
-								variant="none"
-								className="bg-green-700 text-white border border-green-300 hover:bg-green-700/90"
-								icon={<MessageCircle size={20} />}
-								onClick={handleRequestQuote}
-								disabled={startConversationMutation.isPending}
-							>
-								{startConversationMutation.isPending ? "Carregando..." : "Chat"}
-							</IconButton>
-							<IconButton
-								icon={<Heart size={20} />}
-								variant="outline"
-								onClick={() => {
-									handleFavoriteToggle(musicalProduct.id);
-								}}
-								className={
-									isFavorite ? "bg-red-50 text-red-600 border-red-200" : ""
-								}
-								disabled={toggleFavoriteMutation.isPending}
-							>
-								{toggleFavoriteMutation.isPending
-									? "Carregando..."
-									: isFavorite
-										? "Favoritado"
-										: "Salvar"}
-							</IconButton>
+							<div className="flex flex-col gap-2">
+								<IconButton
+									icon={<BookCheck size={20} />}
+									onClick={handleRequestCheckAvailability}
+									disabled={startConversationMutation.isPending}
+								>
+									{startConversationMutation.isPending
+										? "Carregando..."
+										: "Verificar Disponibilidade"}
+								</IconButton>
+								<IconButton
+									variant="none"
+									className="bg-green-700 text-white border border-green-300 hover:bg-green-700/90"
+									icon={<MessageCircle size={20} />}
+									onClick={handleRequestQuote}
+									disabled={startConversationMutation.isPending}
+								>
+									{startConversationMutation.isPending
+										? "Carregando..."
+										: "Chat"}
+								</IconButton>
+								<IconButton
+									icon={<Heart size={20} />}
+									variant="outline"
+									onClick={() => {
+										handleFavoriteToggle(musicalProduct.id);
+									}}
+									className={
+										isFavorite ? "bg-red-50 text-red-600 border-red-200" : ""
+									}
+									disabled={toggleFavoriteMutation.isPending}
+								>
+									{toggleFavoriteMutation.isPending
+										? "Carregando..."
+										: isFavorite
+											? "Favoritado"
+											: "Salvar"}
+								</IconButton>
+							</div>
 
 							{/* Info cards */}
 							<div className="flex flex-col w-full text-gray-600 gap-4">
@@ -531,28 +496,15 @@ export const BandProfile = ({
 							{musicalProduct.videosYouTube.length > 0 &&
 							musicalProduct.spotifyPlaylistId ? (
 								<div className="flex flex-col gap-2">
-									<div className="w-full h-16 sm:h-18 border-b border-gray-100 overflow-visible scrollbar-hide flex items-center">
-										<TabNavigation
-											currentTab={activeTab}
-											tabs={tabs}
-											variant="underline"
-											onChange={(tab) => {
-												if (tab === "youtube") {
-													setLoadingYoutube(true);
-												} else {
-													setLoadingSpotify(true);
-												}
-												setActiveTab(tab);
-											}}
-										/>
+									<div className="flex flex-col gap-2">
+										{renderYoutubeContent()}
+										{renderSpotifyContent()}
 									</div>
-
-									{renderTabContent(activeTab)}
 								</div>
 							) : musicalProduct.videosYouTube.length > 0 ? (
-								<div className="pt-4">{renderTabContent("youtube")}</div>
+								<div className="pt-4">{renderYoutubeContent()}</div>
 							) : musicalProduct.spotifyPlaylistId ? (
-								<div className="pt-4">{renderTabContent("spotify")}</div>
+								<div className="pt-4">{renderSpotifyContent()}</div>
 							) : (
 								<div className="pt-4">
 									<LazyImage
