@@ -1,14 +1,16 @@
 import type React from "react";
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Check, LogOut } from "lucide-react";
+import { ChevronDown, Check, LogOut, Music2Icon, Plus } from "lucide-react";
 import { Avatar } from "../Avatar/Avatar";
 import { cn } from "../../lib/utils/cn";
 import type { ActiveMusicalProduct } from "@/hooks/useActiveMusicalProduct";
 import { useUser } from "@/hooks/useUser";
+import { useOnboardingData } from "@/hooks/useOnboarding";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { userKeys } from "@/hooks/useUser";
 import { useAuthStore } from "@/store/authStore";
 import { useQueryClient } from "@tanstack/react-query";
+import { OnboardingsPedingModal } from "../BandProfile/Account/OnboardingsPedingModal";
 
 export type MusicalProduct = ActiveMusicalProduct;
 
@@ -28,10 +30,12 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { data: userData } = useUser();
+	const { data: onboardings } = useOnboardingData();
 	const { logout } = useAuthStore();
 	const queryClient = useQueryClient();
 
 	const [isOpen, setIsOpen] = useState(false);
+	const [openOnboardingsPending, setOpenOnboardingsPending] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -67,6 +71,10 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 				});
 			}
 		}
+	};
+
+	const handleCreateProfessionalProfile = () => {
+		setOpenOnboardingsPending(true);
 	};
 
 	const handleTriggerClick = () => {
@@ -113,7 +121,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 					<div className="w-64 py-1">
 						<div className="px-3 py-2">
 							<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-								Perfil Pessoal
+								Perfil de Contratante
 							</p>
 						</div>
 
@@ -146,7 +154,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 									onClick={() => {
 										handleProductSelect(product);
 									}}
-									className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors"
+									className="w-full mb-1 flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors"
 								>
 									<Avatar
 										src={product.fotoPerfil ?? ""}
@@ -168,10 +176,25 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 								</span>
 							</div>
 						)}
+						<div className="pb-6" />
+
+						<button
+							onClick={handleCreateProfessionalProfile}
+							className="w-full text-left px-4 py-2 bg-primary-50 hover:bg-primary-100 transition-all duration-300 flex items-center gap-2 mb-1"
+						>
+							<div className="flex relative">
+								<Music2Icon className="w-4 h-4" />
+
+								<span className="absolute top-1 -right-1 flex items-center justify-center w-3 h-3 font-bold text-black rounded-full">
+									<Plus strokeWidth={3} className="w-2 h-3" />
+								</span>
+							</div>
+							<span>Criar Perfil Profissional</span>
+						</button>
 
 						<button
 							onClick={handleLogout}
-							className="w-full  text-left px-4 py-2  flex items-center justify-center gap-2 bg-red-900 text-white hover:bg-red-900/90"
+							className="w-full  text-left px-4 py-2  flex items-center justify-center gap-2 bg-primary-700 text-white hover:bg-primary-700/90 transition-all duration-300"
 						>
 							<LogOut className="w-4 h-4" />
 							<span>Sair</span>
@@ -179,6 +202,13 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 					</div>
 				</div>
 			)}
+
+			<OnboardingsPedingModal
+				isOpen={openOnboardingsPending}
+				setIsOpen={setOpenOnboardingsPending}
+				onboardingsPedingTable={{ data: onboardings ?? [] }}
+				clickComeFrom="header-menu"
+			/>
 		</div>
 	);
 };

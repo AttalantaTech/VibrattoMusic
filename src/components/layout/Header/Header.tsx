@@ -1,11 +1,4 @@
-import {
-	HelpCircle,
-	User,
-	Music,
-	Music2Icon,
-	Plus,
-	Settings,
-} from "lucide-react";
+import { HelpCircle, User, Music, Settings } from "lucide-react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Button } from "../../ui/Button/Button";
 import { VibrattoLogo } from "../../VibrattoLogo/VibrattoLogo";
@@ -14,26 +7,20 @@ import { MessageBell } from "../MessageBell";
 import { useAuthStore } from "../../../store/authStore";
 import { useState, useRef, useEffect } from "react";
 import { BandProfileSwitcher } from "../../BandProfileSwitcher";
-import { useOnboardingData } from "@/hooks/useOnboarding";
 import { useSyncMusicalProducts } from "@/hooks/useSyncMusicalProducts";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-
-import { OnboardingsPedingModal } from "@/components/BandProfile/Account/OnboardingsPedingModal";
 
 export const Header = () => {
 	const { isAuthenticated } = useAuthStore();
 	const location = useLocation();
 	const navigate = useNavigate();
 	const [showDropdown, setShowDropdown] = useState(false);
-	const [openOnboardingsPending, setOpenOnboardingsPending] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
 	useSyncMusicalProducts();
 
 	const { activeProduct, availableProducts, setActiveProduct } =
 		useMusicalProductStore();
-
-	const { data: onboardings } = useOnboardingData();
 
 	const isOnboardingPage = location.pathname.includes("/onboarding");
 	const showNotifications = isAuthenticated && !isOnboardingPage;
@@ -53,10 +40,6 @@ export const Header = () => {
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
 	}, []);
-
-	const handleCreateProfessionalProfile = () => {
-		setOpenOnboardingsPending(true);
-	};
 
 	const handleProfile = async () => {
 		setShowDropdown(false);
@@ -116,22 +99,7 @@ export const Header = () => {
 										)}
 										<span>Meu Perfil</span>
 									</button>
-									<button
-										onClick={handleCreateProfessionalProfile}
-										className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
-									>
-										<div className="flex relative">
-											<Music2Icon className="w-4 h-4" />
 
-											<span
-												className="absolute top-1 -right-1 flex items-center justify-center
-        w-3 h-3 font-bold text-black rounded-full"
-											>
-												<Plus strokeWidth={3} className="w-2 h-3" />
-											</span>
-										</div>
-										<span>Criar Perfil Profissional</span>
-									</button>
 									{/* Help link */}
 									<a
 										href="mailto:ayav@ic.ufal.br"
@@ -169,13 +137,6 @@ export const Header = () => {
 							onProductChange={setActiveProduct}
 						/>
 					)}
-
-					<OnboardingsPedingModal
-						isOpen={openOnboardingsPending}
-						setIsOpen={setOpenOnboardingsPending}
-						onboardingsPedingTable={{ data: onboardings ?? [] }}
-						clickComeFrom="header-menu"
-					/>
 				</div>
 			</nav>
 		</header>
