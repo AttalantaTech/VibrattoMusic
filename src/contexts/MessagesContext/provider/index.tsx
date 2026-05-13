@@ -324,44 +324,6 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 		start,
 	]);
 
-	// const syncCache = () => {
-	// 	if (newMessages.length === 0 && newConversationData.length === 0) return;
-
-	// 	// queryClient.setQueryData(
-	// 	// 	[...messagingKeys.conversations(), currentProductId],
-	// 	// 	(oldData: any) => {
-	// 	// 		if (!oldData) return oldData;
-	// 	// 		const updatedConversations = oldData.map(
-	// 	// 			(conversation: Conversation) => {
-	// 	// 				if (conversation.id === message.idConversa) {
-	// 	// 					return {
-	// 	// 						...conversation,
-	// 	// 						ultimaMensagem: {
-	// 	// 							...message,
-	// 	// 							numeroNaoLidas: conversation.numeroNaoLidas
-	// 	// 								? conversation.numeroNaoLidas + 1
-	// 	// 								: 1,
-	// 	// 						},
-	// 	// 					};
-	// 	// 				}
-	// 	// 				return conversation;
-	// 	// 			}
-	// 	// 		);
-	// 	// 		return updatedConversations;
-	// 	// 	}
-	// 	// );
-	// 	// setNewConversations([]);
-
-	// 	queryClient.setQueryData(
-	// 		messagingKeys.conversationMessages(currentConversationId.current || 0),
-	// 		(oldData: any) => ({
-	// 			...oldData,
-	// 			pages: [...newMessages, ...oldData.pages.slice(0, -1)],
-	// 		})
-	// 	);
-	// 	setNewMessages([]);
-	// };
-
 	const scrollToBottom = () => {
 		try {
 			messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -460,7 +422,8 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 
 	useEffect(() => {
 		setNewMessages([]);
-	}, []);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [currentConversationId.current]);
 
 	useEffect(() => {
 		if (token && !isConversationsLoading) {
