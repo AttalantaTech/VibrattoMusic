@@ -1,9 +1,5 @@
 import type { HubConnection } from "@microsoft/signalr";
-import {
-	HubConnectionBuilder,
-	HubConnectionState,
-	LogLevel,
-} from "@microsoft/signalr";
+import { HubConnectionBuilder, HubConnectionState } from "@microsoft/signalr";
 import { getEnvironmentConfig } from "../config/environment";
 import type { WebSocketI } from "./WebSocketI";
 
@@ -22,7 +18,6 @@ export class SignalRService implements WebSocketI {
 			.withUrl(`${baseUrl}/${endpoint}`, {
 				accessTokenFactory: () => token || "",
 			})
-			.configureLogging(LogLevel.Trace)
 			.withAutomaticReconnect()
 			.build();
 	};
