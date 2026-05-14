@@ -100,16 +100,7 @@ export const StageMapArea = ({
 					}}
 				>
 					{/* Grid */}
-					<div
-						className="absolute inset-0 opacity-20"
-						style={{
-							backgroundImage: `
-												linear-gradient(to right, #9CA3AF 1px, transparent 1px),
-												linear-gradient(to bottom, #9CA3AF 1px, transparent 1px)
-											`,
-							backgroundSize: "40px 40px",
-						}}
-					/>
+					<div className="absolute inset-0 opacity-20" />
 
 					{/* Stage Elements */}
 					{elements.map((element) => {
