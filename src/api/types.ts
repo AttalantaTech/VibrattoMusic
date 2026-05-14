@@ -325,6 +325,14 @@ export interface RedeSocial {
 	nomeRedeSocial: string;
 }
 
+export interface IStageMap {
+	idProdutoMusical: number;
+	idInstrumento: number;
+	posicaoX: number;
+	posicaoY: number;
+	nomeInstrumento: string;
+}
+
 // Real API Response Types (based on actual API structure)
 export interface MusicalProductApiResponse {
 	id: number;
@@ -359,13 +367,7 @@ export interface MusicalProductApiResponse {
 	imagens: Array<FileProps>;
 	clipagem: Array<FileProps>;
 	mapaPalcoLink: string | null;
-	mapaPalco: Array<{
-		idProdutoMusical: number;
-		idInstrumento: number;
-		posicaoX: number;
-		posicaoY: number;
-		nomeInstrumento: string;
-	}>;
+	mapaPalco: Array<IStageMap>;
 	tiposProducao: Array<{
 		id: number;
 		nome: string;

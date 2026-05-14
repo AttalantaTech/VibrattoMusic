@@ -23,6 +23,8 @@ import { toast } from "sonner";
 import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useUpdateMusicalProduct } from "@/hooks/useMusicalProducts";
+import { ViewStageMapModal } from "@/components/ViewStageMapModal";
+import { StageMapArea } from "@/components/StageMap/StageMapArea";
 
 // Define styles consistent with modern interface pattern
 const styles = {
@@ -161,6 +163,7 @@ export default function TechnicalSection({
 	// Step4 UI pattern state
 	const [loading, setLoading] = useState(false);
 	const [isStageBuilderOpen, setIsStageBuilderOpen] = useState(false);
+	const [isOpenViewStageMap, setIsOpenViewStageMap] = useState(false);
 
 	const [riderTab, setRiderTab] = useState("upload");
 	const [riderFile, setRiderFile] = useState<File | null>(null);
@@ -665,32 +668,47 @@ export default function TechnicalSection({
 											</div>
 										</div>
 										<div className="flex flex-col w-full max-w-xs sm:max-w-md gap-2 sm:gap-3 items-center justify-center px-2 sm:px-0">
-											<Button
-												className="w-full text-sm sm:text-base py-2 sm:py-3"
-												type="button"
-												variant={
-													stageMapData.length > 0 ? "outline" : "primary"
-												}
-												onClick={() => {
-													setIsStageBuilderOpen(true);
-												}}
-											>
+											<div className="flex gap-2 w-full flex-col sm:flex-row">
 												{stageMapData.length > 0 ? (
-													<>
-														<span className="hidden sm:inline">
-															Editar Mapa de Palco
-														</span>
-														<span className="sm:hidden">Editar Palco</span>
-													</>
-												) : (
-													<>
-														<span className="hidden sm:inline">
-															Criar Mapa de Palco
-														</span>
-														<span className="sm:hidden">Criar Palco</span>
-													</>
-												)}
-											</Button>
+													<Button
+														className="w-full text-sm sm:text-base py-2 sm:py-3"
+														type="button"
+														variant={"outline"}
+														onClick={() => {
+															setIsOpenViewStageMap(true);
+														}}
+													>
+														<span>Visualizar Palco</span>
+													</Button>
+												) : null}
+
+												<Button
+													className="w-full text-sm sm:text-base py-2 sm:py-3"
+													type="button"
+													variant={
+														stageMapData.length > 0 ? "outline" : "primary"
+													}
+													onClick={() => {
+														setIsStageBuilderOpen(true);
+													}}
+												>
+													{stageMapData.length > 0 ? (
+														<>
+															<span className="hidden sm:inline">
+																Editar Mapa de Palco
+															</span>
+															<span className="sm:hidden">Editar Palco</span>
+														</>
+													) : (
+														<>
+															<span className="hidden sm:inline">
+																Criar Mapa de Palco
+															</span>
+															<span className="sm:hidden">Criar Palco</span>
+														</>
+													)}
+												</Button>
+											</div>
 
 											{stageMapData.length > 0 && (
 												<Button
@@ -756,6 +774,16 @@ export default function TechnicalSection({
 					initialElements={initialStageElements}
 				/>
 			</div>
+
+			<ViewStageMapModal
+				isOpen={isOpenViewStageMap}
+				setIsOpen={setIsOpenViewStageMap}
+			>
+				<StageMapArea
+					stageMapList={activeProduct?.mapaPalco ?? []}
+					instrumentsData={instrumentsData}
+				/>
+			</ViewStageMapModal>
 		</AccountLayout>
 	);
 }
