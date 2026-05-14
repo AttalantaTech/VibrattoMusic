@@ -104,7 +104,7 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 				if (musicalProduct && musicalProduct?.mapaPalco.length > 0) {
 					return (
 						<StageMapArea
-							musicalProduct={musicalProduct}
+							stageMapList={musicalProduct.mapaPalco}
 							instrumentsData={instrumentsData}
 						/>
 					);
