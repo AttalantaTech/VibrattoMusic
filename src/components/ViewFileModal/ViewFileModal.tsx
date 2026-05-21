@@ -9,7 +9,7 @@ import { Button } from "../ui/Button/Button";
 import type { Dispatch, SetStateAction } from "react";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import type { FileProps } from "@/api/types";
-import { isPdfFile } from "@/utils/validation";
+import { isMP4File, isPdfFile } from "@/utils/validation";
 import { LazyImage } from "../ui/LazyImage/LazyImage";
 
 interface ViewFileModalProps {
@@ -36,13 +36,13 @@ export const ViewFileModal = ({
 				setViewFile({ isOpen: false, file: null });
 			}}
 		>
-			<DialogContent>
+			<DialogContent className="w-full sm:max-w-sm md:max-w-md lg:max-w-lg">
 				<DialogHeader>
 					<DialogTitle>Visualização do Arquivo</DialogTitle>
 					<DialogDescription />
 				</DialogHeader>
 
-				<div className="flex flex-col">
+				<div className="flex flex-col w-full">
 					{isPdfFile(file.link) ? (
 						<div className="max-w-[100vw] h-[75vh]">
 							<embed
@@ -50,6 +50,15 @@ export const ViewFileModal = ({
 								className="w-full h-full rounded-md border border-gray-500"
 								src={`${file.link}#toolbar=0`}
 							/>
+						</div>
+					) : isMP4File(file.link) ? (
+						<div className="w-full h-full">
+							<video
+								controls
+								className="w-full h-full aspect-square rounded-md border border-gray-500"
+							>
+								<source src={file.link} type="video/mp4" />
+							</video>
 						</div>
 					) : (
 						<LazyImage

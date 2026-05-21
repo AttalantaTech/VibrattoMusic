@@ -54,7 +54,7 @@ import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { imageUploadService } from "@/api";
 import { useUpdateMusicalProduct } from "@/hooks/useMusicalProducts";
-import { isPdfFile, isPngImage } from "@/utils/validation";
+import { isMP4File, isPdfFile, isPngImage } from "@/utils/validation";
 import { TooltipCustom } from "@/components/ui/TooltipCustom/TooltipCustom";
 import { extractSpotifyResource } from "@/lib/utils/cn";
 
@@ -270,7 +270,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 	// Handle image upload using Azure Blob Storage
 	const handleImageUpload = async (file: File, type: FileEventType) => {
 		if (!activeProduct?.id) {
-			toast.error("ID do produto musical não encontrado");
+			toast.error("Perfil Profissional não encontrado");
 
 			return;
 		}
@@ -642,6 +642,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 											"image/png",
 											"image/jpeg",
 											"image/gif",
+											"video/mp4",
 											"application/pdf",
 										]}
 										maxSizeMB={100}
@@ -679,6 +680,17 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 																		: "opacity-0"
 																}`}
 															/>
+														</div>
+													) : isMP4File(file.link) ? (
+														<div className="w-full">
+															<video
+																className="w-full h-full aspect-square"
+																onLoadedMetadata={() => {
+																	handleFileLoad(file.link);
+																}}
+															>
+																<source src={file.link} type="video/mp4" />
+															</video>
 														</div>
 													) : (
 														<img
@@ -840,37 +852,50 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 
 								{carouselImages.length > 0 && (
 									<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
-										{carouselImages.map((img, index) => (
+										{carouselImages.map((file, index) => (
 											<div
 												key={index}
 												className="relative aspect-square rounded-lg overflow-hidden border border-white-200 bg-white"
 											>
 												<div className="relative w-full h-full">
-													{!loadedImages[img.link] && (
+													{!loadedImages[file.link] && (
 														<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
 															<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
 														</div>
 													)}
 
-													<img
-														src={img.link}
-														alt={`Imagem ${index + 1}`}
-														onLoad={() => {
-															handleImageLoad(img.link);
-														}}
-														className={`w-full h-full object-contain border border-gray-200 
-															${isPngImage(img.link) ? "bg-white" : "bg-black"}  transition-opacity duration-300 ${
-																loadedImages[img.link]
+													{isMP4File(file.link) ? (
+														<div className="w-full">
+															<video
+																className="w-full h-full aspect-square"
+																onLoadedMetadata={() => {
+																	handleFileLoad(file.link);
+																}}
+															>
+																<source src={file.link} type="video/mp4" />
+															</video>
+														</div>
+													) : (
+														<img
+															src={file.link}
+															alt={`Imagem ${index + 1}`}
+															onLoad={() => {
+																handleImageLoad(file.link);
+															}}
+															className={`w-full h-full object-contain border border-gray-200 
+															${isPngImage(file.link) ? "bg-white" : "bg-black"}  transition-opacity duration-300 ${
+																loadedImages[file.link]
 																	? "opacity-100"
 																	: "opacity-0"
 															}`}
-													/>
+														/>
+													)}
 												</div>
 
 												<button
 													type="button"
 													onClick={async () => {
-														await removeCarouselImage(img.id, index);
+														await removeCarouselImage(file.id, index);
 													}}
 													className="absolute top-1 right-1 bg-gray-200 hover:bg-gray-300  text-gray-800 rounded-full p-1 transition-colors"
 												>
