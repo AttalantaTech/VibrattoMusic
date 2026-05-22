@@ -65,6 +65,7 @@ export const ContactValidationSchema = z
 		usaCnpj: z.boolean().default(false),
 
 		nome: z.string().optional(),
+		nomeFantasia: z.string().nullable(),
 
 		cnpj: z
 			.string()
@@ -124,7 +125,6 @@ export const ContactValidationSchema = z
 
 		const requiredFields = [
 			{ key: "cnpj", label: "CNPJ" },
-			{ key: "nome", label: "Nome" },
 			{ key: "razaoSocial", label: "Razão social" },
 			{ key: "telefone", label: "Telefone" },
 			{ key: "cepContato", label: "CEP" },
@@ -133,6 +133,7 @@ export const ContactValidationSchema = z
 			{ key: "bairroContato", label: "Bairro" },
 			{ key: "cidadeContato", label: "Cidade" },
 			{ key: "estadoContato", label: "Estado" },
+			{ key: "nomeFantasia", label: "Nome Fantasia" },
 		] as const;
 
 		requiredFields.forEach(({ key, label }) => {
@@ -374,6 +375,12 @@ export type OnboardingContactData = z.infer<typeof ContactValidationSchema> & {
 
 export const isPdfFile = (link: string): boolean => {
 	const regex = /\.pdf$/i;
+
+	return regex.test(link);
+};
+
+export const isMP4File = (link: string): boolean => {
+	const regex = /\.mp4$/i;
 
 	return regex.test(link);
 };

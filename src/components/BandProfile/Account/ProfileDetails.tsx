@@ -7,8 +7,8 @@ import { LazyImage } from "@/components/ui/LazyImage/LazyImage";
 import { TabNavigation } from "@/components/ui/TabNavigation/TabNavigation";
 import { ViewFileModal } from "@/components/ViewFileModal/ViewFileModal";
 import { useInstrumentos } from "@/hooks/useFilters";
-import { isPdfFile, isPngImage } from "@/utils/validation";
-import { Disc, MapPin, Verified } from "lucide-react";
+import { isMP4File, isPdfFile, isPngImage } from "@/utils/validation";
+import { Disc, Loader2, MapPin, Verified } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
@@ -40,6 +40,14 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 		isOpen: boolean;
 		file: FileProps | null;
 	}>({ isOpen: false, file: null });
+	const [loadedFiles, setLoadedFiles] = useState<Record<string, boolean>>({});
+
+	const handleFileLoad = (link: string) => {
+		setLoadedFiles((previous) => ({
+			...previous,
+			[link]: true,
+		}));
+	};
 
 	const renderTabContent = (): ReactNode => {
 		switch (activeTab) {
@@ -55,48 +63,72 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 				} else {
 					return (
 						<>
-							<div className="w-full flex items-center justify-center">
-								{musicalProduct && musicalProduct?.clipagem.length > 0 && (
-									<Carousel>
-										{musicalProduct.clipagem.map((file, index) => (
-											<CarouselItem
+							{musicalProduct && musicalProduct?.clipagem.length > 0 && (
+								<Carousel>
+									{musicalProduct.clipagem.map((file, index) => (
+										<CarouselItem
+											key={index}
+											className=" basis-full md:basis-1/2 lg:basis-1/3 cursor-pointer"
+											onClick={() => {
+												setViewFile({
+													isOpen: true,
+													file,
+												});
+											}}
+										>
+											<div
 												key={index}
-												className=" basis-full md:basis-1/2 lg:basis-1/3 cursor-pointer"
-												onClick={() => {
-													setViewFile({
-														isOpen: true,
-														file,
-													});
-												}}
+												className="relative aspect-square rounded-lg overflow-hidden border border-white-200 bg-white"
 											>
-												{isPdfFile(file.link) ? (
-													<div className="relative group">
-														<iframe
-															key={file.id || index}
-															className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] pointer-events-none"
-															src={`${file.link}#toolbar=0`}
-														/>
+												<div className="relative w-full h-full">
+													{!loadedFiles[file.link] && (
+														<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+															<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+														</div>
+													)}
 
-														<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
-													</div>
-												) : (
-													<div className="relative group">
-														<LazyImage
-															key={file.id || index}
-															alt="Band clipping photo"
-															className={`rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200
+													{isPdfFile(file.link) ? (
+														<div className="relative group">
+															<iframe
+																key={file.id || index}
+																className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] pointer-events-none"
+																src={`${file.link}#toolbar=0`}
+															/>
+
+															<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
+														</div>
+													) : isMP4File(file.link) ? (
+														<div className="relative group rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200">
+															<video
+																className="w-full h-full aspect-square"
+																onLoadedMetadata={() => {
+																	handleFileLoad(file.link);
+																}}
+															>
+																<source src={file.link} type="video/mp4" />
+															</video>
+
+															<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
+														</div>
+													) : (
+														<div className="relative group">
+															<LazyImage
+																key={file.id || index}
+																alt="Band clipping photo"
+																className={`rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200
                                   ${isPngImage(file.link) ? "bg-white" : "bg-black"}`}
-															src={file.link}
-														/>
+																src={file.link}
+															/>
 
-														<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/20 transition-colors rounded-lg" />
-													</div>
-												)}
-											</CarouselItem>
-										))}
-									</Carousel>
-								)}
-							</div>
+															<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/20 transition-colors rounded-lg" />
+														</div>
+													)}
+												</div>
+											</div>
+										</CarouselItem>
+									))}
+								</Carousel>
+							)}
 						</>
 					);
 				}
@@ -104,7 +136,7 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 				if (musicalProduct && musicalProduct?.mapaPalco.length > 0) {
 					return (
 						<StageMapArea
-							musicalProduct={musicalProduct}
+							stageMapList={musicalProduct.mapaPalco}
 							instrumentsData={instrumentsData}
 						/>
 					);

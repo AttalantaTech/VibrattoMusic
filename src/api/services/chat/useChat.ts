@@ -24,6 +24,7 @@ export const useChat = (
 	const connect = () => {
 		if (!connection.current && token) {
 			const newConnection = new SignalRService();
+
 			newConnection.createConnection("chatHub", token);
 			connection.current = newConnection;
 		}
@@ -60,12 +61,12 @@ export const useChat = (
 		senderType: number,
 		idMusicalProduct: number | null
 	): Promise<void> => {
-		await apiClient.get(`chat/mensagem?`, {
+		await apiClient.get(`chat/mensagem`, {
 			params: {
-				idConversa: currentConversationIdRef.current || 0,
-				conteudo: content,
-				tipoRemetente: senderType,
-				idProdutoMusical: idMusicalProduct,
+				IdConversa: currentConversationIdRef.current || 0,
+				Conteudo: content,
+				TipoRemetente: senderType,
+				IdProdutoMusical: idMusicalProduct,
 			},
 		});
 	};
@@ -75,7 +76,7 @@ export const useChat = (
 		senderType: number,
 		idMusicalProduct: number | null
 	): Promise<void> => {
-		if (connection.current) {
+		if (connection.current?.isConnected()) {
 			try {
 				await connection.current.invoke(
 					"EnviarMensagem",
@@ -84,9 +85,10 @@ export const useChat = (
 					senderType,
 					idMusicalProduct
 				);
+
 				return;
 			} catch (error) {
-				console.error(error);
+				console.error("Erro websocket:", error);
 			}
 		}
 

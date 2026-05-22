@@ -1140,13 +1140,13 @@ export const SendProposalModal = ({
 					</div>
 
 					<DialogFooter>
-						<Button type="button" variant="outline" onClick={onClose}>
+						<Button type="button" variant="secondary" onClick={onClose}>
 							Cancelar
 						</Button>
 						<Button
 							type="submit"
 							disabled={createProposalMutation.isPending || !userProductId}
-							className="bg-primary-600 hover:bg-blue-700"
+							className="bg-primary-600 hover:bg-primary-700"
 						>
 							{createProposalMutation.isPending
 								? "Enviando..."

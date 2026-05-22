@@ -30,6 +30,7 @@ export const TextAreaField = React.forwardRef<
 			rows = 4,
 			maxLength,
 			showCharCount = true,
+			onChange,
 			...props
 		},
 		ref
@@ -38,8 +39,9 @@ export const TextAreaField = React.forwardRef<
 
 		const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
 			if (maxLength && event.target.value.length > maxLength) return;
+
 			setCharCount(event.target.value.length);
-			props.onChange?.(event);
+			onChange?.(event);
 		};
 
 		return (

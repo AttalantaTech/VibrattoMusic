@@ -6,6 +6,7 @@ import { fileSizeInMB } from "../../../common/utils";
 type FileType =
 	| "image/png"
 	| "image/jpeg"
+	| "image/jpg"
 	| "image/gif"
 	| "image/svg+xml"
 	| "video/mp4"

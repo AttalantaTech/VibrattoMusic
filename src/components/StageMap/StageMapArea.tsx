@@ -3,10 +3,9 @@ import type { StageElement, StageMapData } from "./types";
 import { STAGE_COLORS, STAGE_CONFIG } from "./types";
 
 import type { FilterOptionInstrument } from "@/api/types";
-import type { MusicalProduct } from "@/components/BandProfileSwitcher";
 
 interface StageMapAreaProps {
-	musicalProduct: MusicalProduct | null;
+	stageMapList: Array<StageMapData>;
 	instrumentsData: Array<FilterOptionInstrument> | undefined;
 }
 
@@ -47,7 +46,7 @@ function convertStageMapDataToElements(
 }
 
 export const StageMapArea = ({
-	musicalProduct,
+	stageMapList,
 	instrumentsData,
 }: StageMapAreaProps) => {
 	const stageRef = useRef<HTMLDivElement>(null);
@@ -58,12 +57,12 @@ export const StageMapArea = ({
 
 	useEffect(() => {
 		const newElements = convertStageMapDataToElements(
-			musicalProduct?.mapaPalco ?? [],
+			stageMapList ?? [],
 			instrumentsData ?? []
 		);
 
 		setElements(newElements);
-	}, [instrumentsData, musicalProduct?.mapaPalco]);
+	}, [instrumentsData, stageMapList]);
 
 	useEffect(() => {
 		if (!containerRef.current) return;
@@ -100,16 +99,7 @@ export const StageMapArea = ({
 					}}
 				>
 					{/* Grid */}
-					<div
-						className="absolute inset-0 opacity-20"
-						style={{
-							backgroundImage: `
-												linear-gradient(to right, #9CA3AF 1px, transparent 1px),
-												linear-gradient(to bottom, #9CA3AF 1px, transparent 1px)
-											`,
-							backgroundSize: "40px 40px",
-						}}
-					/>
+					<div className="absolute inset-0 opacity-20" />
 
 					{/* Stage Elements */}
 					{elements.map((element) => {

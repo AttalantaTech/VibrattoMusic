@@ -8,6 +8,7 @@ import {
 	MapPin,
 	UserIcon,
 	ChevronRight,
+	ShieldUserIcon,
 	User,
 } from "lucide-react";
 
@@ -80,6 +81,7 @@ export default function ContactStep() {
 		return {
 			usaCnpj: onboardingData?.usaCnpj ?? false,
 			razaoSocial: onboardingData?.razaoSocial ?? "",
+			nomeFantasia: onboardingData?.nomeFantasia || null,
 			telefone: onboardingData?.telefone ?? "",
 			cepContato: onboardingData?.cepContato ?? "",
 			logradouroContato: onboardingData?.logradouroContato ?? "",
@@ -268,6 +270,19 @@ export default function ContactStep() {
 						{errors.razaoSocial?.message && (
 							<div className="text-red-500 text-sm">
 								{errors.razaoSocial.message}
+							</div>
+						)}
+
+						<InputField
+							required={watchUsaCnpj}
+							helperText={helperText}
+							icon={<ShieldUserIcon size={20} />}
+							label="Nome Fantasia"
+							{...register("nomeFantasia")}
+						/>
+						{errors.nomeFantasia?.message && (
+							<div className="text-red-500 text-sm">
+								{errors.nomeFantasia.message}
 							</div>
 						)}
 					</>

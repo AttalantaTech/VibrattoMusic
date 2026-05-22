@@ -82,11 +82,13 @@ export type FilterType =
 export interface FilePropsLocal {
 	id: number | null;
 	link: string;
+	legenda?: string;
 }
 
 export interface FileProps {
 	id: number;
 	link: string;
+	legenda?: string;
 }
 
 export interface Category {
@@ -325,11 +327,20 @@ export interface RedeSocial {
 	nomeRedeSocial: string;
 }
 
+export interface IStageMap {
+	idProdutoMusical: number;
+	idInstrumento: number;
+	posicaoX: number;
+	posicaoY: number;
+	nomeInstrumento: string;
+}
+
 // Real API Response Types (based on actual API structure)
 export interface MusicalProductApiResponse {
 	id: number;
 	ativo: boolean;
 	nome: string;
+	nomeFantasia: string | null;
 	descricao: string;
 	usuario: {
 		id: number;
@@ -359,13 +370,7 @@ export interface MusicalProductApiResponse {
 	imagens: Array<FileProps>;
 	clipagem: Array<FileProps>;
 	mapaPalcoLink: string | null;
-	mapaPalco: Array<{
-		idProdutoMusical: number;
-		idInstrumento: number;
-		posicaoX: number;
-		posicaoY: number;
-		nomeInstrumento: string;
-	}>;
+	mapaPalco: Array<IStageMap>;
 	tiposProducao: Array<{
 		id: number;
 		nome: string;
@@ -477,7 +482,7 @@ export interface MusicalProductMedia {
 export interface MusicalProductImages {
 	FotoPerfil?: string | null;
 	Logomarca?: string | null;
-	ImagensCarrossel: Array<string>;
+	ImagensCarrossel: Array<{ link: string; legenda?: string }>;
 }
 
 export interface MusicalProductTechnicalConfig {
