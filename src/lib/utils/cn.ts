@@ -71,7 +71,7 @@ export const extractYouTubeId = (url: string): string | null => {
 
 type SpotifyResourceType = "track" | "playlist" | "album" | "artist";
 
-type SpotifyResource = {
+export type SpotifyResource = {
 	type: SpotifyResourceType;
 	id: string;
 } | null;
