@@ -36,13 +36,19 @@ export const ViewFileModal = ({
 				setViewFile({ isOpen: false, file: null });
 			}}
 		>
-			<DialogContent className="w-full sm:max-w-sm md:max-w-md lg:max-w-lg">
+			<DialogContent className="w-full sm:max-w-sm md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
 				<DialogHeader>
 					<DialogTitle>Visualização do Arquivo</DialogTitle>
 					<DialogDescription />
 				</DialogHeader>
 
-				<div className="flex flex-col w-full">
+				{file.legenda && (
+					<div className="my-8">
+						<h4 className="text-gray-500 text-justify">{file.legenda}</h4>
+					</div>
+				)}
+
+				<div className="flex flex-col w-full items-center">
 					{isPdfFile(file.link) ? (
 						<div className="max-w-[100vw] h-[75vh]">
 							<embed
