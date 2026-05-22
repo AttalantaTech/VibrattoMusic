@@ -89,7 +89,7 @@ export function CarouselSection({
 							name="Legenda"
 							rows={3}
 							showCharCount
-							maxLength={250}
+							maxLength={100}
 							className="w-full"
 							value={file.legenda || ""}
 							onChange={(event) => {
