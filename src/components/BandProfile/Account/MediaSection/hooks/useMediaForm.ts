@@ -5,19 +5,21 @@ import { mediaSchema } from "../schemas/media.schema";
 import type { MediaData } from "../types";
 import type { MusicalProductApiResponse } from "@/api/types";
 
-export function useMediaForm(activeProduct?: MusicalProductApiResponse | null) {
+export function useMediaForm(
+	musicalProduct?: MusicalProductApiResponse | null
+) {
 	const initialValues = useMemo<MediaData>(() => {
 		return {
 			videosYouTube:
-				activeProduct?.videosYouTube.map((item) => item.link) ?? [],
-			spotifyPlaylistId: activeProduct?.spotifyPlaylistId ?? "",
-			redeSocial: activeProduct?.redeSocial ?? [],
-			fotoPerfil: activeProduct?.fotoPerfil ?? null,
-			valorServico: activeProduct?.valorServico?.toString() ?? null,
-			exibirValorServico: activeProduct?.exibirValorServico ?? false,
-			imagensCarrossel: activeProduct?.imagens ?? [],
+				musicalProduct?.videosYouTube.map((item) => item.link) ?? [],
+			spotifyPlaylistId: musicalProduct?.spotifyPlaylistId ?? "",
+			redeSocial: musicalProduct?.redeSocial ?? [],
+			fotoPerfil: musicalProduct?.fotoPerfil ?? null,
+			valorServico: musicalProduct?.valorServico?.toString() ?? null,
+			exibirValorServico: musicalProduct?.exibirValorServico ?? false,
+			imagensCarrossel: musicalProduct?.imagens ?? [],
 		};
-	}, [activeProduct]);
+	}, [musicalProduct]);
 
 	const form = useForm<MediaData>({
 		resolver: zodResolver(mediaSchema),

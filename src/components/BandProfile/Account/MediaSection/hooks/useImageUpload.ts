@@ -56,7 +56,11 @@ export function useImageUpload({
 			setUploadingType(type);
 
 			// If you have an image in Azure, it will delete it before you can upload a new image.
-			if (type === "ProdutoMusicalFotoPerfil" && profilePhoto) {
+			if (
+				(type === "ProdutoMusicalFotoPerfil" ||
+					type === "ProdutoMusicalOnboardingFotoPerfil") &&
+				profilePhoto
+			) {
 				await imageUploadService.deleteImage({
 					idCadastro: activeProductId,
 					evento: type,
@@ -69,16 +73,25 @@ export function useImageUpload({
 				idCadastro: activeProductId,
 				idLista:
 					type === "ProdutoMusicalCarrossel" ||
-					type === "ProdutoMusicalClipagem"
+					type === "ProdutoMusicalOnboardingCarrossel"
 						? carouselImages.length
-						: undefined,
+						: type === "ProdutoMusicalOnboardingClipagem" ||
+							  type === "ProdutoMusicalClipagem"
+							? clippings.length
+							: undefined,
 			});
 
-			if (type === "ProdutoMusicalFotoPerfil") {
+			if (
+				type === "ProdutoMusicalFotoPerfil" ||
+				type === "ProdutoMusicalOnboardingFotoPerfil"
+			) {
 				setProfilePhoto(blobUrl);
 			}
 
-			if (type === "ProdutoMusicalCarrossel") {
+			if (
+				type === "ProdutoMusicalCarrossel" ||
+				type === "ProdutoMusicalOnboardingCarrossel"
+			) {
 				setCarouselImages((previous) => [
 					...previous,
 					{
@@ -88,7 +101,10 @@ export function useImageUpload({
 				]);
 			}
 
-			if (type === "ProdutoMusicalClipagem") {
+			if (
+				type === "ProdutoMusicalClipagem" ||
+				type === "ProdutoMusicalOnboardingClipagem"
+			) {
 				setClippings((previous) => [
 					...previous,
 					{
@@ -99,60 +115,12 @@ export function useImageUpload({
 			}
 		} catch (error) {
 			console.error(error);
-
 			toast.error("Erro ao fazer upload");
 
 			return;
 		} finally {
 			setUploadingType(null);
 		}
-
-		// try {
-		// 	setUploadingType(type);
-
-		// 	const blobUrl = await imageUploadService.uploadImage({
-		// 		file,
-		// 		evento: type,
-		// 		idCadastro: activeProductId,
-		// 		idLista:
-		// 			type === "ProdutoMusicalCarrossel" ||
-		// 			type === "ProdutoMusicalClipagem"
-		// 				? carouselImages.length
-		// 				: undefined,
-		// 	});
-
-		// 	if (type === "ProdutoMusicalFotoPerfil") {
-		// 		setProfilePhoto(blobUrl);
-		// 	}
-
-		// 	if (type === "ProdutoMusicalCarrossel") {
-		// 		setCarouselImages((previous) => [
-		// 			...previous,
-		// 			{
-		// 				id: null,
-		// 				link: blobUrl,
-		// 			},
-		// 		]);
-		// 	}
-
-		// 	if (type === "ProdutoMusicalClipagem") {
-		// 		setClippings((previous) => [
-		// 			...previous,
-		// 			{
-		// 				id: null,
-		// 				link: blobUrl,
-		// 			},
-		// 		]);
-		// 	}
-		// } catch (error) {
-		// 	console.error(error);
-
-		// 	toast.error("Erro ao fazer upload");
-
-		// 	return;
-		// } finally {
-		// 	setUploadingType(null);
-		// }
 	};
 
 	const removeImage = async (
@@ -174,7 +142,10 @@ export function useImageUpload({
 				});
 			}
 
-			if (type === "ProdutoMusicalFotoPerfil") {
+			if (
+				type === "ProdutoMusicalFotoPerfil" ||
+				type === "ProdutoMusicalOnboardingFotoPerfil"
+			) {
 				await imageUploadService.deleteImage({
 					idCadastro: activeProductId,
 					evento: type,
@@ -183,13 +154,21 @@ export function useImageUpload({
 				setProfilePhoto(null);
 			}
 
-			if (type === "ProdutoMusicalCarrossel" && index !== undefined) {
+			if (
+				(type === "ProdutoMusicalCarrossel" ||
+					type === "ProdutoMusicalOnboardingCarrossel") &&
+				index !== undefined
+			) {
 				setCarouselImages((previous) =>
 					previous.filter((_, index_) => index_ !== index)
 				);
 			}
 
-			if (type === "ProdutoMusicalClipagem" && index !== undefined) {
+			if (
+				(type === "ProdutoMusicalClipagem" ||
+					type === "ProdutoMusicalOnboardingClipagem") &&
+				index !== undefined
+			) {
 				setClippings((previous) =>
 					previous.filter((_, index_) => index_ !== index)
 				);

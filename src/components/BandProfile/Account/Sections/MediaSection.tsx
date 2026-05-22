@@ -68,7 +68,10 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 	const { loadedItems, markAsLoaded } = useMediaPreview();
 
 	// SUBMIT
-	const { submit, loading } = useMediaSubmit(activeProduct?.id);
+	const { submit, loading } = useMediaSubmit({
+		musicalProductId: activeProduct?.id,
+		mode: "edit",
+	});
 
 	// SPOTIFY
 	const spotifyPlaylistId = watch("spotifyPlaylistId");

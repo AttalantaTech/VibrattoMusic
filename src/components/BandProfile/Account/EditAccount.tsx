@@ -5,6 +5,7 @@ import DetailsSection from "./Sections/DetailsSection";
 import MediaSection from "./Sections/MediaSection";
 import TechnicalSection from "./Sections/TechnicalSection";
 import { SidebarCustom } from "../../ui/SidebarCustom/SidebarCustom";
+import { OnboardingProvider } from "@/contexts/OnboardingContext";
 
 export const EditAccount = () => {
 	const [activeSection, setActiveSection] = useState<string>("contact");
@@ -36,7 +37,11 @@ export const EditAccount = () => {
 			case "detail":
 				return <DetailsSection onActiveSection={setActiveSection} />;
 			case "media":
-				return <MediaSection onActiveSection={setActiveSection} />;
+				return (
+					<OnboardingProvider>
+						<MediaSection onActiveSection={setActiveSection} />
+					</OnboardingProvider>
+				);
 			default:
 				return <TechnicalSection onActiveSection={setActiveSection} />;
 		}

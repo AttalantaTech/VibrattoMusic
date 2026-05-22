@@ -9,6 +9,9 @@ import type {
 } from "@/api/types";
 
 import { extractSpotifyResource } from "@/lib/utils/cn";
+import { onboardingService } from "@/api";
+import { useOnboarding } from "@/contexts/hooks/useOnboarding";
+import { useNavigate } from "@tanstack/react-router";
 
 interface SubmitData {
 	youtubeUrl: string;
@@ -21,7 +24,14 @@ interface SubmitData {
 	clippings?: Array<FilePropsLocal>;
 }
 
-export function useMediaSubmit(activeProductId?: number) {
+interface Props {
+	musicalProductId?: number;
+	mode: "onboarding" | "edit";
+}
+
+export function useMediaSubmit({ musicalProductId, mode }: Props) {
+	const navigate = useNavigate();
+	const { updateData, markStepComplete } = useOnboarding();
 	const updateMusicalProductMutation = useUpdateMusicalProduct();
 
 	const submit = async ({
@@ -34,7 +44,7 @@ export function useMediaSubmit(activeProductId?: number) {
 		carouselImages,
 		clippings,
 	}: SubmitData) => {
-		if (!activeProductId) {
+		if (!musicalProductId) {
 			toast.error("ID do produto musical não encontrado");
 
 			return;
@@ -60,20 +70,50 @@ export function useMediaSubmit(activeProductId?: number) {
 				clipagem: clippings?.map((item) => item.link) ?? [],
 			};
 
-			await updateMusicalProductMutation.mutateAsync({
-				id: activeProductId,
-				...mediaPayload,
-				FotoPerfil: profilePhoto,
-				ImagensCarrossel:
-					carouselImages?.map((item) => {
-						return {
-							link: item.link,
-							legenda: item.legenda,
-						};
-					}) ?? [],
-			});
+			if (mode === "edit") {
+				await updateMusicalProductMutation.mutateAsync({
+					id: musicalProductId,
+					...mediaPayload,
+					FotoPerfil: profilePhoto,
+					ImagensCarrossel:
+						carouselImages?.map((item) => {
+							return {
+								link: item.link,
+								legenda: item.legenda,
+							};
+						}) ?? [],
+				});
 
-			toast.success("Informações salvas com sucesso");
+				toast.success("Informações atualizadas com sucesso");
+			} else {
+				const imagePayload = {
+					FotoPerfil: profilePhoto ?? null,
+					ImagensCarrossel:
+						carouselImages?.map((item) => {
+							return {
+								link: item.link,
+								legenda: item.legenda,
+							};
+						}) ?? [],
+				};
+
+				await Promise.all([
+					onboardingService.saveOnboardingMedia(musicalProductId, {
+						...mediaPayload,
+					}),
+
+					onboardingService.saveOnboardingImages(musicalProductId, {
+						...imagePayload,
+					}),
+				]);
+
+				updateData("media", mediaPayload);
+				markStepComplete("3");
+
+				toast.success("Informações de Mídia e Visibilidade salvas com sucesso");
+
+				await navigate({ to: "/band/register/onboarding/4" });
+			}
 		} catch (error: unknown) {
 			console.error(error);
 
