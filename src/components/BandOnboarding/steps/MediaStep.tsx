@@ -240,9 +240,9 @@ export default function MediaStep() {
 		initialMediaData.fotoPerfil || null
 	);
 
-	const [carouselImages, setCarouselImages] = useState<
-		Array<{ id: number | null; link: string }>
-	>(onboardingData?.imagens || []);
+	const [carouselImages, setCarouselImages] = useState<Array<FilePropsLocal>>(
+		onboardingData?.imagens || []
+	);
 
 	const [clippings, setClippings] = useState<Array<FilePropsLocal>>(
 		onboardingData?.clipagem || []
@@ -487,7 +487,13 @@ export default function MediaStep() {
 
 			const imageData = {
 				FotoPerfil: profilePhoto ?? null,
-				ImagensCarrossel: carouselImages.map((img) => img.link) ?? [],
+				ImagensCarrossel:
+					carouselImages?.map((item) => {
+						return {
+							link: item.link,
+							legenda: item.legenda,
+						};
+					}) ?? [],
 			};
 
 			// Save image data if there are any images
