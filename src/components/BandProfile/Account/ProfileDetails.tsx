@@ -66,68 +66,66 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 							{musicalProduct && musicalProduct?.clipagem.length > 0 && (
 								<Carousel>
 									{musicalProduct.clipagem.map((file, index) => (
-										<>
-											<CarouselItem
+										<CarouselItem
+											key={index}
+											className=" basis-full md:basis-1/2 lg:basis-1/3 cursor-pointer"
+											onClick={() => {
+												setViewFile({
+													isOpen: true,
+													file,
+												});
+											}}
+										>
+											<div
 												key={index}
-												className=" basis-full md:basis-1/2 lg:basis-1/3 cursor-pointer"
-												onClick={() => {
-													setViewFile({
-														isOpen: true,
-														file,
-													});
-												}}
+												className="relative aspect-square rounded-lg overflow-hidden border border-white-200 bg-white"
 											>
-												<div
-													key={index}
-													className="relative aspect-square rounded-lg overflow-hidden border border-white-200 bg-white"
-												>
-													<div className="relative w-full h-full">
-														{!loadedFiles[file.link] && (
-															<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-																<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-															</div>
-														)}
+												<div className="relative w-full h-full">
+													{!loadedFiles[file.link] && (
+														<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+															<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+														</div>
+													)}
 
-														{isPdfFile(file.link) ? (
-															<div className="relative group">
-																<iframe
-																	key={file.id || index}
-																	className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] pointer-events-none"
-																	src={`${file.link}#toolbar=0`}
-																/>
+													{isPdfFile(file.link) ? (
+														<div className="relative group">
+															<iframe
+																key={file.id || index}
+																className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] pointer-events-none"
+																src={`${file.link}#toolbar=0`}
+															/>
 
-																<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
-															</div>
-														) : isMP4File(file.link) ? (
-															<div className="relative group rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200">
-																<video
-																	className="w-full h-full aspect-square"
-																	onLoadedMetadata={() => {
-																		handleFileLoad(file.link);
-																	}}
-																>
-																	<source src={file.link} type="video/mp4" />
-																</video>
+															<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
+														</div>
+													) : isMP4File(file.link) ? (
+														<div className="relative group rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200">
+															<video
+																className="w-full h-full aspect-square"
+																onLoadedMetadata={() => {
+																	handleFileLoad(file.link);
+																}}
+															>
+																<source src={file.link} type="video/mp4" />
+															</video>
 
-																<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
-															</div>
-														) : (
-															<div className="relative group">
-																<LazyImage
-																	key={file.id || index}
-																	alt="Band clipping photo"
-																	className={`rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200
+															<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
+														</div>
+													) : (
+														<div className="relative group">
+															<LazyImage
+																key={file.id || index}
+																alt="Band clipping photo"
+																className={`rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200
                                   ${isPngImage(file.link) ? "bg-white" : "bg-black"}`}
-																	src={file.link}
-																/>
+																src={file.link}
+															/>
 
-																<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/20 transition-colors rounded-lg" />
-															</div>
-														)}
-													</div>
+															<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/20 transition-colors rounded-lg" />
+														</div>
+													)}
 												</div>
-											</CarouselItem>
-										</>
+											</div>
+										</CarouselItem>
 									))}
 								</Carousel>
 							)}
