@@ -82,11 +82,13 @@ export type FilterType =
 export interface FilePropsLocal {
 	id: number | null;
 	link: string;
+	legenda?: string;
 }
 
 export interface FileProps {
 	id: number;
 	link: string;
+	legenda?: string;
 }
 
 export interface Category {
@@ -338,6 +340,7 @@ export interface MusicalProductApiResponse {
 	id: number;
 	ativo: boolean;
 	nome: string;
+	nomeFantasia: string | null;
 	descricao: string;
 	usuario: {
 		id: number;
@@ -479,7 +482,7 @@ export interface MusicalProductMedia {
 export interface MusicalProductImages {
 	FotoPerfil?: string | null;
 	Logomarca?: string | null;
-	ImagensCarrossel: Array<string>;
+	ImagensCarrossel: Array<{ link: string; legenda?: string }>;
 }
 
 export interface MusicalProductTechnicalConfig {
