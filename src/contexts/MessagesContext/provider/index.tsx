@@ -1,26 +1,31 @@
-import { type PropsWithChildren, useCallback, useMemo, useRef } from "react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+/* eslint-disable react-hooks/exhaustive-deps */
+import type { PropsWithChildren } from "react";
+import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
-import {
-	messagingKeys,
-	useConversationMessages,
-	useConversations,
-} from "@/hooks/useMessaging";
+
 import { MessagesContext } from "../context";
-import { useChat } from "@/api/services/chat/useChat";
-import type { Conversation, Message } from "@/api/services/messages/types";
+import { useChatConnection } from "@/api/services/chat/useChatConnection";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
-import { playNotificationSound } from "@/components/BandProfile/Messages/utils/Message";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import type { ChatUser } from "../types";
+import { useMessagesQueries } from "../hooks/useMessagesQueries";
+import { mapConversations } from "../utils/mapConversations";
+import { mergeMessages } from "../utils/mergeMessages";
+import { mapMessages } from "../utils/mapMessages";
+import { useMessagesUI } from "../hooks/useMessagesUI";
+import { useMessagesRealtime } from "../hooks/useMessagesRealtime";
+import { useMessagesObserver } from "../hooks/useMessagesObserver";
+import { useConversationState } from "../hooks/state/useConversationState";
+import { useMessagesInputState } from "../hooks/state/useMessagesInputState";
+import { useMessagesModalState } from "../hooks/state/useMessagesModalState";
+import { useMessagesRefs } from "../hooks/state/useMessagesRefs";
 
-export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
-	const queryClient = useQueryClient();
+export const MessagesProvider = ({ children }: PropsWithChildren) => {
 	const { user, token } = useAuthStore();
-	const currentUserId = user?.id;
+	const { isProfileComplete } = useProfileStatus();
 	const { activeProduct } = useMusicalProductStore();
+
+	const currentUserId = user?.id;
 	const currentProductId = activeProduct?.id
 		? Number(activeProduct.id)
 		: undefined;
@@ -38,344 +43,116 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 				isContractor: true,
 			};
 
-	const [messageInput, setMessageInput] = useState("");
-	const [searchQuery, setSearchQuery] = useState("");
-	const [selectedConversation, setSelectedConversation] =
-		useState<Conversation | null>(null);
-	const [newConversationParticipant, setNewConversationParticipant] = useState<{
-		id: number;
-		name: string;
-	} | null>(null);
-	const { isProfileComplete } = useProfileStatus();
-	const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
-	const [isNewConversationModalOpen, setIsNewConversationModalOpen] =
-		useState(false);
-	const [isProfileIncompleteModalOpen, setIsProfileIncompleteModalOpen] =
-		useState(false);
-
-	const [shouldLoadCurrentConversation, setShouldLoadCurrentConversation] =
-		useState<boolean>(false);
-	const currentConversationId = useRef<number | null>(null);
-
-	const [shouldLoadConversations, setShouldLoadConversations] =
-		useState<boolean>(true);
-	const [newMessages, setNewMessages] = useState<Array<Message>>([]);
+	const {
+		searchQuery,
+		setSearchQuery,
+		messages,
+		setMessages,
+		messageInput,
+		setMessageInput,
+		newMessages,
+		setNewMessages,
+	} = useMessagesInputState();
 
 	const {
-		data: conversationsData,
-		isLoading: isConversationsLoading,
-		refetch: refetchConversations,
-	} = useConversations(
+		conversations,
+		setConversations,
+		newConversationData,
+		setNewConversationData,
+		currentConversationId,
+		setCurrentConversationId,
+		selectedConversation,
+		setSelectedConversation,
+		newConversationParticipant,
+		setNewConversationParticipant,
+	} = useConversationState();
+
+	const {
+		isProposalModalOpen,
+		setIsProposalModalOpen,
+		isNewConversationModalOpen,
+		setIsNewConversationModalOpen,
+		isProfileIncompleteModalOpen,
+		setIsProfileIncompleteModalOpen,
+		shouldLoadCurrentConversation,
+		setShouldLoadCurrentConversation,
+		shouldLoadConversations,
+		setShouldLoadConversations,
+	} = useMessagesModalState();
+
+	const { messagesEndRef, messagesContainerRef, conversationsRef } =
+		useMessagesRefs(conversations);
+
+	const {
+		conversationsData,
+		isConversationsLoading,
+		refetchConversations,
+		invalidateConversationMessages,
+		historyMessages,
+		isMessagesLoading,
+		messagesError,
+	} = useMessagesQueries({
+		currentConversationId,
+		shouldLoadConversations,
+		shouldLoadCurrentConversation,
 		currentProductId,
-		undefined,
-		shouldLoadConversations && !!token
+		token,
+	});
+
+	const chatConnection = useChatConnection(
+		currentConversationId,
+		setShouldLoadConversations
 	);
-	const [newConversationData, setNewConversationData] = useState<
-		Array<Conversation>
-	>([]);
 
-	const [conversations, setConversations] = useState<Array<Conversation>>([]);
+	const { filteredConversations } = useMessagesUI({
+		conversations,
+		searchQuery,
+	});
 
-	const messagesEndRef = useRef<HTMLDivElement>(null);
-	const messagesContainerRef = useRef<HTMLDivElement>(null);
+	const {
+		handleEnterConversation,
+		handleMarkMessageAsRead,
+		handleSendMessage,
+	} = useMessagesRealtime({
+		chatConnection,
+		conversations,
+		currentConversationId,
+		newMessages,
+		refetchConversations,
+		setConversations,
+		messages,
+		setMessages,
+		setNewConversationData,
+		setNewMessages,
+		setMessageInput,
+	});
+
+	const { scrollToBottom } = useMessagesObserver({
+		handleMarkMessageAsRead,
+		messages,
+		messagesContainerRef,
+		user,
+		currentUserId,
+		messagesEndRef,
+	});
 
 	useEffect(() => {
-		const allConversations = [
-			...(conversationsData || []),
-			...newConversationData,
-		];
-
 		try {
-			const uniqueIds = new Set<number>();
-			const uniqueConversations = allConversations.filter((conversation) => {
-				if (uniqueIds.has(conversation.id)) {
-					return false;
-				}
-				uniqueIds.add(conversation.id);
-				return true;
-			});
-			setConversations(
-				uniqueConversations.sort((a: Conversation, b: Conversation) => {
-					const dateA = a.ultimaMensagem?.dataEnvio
-						? new Date(a.ultimaMensagem.dataEnvio).getTime()
-						: 0;
-					const dateB = b.ultimaMensagem?.dataEnvio
-						? new Date(b.ultimaMensagem.dataEnvio).getTime()
-						: 0;
-					return dateB - dateA;
-				})
+			const uniqueConversations = mapConversations(
+				conversationsData ?? [],
+				newConversationData
 			);
+
+			setConversations(uniqueConversations);
 		} catch (error) {
 			console.error("Erro ao ordenar conversas:", error);
-			setConversations(allConversations);
+			setConversations([...(conversationsData || []), ...newConversationData]);
 		}
 	}, [setConversations, conversationsData, newConversationData]);
-
-	const filteredConversations = useMemo(() => {
-		return (
-			conversations.filter((conversation: Conversation) => {
-				if (!searchQuery) return true;
-				const searchLower = searchQuery.toLowerCase();
-				return (
-					conversation.participanteNome.toLowerCase().includes(searchLower) ||
-					conversation.ultimaMensagem?.conteudo
-						.toLowerCase()
-						.includes(searchLower)
-				);
-			}) || []
-		);
-	}, [conversations, searchQuery]);
-
-	const {
-		data: historyMessages,
-		isLoading: isMessagesLoading,
-		error: messagesError,
-		refetch: refetchMessages,
-	} = useConversationMessages(
-		currentConversationId.current || 0,
-		undefined,
-		shouldLoadCurrentConversation
-	);
-
-	const [messages, setMessages] = useState<Array<Message>>([]);
-
-	const {
-		connect,
-		start,
-		sendMessage,
-		enterConversation,
-		markMessageAsRead,
-		addReceiveMessageHandler,
-		addMessageReadHandler,
-		addNotificationHandler,
-		addOnCloseHandler,
-		removeHandlers,
-	} = useChat(currentConversationId, setShouldLoadConversations);
-
-	const handleEnterConversation = useCallback(
-		async (conversationId: number) => {
-			await enterConversation(conversationId).catch((error) => {
-				console.error("Erro ao entrar na conversa:", error);
-			});
-		},
-		[enterConversation]
-	);
-
-	const conversationsRef = useRef<Array<Conversation>>(conversations);
 
 	useEffect(() => {
 		conversationsRef.current = conversations;
 	}, [conversations]);
-
-	const handleSendMessage = async (
-		content: string,
-		senderType: number,
-		idMusicalProduct: number | null
-	) => {
-		if (!content.trim() || !currentConversationId.current) return;
-		try {
-			await sendMessage(content, senderType, idMusicalProduct);
-			setMessageInput("");
-		} catch (error) {
-			console.error("Erro ao enviar mensagem:", error);
-			toast.error("Erro ao enviar mensagem");
-		}
-	};
-
-	const updateConversationWithNewMessage = useCallback(
-		(message: Message) => {
-			setNewConversationData((previousConversations) => {
-				const conversationIndex = previousConversations.findIndex(
-					(c) => c.id === message.idConversa
-				);
-
-				if (conversationIndex !== -1) {
-					const conversationToUpdate = previousConversations.find(
-						(c) => c.id === message.idConversa
-					);
-					if (!conversationToUpdate) return previousConversations;
-
-					const updatedConversation = {
-						...conversationToUpdate,
-						ultimaMensagem: message,
-					};
-
-					return [
-						...previousConversations.splice(conversationIndex, 1),
-						updatedConversation,
-					];
-				} else {
-					void refetchConversations();
-				}
-				return previousConversations;
-			});
-		},
-		[refetchConversations]
-	);
-
-	const handleReceiveMessage = useCallback(
-		(message: Message) => {
-			if (message.idConversa === currentConversationId.current) {
-				// Play notification sound
-				playNotificationSound();
-
-				// Update conversation data in cache
-				if (!newMessages.find((m) => m.id === message.id)) {
-					setNewMessages((previousMessages) => [...previousMessages, message]);
-				}
-
-				// Show toast notification if not in focus
-				if (document.hidden) {
-					toast.info(
-						`Nova mensagem de ${message.nomeRemetente || message.idRemetente || "Usuário desconhecido"}`,
-						{
-							description:
-								message.conteudo.substring(0, 50) +
-								(message.conteudo.length > 50 ? "..." : ""),
-						}
-					);
-				}
-			}
-
-			// Update conversation list
-			updateConversationWithNewMessage(message);
-		},
-		[updateConversationWithNewMessage, newMessages]
-	);
-
-	const handleMarkMessageAsRead = useCallback(
-		async (messageId: number) => {
-			if (messages.find((m) => m.id === messageId && m.lida)) return;
-			try {
-				await markMessageAsRead(messageId);
-			} catch (error) {
-				console.error("Erro ao marcar mensagem como lida:", error);
-			}
-		},
-		[messages, markMessageAsRead]
-	);
-
-	const setLastMessageAsRead = useCallback(
-		(messageId: number) => {
-			setConversations((previousConversations) =>
-				previousConversations.map((conversation) => {
-					if (conversation.ultimaMensagem?.id === messageId) {
-						conversation.ultimaMensagem.lida = true;
-						conversation.numeroMensagensNaoLidas = 0;
-					}
-					return conversation;
-				})
-			);
-		},
-		[setConversations]
-	);
-
-	const handleMessageRead = useCallback(
-		(messageId: number) => {
-			setMessages((previous) =>
-				previous.map((message) => {
-					if (message.id === messageId) {
-						message.lida = true;
-					}
-
-					return message;
-				})
-			);
-
-			setLastMessageAsRead(messageId);
-		},
-		[setLastMessageAsRead]
-	);
-
-	const handleConnect = useCallback(async () => {
-		connect();
-
-		addReceiveMessageHandler(handleReceiveMessage);
-
-		addMessageReadHandler(handleMessageRead);
-
-		addNotificationHandler((notification: string) => {
-			if (notification.toLowerCase().includes("entrou na conversa")) {
-				return;
-			}
-			toast.info(notification);
-		});
-
-		addOnCloseHandler((error?: Error) => {
-			console.error("Conexão do chat fechada:", error);
-		});
-
-		await start();
-
-		for (const conversation of conversationsRef.current) {
-			enterConversation(conversation.id).catch((error) => {
-				console.error(`Erro ao entrar na conversa ${conversation.id}:`, error);
-			});
-		}
-	}, [
-		addMessageReadHandler,
-		addNotificationHandler,
-		addOnCloseHandler,
-		addReceiveMessageHandler,
-		connect,
-		enterConversation,
-		handleMessageRead,
-		handleReceiveMessage,
-		start,
-	]);
-
-	const scrollToBottom = () => {
-		try {
-			messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-		} catch {
-			// Fallback for test environments where scrollIntoView might not be available
-			if (messagesEndRef.current) {
-				messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
-			}
-		}
-	};
-
-	// Mark messages as read when they become visible
-	useEffect(() => {
-		if (!messages || !messages.length || !user) return;
-
-		const observer = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.isIntersecting) {
-						const messageElement = entry.target as HTMLElement;
-						const messageId = parseInt(
-							messageElement.dataset["messageId"] || "0"
-						);
-						const message = messages.find((m: Message) => m.id === messageId);
-
-						if (
-							message &&
-							currentUserId &&
-							message.idRemetente !== currentUserId &&
-							!message.lida
-						) {
-							handleMarkMessageAsRead(messageId).catch((error) => {
-								console.error("Erro ao marcar mensagem como lida:", error);
-							});
-						}
-					}
-				});
-			},
-			{ threshold: 0.5 }
-		);
-
-		// Observe all message elements
-		const messageElements =
-			messagesContainerRef.current?.querySelectorAll("[data-message-id]");
-		messageElements?.forEach((element) => {
-			observer.observe(element);
-		});
-
-		return () => {
-			observer.disconnect();
-		};
-	}, [messages, user, handleMarkMessageAsRead, currentUserId]);
 
 	// Auto-scroll to bottom when new messages arrive
 	useEffect(() => {
@@ -384,88 +161,66 @@ export const MessagesContextProvider = ({ children }: PropsWithChildren) => {
 
 	// Enter existing conversation when selected
 	useEffect(() => {
-		if (
-			selectedConversation &&
-			user &&
-			selectedConversation.id !== currentConversationId.current
-		) {
-			currentConversationId.current = selectedConversation.id;
-			setShouldLoadCurrentConversation(true);
-			void queryClient.invalidateQueries({
-				queryKey: messagingKeys.conversationMessages(selectedConversation.id),
-			});
-			void refetchMessages();
-		}
+		const handleInvalidadeConversation = async () => {
+			if (
+				selectedConversation &&
+				user &&
+				selectedConversation.id !== currentConversationId
+			) {
+				setCurrentConversationId(selectedConversation.id);
+				setShouldLoadCurrentConversation(true);
+
+				await invalidateConversationMessages(selectedConversation.id);
+			}
+		};
+
+		void handleInvalidadeConversation();
 	}, [
 		selectedConversation,
 		user,
 		handleEnterConversation,
-		queryClient,
-		refetchMessages,
+		invalidateConversationMessages,
 	]);
 
 	useEffect(() => {
 		if (!historyMessages) return;
-		const mappedHistory =
-			historyMessages.pages.flatMap((page: Array<Message>) =>
-				page.flatMap((message: Message) => message)
-			) ?? [];
-		const combinedMessages = [
-			...mappedHistory,
-			...newMessages.filter(
-				(nm) => !mappedHistory.some((hm: Message) => hm.id === nm.id)
-			),
-		];
-		combinedMessages.sort((a, b) => a.id - b.id);
+		const mappedHistory = mapMessages(historyMessages);
+
+		const combinedMessages = mergeMessages(mappedHistory, newMessages);
 		setMessages(combinedMessages);
 	}, [historyMessages, newMessages, setMessages]);
 
 	useEffect(() => {
 		setNewMessages([]);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [currentConversationId.current]);
-
-	useEffect(() => {
-		if (token && !isConversationsLoading) {
-			handleConnect().catch((error) => {
-				console.error("Erro ao conectar ao chat:", error);
-			});
-		}
-
-		return () => {
-			if (token) {
-				removeHandlers();
-			}
-		};
-	}, [token, isConversationsLoading, handleConnect, removeHandlers]);
+	}, [currentConversationId]);
 
 	return (
 		<MessagesContext.Provider
 			value={{
 				currentChatUser,
+				searchQuery,
+				setSearchQuery,
+				messages,
 				messageInput,
 				setMessageInput,
 				messagesError,
-				messages,
-				searchQuery,
-				setSearchQuery,
 				filteredConversations,
 				conversations,
-				isMessagesLoading,
-				isConversationsLoading,
 				selectedConversation,
 				setSelectedConversation,
-				handleSendMessage,
-				handleMarkMessageAsRead,
 				newConversationParticipant,
 				setNewConversationParticipant,
 				isProfileComplete,
+				isMessagesLoading,
+				isConversationsLoading,
 				isProposalModalOpen,
-				setIsProposalModalOpen,
 				isNewConversationModalOpen,
-				setIsNewConversationModalOpen,
 				isProfileIncompleteModalOpen,
+				setIsProposalModalOpen,
+				setIsNewConversationModalOpen,
 				setIsProfileIncompleteModalOpen,
+				handleSendMessage,
+				handleMarkMessageAsRead,
 				messagesContainerRef,
 				messagesEndRef,
 				scrollToBottom,

@@ -1,13 +1,15 @@
+import { useEffect } from "react";
+import { useChat } from "@/hooks/useChat";
 import { ProfileIncompleteModal } from "../../ui/ProfileIncompleteModal/ProfileIncompleteModal";
 import { SideBar } from "./components/SideBar";
 import { Chat } from "./components/Chat";
 import { SendProposalModal } from "./components/SendProposalModal";
 import { StartConversationModal } from "./components/StartConversationModal";
-import { useMessagesContext } from "@/contexts/MessagesContext";
-import { useEffect } from "react";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 const MessagesTab = () => {
-	const messagesContext = useMessagesContext();
+	const { activeProduct } = useMusicalProductStore();
+
 	const {
 		selectedConversation,
 		setSelectedConversation,
@@ -21,7 +23,7 @@ const MessagesTab = () => {
 		isProfileIncompleteModalOpen,
 		setIsProfileIncompleteModalOpen,
 		scrollToBottom,
-	} = messagesContext || {};
+	} = useChat() || {};
 
 	useEffect(() => {
 		scrollToBottom?.();
@@ -33,14 +35,15 @@ const MessagesTab = () => {
 			setNewConversationParticipant?.(null);
 		};
 	}, [setNewConversationParticipant, setSelectedConversation]);
-	// }, []);
 
 	return (
 		<div className="flex h-[75vh] w-full border bg-gray-50">
 			{selectedConversation && (
 				<SendProposalModal
 					isOpen={!!isProposalModalOpen}
-					onClose={() => setIsProposalModalOpen?.(false)}
+					onClose={() => {
+						setIsProposalModalOpen?.(false);
+					}}
 					recipientId={selectedConversation.participanteId}
 					conversationId={selectedConversation.id}
 					contractorId={
@@ -53,13 +56,11 @@ const MessagesTab = () => {
 					}
 					onProposalSent={async (proposalDetails: string) => {
 						// Send the proposal notification message to the chat
-
-						// REVER
 						if (handleSendMessage) {
 							await handleSendMessage(
 								proposalDetails,
-								selectedConversation.produtoMusicalContratanteId ? 2 : 1,
-								selectedConversation.produtoMusicalContratanteId
+								activeProduct?.id ? 2 : 1,
+								activeProduct?.id ? activeProduct.id : null
 							);
 						}
 					}}
@@ -85,7 +86,9 @@ const MessagesTab = () => {
 
 			<ProfileIncompleteModal
 				isOpen={!!isProfileIncompleteModalOpen}
-				onClose={() => setIsProfileIncompleteModalOpen?.(false)}
+				onClose={() => {
+					setIsProfileIncompleteModalOpen?.(false);
+				}}
 			/>
 
 			<SideBar />

@@ -11,11 +11,9 @@ import {
 	UserInfoContainer,
 } from "./styles";
 import { formatMessageTime, getParticipantInitials } from "../../utils/Message";
-import type { Conversation } from "@/api/services/messages/types";
-import { useMessagesContext } from "@/contexts/MessagesContext";
+import { useChat } from "@/hooks/useChat";
 
 export const SideBar = () => {
-	const messagesContext = useMessagesContext();
 	const {
 		currentChatUser,
 		searchQuery,
@@ -24,7 +22,7 @@ export const SideBar = () => {
 		filteredConversations,
 		selectedConversation,
 		setSelectedConversation,
-	} = messagesContext || {};
+	} = useChat() || {};
 
 	return (
 		<SideBarContainer isInsideConversation={!!selectedConversation}>
@@ -58,25 +56,6 @@ export const SideBar = () => {
 				</SearchBarContainer>
 			</SideBarHeaderContainer>
 
-			{/* Tabs TODO: Bring this back when we have a way to filter conversations by type */}
-			{/* <div className="flex border-b border-gray-200">
-					{["Clientes", "Artistas"].map((tab) => (
-						<button
-							key={tab}
-							onClick={() => {
-								setActiveTab(tab);
-							}}
-							className={`flex-1 py-3 px-4 text-sm font-medium ${
-								activeTab === tab
-									? "text-primary-600 border-b-2 border-primary-600"
-									: "text-gray-500 hover:text-gray-700"
-							}`}
-						>
-							{tab}
-						</button>
-					))}
-				</div> */}
-
 			<ConversationsListContainer>
 				{isConversationsLoading && <Loading />}
 				{filteredConversations?.length === 0 && (
@@ -89,7 +68,7 @@ export const SideBar = () => {
 						</p>
 					</div>
 				)}
-				{filteredConversations?.map((conversation: Conversation) => {
+				{filteredConversations?.map((conversation) => {
 					const isSelected = selectedConversation?.id === conversation.id;
 
 					const unreadCount = conversation.numeroMensagensNaoLidas || 0;
@@ -97,13 +76,9 @@ export const SideBar = () => {
 					return (
 						<ConversationTabContainer
 							key={conversation.id}
-							onClick={
-								setSelectedConversation
-									? () => {
-											setSelectedConversation(conversation);
-										}
-									: () => {}
-							}
+							onClick={() => {
+								setSelectedConversation?.(conversation);
+							}}
 							isSelected={isSelected}
 						>
 							<div className="relative">

@@ -168,7 +168,6 @@ export class MessagingService {
 							dataEnvio:
 								item.ultimaConversa.dataEnvio || new Date().toISOString(),
 
-							// REVER
 							idDestinatario: item.contratante.id,
 							tipoDestinatario: IdProdutoMusical ? 2 : 1,
 							tipoRemetente: IdProdutoMusical ? 2 : 1,

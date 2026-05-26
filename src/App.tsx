@@ -5,7 +5,7 @@ import type { FunctionComponent } from "./common/types";
 import { ErrorBoundary } from "./components/ErrorBoundary/ErrorBoundary";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { NotificationContainer } from "./components/ui/Notification/Notification";
-import { MessagesContextProvider } from "./contexts/MessagesContext";
+import { MessagesProvider } from "./contexts/MessagesContext";
 
 const queryClient = new QueryClient();
 
@@ -16,11 +16,11 @@ const App = ({ router }: AppProps): FunctionComponent => {
 		<ErrorBoundary>
 			<QueryClientProvider client={queryClient}>
 				<AuthProvider>
-					<MessagesContextProvider>
+					<MessagesProvider>
 						<RouterProvider router={router} />
 						<Toaster position="top-right" richColors />
 						<NotificationContainer />
-					</MessagesContextProvider>
+					</MessagesProvider>
 				</AuthProvider>
 			</QueryClientProvider>
 		</ErrorBoundary>

@@ -1,18 +1,17 @@
+import { useMemo } from "react";
 import { MessageSquare } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "../../../store/authStore";
-import { useMessagesContext } from "@/contexts/MessagesContext";
-import { useMemo } from "react";
+import { useChat } from "@/hooks/useChat";
 import type { Conversation } from "@/api/services/messages/types";
 
 export const MessageBell = () => {
 	const { isAuthenticated } = useAuthStore();
 	const navigate = useNavigate();
-	const messagesContext = useMessagesContext();
-	const { conversations } = messagesContext || {};
+	const { conversations } = useChat() || {};
 
 	const totalUnreadMessages: number = useMemo(() => {
-		return (conversations as Array<Conversation>)?.reduce(
+		return conversations?.reduce(
 			(total: number, conversation: Conversation) => {
 				return (
 					total + ((conversation.numeroMensagensNaoLidas || 0) > 0 ? 1 : 0)
@@ -20,7 +19,6 @@ export const MessageBell = () => {
 			},
 			0
 		);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [conversations]);
 
 	// Don't render if not authenticated

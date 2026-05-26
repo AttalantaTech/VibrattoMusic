@@ -482,9 +482,6 @@ export const SendProposalModal = ({
 			return `${dateString}T${t}`;
 		};
 
-		// Debug raw form data before processing
-		console.log("🔍 Debug - Raw form data:", finalFormData);
-
 		// Build payload in camelCase exactly as API expects
 		const proposalData: CreateProposalRequest = {
 			idConversa: Number(conversationId) || 0,
@@ -520,108 +517,6 @@ export const SendProposalModal = ({
 		};
 
 		try {
-			// Debug: Log the exact payload being sent
-			console.log("🔍 Debug - Payload being sent:", {
-				productId: userProductId,
-				proposalData,
-				endpoint: `produtomusical/${userProductId}/proposta`,
-			});
-
-			// Additional validation for common issues
-			const additionalValidations = {
-				hasValidConversation: proposalData.idConversa > 0,
-				hasValidProduct: proposalData.idProdutoMusical > 0,
-				hasValidEventType: proposalData.idTipoEvento > 0,
-				hasDescription: proposalData.descricao.length >= 1,
-				hasValidValue: proposalData.valor > 0,
-				hasLocation: proposalData.local.length >= 1,
-				hasValidDates: proposalData.dataInicio && proposalData.dataFim,
-				hasValidTimes: proposalData.horaInicio && proposalData.horaFim,
-				dateFormat:
-					proposalData.dataInicio.includes("T") &&
-					proposalData.dataFim.includes("T"),
-				timeFormat:
-					proposalData.horaInicio.includes(":") &&
-					proposalData.horaFim.includes(":"),
-			};
-
-			// Debug: Check each field individually for empty values
-			console.log("🔍 Debug - Field by field analysis:", {
-				idConversa: {
-					value: proposalData.idConversa,
-					type: typeof proposalData.idConversa,
-					isEmpty: !proposalData.idConversa,
-				},
-				nomeContratante: {
-					value: proposalData.nomeContratante,
-					type: typeof proposalData.nomeContratante,
-					isEmpty: !proposalData.nomeContratante,
-				},
-				idProdutoMusical: {
-					value: proposalData.idProdutoMusical,
-					type: typeof proposalData.idProdutoMusical,
-					isEmpty: !proposalData.idProdutoMusical,
-				},
-				idTipoEvento: {
-					value: proposalData.idTipoEvento,
-					type: typeof proposalData.idTipoEvento,
-					isEmpty: !proposalData.idTipoEvento,
-				},
-				descricao: {
-					value: proposalData.descricao,
-					type: typeof proposalData.descricao,
-					isEmpty: !proposalData.descricao,
-				},
-				valor: {
-					value: proposalData.valor,
-					type: typeof proposalData.valor,
-					isEmpty: !proposalData.valor,
-				},
-				local: {
-					value: proposalData.local,
-					type: typeof proposalData.local,
-					isEmpty: !proposalData.local,
-				},
-				dataInicio: {
-					value: proposalData.dataInicio,
-					type: typeof proposalData.dataInicio,
-					isEmpty: !proposalData.dataInicio,
-				},
-				dataFim: {
-					value: proposalData.dataFim,
-					type: typeof proposalData.dataFim,
-					isEmpty: !proposalData.dataFim,
-				},
-				horaInicio: {
-					value: proposalData.horaInicio,
-					type: typeof proposalData.horaInicio,
-					isEmpty: !proposalData.horaInicio,
-				},
-				horaFim: {
-					value: proposalData.horaFim,
-					type: typeof proposalData.horaFim,
-					isEmpty: !proposalData.horaFim,
-				},
-				idFormaPagamento: {
-					value: proposalData.idFormaPagamento,
-					type: typeof proposalData.idFormaPagamento,
-					isEmpty: !proposalData.idFormaPagamento,
-				},
-				idCondicoesPagamento: {
-					value: proposalData.idCondicoesPagamento,
-					type: typeof proposalData.idCondicoesPagamento,
-					isEmpty: !proposalData.idCondicoesPagamento,
-				},
-			});
-
-			console.log("🔍 Debug - Additional validations:", additionalValidations);
-			console.log("🔍 Debug - Formatted payload comparison:", {
-				originalDate: finalFormData.DataInicio,
-				formattedDate: proposalData.dataInicio,
-				originalTime: finalFormData.HoraInicio,
-				formattedTime: proposalData.horaInicio,
-			});
-
 			// Validate with Zod schema
 			const validationResult = createProposalSchema.safeParse(proposalData);
 			if (!validationResult.success) {

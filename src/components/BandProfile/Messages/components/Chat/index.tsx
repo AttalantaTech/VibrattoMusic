@@ -13,9 +13,9 @@ import {
 	MessageLine,
 	OwnMessageElement,
 } from "./styles";
+import { useChat } from "@/hooks/useChat";
 import { getParticipantInitials } from "../../utils/Message";
 import type { Message } from "@/api/services/messages/types";
-import { useMessagesContext } from "@/contexts/MessagesContext";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 export const Chat = () => {
@@ -25,7 +25,6 @@ export const Chat = () => {
 	const currentProductId = activeProduct?.id;
 	const { isProfileComplete } = useProfileStatus();
 
-	const messagesContext = useMessagesContext();
 	const {
 		messageInput,
 		setMessageInput,
@@ -39,7 +38,7 @@ export const Chat = () => {
 		setIsProfileIncompleteModalOpen,
 		messagesContainerRef,
 		messagesEndRef,
-	} = messagesContext || {};
+	} = useChat() || {};
 
 	return (
 		<ChatContainer isInsideConversation={!!selectedConversation}>
@@ -63,7 +62,9 @@ export const Chat = () => {
 							{selectedConversation && (
 								<div
 									className="p-1 md:p-2 rounded-full transition-colors hover:bg-gray-200 bg-white flex md:hidden"
-									onClick={() => setSelectedConversation?.(null)}
+									onClick={() => {
+										setSelectedConversation?.(null);
+									}}
 								>
 									<ArrowLeft />
 								</div>
@@ -92,7 +93,9 @@ export const Chat = () => {
 						</div>
 						{activeProduct && !isProfileComplete && (
 							<button
-								onClick={() => setIsProfileIncompleteModalOpen?.(true)}
+								onClick={() => {
+									setIsProfileIncompleteModalOpen?.(true);
+								}}
 								className="flex items-center space-x-1 px-2 md:space-x-2 md:px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
 							>
 								<DollarSign className="w-4 h-4" />
@@ -102,7 +105,9 @@ export const Chat = () => {
 						{currentProductId === selectedConversation?.participanteId &&
 							isProfileComplete && (
 								<button
-									onClick={() => setIsProposalModalOpen?.(true)}
+									onClick={() => {
+										setIsProposalModalOpen?.(true);
+									}}
 									className="flex items-center space-x-1 px-2 md:space-x-2 md:px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
 								>
 									<DollarSign className="w-4 h-4" />
@@ -141,14 +146,17 @@ export const Chat = () => {
 						{!isMessagesLoading && !messagesError && (
 							<>
 								{messages?.map((message: Message) => {
+									const isOwn =
+										message.idRemetente === activeProduct?.id ||
+										(!activeProduct?.id && message.idRemetente === user?.id);
+
 									return (
 										<MessageLine
 											key={message.id}
 											message={message}
-											isOwn={!!message.idRemetente}
+											isOwn={isOwn}
 										>
-											{message.idRemetente === activeProduct?.id ||
-											message.idRemetente === user?.id ? (
+											{isOwn ? (
 												<OwnMessageElement message={message} />
 											) : (
 												<MessageElement
@@ -174,12 +182,13 @@ export const Chat = () => {
 								setMessageInput?.(event.target.value);
 							}}
 							onSend={(content: string) => {
-								if (handleSendMessage)
+								if (handleSendMessage) {
 									void handleSendMessage(
 										content,
 										activeProduct?.id ? 2 : 1,
 										activeProduct?.id ? activeProduct.id : null
 									);
+								}
 							}}
 							disabled={isMessagesLoading}
 							placeholder={
