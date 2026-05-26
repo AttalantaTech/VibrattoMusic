@@ -10,8 +10,8 @@ import type {
 } from "@/api/websocket/types";
 import type { Message } from "../messages/types";
 
-export const useChat = (
-	currentConversationIdRef: React.MutableRefObject<number | null>,
+export const useChatConnection = (
+	currentConversationId: number | null,
 	setShouldLoadConversations: Dispatch<SetStateAction<boolean>>
 ) => {
 	const { token } = useAuthStore();
@@ -61,13 +61,11 @@ export const useChat = (
 		senderType: number,
 		idMusicalProduct: number | null
 	): Promise<void> => {
-		await apiClient.get(`chat/mensagem`, {
-			params: {
-				IdConversa: currentConversationIdRef.current || 0,
-				Conteudo: content,
-				TipoRemetente: senderType,
-				IdProdutoMusical: idMusicalProduct,
-			},
+		await apiClient.post("chat/mensagem", {
+			idConversa: currentConversationId,
+			conteudo: content,
+			tipoRemetente: senderType,
+			idProdutoMusical: idMusicalProduct,
 		});
 	};
 
@@ -80,7 +78,7 @@ export const useChat = (
 			try {
 				await connection.current.invoke(
 					"EnviarMensagem",
-					currentConversationIdRef.current || 0,
+					currentConversationId || 0,
 					content,
 					senderType,
 					idMusicalProduct

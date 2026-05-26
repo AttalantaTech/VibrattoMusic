@@ -1,5 +1,4 @@
 import { MessagesContext } from "./context";
-import { useMessagesContext } from "./hook";
-import { MessagesContextProvider } from "./provider";
+import { MessagesProvider } from "./provider";
 
-export { MessagesContext, useMessagesContext, MessagesContextProvider };
+export { MessagesContext, MessagesProvider };
