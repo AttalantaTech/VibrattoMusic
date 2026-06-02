@@ -75,8 +75,8 @@ export const OwnMessageElement = ({
 
 	return (
 		<div className="flex items-end space-x-2">
-			<div className="flex flex-col">
-				<div className="bg-primary-600 text-white px-4 py-3 rounded-l-2xl rounded-tr-2xl rounded-br-md shadow-lg">
+			<div className="flex flex-col items-end">
+				<div className="bg-primary-600 max-w-[80%] text-white px-4 py-3 rounded-l-2xl rounded-tr-2xl rounded-br-md shadow-lg">
 					<p className="text-sm leading-relaxed">{message.conteudo}</p>
 				</div>
 				<div className="flex items-center justify-end space-x-1 mt-1 px-1">
@@ -118,7 +118,7 @@ export const MessageElement = ({
 				<p className="text-xs font-medium text-gray-700 mb-1 px-1">
 					{userName}
 				</p>
-				<div className="bg-white border border-gray-200 px-4 py-3 rounded-r-2xl rounded-tl-2xl rounded-bl-md shadow-lg">
+				<div className="bg-white max-w-[80%] border border-gray-200 px-4 py-3 rounded-r-2xl rounded-tl-2xl rounded-bl-md shadow-lg">
 					<p className="text-sm text-gray-800 leading-relaxed">
 						{message.conteudo}
 					</p>
