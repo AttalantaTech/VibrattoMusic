@@ -11,6 +11,7 @@ import { userKeys } from "@/hooks/useUser";
 import { useAuthStore } from "@/store/authStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { OnboardingsPedingModal } from "../BandProfile/Account/OnboardingsPedingModal";
+import { useChat } from "@/hooks/useChat";
 
 export type MusicalProduct = ActiveMusicalProduct;
 
@@ -33,6 +34,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 	const { data: onboardings } = useOnboardingData();
 	const { logout } = useAuthStore();
 	const queryClient = useQueryClient();
+	const { setSelectedConversation } = useChat() || {};
 
 	const [isOpen, setIsOpen] = useState(false);
 	const [openOnboardingsPending, setOpenOnboardingsPending] = useState(false);
@@ -57,6 +59,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 	const handleProductSelect = (product: MusicalProduct | null) => {
 		onProductChange(product);
 		setIsOpen(false);
+		setSelectedConversation(null);
 
 		if (location.pathname === "/band/me") {
 			if (!product) {
