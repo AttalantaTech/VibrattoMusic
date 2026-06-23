@@ -4,7 +4,7 @@ import type {
 	DashboardMetricsResponse,
 	ReportPeriod,
 	ReportType,
-	ProposalResponse
+	ProposalResponse,
 } from "../types";
 
 /**
@@ -49,8 +49,8 @@ export const reportsService = {
 			"produtomusical/listarPropostas",
 			{
 				IdProdutoMusical: userId,
-				DataDe: startDate.toISOString().split('T')[0],
-				DataAte: endDate.toISOString().split('T')[0]
+				DataDe: startDate.toISOString().split("T")[0],
+				DataAte: endDate.toISOString().split("T")[0],
 			}
 		);
 
@@ -58,9 +58,11 @@ export const reportsService = {
 
 		// Calculate metrics from proposals data
 		const totalPropostas = proposals.length;
-		const propostasAceitas = proposals.filter(p => p.status.nome === "aceito").length;
+		const propostasAceitas = proposals.filter(
+			(p) => p.status.nome === "Aceita"
+		).length;
 		const valorAceito = proposals
-			.filter(p => p.status.nome === "aceito")
+			.filter((p) => p.status.nome === "Aceita")
 			.reduce((sum, p) => sum + (p.valor || 0), 0);
 
 		return {
@@ -73,8 +75,8 @@ export const reportsService = {
 				vendas: 15.5, // Mock data for now
 				cliques: -2.3,
 				mensagens: 8.7,
-				shows: 25.0
-			}
+				shows: 25.0,
+			},
 		};
 	},
 
@@ -85,60 +87,69 @@ export const reportsService = {
 	 */
 	async getDashboardMetrics(userId: number): Promise<DashboardMetricsResponse> {
 		// Get recent proposals to calculate metrics
-		const recentProposalsResponse = await apiClient.post<Array<ProposalResponse>>(
-			"produtomusical/listarPropostas",
-			{
-				IdProdutoMusical: userId,
-				DataDe: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 days ago
-			}
-		);
+		const recentProposalsResponse = await apiClient.post<
+			Array<ProposalResponse>
+		>("produtomusical/listarPropostas", {
+			IdProdutoMusical: userId,
+			DataDe: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+				.toISOString()
+				.split("T")[0], // 30 days ago
+		});
 
 		const proposals = recentProposalsResponse || [];
 
 		const metrics = [
 			{
 				label: "Vendas no período",
-				value: proposals.filter(p => p.status.nome === "aceito").reduce((sum, p) => sum + (p.valor || 0), 0),
+				value: proposals
+					.filter((p) => p.status.nome === "Aceita")
+					.reduce((sum, p) => sum + (p.valor || 0), 0),
 				percentage: 15.5,
 				isUp: true,
-				icon: "DollarSign"
+				icon: "DollarSign",
 			},
 			{
 				label: "Cliques no perfil",
 				value: Math.floor(proposals.length * 2.5),
 				percentage: -2.3,
 				isUp: false,
-				icon: "User"
+				icon: "User",
 			},
 			{
 				label: "Mensagens trocadas",
 				value: Math.floor(proposals.length * 1.8),
 				percentage: 8.7,
 				isUp: true,
-				icon: "MessageCircle"
+				icon: "MessageCircle",
 			},
 			{
 				label: "Shows realizados",
-				value: proposals.filter(p => p.status.nome === "aceito").length,
+				value: proposals.filter((p) => p.status.nome === "Aceita").length,
 				percentage: 25.0,
 				isUp: true,
-				icon: "Music"
+				icon: "Music",
 			},
 			{
 				label: "Taxa de conversão",
-				value: proposals.length > 0 ?
-					Math.round((proposals.filter(p => p.status.nome === "aceito").length / proposals.length) * 100) : 0,
+				value:
+					proposals.length > 0
+						? Math.round(
+								(proposals.filter((p) => p.status.nome === "Aceita").length /
+									proposals.length) *
+									100
+							)
+						: 0,
 				percentage: 12.3,
 				isUp: true,
-				icon: "TrendingUp"
+				icon: "TrendingUp",
 			},
 			{
 				label: "Aparição nas buscas",
 				value: Math.floor(proposals.length * 3.2),
 				percentage: 6.0,
 				isUp: true,
-				icon: "Search"
-			}
+				icon: "Search",
+			},
 		];
 
 		return { metrics };
@@ -183,25 +194,32 @@ export const reportsService = {
 			"produtomusical/listarPropostas",
 			{
 				IdProdutoMusical: userId,
-				DataDe: startDate.toISOString().split('T')[0],
-				DataAte: endDate.toISOString().split('T')[0]
+				DataDe: startDate.toISOString().split("T")[0],
+				DataAte: endDate.toISOString().split("T")[0],
 			}
 		);
 
 		const proposals = proposalsResponse || [];
-		const propostasAceitas = proposals.filter(p => p.status.nome === "aceito");
+		const propostasAceitas = proposals.filter(
+			(p) => p.status.nome === "Aceita"
+		);
 
-		const totalVendas = propostasAceitas.reduce((sum, p) => sum + (p.valor || 0), 0);
+		const totalVendas = propostasAceitas.reduce(
+			(sum, p) => sum + (p.valor || 0),
+			0
+		);
 		const totalPropostas = proposals.length;
-		const taxaConversao = totalPropostas > 0 ? (propostasAceitas.length / totalPropostas) * 100 : 0;
-		const ticketMedio = propostasAceitas.length > 0 ? totalVendas / propostasAceitas.length : 0;
+		const taxaConversao =
+			totalPropostas > 0 ? (propostasAceitas.length / totalPropostas) * 100 : 0;
+		const ticketMedio =
+			propostasAceitas.length > 0 ? totalVendas / propostasAceitas.length : 0;
 
 		return {
 			totalVendas,
 			totalPropostas,
 			taxaConversao,
 			ticketMedio,
-			crescimentoMensal: 15.5 // Mock data for now
+			crescimentoMensal: 15.5, // Mock data for now
 		};
 	},
 
@@ -248,18 +266,22 @@ export const reportsService = {
 			"produtomusical/listarPropostas",
 			{
 				IdProdutoMusical: userId,
-				DataDe: startDate.toISOString().split('T')[0],
-				DataAte: endDate.toISOString().split('T')[0]
+				DataDe: startDate.toISOString().split("T")[0],
+				DataAte: endDate.toISOString().split("T")[0],
 			}
 		);
 
 		const propostas = proposalsResponse || [];
-		const propostasAceitas = propostas.filter(p => p.status.nome === "aceito");
+		const propostasAceitas = propostas.filter(
+			(p) => p.status.nome === "Aceita"
+		);
 
 		const cliquesPerfil = Math.floor(propostas.length * 2.5);
 		const mensagensRecebidas = Math.floor(propostas.length * 1.8);
-		const taxaConversaoPerfil = propostas.length > 0 ?
-			(propostasAceitas.length / propostas.length) * 100 : 0;
+		const taxaConversaoPerfil =
+			propostas.length > 0
+				? (propostasAceitas.length / propostas.length) * 100
+				: 0;
 
 		return {
 			cliquesPerfil,
@@ -267,11 +289,27 @@ export const reportsService = {
 			mensagensRecebidas,
 			taxaConversaoPerfil,
 			fontesTrafego: [
-				{ fonte: "Busca direta", quantidade: Math.floor(cliquesPerfil * 0.4), percentual: 40 },
-				{ fonte: "Redes sociais", quantidade: Math.floor(cliquesPerfil * 0.35), percentual: 35 },
-				{ fonte: "Indicação", quantidade: Math.floor(cliquesPerfil * 0.15), percentual: 15 },
-				{ fonte: "Outros", quantidade: Math.floor(cliquesPerfil * 0.1), percentual: 10 }
-			]
+				{
+					fonte: "Busca direta",
+					quantidade: Math.floor(cliquesPerfil * 0.4),
+					percentual: 40,
+				},
+				{
+					fonte: "Redes sociais",
+					quantidade: Math.floor(cliquesPerfil * 0.35),
+					percentual: 35,
+				},
+				{
+					fonte: "Indicação",
+					quantidade: Math.floor(cliquesPerfil * 0.15),
+					percentual: 15,
+				},
+				{
+					fonte: "Outros",
+					quantidade: Math.floor(cliquesPerfil * 0.1),
+					percentual: 10,
+				},
+			],
 		};
 	},
 };

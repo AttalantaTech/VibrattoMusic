@@ -37,7 +37,7 @@ export const GenericTable = <T,>({
 
 	return (
 		<div className="py-4">
-			<div className="overflow-visible shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+			<div className="overflow-auto shadow ring-1 ring-black ring-opacity-5 rounded-lg">
 				<table className="min-w-full divide-y divide-gray-300">
 					<thead className="bg-gray-50">
 						{table.getHeaderGroups().map((headerGroup) => (

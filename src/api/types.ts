@@ -765,6 +765,7 @@ export interface SearchSuggestion {
 
 // Proposal types
 export interface CreateProposalRequest {
+	id?: number | null;
 	idConversa: number;
 	nomeContratante: string;
 	idProdutoMusical: number;
@@ -791,10 +792,23 @@ export interface ProposalFilterRequest {
 	Id?: number | null;
 	IdentificadorUnico?: string | null;
 	IdContratante?: number | null;
+	IdProdutoMusicalContratante?: number | null;
 	IdProdutoMusical?: number | null;
 	DataDe?: string | null;
 	DataAte?: string | null;
 }
+
+export type ProposalStatusResponse =
+	| "Pendente"
+	| "Aceita"
+	| "Rejeitada"
+	| "Cancelado"
+	| "SinalPago"
+	| "AguardandoAssinatura"
+	| "EnvioAssinatura"
+	| "EnvioDocumento"
+	| "EnvioSignatarios"
+	| "ContratoAssinado";
 
 export interface ProposalResponse {
 	id: number;
@@ -803,10 +817,15 @@ export interface ProposalResponse {
 		id: number;
 		nome: string;
 	};
+	produtoMusicalContratante: {
+		id: number;
+		nome: string;
+	};
 	produtoMusical: {
 		id: number;
 		nome: string;
 	};
+
 	tipoEvento: {
 		id: number;
 		nome: string;
@@ -838,7 +857,7 @@ export interface ProposalResponse {
 	dataVencimentoSinalPagamento: string | null;
 	status: {
 		id: number;
-		nome: string;
+		nome: ProposalStatusResponse;
 	};
 	motivoRejeicao: {
 		id: number;

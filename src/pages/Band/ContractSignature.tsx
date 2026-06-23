@@ -1,64 +1,39 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
 	FileText,
 	Download,
-	PenLine,
 	CheckCircle,
 	AlertCircle,
 	ArrowLeft,
 	Loader2,
+	XCircle,
+	DollarSign,
 } from "lucide-react";
 import { Button } from "../../components/ui/Button/Button";
-import { Badge } from "../../components/ui/Badge/Badge";
-import { useContractSections } from "../../hooks/useContracts";
+import { useContractPDF, useContractSections } from "../../hooks/useContracts";
 import { toast } from "sonner";
-import { useProposalById } from "../../hooks/useProposals";
+import {
+	useProposalById,
+	useUpdateProposalStatus,
+} from "../../hooks/useProposals";
+import { ProposalStatusCard } from "@/components/BandProfile/Sales/components/EventsTable/components/ProposalStatusCard";
+import type { unifiedStatusConfig } from "@/components/BandProfile/Sales/types/SalesTypes";
+import { useAuthStore } from "@/store/authStore";
 
 interface ContractSignaturePageProps {
 	identificadorUnico: string;
 }
-
-const getStatusColor = (status: string) => {
-	switch (status) {
-		case "Pendente":
-			return "bg-yellow-100 text-yellow-800";
-		case "Aceita":
-			return "bg-primary-100 text-primary-800";
-		case "Sinal Pago":
-			return "bg-green-100 text-green-800";
-		case "Concluído":
-			return "bg-gray-100 text-gray-800";
-		case "Cancelado":
-			return "bg-red-100 text-red-800";
-		default:
-			return "bg-gray-100 text-gray-800";
-	}
-};
-
-const getStatusLabel = (status: string) => {
-	switch (status) {
-		case "Pendente":
-			return "Pendente";
-		case "Aceita":
-			return "Aceita";
-		case "Sinal Pago":
-			return "Sinal Pago";
-		case "Concluído":
-			return "Concluído";
-		case "Cancelado":
-			return "Cancelado";
-		default:
-			return status;
-	}
-};
 
 export const ContractSignaturePage = ({
 	identificadorUnico,
 }: ContractSignaturePageProps) => {
 	const navigate = useNavigate();
 	const [downloading, setDownloading] = useState(false);
-	const [signing, setSigning] = useState(false);
+	const [isLoadingPaidSign, setIsLoadingPaidSign] = useState(false);
+	const [isLoadingCancel, setIsLoadingCancel] = useState(false);
+
+	const { user } = useAuthStore();
 
 	const {
 		data: proposal,
@@ -66,41 +41,46 @@ export const ContractSignaturePage = ({
 		error,
 	} = useProposalById(identificadorUnico || "");
 
-	const { data: contractSections } = useContractSections(
-		proposal?.produtoMusical.id || 0
+	const { data: pdfUrl } = useContractPDF(identificadorUnico || "");
+	const { data: contractSections } = useContractSections(proposal?.id || 0);
+	const { data: contractPdfUrl, isLoading: pdfLoading } = useContractPDF(
+		proposal?.identificadorUnico || ""
 	);
+
+	const updateStatusMutation = useUpdateProposalStatus();
+
+	const statusKey = (
+		typeof proposal?.status === "object"
+			? proposal.status.nome
+			: proposal?.status
+	) as keyof typeof unifiedStatusConfig;
+
+	const isWaitingForResponse = statusKey === "Pendente";
+
+	const isContractor = user?.id === proposal?.contratante.id;
+
+	const needsContractorPaidSign =
+		!isContractor && statusKey === "Aceita" && !proposal?.assinaturaContratado;
+
+	const signedContract =
+		proposal?.status.nome === "EnvioAssinatura" ||
+		proposal?.status.nome === "EnvioDocumento" ||
+		proposal?.status.nome === "EnvioSignatarios" ||
+		proposal?.status.nome === "ContratoAssinado";
 
 	const handleDownload = () => {
 		if (!proposal) return;
 
 		setDownloading(true);
 		try {
-			// Create contract text representation
-			const contractText = `
-CONTRATO DE PRESTAÇÃO DE SERVIÇOS ARTÍSTICOS
+			const link = document.createElement("a");
+			link.href = pdfUrl || "";
+			link.download = "contrato.pdf";
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
 
-Contrato ID: ${proposal.idContrato}
-Proposta ID: ${proposal.id}
-Título: ${proposal.descricao}
-Status: ${getStatusLabel(proposal.status?.nome || "")}
-Valor Total: R$ ${proposal.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-Data de Criação: ${new Date(proposal.dataCriacao).toLocaleDateString("pt-BR")}
-
-${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${section.texto}\n\n`).join("") || "Nenhuma seção disponível."}
-			`;
-
-			const blob = new Blob([contractText], {
-				type: "text/plain;charset=utf-8",
-			});
-			const url = URL.createObjectURL(blob);
-			const a = document.createElement("a");
-			a.href = url;
-			a.download = `contrato-${proposal.id}.txt`;
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
-			URL.revokeObjectURL(url);
-			toast.success("Contrato baixado com sucesso!");
+			URL.revokeObjectURL(pdfUrl || "");
 		} catch (error) {
 			console.error("Erro ao baixar contrato:", error);
 			toast.error("Erro ao baixar contrato");
@@ -109,29 +89,42 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 		}
 	};
 
-	const handleSign = () => {
-		if (!proposal) return;
-
-		setSigning(true);
+	const handlePaidSign = async (proposalId: number) => {
 		try {
-			// Check if there's a D4Sign URL
-			// if (contract.urlAssinaturaD4Sign) {
-			// 	// Open D4Sign signature page in new tab
-			// 	window.open(contract.urlAssinaturaD4Sign, "_blank");
-			// 	toast.success("Abrindo página de assinatura...");
-			// } else {
-			// 	// TODO: Generate D4Sign signature URL if not available
-			// 	toast.error(
-			// 		"URL de assinatura não disponível. Aguarde a geração do contrato."
-			// 	);
-			// }
+			setIsLoadingPaidSign(true);
+			await updateStatusMutation.mutateAsync({
+				proposalId: proposalId,
+				status: "sinalPago",
+			});
 		} catch (error) {
-			console.error("Erro ao iniciar assinatura:", error);
-			toast.error("Erro ao iniciar processo de assinatura");
+			console.error("Error paiding sign:", error);
+			toast.error("Erro ao pagar o sinal. Tente novamente.");
 		} finally {
-			setSigning(false);
+			setIsLoadingPaidSign(false);
 		}
 	};
+
+	const handleCancelProposal = useCallback(
+		async (proposalId: number | null) => {
+			try {
+				setIsLoadingCancel(true);
+				if (!proposalId) {
+					toast.error("Proposta não encontrada.");
+					return;
+				}
+
+				await updateStatusMutation.mutateAsync({
+					proposalId,
+					status: "cancelado",
+				});
+			} catch (error) {
+				console.error("Error updating proposal status:", error);
+			} finally {
+				setIsLoadingCancel(false);
+			}
+		},
+		[updateStatusMutation]
+	);
 
 	const handleBack = () => {
 		// eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -169,26 +162,6 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 		);
 	}
 
-	if (!proposal) {
-		return (
-			<div className="min-h-screen flex items-center justify-center bg-gray-50">
-				<div className="text-center">
-					<FileText className="h-12 w-12 text-gray-400 mx-auto" />
-					<h2 className="mt-4 text-xl font-semibold text-gray-900">
-						Contrato não encontrado
-					</h2>
-					<Button onClick={handleBack} className="mt-6">
-						<ArrowLeft className="h-4 w-4 mr-2" />
-						Voltar
-					</Button>
-				</div>
-			</div>
-		);
-	}
-
-	const canSign =
-		proposal.status?.nome === "Aceita" || proposal.status?.nome === "Pendente";
-
 	return (
 		<div className="min-h-screen bg-gray-50">
 			{/* Header */}
@@ -209,7 +182,8 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 								<FileText className="h-6 w-6 text-primary-600" />
 								<div>
 									<h1 className="text-xl font-bold text-gray-900">
-										Contrato #{proposal.idContrato}
+										Contrato
+										{/* #{proposal.idContrato} AQUI */}
 									</h1>
 									<p className="text-sm text-gray-600">
 										Proposta #{proposal.id}
@@ -217,9 +191,8 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 								</div>
 							</div>
 						</div>
-						<Badge className={getStatusColor(proposal.status?.nome || "")}>
-							{getStatusLabel(proposal.status?.nome || "")}
-						</Badge>
+
+						<ProposalStatusCard name={proposal.status?.nome || ""} />
 					</div>
 				</div>
 			</div>
@@ -279,6 +252,26 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 									</div>
 								))}
 							</div>
+						) : contractPdfUrl ? (
+							<div className="border-y-2 border-gray-100">
+								<iframe
+									src={`${contractPdfUrl}#toolbar=0`}
+									className="w-full h-[800px] border-0"
+									title="Contrato PDF"
+								/>
+							</div>
+						) : pdfLoading ? (
+							<div className="flex items-center justify-center h-[400px]">
+								<div className="text-center">
+									<FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+									<h4 className="text-lg font-semibold text-gray-900 mb-2">
+										Carregando contrato...
+									</h4>
+									<p className="text-gray-600">
+										O PDF do contrato está sendo carregado.
+									</p>
+								</div>
+							</div>
 						) : (
 							<div className="py-12 text-center text-gray-500">
 								<FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
@@ -310,25 +303,45 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 							)}
 						</Button>
 
-						{canSign ? (
-							<Button
-								onClick={handleSign}
-								disabled={signing}
-								className="w-full sm:w-auto bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
-							>
-								{signing ? (
-									<>
-										<Loader2 className="h-4 w-4 animate-spin" />
-										Processando...
-									</>
-								) : (
-									<>
-										<PenLine className="h-4 w-4" />
-										Assinar via D4Sign
-									</>
-								)}
-							</Button>
-						) : (
+						<div className="flex gap-2">
+							{(isWaitingForResponse || statusKey === "Aceita") && (
+								<Button
+									className="text-red-600 hover:text-white hover:bg-red-500 border-red-300"
+									variant="outline"
+									disabled={isLoadingCancel}
+									onClick={async () => {
+										await handleCancelProposal(proposal.id);
+									}}
+								>
+									{isLoadingCancel ? (
+										<Loader2 className="w-4 h-4 animate-spin" />
+									) : (
+										<XCircle className="h-4 w-4 mr-2" />
+									)}
+									Cancelar Proposta
+								</Button>
+							)}
+
+							{/* Contractor paid sign button */}
+							{needsContractorPaidSign && (
+								<Button
+									className="bg-green-600 hover:bg-green-700 border-green-600 disabled:hover:bg-green-600 disabled:opacity-50"
+									disabled={isLoadingPaidSign}
+									onClick={async () => {
+										await handlePaidSign(proposal.id);
+									}}
+								>
+									{isLoadingPaidSign ? (
+										<Loader2 className="w-4 h-4 animate-spin" />
+									) : (
+										<DollarSign className="h-4 w-4 mr-2" />
+									)}
+									confirmar pagamento
+								</Button>
+							)}
+						</div>
+
+						{signedContract && (
 							<div className="flex items-center gap-2 text-green-600">
 								<CheckCircle className="h-5 w-5" />
 								<span className="font-medium">Contrato Assinado</span>
@@ -336,17 +349,28 @@ ${contractSections?.map((section) => `${section.numero}. ${section.titulo}\n\n${
 						)}
 					</div>
 
-					{canSign && (
+					{proposal.status.nome === "AguardandoAssinatura" && (
 						<div className="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
 							<div className="flex gap-3">
 								<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
 								<div className="text-sm text-primary-800">
-									<p className="font-medium mb-1">Importante:</p>
-									<p>
-										Ao clicar em "Assinar via D4Sign", você será redirecionado
-										para a plataforma de assinatura digital. Certifique-se de
-										ler todo o contrato antes de assinar.
-									</p>
+									<p className="font-medium mb-2">Importante:</p>
+									<span className="block mb-4">
+										Em instantes, você receberá um e-mail com as instruções para
+										realizar a assinatura eletrônica do contrato.
+									</span>
+
+									<span className="block mb-4">
+										Caso não encontre a mensagem na sua caixa de entrada,
+										verifique também as pastas de Spam, Lixo Eletrônico,
+										Promoções ou Atualizações.
+									</span>
+
+									<span className="block mb-4">
+										Se mesmo assim o e-mail não for localizado após alguns
+										minutos, entre em contato com nosso suporte para que
+										possamos ajudá-lo.
+									</span>
 								</div>
 							</div>
 						</div>

@@ -1,34 +1,33 @@
 import {
-	ChartLineIcon,
+	// ChartLineIcon,
 	Check,
 	ChevronDown,
 	FileText,
 	Plus,
 } from "lucide-react";
 import { Button } from "../../ui/Button/Button";
-import { FilterSelector } from "../../ui/FilterSelector/FilterSelector";
+// import { FilterSelector } from "../../ui/FilterSelector/FilterSelector";
 import { useCallback, useMemo, useState } from "react";
-import { UpdateButton } from "../../ui/UpdateButton/UpdateButton";
-import { Reports } from "./Reports";
+// import { UpdateButton } from "../../ui/UpdateButton/UpdateButton";
+// import { Reports } from "./Reports";
 import { EventsTable } from "./components/EventsTable";
-import { PaymentStatusCard } from "./components/EventsTable/components/PaymentStatusCard";
-import type { EventsTableData } from "./components/EventsTable/types";
+import type { EventsTableSaleData } from "./components/EventsTable/types";
 import { Dropdown } from "../../ui/Dropdown/Dropdown";
 import {
 	useFilteredProposals,
 	useUpdateProposalStatus,
 } from "../../../hooks/useProposals";
 import { EmptyState, ErrorState, TableSkeleton } from "../../ui/LoadingStates";
-import { LineChartComponent } from "../../charts/line/LineChart";
+// import { LineChartComponent } from "../../charts/line/LineChart";
 import { useAuthStore } from "../../../store/authStore";
 import { splitOnUppercase } from "../../../utils/labels";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import type { ProposalResponse } from "../../../api/types";
 import { ProposalDetailsModal } from "./components/ProposalDetailsModal";
-import { ProposalRejectionModal } from "../Proposals/ProposalRejectionModal";
 import { SendProposalModal } from "../Messages/components/SendProposalModal";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { ProposalStatusCard } from "./components/EventsTable/components/ProposalStatusCard";
 
 interface AbaVendasProps {
 	productId?: number;
@@ -36,18 +35,19 @@ interface AbaVendasProps {
 
 export const SalesTab = ({ productId }: AbaVendasProps) => {
 	const navigate = useNavigate();
-	const [selectedChartFilters, setSelectedChartFilters] = useState<
-		Array<string>
-	>([]);
+	// const [selectedChartFilters, setSelectedChartFilters] = useState<
+	// 	Array<string>
+	// >([]);
 	const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
 	const [isProposalDetailsModalOpen, setIsProposalDetailsModalOpen] =
 		useState(false);
 	const [proposalDetails, setProposalDetails] =
 		useState<ProposalResponse | null>(null);
-	const [proposalToReject, setProposalToReject] =
-		useState<ProposalResponse | null>(null);
-	const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
-	const chartFilters = [{ id: "sales", label: "Vendas" }];
+
+	const [isLoadingPaidSign, setIsLoadingPaidSign] = useState(false);
+	const [isLoadingCancel, setIsLoadingCancel] = useState(false);
+
+	// const chartFilters = [{ id: "sales", label: "Vendas" }];
 
 	const { activeProduct } = useMusicalProductStore();
 
@@ -64,6 +64,7 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 		error,
 	} = useFilteredProposals({
 		status: statusFilter === "Todos os status" ? undefined : [statusFilter],
+		IdProdutoMusical: activeProduct?.id,
 	});
 
 	const updateStatusMutation = useUpdateProposalStatus();
@@ -98,19 +99,15 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 	);
 
 	const handleEditContract = useCallback(
-		async (proposalId: string) => {
-			if (proposalId) {
-				await navigate({
-					to: "/band/contract/$id",
-					params: { id: proposalId },
-				});
-			} else {
-				toast.error(
-					"Não foi possível acessar o contrato. Identificador da proposta não encontrado."
-				);
-			}
+		(proposalId: string) => {
+			setIsProposalModalOpen(true);
+			setProposalDetails(
+				filteredProposals?.data.find(
+					(p) => p.identificadorUnico === proposalId
+				) || null
+			);
 		},
-		[navigate]
+		[filteredProposals?.data]
 	);
 
 	const handleSeeContract = useCallback(
@@ -125,47 +122,45 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 		[filteredProposals?.data]
 	);
 
-	const handleStatusUpdate = async (
-		proposalId: number,
-		status: "aceito" | "rejeitado" | "cancelado"
-	) => {
+	const handlePaidSign = async (proposalId: number) => {
 		try {
-			await updateStatusMutation.mutateAsync({ proposalId, status });
-		} catch (error) {
-			console.error("Error updating proposal status:", error);
-		}
-	};
-
-	const handleAcceptProposal = async (proposalId: number) => {
-		try {
+			setIsLoadingPaidSign(true);
 			await updateStatusMutation.mutateAsync({
 				proposalId: proposalId,
-				status: "aceito",
+				status: "sinalPago",
 			});
-			toast.success("Proposta aceita! O contrato será gerado.");
+			toast.success("Sinal pago! O contrato agora precisa ser assinado.");
 		} catch (error) {
-			console.error("Error accepting proposal:", error);
-			toast.error("Erro ao aceitar a proposta. Tente novamente.");
+			console.error("Error paiding sign:", error);
+			toast.error("Erro ao pagar o sinal. Tente novamente.");
+		} finally {
+			setIsLoadingPaidSign(false);
 		}
 	};
 
-	const handleRejectProposal = useCallback(
-		(proposal: ProposalResponse | string) => {
-			if (typeof proposal === "string") {
-				const foundProposal = filteredProposals?.data.find(
-					(p) => p.identificadorUnico === proposal
-				);
-				if (!foundProposal) return;
-				setProposalToReject(foundProposal);
-			} else {
-				setProposalToReject(proposal);
+	const handleCancelProposal = useCallback(
+		async (proposalId: number | null) => {
+			try {
+				setIsLoadingCancel(true);
+				if (!proposalId) {
+					toast.error("Proposta não encontrada.");
+					return;
+				}
+
+				await updateStatusMutation.mutateAsync({
+					proposalId,
+					status: "cancelado",
+				});
+			} catch (error) {
+				console.error("Error updating proposal status:", error);
+			} finally {
+				setIsLoadingCancel(false);
 			}
-			setIsRejectionModalOpen(true);
 		},
-		[filteredProposals?.data]
+		[updateStatusMutation]
 	);
 
-	const tableData: EventsTableData =
+	const tableData: EventsTableSaleData =
 		useMemo(
 			() =>
 				filteredProposals?.data.map((event) => {
@@ -177,12 +172,9 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 							title: event.descricao,
 							date: event.dataCriacao,
 						},
-						paymentStatus: event.status.nome,
-						paymentStatusComponent: (
-							<PaymentStatusCard name={event.status.nome} />
-						),
+						status: event.status.nome,
+						statusComponent: <ProposalStatusCard name={event.status.nome} />,
 						clientName: event.contratante.nome,
-						productName: event.produtoMusical.nome,
 						value: event.valor,
 						canSign:
 							event.status.nome === "AguardandoAssinatura" &&
@@ -191,7 +183,6 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 						onSign: handleSignContract,
 						onSeeContract: handleSeeContract,
 						onEditContract: handleEditContract,
-						onReject: handleRejectProposal,
 					};
 				}),
 			[
@@ -200,7 +191,6 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 				handleSignContract,
 				handleSeeContract,
 				handleEditContract,
-				handleRejectProposal,
 			]
 		) || [];
 
@@ -296,9 +286,11 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 					}
 				/>
 			)}
-			{tableData.length > 0 && <EventsTable data={tableData} />}
+			{tableData.length > 0 && (
+				<EventsTable dataSales={tableData} mode="sale" />
+			)}
 
-			<h1 className="font-bold text-2xl">Relatórios</h1>
+			{/* <h1 className="font-bold text-2xl">Relatórios</h1>
 			<hr className="w-full" />
 
 			<Reports />
@@ -329,35 +321,31 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 					}
 					values={filteredProposals?.data.map((event) => event.valor) || []}
 				/>
-			</div>
+			</div> */}
 
 			<SendProposalModal
 				isOpen={isProposalModalOpen}
+				proposal={proposalDetails}
 				onClose={() => {
 					setIsProposalModalOpen(false);
+					setProposalDetails(null);
 				}}
 				recipientId={currentProductId}
 			/>
 
 			<ProposalDetailsModal
 				isOpen={isProposalDetailsModalOpen}
+				mode="Contracted"
 				onClose={() => {
 					setIsProposalDetailsModalOpen(false);
+					setProposalDetails(null);
 				}}
-				proposal={proposalDetails!}
-				onStatusUpdate={handleStatusUpdate}
-				onAccept={handleAcceptProposal}
-				onReject={handleRejectProposal}
+				proposal={proposalDetails}
+				onPaidSign={handlePaidSign}
+				onCancel={handleCancelProposal}
 				onSignContract={handleSignContract}
-			/>
-
-			<ProposalRejectionModal
-				isOpen={isRejectionModalOpen}
-				onClose={() => {
-					setIsRejectionModalOpen(false);
-					setProposalToReject(null);
-				}}
-				proposal={proposalToReject}
+				isLoadingPaidSign={isLoadingPaidSign}
+				isLoadingCancel={isLoadingCancel}
 			/>
 		</div>
 	);

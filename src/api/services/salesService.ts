@@ -3,7 +3,7 @@ import type {
 	SalesChartResponse,
 	ChartPeriod,
 	ProposalResponse,
-	ProposalStatus
+	ProposalStatus,
 } from "../types";
 
 /**
@@ -49,8 +49,8 @@ export const salesService = {
 			"produtomusical/listarPropostas",
 			{
 				IdProdutoMusical: params.userId,
-				DataDe: startDate.toISOString().split('T')[0],
-				DataAte: endDate.toISOString().split('T')[0]
+				DataDe: startDate.toISOString().split("T")[0],
+				DataAte: endDate.toISOString().split("T")[0],
 			}
 		);
 
@@ -63,7 +63,7 @@ export const salesService = {
 		for (let i = 0; i <= daysDiff; i++) {
 			const date = new Date(startDate);
 			date.setDate(startDate.getDate() + i);
-			const dateStr = date.toISOString().split('T')[0];
+			const dateStr = date.toISOString().split("T")[0];
 			if (dateStr) {
 				dailyData[dateStr] = 0;
 			}
@@ -71,9 +71,11 @@ export const salesService = {
 
 		// Sum values by date for accepted proposals
 		proposals
-			.filter(p => p.status.nome === "aceito")
-			.forEach(proposal => {
-				const proposalDate = new Date(proposal.dataCriacao).toISOString().split('T')[0];
+			.filter((p) => p.status.nome === "Aceita")
+			.forEach((proposal) => {
+				const proposalDate = new Date(proposal.dataCriacao)
+					.toISOString()
+					.split("T")[0];
 				if (proposalDate && dailyData[proposalDate] !== undefined) {
 					dailyData[proposalDate] += proposal.valor || 0;
 				}
@@ -94,16 +96,21 @@ export const salesService = {
 
 		// Calculate growth (simplified - compare first and last periods)
 		const midPoint = Math.floor(values.length / 2);
-		const firstHalf = values.slice(0, midPoint).reduce((sum, val) => sum + val, 0);
-		const secondHalf = values.slice(midPoint).reduce((sum, val) => sum + val, 0);
-		const crescimentoPercentual = firstHalf > 0 ? ((secondHalf - firstHalf) / firstHalf) * 100 : 0;
+		const firstHalf = values
+			.slice(0, midPoint)
+			.reduce((sum, val) => sum + val, 0);
+		const secondHalf = values
+			.slice(midPoint)
+			.reduce((sum, val) => sum + val, 0);
+		const crescimentoPercentual =
+			firstHalf > 0 ? ((secondHalf - firstHalf) / firstHalf) * 100 : 0;
 
 		return {
 			labels,
 			values,
 			periodo: params.periodo,
 			totalVendas,
-			crescimentoPercentual
+			crescimentoPercentual,
 		};
 	},
 
@@ -159,12 +166,16 @@ export const salesService = {
 			`vendas/por-status/${userId}?periodo=${periodo}`
 		);
 		return response as {
-			pendente: { count: number; value: number; percentage: number; };
-			aguardando_pagamento: { count: number; value: number; percentage: number; };
-			aceito: { count: number; value: number; percentage: number; };
-			concluido: { count: number; value: number; percentage: number; };
-			rejeitado: { count: number; value: number; percentage: number; };
-			cancelado: { count: number; value: number; percentage: number; };
+			pendente: { count: number; value: number; percentage: number };
+			aguardando_pagamento: {
+				count: number;
+				value: number;
+				percentage: number;
+			};
+			aceito: { count: number; value: number; percentage: number };
+			concluido: { count: number; value: number; percentage: number };
+			rejeitado: { count: number; value: number; percentage: number };
+			cancelado: { count: number; value: number; percentage: number };
 		};
 	},
 
@@ -195,9 +206,14 @@ export const salesService = {
 			`vendas/tendencias/${userId}?periodo=${periodo}`
 		);
 		return response as {
-			trends: { date: string; vendas: number; receita: number; propostas: number; }[];
+			trends: {
+				date: string;
+				vendas: number;
+				receita: number;
+				propostas: number;
+			}[];
 			periodo: string;
-			totalPeriodo: { vendas: number; receita: number; propostas: number; };
+			totalPeriodo: { vendas: number; receita: number; propostas: number };
 		};
 	},
 
@@ -222,7 +238,12 @@ export const salesService = {
 			`vendas/top-periodos/${userId}?periodo=${periodo}`
 		);
 		return response as {
-			topPeriods: { period: string; vendas: number; receita: number; rank: number; }[];
+			topPeriods: {
+				period: string;
+				vendas: number;
+				receita: number;
+				rank: number;
+			}[];
 		};
 	},
 

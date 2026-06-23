@@ -494,7 +494,6 @@ export const ConsolidadoVendasTab = ({
 				proposalId: proposal.id,
 				status: "aceito",
 			});
-			toast.success("Proposta aceita! O contrato será gerado.");
 		} catch (error) {
 			console.error("Error accepting proposal:", error);
 			toast.error("Erro ao aceitar a proposta. Tente novamente.");

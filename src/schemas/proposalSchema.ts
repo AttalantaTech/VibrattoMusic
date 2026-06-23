@@ -5,7 +5,10 @@ export const createProposalSchema = z.object({
 	nomeContratante: z.string().min(1, "O campo Nome Contratante é obrigatório."),
 	idProdutoMusical: z.number().min(1, "Produto musical é obrigatório"),
 	idTipoEvento: z.number().min(1, "Tipo de evento é obrigatório"),
-	descricao: z.string().trim().min(10, "Descrição deve ter pelo menos 10 caracteres"),
+	descricao: z
+		.string()
+		.trim()
+		.min(10, "Descrição deve ter pelo menos 10 caracteres"),
 	valor: z.number().min(0.01, "Valor deve ser maior que zero"),
 	local: z.string().min(5, "Local é obrigatório"),
 	dataInicio: z.string().min(1, "Data de início é obrigatória"),
@@ -13,12 +16,20 @@ export const createProposalSchema = z.object({
 	horaInicio: z
 		.string()
 		.min(1, "Hora de início é obrigatória")
-		.regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, "Formato de hora inválido"),
+		.regex(
+			/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/,
+			"Formato de hora inválido"
+		),
 	horaFim: z
 		.string()
 		.min(1, "Hora de fim é obrigatória")
-		.regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, "Formato de hora inválido"),
-	idFormaPagamento: z.number().min(1, "O campo Forma de Pagamento é obrigatório."),
+		.regex(
+			/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/,
+			"Formato de hora inválido"
+		),
+	idFormaPagamento: z
+		.number()
+		.min(1, "O campo Forma de Pagamento é obrigatório."),
 	idCondicoesPagamento: z
 		.number()
 		.min(1, "O campo Condição de Pagamento é obrigatório."),
@@ -41,7 +52,7 @@ export const validateProposalDates = (
 	// Handle both YYYY-MM-DD and YYYY-MM-DDTHH:mm:ss formats
 	const parseDate = (dateString: string): Date => {
 		// If it contains 'T', it's already in ISO format
-		if (dateString.includes('T')) {
+		if (dateString.includes("T")) {
 			return new Date(dateString);
 		}
 		// Otherwise, assume it's YYYY-MM-DD format
@@ -82,18 +93,30 @@ export const validateProposalTimes = (
 	if (dataInicio === dataFim) {
 		const startParts = horaInicio.split(":");
 		const endParts = horaFim.split(":");
-		
+
 		// Accept both HH:MM and HH:MM:SS formats
-		if (startParts.length < 2 || endParts.length < 2 || 
-			startParts.length > 3 || endParts.length > 3) {
+		if (
+			startParts.length < 2 ||
+			endParts.length < 2 ||
+			startParts.length > 3 ||
+			endParts.length > 3
+		) {
 			return false;
 		}
-		
+
 		const [startHour, startMinute] = startParts.map(Number);
 		const [endHour, endMinute] = endParts.map(Number);
-		
-		if (startHour === undefined || startMinute === undefined || endHour === undefined || endMinute === undefined ||
-			isNaN(startHour) || isNaN(startMinute) || isNaN(endHour) || isNaN(endMinute)) {
+
+		if (
+			startHour === undefined ||
+			startMinute === undefined ||
+			endHour === undefined ||
+			endMinute === undefined ||
+			isNaN(startHour) ||
+			isNaN(startMinute) ||
+			isNaN(endHour) ||
+			isNaN(endMinute)
+		) {
 			return false;
 		}
 

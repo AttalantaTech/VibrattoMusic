@@ -8,7 +8,6 @@ import {
 	DollarSign,
 	CheckCircle,
 	XCircle,
-	Clock3,
 	Plus,
 	Filter,
 	ArrowUpDown,
@@ -16,6 +15,12 @@ import {
 	ChevronDown,
 	CreditCard,
 	X,
+	FilePen,
+	FileSignature,
+	PenTool,
+	File as FileTxt,
+	FileArchive,
+	Award,
 } from "lucide-react";
 import {
 	useMyProposals,
@@ -25,46 +30,94 @@ import { useAuthStore } from "../../../store/authStore";
 import { Button } from "../../ui/Button/Button";
 import { SendProposalModal } from "../Messages/components/SendProposalModal";
 import { Badge } from "../../ui/Badge/Badge";
-import type { ProposalResponse } from "../../../api/types";
+import type {
+	ProposalResponse,
+	ProposalStatusResponse,
+} from "../../../api/types";
 import { Input } from "../../ui/Input/Input";
 import { Dropdown } from "../../ui/Dropdown/Dropdown";
 import { cn } from "../../../lib/utils/cn";
 
 const statusConfig = {
-	pendente: {
+	Pendente: {
 		label: "Pendente",
-		icon: Clock3,
+		icon: Clock,
 		variant: "warning" as const,
 		color: "text-yellow-600",
-		bgColor: "bg-yellow-50",
+		bgColor: "bg-yellow-100",
+		borderColor: "border-yellow-200",
 	},
-	aceito: {
-		label: "Aceito",
-		icon: CheckCircle,
+	Aceita: {
+		label: "Aceita",
+		icon: Award,
 		variant: "success" as const,
 		color: "text-green-600",
-		bgColor: "bg-green-50",
+		bgColor: "bg-green-100",
+		borderColor: "border-green-200",
 	},
-	sinalPago: {
-		label: "Sinal Pago",
-		icon: CreditCard,
-		variant: "success" as const,
-		color: "text-primary-600",
-		bgColor: "bg-primary-50",
-	},
-	rejeitado: {
-		label: "Rejeitado",
+	Rejeitada: {
+		label: "Rejeitada",
 		icon: XCircle,
 		variant: "error" as const,
 		color: "text-red-600",
-		bgColor: "bg-red-50",
+		bgColor: "bg-red-100",
+		borderColor: "border-red-200",
 	},
-	cancelado: {
+	Cancelado: {
 		label: "Cancelado",
 		icon: XCircle,
 		variant: "secondary" as const,
 		color: "text-gray-600",
-		bgColor: "bg-gray-50",
+		bgColor: "bg-gray-100",
+		borderColor: "border-gray-200",
+	},
+	SinalPago: {
+		label: "Sinal Pago",
+		icon: DollarSign,
+		variant: "secondary" as const,
+		color: "text-orange-600",
+		bgColor: "bg-orange-100",
+		borderColor: "border-orange-200",
+	},
+	AguardandoAssinatura: {
+		label: "Aguardando Assinatura",
+		icon: FileArchive,
+		variant: "secondary" as const,
+		color: "text-orange-600",
+		bgColor: "bg-orange-100",
+		borderColor: "border-orange-200",
+	},
+	EnvioAssinatura: {
+		label: "Envio de Assinatura",
+		icon: PenTool,
+		variant: "secondary" as const,
+		color: "text-red-600",
+		bgColor: "bg-red-100",
+		borderColor: "border-red-200",
+	},
+	EnvioDocumento: {
+		label: "Envio de Documento",
+		icon: FileTxt,
+		variant: "secondary" as const,
+		color: "text-purple-600",
+		bgColor: "bg-purple-100",
+		borderColor: "border-purple-200",
+	},
+	EnvioSignatarios: {
+		label: "Envio de Signatarios",
+		icon: FileSignature,
+		variant: "secondary" as const,
+		color: "text-red-600",
+		bgColor: "bg-red-100",
+		borderColor: "border-red-200",
+	},
+	ContratoAssinado: {
+		label: "Envio de Signatarios",
+		icon: FilePen,
+		variant: "secondary" as const,
+		color: "text-red-600",
+		bgColor: "bg-red-100",
+		borderColor: "border-red-200",
 	},
 };
 
@@ -86,9 +139,11 @@ const ProposalDetailsModal = ({
 	onStatusUpdate,
 	isProposalCreator,
 }: ProposalDetailsModalProps) => {
-	const status =
-		statusConfig[proposal.status.nome as keyof typeof statusConfig] ||
-		statusConfig.pendente;
+	const statusKey = (
+		typeof proposal.status === "object" ? proposal.status.nome : proposal.status
+	) as keyof typeof statusConfig;
+
+	const status = statusConfig[statusKey] || statusConfig.Pendente;
 	const StatusIcon = status.icon;
 
 	const formatTime = (timeString: string) => {
@@ -124,13 +179,8 @@ const ProposalDetailsModal = ({
 
 					{/* Status Badge */}
 					<div className="mb-6">
-						<Badge
-							variant={status.variant}
-							className="inline-flex items-center gap-1"
-						>
-							<StatusIcon className="h-4 w-4" />
-							{status.label}
-						</Badge>
+						<StatusIcon className="h-4 w-4" />
+						{status.label}
 					</div>
 
 					{/* Details */}
@@ -207,8 +257,8 @@ const ProposalDetailsModal = ({
 					<div className="mt-6 flex justify-end gap-3">
 						{/* Botão de cancelar para o criador da proposta - sempre disponível */}
 						{isProposalCreator(proposal) &&
-							proposal.status.nome !== "cancelado" &&
-							proposal.status.nome !== "rejeitado" && (
+							proposal.status.nome !== "Cancelado" &&
+							proposal.status.nome !== "Rejeitada" && (
 								<Button
 									variant="outline"
 									className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
@@ -221,7 +271,7 @@ const ProposalDetailsModal = ({
 									Cancelar Minha Proposta
 								</Button>
 							)}
-						{proposal.status.nome === "pendente" && (
+						{proposal.status.nome === "Pendente" && (
 							<>
 								<Button
 									variant="outline"
@@ -255,7 +305,7 @@ const ProposalDetailsModal = ({
 								</Button>
 							</>
 						)}
-						{proposal.status.nome === "aceito" && (
+						{proposal.status.nome === "Aceita" && (
 							<div className="flex gap-3">
 								<Button
 									variant="outline"
@@ -292,13 +342,7 @@ const ProposalDetailsModal = ({
 
 type SortField = "date" | "value" | "status" | "eventType";
 type SortOrder = "asc" | "desc";
-type StatusFilter =
-	| "all"
-	| "pendente"
-	| "aceito"
-	| "sinalPago"
-	| "rejeitado"
-	| "cancelado";
+type StatusFilter = ProposalStatusResponse;
 
 interface ProposalsTabProps {
 	productId?: number;
@@ -309,7 +353,8 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 	const [selectedProposal, setSelectedProposal] =
 		useState<ProposalResponse | null>(null);
 	const [searchTerm, setSearchTerm] = useState("");
-	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+	const [statusFilter, setStatusFilter] =
+		useState<ProposalStatusResponse | null>(null);
 	const [sortField, setSortField] = useState<SortField>("date");
 	const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
@@ -345,7 +390,7 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 	const filteredAndSortedProposals = useMemo(() => {
 		let filtered = [...(proposals || [])];
 
-		if (statusFilter !== "all") {
+		if (statusFilter !== null) {
 			filtered = filtered.filter(
 				(proposal) => proposal.status.nome === statusFilter
 			);
@@ -493,7 +538,7 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 							<span className="flex items-center gap-2">
 								<Filter className="h-4 w-4" />
 								Status:{" "}
-								{statusFilter === "all"
+								{statusFilter === null
 									? "Todos"
 									: statusConfig[statusFilter]?.label}
 							</span>
@@ -594,7 +639,7 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 			</div>
 
 			{/* Results count */}
-			{(searchTerm || statusFilter !== "all") &&
+			{(searchTerm || statusFilter !== null) &&
 				proposals &&
 				proposals.length > 0 && (
 					<div className="text-sm text-gray-600 mb-4">
@@ -608,16 +653,16 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 				<div className="flex flex-col items-center justify-center min-h-[400px] bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
 					<FileText className="h-12 w-12 text-gray-400 mb-4" />
 					<h3 className="text-lg font-semibold text-gray-900 mb-2">
-						{searchTerm || statusFilter !== "all"
+						{searchTerm || statusFilter !== null
 							? "Nenhuma proposta encontrada com os filtros aplicados"
 							: "Nenhuma proposta enviada"}
 					</h3>
 					<p className="text-gray-600 text-center max-w-md mb-4">
-						{searchTerm || statusFilter !== "all"
+						{searchTerm || statusFilter !== null
 							? "Tente ajustar os filtros ou realizar uma nova busca."
 							: "Você ainda não enviou nenhuma proposta. Use a aba 'Mensagens' para enviar propostas para artistas."}
 					</p>
-					{!(searchTerm || statusFilter !== "all") && (
+					{!(searchTerm || statusFilter !== null) && (
 						<Button
 							onClick={() => {
 								setIsCreateModalOpen(true);
@@ -634,7 +679,7 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 					{filteredAndSortedProposals.map((proposal) => {
 						const status =
 							statusConfig[proposal.status.nome as keyof typeof statusConfig] ||
-							statusConfig.pendente;
+							statusConfig.Pendente;
 						const StatusIcon = status.icon;
 
 						return (
@@ -706,7 +751,7 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 									</div>
 
 									{/* Actions */}
-									{proposal.status.nome === "pendente" && (
+									{proposal.status.nome === "Pendente" && (
 										<div className="flex flex-row lg:flex-col gap-2 lg:justify-center">
 											<Button
 												size="sm"
@@ -746,7 +791,7 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 											</Button>
 										</div>
 									)}
-									{proposal.status.nome === "aceito" && (
+									{proposal.status.nome === "Aceita" && (
 										<div className="flex flex-col gap-2 lg:justify-center">
 											<Button
 												size="sm"
@@ -775,8 +820,8 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 									)}
 									{/* Botão de cancelar para o criador da proposta - sempre visível */}
 									{isProposalCreator(proposal) &&
-										proposal.status.nome !== "cancelado" &&
-										proposal.status.nome !== "rejeitado" && (
+										proposal.status.nome !== "Cancelado" &&
+										proposal.status.nome !== "Rejeitada" && (
 											<div className="flex lg:justify-center">
 												<Button
 													size="sm"

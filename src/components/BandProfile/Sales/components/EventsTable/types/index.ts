@@ -1,21 +1,35 @@
 import type { ReactElement } from "react";
 
-export type EventsTableRow = {
+export type EventsTableProposalRow = {
 	event: {
 		id: string;
 		title: string;
 		date: string;
 	};
-	paymentStatus: string;
-	paymentStatusComponent: ReactElement;
-	clientName: string;
+	status: string;
+	statusComponent: ReactElement;
 	productName: string;
 	value: number;
 	canSign: boolean;
 	onSign: (proposalId: string) => void;
 	onSeeContract: (proposalId: string) => void;
-	onEditContract: (proposalId: string) => void;
-	onReject: (proposalId: string) => void;
 };
 
-export type EventsTableData = Array<EventsTableRow>;
+export type EventsTableSaleRow = {
+	event: {
+		id: string;
+		title: string;
+		date: string;
+	};
+	status: string;
+	statusComponent: ReactElement;
+	clientName: string;
+	value: number;
+	canSign: boolean;
+	onSign: (proposalId: string) => void;
+	onSeeContract: (proposalId: string) => void;
+	onEditContract: (proposalId: string) => void;
+};
+
+export type EventsTableProposalData = Array<EventsTableProposalRow>;
+export type EventsTableSaleData = Array<EventsTableSaleRow>;

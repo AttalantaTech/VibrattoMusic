@@ -49,12 +49,12 @@ export const useContractPDF = (identificadorUnico: string) => {
 /**
  * Hook to load contract sections for editing
  */
-export const useContractSections = (idProdutoMusical: number) => {
+export const useContractSections = (proposalId: number) => {
 	return useQuery({
-		queryKey: CONTRACT_QUERY_KEYS.sections(idProdutoMusical.toString()),
+		queryKey: CONTRACT_QUERY_KEYS.sections(proposalId.toString()),
 		queryFn: () =>
-			contractService.listContractSectionsByMusicalProductId(idProdutoMusical),
-		enabled: !!idProdutoMusical,
+			contractService.listContractSectionsByMusicalProductId(proposalId),
+		enabled: !!proposalId,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 		retry: 2,
 		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
@@ -148,7 +148,7 @@ export const useMyContracts = (): ReturnType<
 
 				return [contract];
 			} catch (error) {
-				console.log("🔍 Debug - No contract found or error occurred:", error);
+				console.error("Debug - No contract found or error occurred:", error);
 				return [];
 			}
 		},
@@ -227,7 +227,7 @@ export const useContractPermissions = (identificadorUnico: string) => {
 
 			return {
 				canEdit:
-					proposal.status.nome === "Assinado" ||
+					proposal.status.nome === "ContratoAssinado" ||
 					proposal.status.nome === "Aceita",
 				canView: true,
 				isOwner: true, // TODO: Check actual ownership

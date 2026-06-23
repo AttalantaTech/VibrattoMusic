@@ -11,6 +11,7 @@ import { Button } from "../../ui/Button/Button";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 } from "../../ui/dialog";
@@ -136,6 +137,8 @@ export const ProposalRejectionModal = ({
 						{step === "success" && "Proposta Rejeitada"}
 						{step === "error" && "Erro na Rejeição"}
 					</DialogTitle>
+
+					<DialogDescription />
 				</DialogHeader>
 
 				<div className="space-y-6">
@@ -192,7 +195,6 @@ export const ProposalRejectionModal = ({
 												?.Id
 										)}
 										onValueChange={(value) => {
-											console.log(value);
 											setSelectedReasonId(Number(value));
 										}}
 										disabled={isLoadingReasons || !!reasonsError}

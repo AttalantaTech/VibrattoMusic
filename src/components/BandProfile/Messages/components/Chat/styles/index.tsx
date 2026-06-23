@@ -77,7 +77,9 @@ export const OwnMessageElement = ({
 		<div className="flex items-end space-x-2">
 			<div className="flex flex-col items-end">
 				<div className="bg-primary-600 max-w-[80%] text-white px-4 py-3 rounded-l-2xl rounded-tr-2xl rounded-br-md shadow-lg">
-					<p className="text-sm leading-relaxed">{message.conteudo}</p>
+					<div className="text-sm leading-relaxed">
+						<div dangerouslySetInnerHTML={{ __html: message.conteudo }}></div>
+					</div>
 				</div>
 				<div className="flex items-center justify-end space-x-1 mt-1 px-1">
 					<p className="text-xs text-gray-500">
@@ -119,9 +121,9 @@ export const MessageElement = ({
 					{userName}
 				</p>
 				<div className="bg-white max-w-[80%] border border-gray-200 px-4 py-3 rounded-r-2xl rounded-tl-2xl rounded-bl-md shadow-lg">
-					<p className="text-sm text-gray-800 leading-relaxed">
-						{message.conteudo}
-					</p>
+					<div className="text-sm text-gray-800 leading-relaxed">
+						<div dangerouslySetInnerHTML={{ __html: message.conteudo }}></div>
+					</div>
 				</div>
 				<div className="flex items-center space-x-1 mt-1 px-1">
 					<p className="text-xs text-gray-500">
