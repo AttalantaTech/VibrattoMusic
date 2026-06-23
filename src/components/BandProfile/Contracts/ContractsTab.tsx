@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
-import { FileText, CheckCircle, Edit, Eye, Plus, PenLine } from "lucide-react";
+import { FileText, Edit, Eye, Plus, PenLine, Download } from "lucide-react";
 import { Button } from "../../ui/Button/Button";
-import { Badge } from "../../ui/Badge/Badge";
 import { ContractViewer } from "./ContractViewer";
 import { ContractEditor } from "./ContractEditor";
 import { useProductProposals } from "../../../hooks/useProposals";
@@ -9,30 +8,8 @@ import { useContract, useContractPDF } from "../../../hooks/useContracts";
 import { useNavigate } from "@tanstack/react-router";
 import { formatCurrency, formatDate } from "../../../utils/validation";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-
-const statusConfig = {
-	aceito: {
-		label: "Aceito",
-		icon: CheckCircle,
-		variant: "success" as const,
-		color: "text-green-600",
-		bgColor: "bg-green-50",
-	},
-	sinalpago: {
-		label: "Sinal Pago",
-		icon: CheckCircle,
-		variant: "success" as const,
-		color: "text-green-600",
-		bgColor: "bg-green-50",
-	},
-	concluido: {
-		label: "Concluído",
-		icon: CheckCircle,
-		variant: "secondary" as const,
-		color: "text-gray-600",
-		bgColor: "bg-gray-50",
-	},
-};
+import { useAuthStore } from "@/store/authStore";
+import { ProposalStatusCard } from "../Sales/components/EventsTable/components/ProposalStatusCard";
 
 export const ContractsTab = () => {
 	const [isViewerOpen, setIsViewerOpen] = useState(false);
@@ -44,11 +21,16 @@ export const ContractsTab = () => {
 		? Number(activeProduct.id)
 		: undefined;
 
+	const { user } = useAuthStore();
+
 	const {
 		data: proposals,
 		isLoading: proposalsLoading,
 		error: proposalsError,
-	} = useProductProposals(activeProductId || 0);
+	} = useProductProposals({
+		productId: activeProductId || null,
+		IdContratante: user?.id ?? null,
+	});
 
 	const contractProposal = useMemo(() => {
 		if (!proposals) return null;
@@ -57,7 +39,7 @@ export const ContractsTab = () => {
 			(p) =>
 				p.status.nome === "Aceita" ||
 				p.status.nome === "SinalPago" ||
-				p.status.nome === "Concluido"
+				p.status.nome === "ContratoAssinado"
 		);
 
 		return acceptedProposals[0] || null;
@@ -144,7 +126,6 @@ export const ContractsTab = () => {
 					</Button>
 				)}
 			</div>
-
 			{!contractProposal ? (
 				<div className="flex flex-col items-center justify-center min-h-[400px] bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
 					<FileText className="h-12 w-12 text-gray-400 mb-4" />
@@ -173,19 +154,8 @@ export const ContractsTab = () => {
 									<span>{formatDate(contractProposal?.dataInicio)}</span>
 								</div>
 							</div>
-							<Badge
-								variant={
-									statusConfig[
-										contractProposal.status.nome as keyof typeof statusConfig
-									]?.variant || "default"
-								}
-								className="flex items-center gap-1"
-							>
-								<CheckCircle className="h-3 w-3" />
-								{statusConfig[
-									contractProposal.status.nome as keyof typeof statusConfig
-								]?.label || contractProposal.status.nome}
-							</Badge>
+
+							<ProposalStatusCard name={contractProposal.status.nome} />
 						</div>
 					</div>
 
@@ -212,9 +182,8 @@ export const ContractsTab = () => {
 					</div>
 
 					<div className="p-4 border-t border-gray-200 bg-gray-50">
-						<div className="flex flex-wrap gap-3">
+						<div className="flex justify-end flex-wrap gap-3">
 							<Button
-								size="sm"
 								variant="outline"
 								className="text-primary-600 hover:text-primary-700 hover:bg-primary-50 border-primary-300"
 								onClick={handleViewContract}
@@ -225,7 +194,6 @@ export const ContractsTab = () => {
 							{contractProposal.status.nome === "Aceita" && (
 								<>
 									<Button
-										size="sm"
 										variant="outline"
 										className="text-green-600 hover:text-green-700 hover:bg-green-50 border-green-300"
 										onClick={handleEditContract}
@@ -234,7 +202,6 @@ export const ContractsTab = () => {
 										Editar
 									</Button>
 									<Button
-										size="sm"
 										className="bg-green-600 hover:bg-green-700 text-white"
 										onClick={() => {
 											if (contractProposal?.identificadorUnico) {
@@ -250,9 +217,9 @@ export const ContractsTab = () => {
 									</Button>
 								</>
 							)}
+
 							{contractPdfUrl && (
 								<Button
-									size="sm"
 									variant="outline"
 									onClick={() => {
 										const link = document.createElement("a");
@@ -263,14 +230,14 @@ export const ContractsTab = () => {
 										document.body.removeChild(link);
 									}}
 								>
-									📥 Download PDF
+									<Download className="h-4 w-4" />
+									Download PDF
 								</Button>
 							)}
 						</div>
 					</div>
 				</div>
 			)}
-
 			<ContractViewer
 				isOpen={isViewerOpen}
 				onClose={() => {
@@ -278,7 +245,6 @@ export const ContractsTab = () => {
 				}}
 				identificadorUnico={contractProposal?.identificadorUnico ?? null}
 			/>
-
 			<ContractEditor
 				isOpen={isEditorOpen}
 				onClose={() => {

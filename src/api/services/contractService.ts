@@ -49,10 +49,10 @@ export const contractService = {
 	 * @returns Promise with array of contract sections
 	 */
 	async listContractSectionsByMusicalProductId(
-		idProdutoMusical: number
+		proposalId: number
 	): Promise<Array<ContractSection>> {
 		const response = await apiClient.get<Array<ContractSection>>(
-			`produtomusical/${idProdutoMusical}/listarSecoesContrato`
+			`produtomusical/${proposalId}/listarSecoesContrato`
 		);
 		return response;
 	},

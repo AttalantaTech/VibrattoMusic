@@ -22,10 +22,11 @@ import { Textarea } from "../../../../ui/Textarea/Textarea";
 import { Switch } from "../../../../ui/switch";
 import { SingleSelect } from "../../../../forms/SingleSelect/SingleSelect";
 import { useCreateProposal } from "../../../../../hooks/useProposals";
-import { filterService } from "../../../../../api";
+import { filterService, messagingService } from "../../../../../api";
 import type {
 	CreateProposalRequest,
 	FilterOption,
+	ProposalResponse,
 } from "../../../../../api/types";
 import { useAuthStore } from "../../../../../store/authStore";
 import { useQueryClient } from "@tanstack/react-query";
@@ -39,6 +40,8 @@ import { toast } from "sonner";
 import { useProfileStatus } from "../../../../../hooks/useProfileStatus";
 import { ProfileIncompleteModal } from "../../../../ui/ProfileIncompleteModal/ProfileIncompleteModal";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { format } from "date-fns";
+import type { Conversation } from "@/api/services/messages/types";
 
 type AccordionSectionProps = {
 	title: string;
@@ -99,6 +102,7 @@ interface SendProposalModalProps {
 	contractorName?: string;
 	conversationId?: number; // ID da conversa para enviar mensagem
 	onProposalSent?: (proposalDetails: string) => Promise<void>; // Callback para enviar mensagem após proposta
+	proposal?: ProposalResponse | null;
 }
 
 export const SendProposalModal = ({
@@ -109,6 +113,7 @@ export const SendProposalModal = ({
 	contractorName,
 	conversationId,
 	onProposalSent,
+	proposal,
 }: SendProposalModalProps) => {
 	const { user } = useAuthStore();
 	const { isProfileComplete, refetch: refetchProfile } = useProfileStatus();
@@ -186,8 +191,6 @@ export const SendProposalModal = ({
 	type ProposalFormData = {
 		IdContratante: number;
 		NomeContratante?: string;
-		TipoDocumentoContratante?: string;
-		DocumentoContratante?: string;
 		IdTipoEvento?: number;
 		Descricao: string;
 		Valor: number;
@@ -209,8 +212,6 @@ export const SendProposalModal = ({
 	const [formData, setFormData] = useState<ProposalFormData>({
 		IdContratante: getContractorId(),
 		NomeContratante: contractorName || "",
-		TipoDocumentoContratante: "",
-		DocumentoContratante: "",
 		IdTipoEvento: 0,
 		Descricao: "",
 		Valor: 0,
@@ -250,24 +251,24 @@ export const SendProposalModal = ({
 	useEffect(() => {
 		if (!isOpen) return;
 		setFormData({
-			IdContratante: getContractorId(),
-			NomeContratante: contractorName || "",
-			TipoDocumentoContratante: "",
-			DocumentoContratante: "",
-			IdTipoEvento: 0,
-			Descricao: "",
-			Valor: 0,
-			Local: "",
-			DataInicio: "",
-			DataFim: "",
-			HoraInicio: "",
-			HoraFim: "",
-			TransporteIncluso: false,
-			AcomodacaoInclusa: false,
-			IdFormaPagamento: 0,
-			IdCondicoesPagamento: 0,
+			IdContratante: proposal?.idContratante || getContractorId(),
+			NomeContratante: proposal?.contratante.nome || contractorName || "",
+			IdTipoEvento: proposal?.tipoEvento.id || 0,
+			Descricao: proposal?.descricao || "",
+			Valor: proposal?.valor || 0,
+			Local: proposal?.local || "",
+			DataInicio: proposal?.dataInicio
+				? format(proposal.dataInicio, "yyyy-MM-dd")
+				: "",
+			DataFim: proposal?.dataFim ? format(proposal.dataFim, "yyyy-MM-dd") : "",
+			HoraInicio: proposal?.horaInicio || "",
+			HoraFim: proposal?.horaFim || "",
+			TransporteIncluso: proposal?.transporteIncluso || false,
+			AcomodacaoInclusa: proposal?.acomodacaoInclusa || false,
+			IdFormaPagamento: proposal?.formaPagamento.id || 0,
+			IdCondicoesPagamento: proposal?.condicoesPagamento.id || 0,
 		});
-	}, [getContractorId, isOpen, contractorName]);
+	}, [getContractorId, isOpen, contractorName, proposal]);
 
 	const handleInputChange = (
 		field: keyof ProposalFormData,
@@ -281,45 +282,6 @@ export const SendProposalModal = ({
 			...previous,
 			[section]: !previous[section],
 		}));
-	};
-
-	// Helper function to format document number
-	const formatDocument = (value: string, type: string): string => {
-		// Remove all non-numeric characters
-		const numbers = value.replace(/\D/g, "");
-
-		if (type === "cpf") {
-			// Format CPF: 000.000.000-00
-			if (numbers.length <= 11) {
-				return numbers
-					.replace(/(\d{3})(\d)/, "$1.$2")
-					.replace(/(\d{3})(\d)/, "$1.$2")
-					.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-			}
-		} else if (type === "cnpj") {
-			// Format CNPJ: 00.000.000/0000-00
-			if (numbers.length <= 14) {
-				return numbers
-					.replace(/(\d{2})(\d)/, "$1.$2")
-					.replace(/(\d{3})(\d)/, "$1.$2")
-					.replace(/(\d{3})(\d)/, "$1/$2")
-					.replace(/(\d{4})(\d{1,2})$/, "$1-$2");
-			}
-		}
-
-		return numbers; // Return just numbers if format doesn't match
-	};
-
-	// Handler específico para campo documento
-	const handleDocumentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		if (!formData.TipoDocumentoContratante) return;
-
-		const rawValue = event.target.value;
-		const formattedValue = formatDocument(
-			rawValue,
-			formData.TipoDocumentoContratante
-		);
-		handleInputChange("DocumentoContratante", formattedValue);
 	};
 
 	// Handler para o valor da apresentação (sem negativos e sem setas)
@@ -473,6 +435,7 @@ export const SendProposalModal = ({
 			const s = (parts[2] ?? "00").padStart(2, "0");
 			return `${h}:${m}:${s}`;
 		};
+
 		const combineDateTime = (
 			dateString: string,
 			timeString: string
@@ -482,9 +445,26 @@ export const SendProposalModal = ({
 			return `${dateString}T${t}`;
 		};
 
+		let conversation: Conversation | undefined | null = null;
+
+		if (proposal) {
+			const conversations = await messagingService.getConversations(
+				proposal.produtoMusical.id
+			);
+
+			conversation = conversations
+				? conversations.find(
+						(c) =>
+							c.produtoMusicalContratanteId ===
+								proposal.produtoMusicalContratante.id ||
+							c.contratanteId === proposal.contratante.id
+					)
+				: null;
+		}
+
 		// Build payload in camelCase exactly as API expects
 		const proposalData: CreateProposalRequest = {
-			idConversa: Number(conversationId) || 0,
+			idConversa: Number(conversation?.id || conversationId) || 0,
 			nomeContratante: String(
 				finalFormData.NomeContratante || user?.nome || ""
 			),
@@ -560,16 +540,27 @@ export const SendProposalModal = ({
 			}
 
 			// Ensure required IDs are present
-			if (!(Number(conversationId) > 0) || !(Number(userProductId) > 0)) {
+			if (
+				!(Number(conversation?.id || conversationId) > 0) ||
+				!(Number(userProductId) > 0)
+			) {
 				toast.error(
 					"Dados da conversa/produto indisponíveis. Abra uma conversa e tente novamente."
 				);
 				return;
 			}
 
+			const data = proposal
+				? {
+						...proposalData,
+						id: proposal.id,
+						idConversa: conversation?.id || 0,
+					}
+				: proposalData;
+
 			await createProposalMutation.mutateAsync({
 				productId: userProductId,
-				data: proposalData,
+				data,
 			});
 
 			// Send automatic message to chat if callback is provided
@@ -600,6 +591,8 @@ export const SendProposalModal = ({
 						(condition) => condition.Id === proposalData.idCondicoesPagamento
 					)?.Nome;
 
+					const propostaURL = `${import.meta.env["VITE_VIBRATTO_FRONT_BASE_URL"]}band/me?tab=hires`;
+
 					const proposalMessage =
 						`📋 Proposta enviada!\n\n` +
 						`🎵 Tipo de Evento: ${eventTypeName}\n` +
@@ -623,7 +616,20 @@ export const SendProposalModal = ({
 								]
 									.filter(Boolean)
 									.join(", ")}`
-							: "");
+							: "") +
+						`
+						<p>
+							🔗 Link da proposta: 
+							<a 
+								href=${propostaURL} 
+								target="_blank" 
+								rel="noopener noreferrer"
+								className="text-blue-600 underline hover:text-blue-800 font-medium transition-colors"
+							>
+								Clique aqui para acessar
+							</a>
+						</p>
+						`;
 
 					await onProposalSent(proposalMessage);
 				} catch (error) {
@@ -672,9 +678,13 @@ export const SendProposalModal = ({
 			<DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
 				<form onSubmit={handleSubmit}>
 					<DialogHeader>
-						<DialogTitle>Criar Nova Proposta</DialogTitle>
+						<DialogTitle>
+							{proposal ? "Editar Proposta" : "Criar Nova Proposta"}
+						</DialogTitle>
 						<DialogDescription>
-							Configure todos os campos necessários para criar a proposta
+							{proposal
+								? "Edite com facilidade os campos da proposta"
+								: "Configure todos os campos necessários para criar a proposta"}
 						</DialogDescription>
 					</DialogHeader>
 
@@ -723,56 +733,6 @@ export const SendProposalModal = ({
 									placeholder="Digite o nome completo do contratante"
 									required
 								/>
-							</div>
-
-							{/* Document fields */}
-							<div className="grid grid-cols-2 gap-4">
-								<div className="space-y-2">
-									<Label htmlFor="documentoContratante">
-										Documento do contratante
-									</Label>
-									<SingleSelect
-										value={formData.TipoDocumentoContratante || ""}
-										onChange={(value) => {
-											handleInputChange(
-												"TipoDocumentoContratante",
-												value || ""
-											);
-											// Clear document number when type changes
-											if (formData.DocumentoContratante) {
-												handleInputChange("DocumentoContratante", "");
-											}
-										}}
-										options={[
-											{ value: "cpf", label: "CPF" },
-											{ value: "cnpj", label: "CNPJ" },
-										]}
-										placeholder="Selecionar tipo"
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="documento">Documento</Label>
-									<Input
-										id="documento"
-										value={
-											formData.TipoDocumentoContratante
-												? formData.DocumentoContratante || ""
-												: ""
-										}
-										disabled={!formData.TipoDocumentoContratante}
-										onChange={handleDocumentChange}
-										placeholder={
-											!formData.TipoDocumentoContratante
-												? "Selecione o tipo primeiro"
-												: formData.TipoDocumentoContratante === "cpf"
-													? "000.000.000-00"
-													: "00.000.000/0000-00"
-										}
-										maxLength={
-											formData.TipoDocumentoContratante === "cpf" ? 14 : 18
-										}
-									/>
-								</div>
 							</div>
 
 							{/* Description */}

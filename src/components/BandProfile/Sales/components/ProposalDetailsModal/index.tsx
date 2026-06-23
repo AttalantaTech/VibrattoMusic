@@ -1,70 +1,84 @@
 import {
+	AlertCircle,
 	Calendar,
 	CheckCircle,
 	Clock,
-	Clock3,
 	DollarSign,
 	FileText,
+	Loader2,
 	MapPin,
 	PenLine,
 	User,
 	XCircle,
 } from "lucide-react";
 import type { ProposalResponse } from "../../../../../api/types";
-import { Badge } from "../../../../ui/Badge/Badge";
 import { formatCurrency, formatDate } from "../../../../../utils/validation";
 import { Button } from "../../../../ui/Button/Button";
-import { unifiedStatusConfig } from "../../types/SalesTypes";
+import type { unifiedStatusConfig } from "../../types/SalesTypes";
+import { useContractPDF } from "@/hooks/useContracts";
+import { useAuthStore } from "@/store/authStore";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { ProposalStatusCard } from "../EventsTable/components/ProposalStatusCard";
 
 interface ProposalDetailsModalProps {
-	proposal: ProposalResponse;
+	mode: "Contracted" | "Contractor";
+	proposal: ProposalResponse | null;
 	isOpen: boolean;
 	onClose: () => void;
-	onStatusUpdate: (
-		proposalId: number,
-		status: "aceito" | "rejeitado" | "cancelado"
-	) => void;
-	currentUserId?: number;
 	onSignContract: (proposalId: string) => void;
-	onAccept: (proposalId: number) => void;
-	onReject: (proposal: ProposalResponse) => void;
+	onAccept?: (proposalId: number) => Promise<void>;
+	onReject?: (proposal: ProposalResponse) => void;
+	onCancel?: (proposalId: number | null) => Promise<void>;
+	onPaidSign?: (proposalId: number) => Promise<void>;
+	isLoadingAccept?: boolean;
+	isLoadingCancel?: boolean;
+	isLoadingPaidSign?: boolean;
 }
 
 export const ProposalDetailsModal = ({
 	proposal,
 	isOpen,
 	onClose,
-	onStatusUpdate,
-	currentUserId,
 	onSignContract,
 	onAccept,
+	onPaidSign,
 	onReject,
+	onCancel,
+	isLoadingAccept = false,
+	isLoadingCancel = false,
+	isLoadingPaidSign = false,
+	mode,
 }: ProposalDetailsModalProps) => {
+	const { data: contractPdfUrl, isLoading: pdfLoading } = useContractPDF(
+		proposal?.identificadorUnico || ""
+	);
+
+	const { user } = useAuthStore();
+	const { activeProduct } = useMusicalProductStore();
+
 	if (!proposal) {
 		onClose();
 		return null;
 	}
-	const isContractor = currentUserId === proposal.contratante.id;
+
 	const statusKey = (
 		typeof proposal.status === "object" ? proposal.status.nome : proposal.status
-	)?.toLowerCase() as keyof typeof unifiedStatusConfig;
+	) as keyof typeof unifiedStatusConfig;
 
-	const isWaitingForResponse = statusKey === "pendente";
-	const isAcceptedStatus = statusKey === "aceita";
-
-	const showSignaturePending =
-		isAcceptedStatus &&
-		((isContractor && !proposal.assinaturaContratante) ||
-			(!isContractor && !proposal.assinaturaContratado));
+	const isContractor = user?.id === proposal.contratante.id;
+	const isClient = activeProduct?.id === proposal.produtoMusical.id;
+	const isWaitingForResponse = statusKey === "Pendente";
+	const isAcceptedStatus = statusKey === "Aceita";
+	const isPaidSignStatus = statusKey === "SinalPago";
 
 	const needsContractorSignature =
-		isContractor && isAcceptedStatus && !proposal.assinaturaContratante;
+		isPaidSignStatus && !proposal.assinaturaContratante;
 
 	const needsContractedSignature =
-		!isContractor && isAcceptedStatus && !proposal.assinaturaContratado;
+		isPaidSignStatus && !proposal.assinaturaContratado;
 
-	const status = unifiedStatusConfig[statusKey] || unifiedStatusConfig.pendente;
-	const StatusIcon = status.icon;
+	const needsContractorPaidSign =
+		!isContractor && isAcceptedStatus && !proposal.assinaturaContratado;
 
 	const formatTime = (timeString: string) => {
 		try {
@@ -87,7 +101,6 @@ export const ProposalDetailsModal = ({
 							<h2 className="text-2xl font-bold text-gray-900">
 								Detalhes da Proposta
 							</h2>
-							<p className="text-sm text-gray-600 mt-1">ID: #{proposal.id}</p>
 						</div>
 						<button
 							onClick={onClose}
@@ -99,33 +112,7 @@ export const ProposalDetailsModal = ({
 
 					{/* Status Badge */}
 					<div className="mb-6">
-						<Badge
-							variant={
-								isWaitingForResponse
-									? "warning"
-									: showSignaturePending
-										? "secondary"
-										: status.variant
-							}
-							className="inline-flex items-center gap-1"
-						>
-							{isWaitingForResponse ? (
-								<>
-									<Clock3 className="h-4 w-4" />
-									Aguardando Resposta
-								</>
-							) : showSignaturePending ? (
-								<>
-									<PenLine className="h-4 w-4" />
-									Assinatura Pendente
-								</>
-							) : (
-								<>
-									{StatusIcon && <StatusIcon className="h-4 w-4" />}
-									{status.label}
-								</>
-							)}
-						</Badge>
+						<ProposalStatusCard name={proposal.status.nome} />
 					</div>
 
 					{/* Details */}
@@ -135,7 +122,7 @@ export const ProposalDetailsModal = ({
 							<h3 className="text-lg font-semibold text-gray-900 mb-3">
 								Informações do Evento
 							</h3>
-							<div className="space-y-3">
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 								<div className="flex items-start gap-3">
 									<FileText className="h-5 w-5 text-gray-400 mt-0.5" />
 									<div>
@@ -218,77 +205,195 @@ export const ProposalDetailsModal = ({
 								</div>
 							</div>
 						</div>
-
-						{/* Creation Date */}
-						<div className="text-sm text-gray-500 border-t pt-4">
-							Proposta criada em {formatDate(proposal.dataCriacao)}
-						</div>
 					</div>
+
+					<div className="mt-6">
+						{contractPdfUrl ? (
+							<div className="border-y-2 border-gray-100">
+								<iframe
+									src={`${contractPdfUrl}`}
+									className="w-full h-[800px] border-0"
+									title="Contrato PDF"
+								/>
+							</div>
+						) : pdfLoading ? (
+							<div className="flex items-center justify-center h-[400px]">
+								<div className="text-center">
+									<FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+									<h4 className="text-lg font-semibold text-gray-900 mb-2">
+										Carregando contrato...
+									</h4>
+									<p className="text-gray-600">
+										O PDF do contrato está sendo carregado.
+									</p>
+								</div>
+							</div>
+						) : null}
+					</div>
+
+					{/* Creation Date */}
+					<div className="text-sm text-gray-500 pt-4">
+						Proposta criada em {formatDate(proposal.dataCriacao)}
+					</div>
+
+					{mode === "Contractor" && proposal.status.nome === "Aceita" && (
+						<div className="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
+							<div className="flex gap-3">
+								<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
+								<div className="text-sm text-primary-800">
+									<p className="font-medium mb-2">Importante:</p>
+									<span className="block mb-4">
+										Efetue o pagamento do sinal e aguarde{" "}
+										<span className="font-semibold">
+											{proposal.produtoMusical.nome}
+										</span>{" "}
+										confirmar o recebimento na plataforma. Após a confirmação,
+										você receberá um email para prosseguir com a assinatura
+										digital do contrato.
+									</span>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{proposal.status.nome === "AguardandoAssinatura" && (
+						<div className="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
+							<div className="flex gap-3">
+								<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
+								<div className="text-sm text-primary-800">
+									<p className="font-medium mb-2">Importante:</p>
+									<span className="block mb-4">
+										Em instantes, você receberá um e-mail com as instruções para
+										realizar a assinatura eletrônica do contrato.
+									</span>
+
+									<span className="block mb-4">
+										Caso não encontre a mensagem na sua caixa de entrada,
+										verifique também as pastas de Spam, Lixo Eletrônico,
+										Promoções ou Atualizações.
+									</span>
+
+									<span className="block mb-4">
+										Se mesmo assim o e-mail não for localizado após alguns
+										minutos, entre em contato com nosso suporte para que
+										possamos ajudá-lo.
+									</span>
+								</div>
+							</div>
+						</div>
+					)}
 
 					{/* Actions */}
 					<div className="mt-6 flex justify-end gap-3">
 						{/* Band actions when proposal is pending */}
-						{isWaitingForResponse && !isContractor && (
-							<Button
-								className="bg-green-600 hover:bg-green-700"
-								onClick={() => {
-									onAccept(proposal.id);
-									onClose();
-								}}
-							>
-								<CheckCircle className="h-4 w-4 mr-2" />
-								Aceitar
-							</Button>
+						{mode === "Contractor" ? (
+							<>
+								{isWaitingForResponse && (
+									<Button
+										className="bg-green-600 hover:bg-green-700 border-green-600 disabled:hover:bg-green-600 disabled:opacity-50"
+										disabled={isLoadingAccept}
+										onClick={async () => {
+											await onAccept?.(proposal.id);
+											onClose();
+										}}
+									>
+										{isLoadingAccept ? (
+											<Loader2 className="w-4 h-4 animate-spin" />
+										) : (
+											<CheckCircle className="h-4 w-4 mr-2" />
+										)}
+										Aceitar
+									</Button>
+								)}
+
+								{/* Reject button - available for both contractor and band */}
+								{isWaitingForResponse && (
+									<Button
+										className="text-red-600 hover:text-white hover:bg-red-500 border-red-300"
+										variant="outline"
+										onClick={() => {
+											if (isContractor) {
+												onReject?.(proposal);
+												onClose();
+											}
+										}}
+									>
+										<XCircle className="h-4 w-4 mr-2" />
+										Rejeitar Proposta
+									</Button>
+								)}
+
+								{/* Band (contracted) signature button */}
+								{needsContractedSignature && (
+									<Button
+										className="bg-primary-600 hover:bg-primary-700 transition-all"
+										onClick={() => {
+											onSignContract(proposal.identificadorUnico);
+											onClose();
+										}}
+									>
+										<PenLine className="h-4 w-4 mr-2" />
+										Ver Contrato
+									</Button>
+								)}
+							</>
+						) : (
+							<>
+								{/* Contractor paid sign button */}
+								{needsContractorPaidSign && (
+									<Button
+										className="bg-green-600 hover:bg-green-700 border-green-600 disabled:hover:bg-green-600 disabled:opacity-50"
+										disabled={isLoadingPaidSign}
+										onClick={async () => {
+											await onPaidSign?.(proposal.id);
+											onClose();
+										}}
+									>
+										{isLoadingPaidSign ? (
+											<Loader2 className="w-4 h-4 animate-spin" />
+										) : (
+											<DollarSign className="h-4 w-4 mr-2" />
+										)}
+										confirmar pagamento
+									</Button>
+								)}
+								{(isWaitingForResponse || isAcceptedStatus) && (
+									<Button
+										className="text-red-600 hover:text-white hover:bg-red-500 border-red-300"
+										variant="outline"
+										disabled={isLoadingCancel}
+										onClick={async () => {
+											if (isClient) {
+												await onCancel?.(proposal.id);
+												onClose();
+											}
+										}}
+									>
+										{isLoadingCancel ? (
+											<Loader2 className="w-4 h-4 animate-spin" />
+										) : (
+											<XCircle className="h-4 w-4 mr-2" />
+										)}
+										Cancelar Proposta
+									</Button>
+								)}
+								{/* Contractor signature button */}
+								{needsContractorSignature && (
+									<Button
+										className="bg-primary-600 hover:bg-primary-700"
+										onClick={() => {
+											onSignContract(proposal.identificadorUnico);
+											onClose();
+										}}
+									>
+										<PenLine className="h-4 w-4 mr-2" />
+										Ver o Contrato
+									</Button>
+								)}
+							</>
 						)}
 
-						{/* Contractor signature button */}
-						{needsContractorSignature && (
-							<Button
-								className="bg-primary-600 hover:bg-blue-700"
-								onClick={() => {
-									onSignContract(proposal.identificadorUnico);
-									onClose();
-								}}
-							>
-								<PenLine className="h-4 w-4 mr-2" />
-								Ver e Assinar Contrato
-							</Button>
-						)}
-
-						{/* Band (contracted) signature button */}
-						{needsContractedSignature && (
-							<Button
-								className="bg-primary-600 hover:bg-blue-700"
-								onClick={() => {
-									onSignContract(proposal.identificadorUnico);
-									onClose();
-								}}
-							>
-								<PenLine className="h-4 w-4 mr-2" />
-								Ver e Assinar Contrato
-							</Button>
-						)}
-
-						{/* Cancel/Reject button - available for both contractor and band */}
-						{(statusKey === "pendente" || isAcceptedStatus) && (
-							<Button
-								variant="outline"
-								className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
-								onClick={() => {
-									if (isContractor) {
-										onStatusUpdate(proposal.id, "rejeitado");
-									} else {
-										onReject(proposal);
-									}
-									onClose();
-								}}
-							>
-								<XCircle className="h-4 w-4 mr-2" />
-								{isContractor ? "Cancelar Proposta" : "Rejeitar Proposta"}
-							</Button>
-						)}
-
-						<Button variant="outline" onClick={onClose}>
+						<Button variant="secondary" onClick={onClose}>
 							Fechar
 						</Button>
 					</div>

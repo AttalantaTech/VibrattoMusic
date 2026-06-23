@@ -1,3 +1,4 @@
+import type { UseProductProposalsParameters } from "@/hooks/useProposals";
 import { apiClient } from "../core/client";
 import type {
 	CreateProposalRequest,
@@ -52,6 +53,7 @@ export const proposalService = {
 			Id: filters.Id ?? null,
 			IdentificadorUnico: filters.IdentificadorUnico ?? null,
 			IdContratante: filters.IdContratante ?? null,
+			IdProdutoMusicalContratante: filters.IdProdutoMusicalContratante,
 			IdProdutoMusical: filters.IdProdutoMusical ?? null,
 			DataDe: filters.DataDe ?? null,
 			DataAte: filters.DataAte ?? null,
@@ -108,14 +110,15 @@ export const proposalService = {
 	 * @param productId - The ID of the musical product
 	 * @returns Promise with list of proposals
 	 */
-	async getProductProposals(
-		productId: number
-	): Promise<Array<ProposalResponse>> {
+	async getProductProposals({
+		productId,
+		IdContratante,
+	}: UseProductProposalsParameters): Promise<Array<ProposalResponse>> {
 		return this.listProposals({
 			IdProdutoMusical: productId,
 			Id: null,
 			IdentificadorUnico: null,
-			IdContratante: null,
+			IdContratante: productId ? null : IdContratante,
 			DataDe: null,
 			DataAte: null,
 		});
@@ -171,8 +174,7 @@ export const proposalService = {
 	 */
 	async markDepositAsPaid(proposalId: number): Promise<any> {
 		const response = await apiClient.post(
-			`produtomusical/${proposalId}/sinalPago`,
-			{}
+			`produtomusical/${proposalId}/sinalPago`
 		);
 		return response;
 	},
@@ -183,12 +185,11 @@ export const proposalService = {
 	 * @param reasonId - Optional reason ID for cancellation (defaults to 1 for "Outro motivo")
 	 * @returns Promise with response
 	 */
-	async cancelProposal(proposalId: number, reasonId: number = 1): Promise<any> {
-		// Using reject endpoint as there's no specific cancel endpoint in the API
-		// According to Postman collection, "Cancelar Proposta" uses propostaRejeitada with IdMotivoRejeicao
-		return this.rejectProposalWithReason(proposalId, {
-			IdMotivoRejeicao: reasonId,
-		});
+	async cancelProposal(proposalId: number): Promise<any> {
+		const response = await apiClient.post(
+			`produtomusical/${proposalId}/propostaCancelada`
+		);
+		return response;
 	},
 
 	/**

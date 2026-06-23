@@ -66,7 +66,8 @@ export const ContractEditor = ({
 		data: sections,
 		isLoading,
 		error,
-	} = useContractSections(Number(proposal?.produtoMusical.id) || 0);
+	} = useContractSections(Number(proposal?.id) || 0);
+
 	const permissionsQuery = useContractPermissions(identificadorUnico || "");
 	const permissions = permissionsQuery.data;
 	const updateSectionsMutation = useUpdateContractSections();

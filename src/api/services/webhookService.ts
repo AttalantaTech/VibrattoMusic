@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { apiClient } from "../core/client";
 import type {
 	D4SignWebhookPayload,
@@ -67,7 +68,9 @@ class WebhookService {
 	 * @param payload - Webhook payload to validate
 	 * @returns boolean indicating if payload is valid
 	 */
-	validateWebhookPayload(payload: D4SignWebhookPayload | D4SignContingencyPayload): boolean {
+	validateWebhookPayload(
+		payload: D4SignWebhookPayload | D4SignContingencyPayload
+	): boolean {
 		return !!(
 			payload.uuid &&
 			payload.type_post &&
@@ -114,4 +117,3 @@ class WebhookService {
 }
 
 export const webhookService = new WebhookService();
-

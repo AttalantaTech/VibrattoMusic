@@ -1,6 +1,11 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { Ellipsis, Eye, Pen, PenTool, X } from "lucide-react";
-import type { EventsTableData, EventsTableRow } from "./types";
+import { Ellipsis, Eye, Pen, PenTool, ScanEye } from "lucide-react";
+import type {
+	EventsTableProposalData,
+	EventsTableProposalRow,
+	EventsTableSaleData,
+	EventsTableSaleRow,
+} from "./types";
 import { GenericTable } from "../../../../ui/Table/Table";
 import { TableIconButton } from "./components/TableIconButton";
 import { Dropdown } from "../../../../ui/Dropdown/Dropdown";
@@ -9,16 +14,19 @@ import { QuickActionIconButton } from "./components/QuickActionIconButton";
 import { formatDate } from "../../../../../utils/validation";
 
 interface EventsTableProps {
-	data: EventsTableData;
+	dataSales?: EventsTableSaleData;
+	dataProposals?: EventsTableProposalData;
 	pageSize?: number;
+	mode?: "proposal" | "sale";
 }
 
-const columnHelper = createColumnHelper<EventsTableRow>();
-const columns = [
-	columnHelper.accessor("event", {
+const columnHelperProposal = createColumnHelper<EventsTableProposalRow>();
+
+const columnsProposal = [
+	columnHelperProposal.accessor("event", {
 		header: "Evento",
 		cell: (info) => {
-			const event = info.getValue<EventsTableRow["event"]>();
+			const event = info.getValue<EventsTableProposalRow["event"]>();
 			return (
 				<div className="flex flex-col">
 					<div className="font-medium text-gray-900">{event.title}</div>
@@ -27,24 +35,21 @@ const columns = [
 			);
 		},
 	}),
-	columnHelper.accessor("paymentStatusComponent", {
-		header: "Pagamento",
+	columnHelperProposal.accessor("statusComponent", {
+		header: "Status",
 		cell: (info) => {
 			const StatusComponent = info.getValue();
 			return StatusComponent;
 		},
 	}),
-	columnHelper.accessor("clientName", {
-		header: "Cliente",
-	}),
-	columnHelper.accessor("productName", {
+	columnHelperProposal.accessor("productName", {
 		header: "Artista/Banda",
 	}),
-	columnHelper.accessor("value", {
+	columnHelperProposal.accessor("value", {
 		header: "Valor",
 		cell: (info) => `R$ ${info.getValue()}`,
 	}),
-	columnHelper.display({
+	columnHelperProposal.display({
 		id: "quickActions",
 		cell: ({ row }) => {
 			const canSign = row.original.canSign;
@@ -58,32 +63,103 @@ const columns = [
 							}}
 						>
 							<PenTool size={16} className="mr-1" />
-							<p>Assinar Contrato</p>
+							<p>Visualizar Contrato</p>
 						</QuickActionIconButton>
 					)}
 				</div>
 			);
 		},
 	}),
-	columnHelper.display({
+	columnHelperProposal.display({
+		header: "Ações",
+		id: "actions",
+		cell: ({ row }) => {
+			const onSeeContract = row.original.onSeeContract;
+			const canSign = row.original.canSign;
+
+			return (
+				<div className="flex gap-2 text-gray-500">
+					<Dropdown
+						className="p-0.5 text-black"
+						trigger={
+							<TableIconButton>
+								<Ellipsis size={16} />
+							</TableIconButton>
+						}
+					>
+						<MoreOptionsDropdownItem
+							onClick={() => {
+								onSeeContract(row.original.event.id);
+							}}
+						>
+							<Eye color="gray" size={16} />
+							<p>Detalhes {canSign ? "do Contrato" : "da Proposta"} </p>
+						</MoreOptionsDropdownItem>
+					</Dropdown>
+				</div>
+			);
+		},
+	}),
+];
+
+const columnHelperSale = createColumnHelper<EventsTableSaleRow>();
+const columnsSale = [
+	columnHelperSale.accessor("event", {
+		header: "Evento",
+		cell: (info) => {
+			const event = info.getValue<EventsTableSaleRow["event"]>();
+			return (
+				<div className="flex flex-col">
+					<div className="font-medium text-gray-900">{event.title}</div>
+					<div className="text-gray-500">{formatDate(event.date)}</div>
+				</div>
+			);
+		},
+	}),
+	columnHelperSale.accessor("statusComponent", {
+		header: "status",
+		cell: (info) => {
+			const StatusComponent = info.getValue();
+			return StatusComponent;
+		},
+	}),
+	columnHelperSale.accessor("clientName", {
+		header: "Cliente",
+	}),
+	columnHelperSale.accessor("value", {
+		header: "Valor",
+		cell: (info) => `R$ ${info.getValue()}`,
+	}),
+	columnHelperSale.display({
+		id: "quickActions",
+		cell: ({ row }) => {
+			const canSign = row.original.canSign;
+			const onSign = row.original.onSign;
+			return (
+				<div className="min-w-[100px]">
+					<QuickActionIconButton
+						onClick={() => {
+							onSign(row.original.event.id);
+						}}
+					>
+						<ScanEye size={16} className="mr-1" />
+						<p>Visualizar {canSign ? "Contrato" : "Proposta"}</p>
+					</QuickActionIconButton>
+				</div>
+			);
+		},
+	}),
+	columnHelperSale.display({
 		header: "Ações",
 		id: "actions",
 		cell: ({ row }) => {
 			const isEditable = true;
-			const isCancelable = true;
 			const onSeeContract = row.original.onSeeContract;
 			const onEditContract = row.original.onEditContract;
-			const onReject = row.original.onReject;
+			const canSign = row.original.canSign;
 
 			return (
 				<div className="flex gap-2 text-gray-500">
-					<TableIconButton
-						onClick={() => {
-							onEditContract(row.original.event.id);
-						}}
-					>
-						<Pen size={16} />
-					</TableIconButton>
 					<Dropdown
 						className="p-0.5 text-black"
 						trigger={
@@ -108,16 +184,8 @@ const columns = [
 							}}
 						>
 							<Eye color="gray" size={16} />
-							<p>Ver Contrato</p>
+							<p>Detalhes {canSign ? "do Contrato" : "da Proposta"} </p>
 						</MoreOptionsDropdownItem>
-						{isCancelable && (
-							<MoreOptionsDropdownItem
-							onClick={()=>{onReject(row.original.event.id)}}
-							className="text-red-500">
-								<X size={16} />
-								<p>Cancelar Proposta</p>
-							</MoreOptionsDropdownItem>
-						)}
 					</Dropdown>
 				</div>
 			);
@@ -125,6 +193,24 @@ const columns = [
 	}),
 ];
 
-export const EventsTable = ({ data }: EventsTableProps) => {
-	return <GenericTable<EventsTableRow> columns={columns} data={data} />;
+export const EventsTable = ({
+	dataProposals = [],
+	dataSales = [],
+	mode,
+}: EventsTableProps) => {
+	return (
+		<>
+			{mode === "sale" ? (
+				<GenericTable<EventsTableSaleRow>
+					columns={columnsSale}
+					data={dataSales}
+				/>
+			) : (
+				<GenericTable<EventsTableProposalRow>
+					columns={columnsProposal}
+					data={dataProposals}
+				/>
+			)}
+		</>
+	);
 };

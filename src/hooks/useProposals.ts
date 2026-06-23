@@ -9,11 +9,16 @@ import { toast } from "sonner";
 import { useAuthStore } from "../store/authStore";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
+export interface UseProductProposalsParameters {
+	productId: number | null;
+	IdContratante: number | null;
+}
+
 const PROPOSAL_QUERY_KEYS = {
 	all: ["proposals"] as const,
 	mine: () => [...PROPOSAL_QUERY_KEYS.all, "mine"] as const,
-	byProduct: (productId: number) =>
-		[...PROPOSAL_QUERY_KEYS.all, "product", productId] as const,
+	byProduct: (id: number | null) =>
+		[...PROPOSAL_QUERY_KEYS.all, "product", id] as const,
 };
 
 /**
@@ -32,7 +37,7 @@ export const useCreateProposal = () => {
 		}) => proposalService.createProposal(productId, data),
 		onSuccess: () => {
 			// Invalidate relevant queries
-			void queryClient.invalidateQueries({ queryKey: PROPOSAL_QUERY_KEYS.all });
+			void queryClient.invalidateQueries({ queryKey: ["filtered-proposals"] });
 
 			toast.success("Proposta enviada com sucesso!");
 		},
@@ -69,11 +74,17 @@ export const useMyProposals = () => {
 /**
  * Hook to fetch proposals for a specific product
  */
-export const useProductProposals = (productId: number) => {
+
+export const useProductProposals = ({
+	productId,
+	IdContratante,
+}: UseProductProposalsParameters) => {
 	return useQuery({
-		queryKey: PROPOSAL_QUERY_KEYS.byProduct(productId),
-		queryFn: () => proposalService.getProductProposals(productId),
-		enabled: !!productId,
+		queryKey: PROPOSAL_QUERY_KEYS.byProduct(productId ?? IdContratante),
+		queryFn: () => {
+			return proposalService.getProductProposals({ productId, IdContratante });
+		},
+		enabled: true,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 };
@@ -106,8 +117,7 @@ export const useUpdateProposalStatus = () => {
 					}
 					return proposalService.rejectProposal(proposalId);
 				case "cancelado":
-					// Use reason ID provided or default to 1 for "Outro motivo" when canceling
-					return proposalService.cancelProposal(proposalId, reasonId || 1);
+					return proposalService.cancelProposal(proposalId);
 				case "sinalPago":
 					return proposalService.markDepositAsPaid(proposalId);
 				default:
@@ -116,13 +126,15 @@ export const useUpdateProposalStatus = () => {
 		},
 		onSuccess: (_, variables) => {
 			// Invalidate relevant queries
-			void queryClient.invalidateQueries({ queryKey: PROPOSAL_QUERY_KEYS.all });
+			void queryClient.invalidateQueries({ queryKey: ["filtered-proposals"] });
 
 			const statusMessages = {
-				aceito: "Proposta aceita! O contrato será gerado e enviado em breve.",
+				aceito:
+					"Proposta aceita! O contrato será gerado e enviado em breve para o seu email.",
 				rejeitado: "Proposta rejeitada.",
 				cancelado: "Proposta cancelada.",
-				sinalPago: "Sinal de proposta marcado como pago.",
+				sinalPago:
+					"Sinal de proposta marcado como pago. O contrato agora precisa ser assinado.",
 			};
 
 			toast.success(statusMessages[variables.status]);
@@ -154,38 +166,38 @@ export const useFilteredProposals = (filters: {
 	};
 	pagina?: number;
 	limite?: number;
-	IdProdutoMusical?: number;
+	IdProdutoMusical?: number | null;
+	IdContratante?: number | null;
+	IdProdutoMusicalContratante?: number | null;
 }) => {
-	const { activeProduct } = useMusicalProductStore();
-
-	// Prefer explicit product id; fallback to active product
-	const productId =
-		filters.IdProdutoMusical ||
-		(activeProduct?.id ? Number(activeProduct.id) : undefined);
+	const IdContratante = filters.IdContratante;
+	const IdProdutoMusical = filters.IdProdutoMusical;
+	const IdProdutoMusicalContratante = filters.IdProdutoMusicalContratante;
 
 	return useQuery({
-		queryKey: ["filtered-proposals", filters, productId],
+		queryKey: ["filtered-proposals", filters, IdProdutoMusical],
 		queryFn: async () => {
-			if (!productId) {
-				return {
-					data: [] as Array<ProposalResponse>,
-					pagination: {
-						total: 0,
-						pagina: 1,
-						limite: 0,
-						totalPaginas: 1,
-						hasNextPage: false,
-						hasPreviousPage: false,
-					},
-				};
-			}
+			// if (!productId) {
+			// 	return {
+			// 		data: [] as Array<ProposalResponse>,
+			// 		pagination: {
+			// 			total: 0,
+			// 			pagina: 1,
+			// 			limite: 0,
+			// 			totalPaginas: 1,
+			// 			hasNextPage: false,
+			// 			hasPreviousPage: false,
+			// 		},
+			// 	};
+			// }
 
 			// Server supports only basic filters. Fetch and filter locally.
 			const payload: ProposalFilterRequest = {
 				Id: null,
 				IdentificadorUnico: null,
-				IdContratante: null,
-				IdProdutoMusical: productId,
+				IdContratante,
+				IdProdutoMusicalContratante,
+				IdProdutoMusical,
 				DataDe: null,
 				DataAte: null,
 			};

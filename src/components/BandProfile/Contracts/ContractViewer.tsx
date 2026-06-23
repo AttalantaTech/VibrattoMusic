@@ -74,9 +74,7 @@ export const ContractViewer = ({
 		error,
 	} = useProposalById(identificadorUnico || "");
 
-	const { data: contractSections } = useContractSections(
-		proposal?.produtoMusical.id || 0
-	);
+	const { data: contractSections } = useContractSections(proposal?.id || 0);
 
 	const handleDownload = () => {
 		if (!proposal) return;
