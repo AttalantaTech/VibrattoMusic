@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/Button/Button";
 import { OnboardingsPedingModal } from "@/components/BandProfile/Account/OnboardingsPedingModal";
 import { useState } from "react";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { ChecklistTab } from "@/components/BandProfile/Checklist/ChecklistTab";
 
 export const BandProfile = () => {
 	// Use URL-synced tab state
@@ -50,6 +51,7 @@ export const BandProfile = () => {
 					],
 				},
 				{ label: "Contratações", value: "hires" },
+				{ label: "Checklist", value: "checklist" },
 				{ label: "Ajustes", value: "settings" },
 			]
 		: [
@@ -84,6 +86,8 @@ export const BandProfile = () => {
 				return <ProposalsTab productId={activeProductId} />;
 			case "contracts":
 				return <ContractsTab />;
+			case "checklist":
+				return <ChecklistTab />;
 			case "favorites":
 				return <FavoritesTab />;
 			case "account":

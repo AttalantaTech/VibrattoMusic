@@ -13,6 +13,7 @@ const bandProfileSearchSchema = z.object({
 			"hires",
 			"proposals",
 			"contracts",
+			"checklist",
 			"favorites",
 			"settings",
 		])
