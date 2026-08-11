@@ -100,10 +100,12 @@ export const useUpdateProposalStatus = () => {
 			proposalId,
 			status,
 			reasonId,
+			acceptsCounterProposal = false,
 		}: {
 			proposalId: number;
 			status: "aceito" | "rejeitado" | "cancelado" | "sinalPago";
 			reasonId?: number;
+			acceptsCounterProposal?: boolean;
 		}) => {
 			switch (status) {
 				case "aceito":
@@ -113,6 +115,7 @@ export const useUpdateProposalStatus = () => {
 					if (reasonId) {
 						return proposalService.rejectProposalWithReason(proposalId, {
 							IdMotivoRejeicao: reasonId,
+							aceitaContraProposta: acceptsCounterProposal,
 						});
 					}
 					return proposalService.rejectProposal(proposalId);
@@ -360,6 +363,20 @@ export const useProposalsByDateRange = (startDate: string, endDate: string) => {
 		enabled: !!user?.id && !!startDate && !!endDate,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 		retry: 3,
+		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+	});
+};
+
+/**
+ * Hook to load proposal PDF
+ */
+export const useProposalPDF = (identificadorUnico: string) => {
+	return useQuery({
+		queryKey: [...PROPOSAL_QUERY_KEYS.all, "pdf", identificadorUnico] as const,
+		queryFn: () => proposalService.loadProposalPDF(identificadorUnico),
+		enabled: !!identificadorUnico && identificadorUnico.length > 0,
+		staleTime: 10 * 60 * 1000, // 10 minutes
+		retry: 2,
 		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
 	});
 };
