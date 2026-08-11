@@ -29,8 +29,8 @@ import { ProposalDetailsModal } from "../Proposals/components/ProposalDetailsMod
 import type { ProposalResponse } from "@/api/types";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
-import { ProposalRejectionModal } from "../Proposals";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
+import { ProposalRejectionModal } from "../Proposals/components/ProposalRejectionModal";
 
 // const reports: Array<Report> = [
 // 	{
@@ -175,6 +175,18 @@ export const MyHiresTab = () => {
 		[navigate]
 	);
 
+	const handleSeeProposal = useCallback(
+		(proposalId: string) => {
+			setProposalDetails(
+				filteredProposals?.data.find(
+					(p) => p.identificadorUnico === proposalId
+				) || null
+			);
+			setIsProposalDetailsModalOpen(true);
+		},
+		[filteredProposals?.data]
+	);
+
 	const tableData: EventsTableHiresData =
 		useMemo(
 			() =>
@@ -197,13 +209,13 @@ export const MyHiresTab = () => {
 							((!event.assinaturaContratante && isContractor) ||
 								(!event.assinaturaContratado && !isContractor)),
 
-						onSeeProposal: handleSignContract,
+						onSeeProposal: handleSeeProposal,
 						onSeeContract: handleSeeContract,
 					};
 				}),
 			[
 				filteredProposals?.data,
-				handleSignContract,
+				handleSeeProposal,
 				handleSeeContract,
 				currentUser?.id,
 			]
