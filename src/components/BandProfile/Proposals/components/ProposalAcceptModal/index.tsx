@@ -7,16 +7,16 @@ import {
 	DollarSign,
 	Calendar,
 } from "lucide-react";
-import { Button } from "../../ui/Button/Button";
+import { Button } from "../../../../ui/Button/Button";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
-} from "../../ui/dialog";
-import { Badge } from "../../ui/Badge/Badge";
-import { useUpdateProposalStatus } from "../../../hooks/useProposals";
-import type { ProposalResponse } from "../../../api/types";
+} from "../../../../ui/dialog";
+import { Badge } from "../../../../ui/Badge/Badge";
+import { useUpdateProposalStatus } from "../../../../../hooks/useProposals";
+import type { ProposalResponse } from "../../../../../api/types";
 
 interface ProposalAcceptModalProps {
 	isOpen: boolean;
