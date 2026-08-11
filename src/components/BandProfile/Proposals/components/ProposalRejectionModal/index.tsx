@@ -7,29 +7,29 @@ import {
 	DollarSign,
 	Calendar,
 } from "lucide-react";
-import { Button } from "../../ui/Button/Button";
 import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-} from "../../ui/dialog";
-import { Badge } from "../../ui/Badge/Badge";
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/Badge/Badge";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "../../ui/Select/Select";
-import { Textarea } from "../../ui/Textarea/Textarea";
-import { useUpdateProposalStatus } from "../../../hooks/useProposals";
-import { useMotivosRejeicaoProposta } from "../../../hooks/useFilters";
-import type { ProposalResponse, FilterOption } from "../../../api/types";
-import { proposalRejectionSchema } from "../../../schemas/contractSchemas";
+} from "@/components/ui/Select/Select";
+import { Textarea } from "@/components/ui/Textarea/Textarea";
+import { useUpdateProposalStatus } from "@/hooks/useProposals";
+import { useMotivosRejeicaoProposta } from "@/hooks/useFilters";
+import type { ProposalResponse, FilterOption } from "@/api/types";
+import { proposalRejectionSchema } from "@/schemas/contractSchemas";
 import { Label } from "@/components/ui/Label/Label";
 import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
+import { Button } from "@/components/ui/Button/Button";
 
 interface ProposalRejectionModalProps {
 	isOpen: boolean;
