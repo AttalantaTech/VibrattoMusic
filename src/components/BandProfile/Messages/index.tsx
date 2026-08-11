@@ -3,7 +3,7 @@ import { useChat } from "@/hooks/useChat";
 import { ProfileIncompleteModal } from "../../ui/ProfileIncompleteModal/ProfileIncompleteModal";
 import { SideBar } from "./components/SideBar";
 import { Chat } from "./components/Chat";
-import { SendProposalModal } from "./components/SendProposalModal";
+import { SendProposalModal } from "../Proposals/components/SendProposalModal";
 import { StartConversationModal } from "./components/StartConversationModal";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
