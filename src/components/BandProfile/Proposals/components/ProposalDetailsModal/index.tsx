@@ -1,31 +1,27 @@
 import {
 	AlertCircle,
-	Calendar,
 	CheckCircle,
-	Clock,
 	DollarSign,
 	FileText,
 	Loader2,
-	MapPin,
 	PenLine,
-	User,
 	XCircle,
 } from "lucide-react";
 import type { ProposalResponse } from "../../../../../api/types";
-import { formatCurrency, formatDate } from "../../../../../utils/validation";
+import { formatDate } from "../../../../../utils/validation";
 import { Button } from "../../../../ui/Button/Button";
-import type { unifiedStatusConfig } from "../../types/SalesTypes";
-import { useContractPDF } from "@/hooks/useContracts";
+import type { unifiedStatusConfig } from "@/components/BandProfile/Sales/types/SalesTypes";
 import { useAuthStore } from "@/store/authStore";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { ProposalStatusCard } from "../EventsTable/components/ProposalStatusCard";
+import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
+import { useProposalPDF } from "@/hooks/useProposals";
 
 interface ProposalDetailsModalProps {
 	mode: "Contracted" | "Contractor";
 	proposal: ProposalResponse | null;
 	isOpen: boolean;
 	onClose: () => void;
-	onSignContract: (proposalId: string) => void;
+	onSeeContract: (proposalId: string) => void;
 	onAccept?: (proposalId: number) => Promise<void>;
 	onReject?: (proposal: ProposalResponse) => void;
 	onCancel?: (proposalId: number | null) => Promise<void>;
@@ -39,7 +35,7 @@ export const ProposalDetailsModal = ({
 	proposal,
 	isOpen,
 	onClose,
-	onSignContract,
+	onSeeContract,
 	onAccept,
 	onPaidSign,
 	onReject,
@@ -49,7 +45,7 @@ export const ProposalDetailsModal = ({
 	isLoadingPaidSign = false,
 	mode,
 }: ProposalDetailsModalProps) => {
-	const { data: contractPdfUrl, isLoading: pdfLoading } = useContractPDF(
+	const { data: proposalPdfUrl, isLoading: pdfLoading } = useProposalPDF(
 		proposal?.identificadorUnico || ""
 	);
 
@@ -80,15 +76,6 @@ export const ProposalDetailsModal = ({
 	const needsContractorPaidSign =
 		!isContractor && isAcceptedStatus && !proposal.assinaturaContratado;
 
-	const formatTime = (timeString: string) => {
-		try {
-			const [hours, minutes] = timeString.split(":");
-			return `${hours}:${minutes}`;
-		} catch {
-			return timeString;
-		}
-	};
-
 	if (!isOpen) return null;
 
 	return (
@@ -115,105 +102,13 @@ export const ProposalDetailsModal = ({
 						<ProposalStatusCard name={proposal.status.nome} />
 					</div>
 
-					{/* Details */}
-					<div className="space-y-6">
-						{/* Event Information */}
-						<div>
-							<h3 className="text-lg font-semibold text-gray-900 mb-3">
-								Informações do Evento
-							</h3>
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-								<div className="flex items-start gap-3">
-									<FileText className="h-5 w-5 text-gray-400 mt-0.5" />
-									<div>
-										<p className="text-sm font-medium text-gray-700">
-											Tipo de Evento
-										</p>
-										<p className="text-gray-900">
-											{proposal.nomeTipoEvento || `${proposal.tipoEvento.nome}`}
-										</p>
-									</div>
-								</div>
-								<div className="flex items-start gap-3">
-									<User className="h-5 w-5 text-gray-400 mt-0.5" />
-									<div>
-										<p className="text-sm font-medium text-gray-700">Cliente</p>
-										<p className="text-gray-900">{proposal.contratante.nome}</p>
-									</div>
-								</div>
-							</div>
-						</div>
-
-						{/* Description */}
-						<div>
-							<h3 className="text-lg font-semibold text-gray-900 mb-3">
-								Descrição
-							</h3>
-							<p className="text-gray-700 whitespace-pre-wrap">
-								{proposal.descricao}
-							</p>
-						</div>
-
-						{/* Event Details */}
-						<div>
-							<h3 className="text-lg font-semibold text-gray-900 mb-3">
-								Detalhes do Evento
-							</h3>
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-								<div className="flex items-start gap-3">
-									<DollarSign className="h-5 w-5 text-gray-400 mt-0.5" />
-									<div>
-										<p className="text-sm font-medium text-gray-700">Valor</p>
-										<p className="text-gray-900 font-semibold">
-											{formatCurrency(proposal.valor)}
-										</p>
-									</div>
-								</div>
-								<div className="flex items-start gap-3">
-									<Calendar className="h-5 w-5 text-gray-400 mt-0.5" />
-									<div>
-										<p className="text-sm font-medium text-gray-700">Data</p>
-										<p className="text-gray-900">
-											{proposal.dataInicio === proposal.dataFim
-												? formatDate(proposal.dataInicio)
-												: `${formatDate(proposal.dataInicio)} até ${formatDate(proposal.dataFim)}`}
-										</p>
-									</div>
-								</div>
-
-								{proposal.horaInicio && proposal.horaFim && (
-									<div className="flex items-start gap-3">
-										<Clock className="h-5 w-5 text-gray-400 mt-0.5" />
-										<div>
-											<p className="text-sm font-medium text-gray-700">
-												Horário
-											</p>
-											<p className="text-gray-900">
-												{formatTime(proposal.horaInicio)} -{" "}
-												{formatTime(proposal.horaFim)}
-											</p>
-										</div>
-									</div>
-								)}
-
-								<div className="flex items-start gap-3">
-									<MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
-									<div>
-										<p className="text-sm font-medium text-gray-700">Local</p>
-										<p className="text-gray-900">{proposal.local}</p>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-
 					<div className="mt-6">
-						{contractPdfUrl ? (
+						{proposalPdfUrl ? (
 							<div className="border-y-2 border-gray-100">
 								<iframe
-									src={`${contractPdfUrl}`}
-									className="w-full h-[800px] border-0"
-									title="Contrato PDF"
+									src={`${proposalPdfUrl}`}
+									className="w-full h-[700px] border-0"
+									title="PDF da Proposta"
 								/>
 							</div>
 						) : pdfLoading ? (
@@ -221,10 +116,10 @@ export const ProposalDetailsModal = ({
 								<div className="text-center">
 									<FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
 									<h4 className="text-lg font-semibold text-gray-900 mb-2">
-										Carregando contrato...
+										Carregando proposta...
 									</h4>
 									<p className="text-gray-600">
-										O PDF do contrato está sendo carregado.
+										O PDF da proposta está sendo carregado.
 									</p>
 								</div>
 							</div>
@@ -328,7 +223,7 @@ export const ProposalDetailsModal = ({
 									<Button
 										className="bg-primary-600 hover:bg-primary-700 transition-all"
 										onClick={() => {
-											onSignContract(proposal.identificadorUnico);
+											onSeeContract(proposal.identificadorUnico);
 											onClose();
 										}}
 									>
@@ -382,7 +277,7 @@ export const ProposalDetailsModal = ({
 									<Button
 										className="bg-primary-600 hover:bg-primary-700"
 										onClick={() => {
-											onSignContract(proposal.identificadorUnico);
+											onSeeContract(proposal.identificadorUnico);
 											onClose();
 										}}
 									>
