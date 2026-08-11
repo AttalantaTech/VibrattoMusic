@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 
-export type EventsTableProposalRow = {
+export type EventsTableHiresRow = {
 	event: {
 		id: string;
 		title: string;
@@ -11,7 +11,7 @@ export type EventsTableProposalRow = {
 	productName: string;
 	value: number;
 	canSign: boolean;
-	onSign: (proposalId: string) => void;
+	onSeeProposal: (proposalId: string) => void;
 	onSeeContract: (proposalId: string) => void;
 };
 
@@ -21,15 +21,17 @@ export type EventsTableSaleRow = {
 		title: string;
 		date: string;
 	};
+	aceitaContraProposta: boolean;
 	status: string;
 	statusComponent: ReactElement;
 	clientName: string;
 	value: number;
 	canSign: boolean;
-	onSign: (proposalId: string) => void;
+	onCounterProposal: (proposalId: string) => void;
+	onSeeProposal: (proposalId: string) => void;
 	onSeeContract: (proposalId: string) => void;
 	onEditContract: (proposalId: string) => void;
 };
 
-export type EventsTableProposalData = Array<EventsTableProposalRow>;
+export type EventsTableHiresData = Array<EventsTableHiresRow>;
 export type EventsTableSaleData = Array<EventsTableSaleRow>;
