@@ -24,7 +24,7 @@ import { Reports } from "./Reports";
 import { FilterSelector } from "../../ui/FilterSelector/FilterSelector";
 import { LineChartComponent } from "../../charts/line/LineChart";
 import { SendProposalModal } from "../Proposals/components/SendProposalModal";
-import { ProposalRejectionModal } from "../Proposals/ProposalRejectionModal";
+import { ProposalRejectionModal } from "../Proposals/components/ProposalRejectionModal";
 import {
 	useFilteredProposals,
 	useUpdateProposalStatus,
