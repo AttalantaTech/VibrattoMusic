@@ -17,7 +17,7 @@ import {
 	useProposalById,
 	useUpdateProposalStatus,
 } from "../../hooks/useProposals";
-import { ProposalStatusCard } from "@/components/BandProfile/Sales/components/EventsTable/components/ProposalStatusCard";
+import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
 import type { unifiedStatusConfig } from "@/components/BandProfile/Sales/types/SalesTypes";
 import { useAuthStore } from "@/store/authStore";
 

@@ -29,8 +29,12 @@ const quickTimeOptions = [
 	{ label: "1h", duration: 60 },
 	{ label: "1h30", duration: 90 },
 	{ label: "2h", duration: 120 },
+	{ label: "2h30", duration: 150 },
 	{ label: "3h", duration: 180 },
+	{ label: "3h30", duration: 210 },
 	{ label: "4h", duration: 240 },
+	{ label: "4h30", duration: 270 },
+	{ label: "5h", duration: 300 },
 ];
 
 interface CreateEventFormProps {

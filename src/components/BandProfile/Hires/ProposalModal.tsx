@@ -37,7 +37,7 @@ export const ProposalModal = ({
 }: ProposalModalProps) => {
 	const [downloading, setDownloading] = useState(false);
 
-	const handleDownload = async () => {
+	const handleDownload = () => {
 		if (!proposal) return;
 
 		setDownloading(true);

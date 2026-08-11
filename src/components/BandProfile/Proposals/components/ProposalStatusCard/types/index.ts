@@ -53,11 +53,11 @@ export const ProposalStatusCardConfigDict: ProposalStatusCardConfigDictType = {
 		bgColor: "bg-red-100",
 		borderColor: "border-red-200",
 	},
-	Cancelado: {
-		label: "Cancelado",
+	Cancelada: {
+		label: "Cancelada",
 		icon: XCircle,
 		variant: "secondary" as const,
-		color: "text-gray-600",
+		color: "text-gray-400",
 		bgColor: "bg-gray-100",
 		borderColor: "border-gray-200",
 	},

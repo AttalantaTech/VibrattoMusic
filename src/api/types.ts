@@ -774,10 +774,10 @@ export interface CreateProposalRequest {
 	valor: number;
 	local: string;
 	dataInicio: string;
-	dataFim: string;
-	horaInicio: string;
-	horaFim: string;
-	idFormaPagamento: number;
+	dataFim: string | null;
+	horaInicio: string | null;
+	horaFim: string | null;
+	formaPagamento: Array<number>;
 	idCondicoesPagamento: number;
 	idCondicoesPagamentoRestante?: number | null;
 	tipoSinalPagamento?: "P" | "V" | null;
@@ -840,10 +840,10 @@ export interface ProposalResponse {
 	transporteIncluso: boolean;
 	acomodacaoInclusa: boolean;
 	camarimIncluso: boolean;
-	formaPagamento: {
+	formaPagamento: Array<{
 		id: number;
 		nome: string;
-	};
+	}>;
 	condicoesPagamento: {
 		id: number;
 		nome: string;
@@ -855,6 +855,8 @@ export interface ProposalResponse {
 	tipoSinalPagamento: string | null;
 	valorSinalPagamento: number | null;
 	dataVencimentoSinalPagamento: string | null;
+	idPropostaGerouContraProposta?: number | null;
+	aceitaContraProposta: boolean;
 	status: {
 		id: number;
 		nome: ProposalStatusResponse;

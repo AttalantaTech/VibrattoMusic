@@ -1,32 +1,32 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { Ellipsis, Eye, Pen, PenTool, ScanEye } from "lucide-react";
+import { Eye, File, Pen, SquarePen } from "lucide-react";
 import type {
-	EventsTableProposalData,
-	EventsTableProposalRow,
+	EventsTableHiresData,
+	EventsTableHiresRow,
 	EventsTableSaleData,
 	EventsTableSaleRow,
 } from "./types";
 import { GenericTable } from "../../../../ui/Table/Table";
-import { TableIconButton } from "./components/TableIconButton";
 import { Dropdown } from "../../../../ui/Dropdown/Dropdown";
 import { MoreOptionsDropdownItem } from "./components/MoreOptionsDropdownItem";
-import { QuickActionIconButton } from "./components/QuickActionIconButton";
 import { formatDate } from "../../../../../utils/validation";
+import { Button } from "@/components/ui/Button/Button";
+import { handleCurrencyFormatting } from "@/utils";
 
 interface EventsTableProps {
 	dataSales?: EventsTableSaleData;
-	dataProposals?: EventsTableProposalData;
+	dataProposals?: EventsTableHiresData;
 	pageSize?: number;
-	mode?: "proposal" | "sale";
+	mode?: "hires" | "sale";
 }
 
-const columnHelperProposal = createColumnHelper<EventsTableProposalRow>();
+const columnHelperHires = createColumnHelper<EventsTableHiresRow>();
 
-const columnsProposal = [
-	columnHelperProposal.accessor("event", {
+const columnsHires = [
+	columnHelperHires.accessor("event", {
 		header: "Evento",
 		cell: (info) => {
-			const event = info.getValue<EventsTableProposalRow["event"]>();
+			const event = info.getValue<EventsTableHiresRow["event"]>();
 			return (
 				<div className="flex flex-col">
 					<div className="font-medium text-gray-900">{event.title}</div>
@@ -35,45 +35,25 @@ const columnsProposal = [
 			);
 		},
 	}),
-	columnHelperProposal.accessor("statusComponent", {
+	columnHelperHires.accessor("statusComponent", {
 		header: "Status",
 		cell: (info) => {
 			const StatusComponent = info.getValue();
 			return StatusComponent;
 		},
 	}),
-	columnHelperProposal.accessor("productName", {
+	columnHelperHires.accessor("productName", {
 		header: "Artista/Banda",
 	}),
-	columnHelperProposal.accessor("value", {
+	columnHelperHires.accessor("value", {
 		header: "Valor",
-		cell: (info) => `R$ ${info.getValue()}`,
+		cell: (info) => `R$ ${handleCurrencyFormatting(info.getValue())}`,
 	}),
-	columnHelperProposal.display({
-		id: "quickActions",
-		cell: ({ row }) => {
-			const canSign = row.original.canSign;
-			const onSign = row.original.onSign;
-			return (
-				<div className="min-w-[100px]">
-					{canSign && (
-						<QuickActionIconButton
-							onClick={() => {
-								onSign(row.original.event.id);
-							}}
-						>
-							<PenTool size={16} className="mr-1" />
-							<p>Visualizar Contrato</p>
-						</QuickActionIconButton>
-					)}
-				</div>
-			);
-		},
-	}),
-	columnHelperProposal.display({
+	columnHelperHires.display({
 		header: "Ações",
 		id: "actions",
 		cell: ({ row }) => {
+			const onSeeProposal = row.original.onSeeProposal;
 			const onSeeContract = row.original.onSeeContract;
 			const canSign = row.original.canSign;
 
@@ -82,19 +62,30 @@ const columnsProposal = [
 					<Dropdown
 						className="p-0.5 text-black"
 						trigger={
-							<TableIconButton>
-								<Ellipsis size={16} />
-							</TableIconButton>
+							<Button size="sm" variant="secondary">
+								Detalhes
+							</Button>
 						}
 					>
 						<MoreOptionsDropdownItem
 							onClick={() => {
-								onSeeContract(row.original.event.id);
+								onSeeProposal(row.original.event.id);
 							}}
 						>
 							<Eye color="gray" size={16} />
-							<p>Detalhes {canSign ? "do Contrato" : "da Proposta"} </p>
+							<p>Detalhes da Proposta </p>
 						</MoreOptionsDropdownItem>
+
+						{canSign && (
+							<MoreOptionsDropdownItem
+								onClick={() => {
+									onSeeContract(row.original.event.id);
+								}}
+							>
+								<File color="gray" size={16} />
+								<p>Visualizar do Contrato </p>
+							</MoreOptionsDropdownItem>
+						)}
 					</Dropdown>
 				</div>
 			);
@@ -128,23 +119,27 @@ const columnsSale = [
 	}),
 	columnHelperSale.accessor("value", {
 		header: "Valor",
-		cell: (info) => `R$ ${info.getValue()}`,
+		cell: (info) => `R$ ${handleCurrencyFormatting(info.getValue())}`,
 	}),
 	columnHelperSale.display({
 		id: "quickActions",
 		cell: ({ row }) => {
-			const canSign = row.original.canSign;
-			const onSign = row.original.onSign;
+			const acceptsCounterProposal = row.original.aceitaContraProposta;
+
 			return (
 				<div className="min-w-[100px]">
-					<QuickActionIconButton
-						onClick={() => {
-							onSign(row.original.event.id);
-						}}
-					>
-						<ScanEye size={16} className="mr-1" />
-						<p>Visualizar {canSign ? "Contrato" : "Proposta"}</p>
-					</QuickActionIconButton>
+					{acceptsCounterProposal && (
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => {
+								row.original.onCounterProposal(row.original.event.id);
+							}}
+						>
+							<SquarePen size={16} className="mr-1" />
+							<p>Fazer Contraproposta</p>
+						</Button>
+					)}
 				</div>
 			);
 		},
@@ -154,6 +149,7 @@ const columnsSale = [
 		id: "actions",
 		cell: ({ row }) => {
 			const isEditable = true;
+			const onSeeProposal = row.original.onSeeProposal;
 			const onSeeContract = row.original.onSeeContract;
 			const onEditContract = row.original.onEditContract;
 			const canSign = row.original.canSign;
@@ -163,12 +159,12 @@ const columnsSale = [
 					<Dropdown
 						className="p-0.5 text-black"
 						trigger={
-							<TableIconButton>
-								<Ellipsis size={16} />
-							</TableIconButton>
+							<Button size="sm" variant="secondary">
+								Detalhes
+							</Button>
 						}
 					>
-						{isEditable && (
+						{isEditable && row.original.status !== "Cancelada" && (
 							<MoreOptionsDropdownItem
 								onClick={() => {
 									onEditContract(row.original.event.id);
@@ -180,12 +176,23 @@ const columnsSale = [
 						)}
 						<MoreOptionsDropdownItem
 							onClick={() => {
-								onSeeContract(row.original.event.id);
+								onSeeProposal(row.original.event.id);
 							}}
 						>
 							<Eye color="gray" size={16} />
-							<p>Detalhes {canSign ? "do Contrato" : "da Proposta"} </p>
+							<p>Detalhes da Proposta </p>
 						</MoreOptionsDropdownItem>
+
+						{canSign && (
+							<MoreOptionsDropdownItem
+								onClick={() => {
+									onSeeContract(row.original.event.id);
+								}}
+							>
+								<File color="gray" size={16} />
+								<p>Visualizar do Contrato </p>
+							</MoreOptionsDropdownItem>
+						)}
 					</Dropdown>
 				</div>
 			);
@@ -206,8 +213,8 @@ export const EventsTable = ({
 					data={dataSales}
 				/>
 			) : (
-				<GenericTable<EventsTableProposalRow>
-					columns={columnsProposal}
+				<GenericTable<EventsTableHiresRow>
+					columns={columnsHires}
 					data={dataProposals}
 				/>
 			)}

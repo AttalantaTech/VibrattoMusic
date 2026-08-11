@@ -7,27 +7,29 @@ import {
 	DollarSign,
 	Calendar,
 } from "lucide-react";
-import { Button } from "../../ui/Button/Button";
 import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-} from "../../ui/dialog";
-import { Badge } from "../../ui/Badge/Badge";
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/Badge/Badge";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "../../ui/Select/Select";
-import { Textarea } from "../../ui/Textarea/Textarea";
-import { useUpdateProposalStatus } from "../../../hooks/useProposals";
-import { useMotivosRejeicaoProposta } from "../../../hooks/useFilters";
-import type { ProposalResponse, FilterOption } from "../../../api/types";
-import { proposalRejectionSchema } from "../../../schemas/contractSchemas";
+} from "@/components/ui/Select/Select";
+import { Textarea } from "@/components/ui/Textarea/Textarea";
+import { useUpdateProposalStatus } from "@/hooks/useProposals";
+import { useMotivosRejeicaoProposta } from "@/hooks/useFilters";
+import type { ProposalResponse, FilterOption } from "@/api/types";
+import { proposalRejectionSchema } from "@/schemas/contractSchemas";
+import { Label } from "@/components/ui/Label/Label";
+import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
+import { Button } from "@/components/ui/Button/Button";
 
 interface ProposalRejectionModalProps {
 	isOpen: boolean;
@@ -46,6 +48,8 @@ export const ProposalRejectionModal = ({
 		"reason"
 	);
 	const [selectedReasonId, setSelectedReasonId] = useState<number | null>(null);
+	const [acceptsCounterProposal, setAcceptsCounterProposal] =
+		useState<boolean>(false);
 	const [additionalComments, setAdditionalComments] = useState("");
 	const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -89,6 +93,7 @@ export const ProposalRejectionModal = ({
 				proposalId: proposal.id,
 				status: "rejeitado",
 				reasonId: selectedReasonId,
+				acceptsCounterProposal,
 			});
 			setStep("success");
 		} catch (error) {
@@ -109,6 +114,7 @@ export const ProposalRejectionModal = ({
 		setStep("reason");
 		setSelectedReasonId(null);
 		setAdditionalComments("");
+		setAcceptsCounterProposal(false);
 		setValidationError(null);
 		onClose();
 	};
@@ -199,8 +205,9 @@ export const ProposalRejectionModal = ({
 										}}
 										disabled={isLoadingReasons || !!reasonsError}
 									>
-										<SelectTrigger>
+										<SelectTrigger className="w-full">
 											<SelectValue
+												className="bg-red-500"
 												placeholder={
 													isLoadingReasons
 														? "Carregando motivos..."
@@ -244,6 +251,22 @@ export const ProposalRejectionModal = ({
 									<p className="text-xs text-gray-500 mt-1">
 										{additionalComments.length}/500 caracteres
 									</p>
+								</div>
+
+								<div className="flex items-center gap-3">
+									<Checkbox
+										id="acceptsCounterProposal"
+										checked={acceptsCounterProposal}
+										onCheckedChange={(checked) => {
+											setAcceptsCounterProposal(Boolean(checked));
+										}}
+									/>
+									<Label
+										htmlFor="availabilityOtherEvents"
+										className="text-sm font-medium text-gray-700 cursor-pointer"
+									>
+										Aceita contraproposta
+									</Label>
 								</div>
 							</div>
 
@@ -291,14 +314,14 @@ export const ProposalRejectionModal = ({
 											Motivo selecionado:
 										</p>
 										<p className="text-sm text-gray-600 mt-1">
-											{selectedReason.descricao}
+											{selectedReason.Nome}
 										</p>
 									</div>
 
 									{additionalComments && (
 										<div>
 											<p className="text-sm font-medium text-gray-700">
-												Comentários:
+												Descrição:
 											</p>
 											<p className="text-sm text-gray-600 mt-1 bg-gray-50 p-2 rounded">
 												{additionalComments}

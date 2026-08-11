@@ -8,16 +8,16 @@ import {
 	Calendar,
 	Info,
 } from "lucide-react";
-import { Button } from "../../ui/Button/Button";
+import { Button } from "@/components/ui/Button/Button";
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
-} from "../../ui/dialog";
-import { Badge } from "../../ui/Badge/Badge";
-import { useUpdateProposalStatus } from "../../../hooks/useProposals";
-import type { ProposalResponse } from "../../../api/types";
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/Badge/Badge";
+import { useUpdateProposalStatus } from "@/hooks/useProposals";
+import type { ProposalResponse } from "@/api/types";
 
 interface DepositPaymentModalProps {
 	isOpen: boolean;

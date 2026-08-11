@@ -158,7 +158,7 @@ export const proposalService = {
 	 */
 	async rejectProposalWithReason(
 		proposalId: number,
-		reasonData: { IdMotivoRejeicao: number }
+		reasonData: { IdMotivoRejeicao: number; aceitaContraProposta: boolean }
 	): Promise<any> {
 		const response = await apiClient.post(
 			`produtomusical/${proposalId}/propostaRejeitada`,
@@ -272,5 +272,27 @@ export const proposalService = {
 			`propostas/por-periodo/${userId}?${parameters.toString()}`
 		);
 		return response;
+	},
+
+	/**
+	 * Load proposal PDF by unique identifier
+	 * @param identificadorUnico - The unique identifier of the proposal
+	 * @returns Promise with PDF URL or blob
+	 */
+	async loadProposalPDF(identificadorUnico: string): Promise<string> {
+		const response = await apiClient.get<string>(
+			`produtomusical/${identificadorUnico}/carregaOrcamento`,
+			{
+				method: "GET",
+				headers: {
+					Accept: "application/pdf",
+				},
+				responseType: "blob",
+			}
+		);
+
+		const blob = new Blob([response], { type: "application/pdf" });
+
+		return URL.createObjectURL(blob);
 	},
 };

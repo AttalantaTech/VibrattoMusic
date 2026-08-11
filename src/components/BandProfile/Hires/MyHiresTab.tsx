@@ -19,18 +19,18 @@ import {
 	useFilteredProposals,
 	useUpdateProposalStatus,
 } from "@/hooks/useProposals";
-import type { EventsTableProposalData } from "../Sales/components/EventsTable/types";
+import type { EventsTableHiresData } from "../Sales/components/EventsTable/types";
 import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
 import { Button } from "@/components/ui/Button/Button";
 import { splitOnUppercase } from "@/utils/labels";
 import { EventsTable } from "../Sales/components/EventsTable";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { ProposalDetailsModal } from "../Sales/components/ProposalDetailsModal";
+import { ProposalDetailsModal } from "../Proposals/components/ProposalDetailsModal";
 import type { ProposalResponse } from "@/api/types";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
-import { ProposalRejectionModal } from "../Proposals";
-import { ProposalStatusCard } from "../Sales/components/EventsTable/components/ProposalStatusCard";
+import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
+import { ProposalRejectionModal } from "../Proposals/components/ProposalRejectionModal";
 
 // const reports: Array<Report> = [
 // 	{
@@ -175,7 +175,19 @@ export const MyHiresTab = () => {
 		[navigate]
 	);
 
-	const tableData: EventsTableProposalData =
+	const handleSeeProposal = useCallback(
+		(proposalId: string) => {
+			setProposalDetails(
+				filteredProposals?.data.find(
+					(p) => p.identificadorUnico === proposalId
+				) || null
+			);
+			setIsProposalDetailsModalOpen(true);
+		},
+		[filteredProposals?.data]
+	);
+
+	const tableData: EventsTableHiresData =
 		useMemo(
 			() =>
 				filteredProposals?.data.map((event) => {
@@ -197,13 +209,13 @@ export const MyHiresTab = () => {
 							((!event.assinaturaContratante && isContractor) ||
 								(!event.assinaturaContratado && !isContractor)),
 
-						onSign: handleSignContract,
+						onSeeProposal: handleSeeProposal,
 						onSeeContract: handleSeeContract,
 					};
 				}),
 			[
 				filteredProposals?.data,
-				handleSignContract,
+				handleSeeProposal,
 				handleSeeContract,
 				currentUser?.id,
 			]
@@ -305,7 +317,7 @@ export const MyHiresTab = () => {
 
 				<div>
 					{!proposalIsLoading ? (
-						<EventsTable dataProposals={tableData} mode="proposal" />
+						<EventsTable dataProposals={tableData} mode="hires" />
 					) : (
 						<div className="flex items-center justify-center py-12">
 							<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -326,7 +338,7 @@ export const MyHiresTab = () => {
 				proposal={proposalDetails}
 				onAccept={handleAcceptProposal}
 				onReject={handleRejectProposal}
-				onSignContract={handleSignContract}
+				onSeeContract={handleSignContract}
 				isLoadingAccept={isLoadingAccept}
 			/>
 

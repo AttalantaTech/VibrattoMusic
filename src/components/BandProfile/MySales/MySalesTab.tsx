@@ -7,7 +7,7 @@ import { LineChartComponent } from "../../charts/line/LineChart";
 import { useState } from "react";
 import { UpdateButton } from "../../ui/UpdateButton/UpdateButton";
 import { dates, values, myEvents } from "./data";
-import { SendProposalModal } from "../Messages/components/SendProposalModal";
+import { SendProposalModal } from "../Proposals/components/SendProposalModal";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 interface MySalesTabProps {

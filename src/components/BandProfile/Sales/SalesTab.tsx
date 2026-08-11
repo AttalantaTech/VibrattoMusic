@@ -24,10 +24,10 @@ import { splitOnUppercase } from "../../../utils/labels";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import type { ProposalResponse } from "../../../api/types";
-import { ProposalDetailsModal } from "./components/ProposalDetailsModal";
-import { SendProposalModal } from "../Messages/components/SendProposalModal";
+import { ProposalDetailsModal } from "../Proposals/components/ProposalDetailsModal";
+import { SendProposalModal } from "../Proposals/components/SendProposalModal";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { ProposalStatusCard } from "./components/EventsTable/components/ProposalStatusCard";
+import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
 
 interface AbaVendasProps {
 	productId?: number;
@@ -82,7 +82,19 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 		"ContratoAssinado",
 	];
 
-	const handleSignContract = useCallback(
+	const handleSeeProposal = useCallback(
+		(proposalId: string) => {
+			setProposalDetails(
+				filteredProposals?.data.find(
+					(p) => p.identificadorUnico === proposalId
+				) || null
+			);
+			setIsProposalDetailsModalOpen(true);
+		},
+		[filteredProposals?.data]
+	);
+
+	const handleSeeContract = useCallback(
 		async (proposalId: string) => {
 			if (proposalId) {
 				await navigate({
@@ -110,18 +122,6 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 		[filteredProposals?.data]
 	);
 
-	const handleSeeContract = useCallback(
-		(proposalId: string) => {
-			setProposalDetails(
-				filteredProposals?.data.find(
-					(p) => p.identificadorUnico === proposalId
-				) || null
-			);
-			setIsProposalDetailsModalOpen(true);
-		},
-		[filteredProposals?.data]
-	);
-
 	const handlePaidSign = async (proposalId: number) => {
 		try {
 			setIsLoadingPaidSign(true);
@@ -136,6 +136,10 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 		} finally {
 			setIsLoadingPaidSign(false);
 		}
+	};
+
+	const handleCounterProposal = () => {
+		setIsProposalModalOpen(true);
 	};
 
 	const handleCancelProposal = useCallback(
@@ -176,11 +180,14 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 						statusComponent: <ProposalStatusCard name={event.status.nome} />,
 						clientName: event.contratante.nome,
 						value: event.valor,
+						aceitaContraProposta: event.aceitaContraProposta,
 						canSign:
 							event.status.nome === "AguardandoAssinatura" &&
 							((!event.assinaturaContratante && isContractor) ||
 								(!event.assinaturaContratado && !isContractor)),
-						onSign: handleSignContract,
+
+						onCounterProposal: handleCounterProposal,
+						onSeeProposal: handleSeeProposal,
 						onSeeContract: handleSeeContract,
 						onEditContract: handleEditContract,
 					};
@@ -188,7 +195,7 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 			[
 				filteredProposals?.data,
 				currentUser?.id,
-				handleSignContract,
+				handleSeeProposal,
 				handleSeeContract,
 				handleEditContract,
 			]
@@ -210,7 +217,7 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 					}}
 				>
 					<Plus />
-					Nova proposta
+					Cirar Proposta Avulsa
 				</Button>
 			</div>
 			<hr className="w-full" />
@@ -343,7 +350,7 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 				proposal={proposalDetails}
 				onPaidSign={handlePaidSign}
 				onCancel={handleCancelProposal}
-				onSignContract={handleSignContract}
+				onSeeContract={handleSeeContract}
 				isLoadingPaidSign={isLoadingPaidSign}
 				isLoadingCancel={isLoadingCancel}
 			/>

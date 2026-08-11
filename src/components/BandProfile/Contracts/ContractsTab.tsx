@@ -9,7 +9,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { formatCurrency, formatDate } from "../../../utils/validation";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useAuthStore } from "@/store/authStore";
-import { ProposalStatusCard } from "../Sales/components/EventsTable/components/ProposalStatusCard";
+import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
 
 export const ContractsTab = () => {
 	const [isViewerOpen, setIsViewerOpen] = useState(false);

@@ -28,7 +28,7 @@ import {
 } from "../../../hooks/useProposals";
 import { useAuthStore } from "../../../store/authStore";
 import { Button } from "../../ui/Button/Button";
-import { SendProposalModal } from "../Messages/components/SendProposalModal";
+import { SendProposalModal } from "./components/SendProposalModal";
 import { Badge } from "../../ui/Badge/Badge";
 import type {
 	ProposalResponse,
