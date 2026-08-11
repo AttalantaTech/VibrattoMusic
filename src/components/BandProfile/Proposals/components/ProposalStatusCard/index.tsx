@@ -3,7 +3,7 @@ import {
 	ProposalStatusCardConfigDict,
 	type ProposalStatusCardProps,
 } from "./types";
-import { splitOnUppercase } from "../../../../../../../utils/labels";
+import { splitOnUppercase } from "@/utils/labels";
 
 export const ProposalStatusCard: FC<ProposalStatusCardProps> = ({ name }) => {
 	const proposalStatusCardInfo = ProposalStatusCardConfigDict[name];
