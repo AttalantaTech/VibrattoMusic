@@ -1,4 +1,4 @@
-import { useState, type SetStateAction } from "react";
+import { useState } from "react";
 import {
 	addMonths,
 	subMonths,
@@ -22,7 +22,7 @@ import { TIME_ZONE } from "@/utils";
 import { Popover } from "../ui/Popover/Popover";
 
 interface DatePickerProps {
-	onSelectDate: (value: SetStateAction<Date | null>) => void;
+	onSelectDate: (value: Date | null) => void;
 	onModal?: (value: boolean) => void;
 	mode?: "default" | "check-availability";
 	checkDate?: { date: Date; status: AgendaDateStatus };
@@ -58,10 +58,11 @@ export function DatePicker({
 			return;
 		}
 
-		if (mode === "default") {
-			setSelectedDate(date);
-			onSelectDate(date);
-			if (onModal) onModal(false);
+		setSelectedDate(date);
+		onSelectDate(date);
+
+		if (mode === "default" && onModal) {
+			onModal(false);
 
 			return;
 		}
@@ -214,6 +215,11 @@ export function DatePicker({
 				for (let index = 0; index < 7; index++) {
 					const cloneDay = day;
 
+					const validityPeriodMonth =
+						(isSameMonth(toBR(cloneDay), toBR(monthStart)) &&
+							isBefore(toBR(currentDate), toBR(cloneDay))) ||
+						isToday(cloneDay);
+
 					const eventForDay = events.find((event) =>
 						isSameDay(
 							toZonedTime(event.data, TIME_ZONE),
@@ -234,6 +240,8 @@ export function DatePicker({
 							trigger={
 								<div
 									onClick={() => {
+										if (!validityPeriodMonth) return;
+
 										if (!isBefore(toBR(cloneDay), toBR(currentDate))) {
 											handleSelectedDate(cloneDay);
 										} else {
@@ -241,14 +249,16 @@ export function DatePicker({
 										}
 									}}
 									className={`h-10 w-10 flex items-center justify-center rounded-full
+										
+										${
+											isToday(cloneDay)
+												? checkDate?.date && isSameDay(cloneDay, checkDate.date)
+													? dateStatusStyle(checkDate.status)
+													: "bg-primary-50 rounded-full border-2 border-primary-500"
+												: ""
+										}
 								
-								${
-									isToday(cloneDay)
-										? checkDate?.date && isSameDay(cloneDay, checkDate.date)
-											? dateStatusStyle(checkDate.status)
-											: "bg-primary-50 rounded-full border-2 border-primary-500"
-										: ""
-								}
+								
 
 								${
 									checkDate?.date &&
@@ -257,10 +267,16 @@ export function DatePicker({
 										? dateStatusStyle(checkDate.status)
 										: ""
 								} 
+
+								${
+									isSameDay(toBR(cloneDay), toBR(selectedDate as Date))
+										? "bg-green-50 rounded-full border-2 border-green-500"
+										: ""
+								}
+								
+
               ${
-								(isSameMonth(toBR(cloneDay), toBR(monthStart)) &&
-									isBefore(toBR(currentDate), toBR(cloneDay))) ||
-								isToday(cloneDay)
+								validityPeriodMonth
 									? "text-gray-900 cursor-pointer"
 									: "text-gray-400 cursor-not-allowed"
 							}
