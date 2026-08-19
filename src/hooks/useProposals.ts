@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { proposalService } from "../api/services/proposalService";
 import type {
+	CreateBudgetRequest,
 	CreateProposalRequest,
 	ProposalFilterRequest,
 	ProposalResponse,
@@ -43,6 +44,37 @@ export const useCreateProposal = () => {
 		},
 		onError: (error) => {
 			console.error("❌ Proposal creation error:", error);
+
+			// Don't show toast here as it's handled in the modal
+			// This allows for more specific error handling in the component
+		},
+	});
+};
+
+/**
+ * Hook to create a new Budget
+ */
+export const useCreateBudget = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({
+			productId,
+			data,
+		}: {
+			productId: number;
+			data: CreateBudgetRequest;
+		}) => proposalService.createBudget(productId, data),
+		onSuccess: () => {
+			// Invalidate relevant queries
+			void queryClient.invalidateQueries({ queryKey: ["filtered-budgets"] });
+
+			toast.success("Verificação de orçamento enviado com sucesso!");
+		},
+		onError: (error) => {
+			toast.error("Ocorreu um erro. Tente novamente mais tarde!");
+
+			console.error("❌ Budget creation error:", error);
 
 			// Don't show toast here as it's handled in the modal
 			// This allows for more specific error handling in the component

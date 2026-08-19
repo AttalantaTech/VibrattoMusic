@@ -28,7 +28,7 @@ import { useStartConversation } from "@/hooks/useMessaging";
 import { toast } from "sonner";
 import { RatingBars } from "@/components/RatingBars/RatingBars";
 import { RatingComment } from "@/components/RatingComment/RatingComment";
-import { CheckAvailabilityModal } from "../Agenda/CheckAvailabilityModal";
+import { CheckAvailabilityModal } from "@/components/BandProfile/Proposals/components/CheckAvailabilityModal";
 import { ProfileDetails } from "./ProfileDetails";
 import { MediaPlayer } from "@/components/MediaPlayer/MediaPlayer";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";

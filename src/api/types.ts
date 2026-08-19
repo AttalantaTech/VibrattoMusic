@@ -773,19 +773,30 @@ export interface CreateProposalRequest {
 	descricao: string;
 	valor: number;
 	local: string;
-	dataInicio: string;
-	dataFim: string | null;
+	dataEvento: string;
 	horaInicio: string | null;
-	horaFim: string | null;
+	duracao: string | null;
 	formaPagamento: Array<number>;
 	idCondicoesPagamento: number;
 	idCondicoesPagamentoRestante?: number | null;
 	tipoSinalPagamento?: "P" | "V" | null;
 	valorSinalPagamento?: number | null;
-	dataVencimentoSinalPagamento?: string | null;
+	dataVencimentoSinalPagamento: string;
+	dataVencimentoAceite: string;
 	transporteIncluso?: boolean;
 	acomodacaoInclusa?: boolean;
 	camarimIncluso?: boolean;
+}
+
+// Proposal types
+export interface CreateBudgetRequest {
+	idProdutoMusical: number;
+	idTipoEvento: number;
+	descricao: string;
+	local: string;
+	dataEvento: string;
+	horaInicio: string | null;
+	duracao: string | null;
 }
 
 export interface ProposalFilterRequest {
@@ -855,6 +866,7 @@ export interface ProposalResponse {
 	tipoSinalPagamento: string | null;
 	valorSinalPagamento: number | null;
 	dataVencimentoSinalPagamento: string | null;
+	dataVencimentoAceite: string | null;
 	idPropostaGerouContraProposta?: number | null;
 	aceitaContraProposta: boolean;
 	status: {
@@ -881,6 +893,8 @@ export interface ProposalResponse {
 	nomeContratante?: string;
 	nomeTipoEvento?: string;
 	nomeProdutoMusical?: string;
+	idCondicoesPagamento: number;
+	idCondicoesPagamentoRestante?: number | null;
 }
 
 // ===== Reports and Analytics Types =====
