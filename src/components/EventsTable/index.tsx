@@ -6,10 +6,10 @@ import type {
 	EventsTableSaleData,
 	EventsTableSaleRow,
 } from "./types";
-import { GenericTable } from "../../../../ui/Table/Table";
-import { Dropdown } from "../../../../ui/Dropdown/Dropdown";
-import { MoreOptionsDropdownItem } from "./components/MoreOptionsDropdownItem";
-import { formatDate } from "../../../../../utils/validation";
+import { GenericTable } from "../ui/Table/Table";
+import { Dropdown } from "../ui/Dropdown/Dropdown";
+import { MoreOptionsDropdownItem } from "../ui/MoreOptionsDropdownItem";
+import { formatDate } from "../../utils/validation";
 import { Button } from "@/components/ui/Button/Button";
 import { handleCurrencyFormatting } from "@/utils";
 
