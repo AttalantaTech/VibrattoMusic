@@ -10,8 +10,8 @@ import { Button } from "../../ui/Button/Button";
 import { useCallback, useMemo, useState } from "react";
 // import { UpdateButton } from "../../ui/UpdateButton/UpdateButton";
 // import { Reports } from "./Reports";
-import { EventsTable } from "./components/EventsTable";
-import type { EventsTableSaleData } from "./components/EventsTable/types";
+import { EventsTable } from "../../EventsTable";
+import type { EventsTableSaleData } from "../../EventsTable/types";
 import { Dropdown } from "../../ui/Dropdown/Dropdown";
 import {
 	useFilteredProposals,
