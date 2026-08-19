@@ -98,8 +98,17 @@ export const ProposalDetailsModal = ({
 					</div>
 
 					{/* Status Badge */}
-					<div className="mb-6">
+					<div className="mb-6 flex flex-col gap-2">
 						<ProposalStatusCard name={proposal.status.nome} />
+
+						{proposal.status.nome === "Rejeitada" && (
+							<div className="flex text-xs gap-1">
+								<span className="text-gray flex">Motivo:</span>
+								<span className="text-gray-500">
+									{proposal.motivoRejeicao?.nome}
+								</span>
+							</div>
+						)}
 					</div>
 
 					<div className="mt-6">
