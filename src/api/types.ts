@@ -786,6 +786,8 @@ export interface CreateProposalRequest {
 	transporteIncluso?: boolean;
 	acomodacaoInclusa?: boolean;
 	camarimIncluso?: boolean;
+	idOrcamento?: number | null;
+	idPropostaGerouContraProposta?: number | null;
 }
 
 // Proposal types
@@ -895,6 +897,36 @@ export interface ProposalResponse {
 	nomeProdutoMusical?: string;
 	idCondicoesPagamento: number;
 	idCondicoesPagamentoRestante?: number | null;
+}
+
+export interface BudgetResponse {
+	id: number;
+	identificadorUnico: string;
+	contratante: {
+		id: number;
+		nome: string;
+	};
+	produtoMusicalContratante: {
+		id: number;
+		nome: string;
+	};
+	produtoMusical: {
+		id: number;
+		nome: string;
+	};
+
+	tipoEvento: {
+		id: number;
+		nome: string;
+	};
+	descricao: string;
+	local: string;
+	dataEvento: string;
+	horaInicio: string | null;
+	duracao: string | null;
+	enviado: boolean;
+	dataCriacao: string;
+	dataAtualizacao: string;
 }
 
 // ===== Reports and Analytics Types =====

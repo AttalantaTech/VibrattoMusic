@@ -1,3 +1,4 @@
+import { addDays, format, parseISO } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
 const TIME_ZONE = "America/Sao_Paulo";
@@ -85,6 +86,26 @@ const calculateDuration = (startTime: string, endTime: string) => {
 	};
 };
 
+const setEndDate = (startDate: string, isNextDay: boolean): string => {
+	if (!startDate) return "";
+
+	const parsedStartDate = parseISO(startDate);
+
+	const endDate = isNextDay ? addDays(parsedStartDate, 1) : parsedStartDate;
+
+	return format(endDate, "yyyy-MM-dd");
+};
+
+const calculateEndTime = (startTime: string, durationMinutes: number) => {
+	const startMinutes = timeToMinutes(startTime);
+	const endMinutes = startMinutes + durationMinutes;
+
+	return {
+		endTime: minutesToTime(endMinutes),
+		isNextDay: endMinutes >= 24 * 60,
+	};
+};
+
 // Quick time options
 const quickTimeOptions = [
 	{ label: "30 min", duration: 1800 },
@@ -111,4 +132,6 @@ export {
 	secondsToTime,
 	quickTimeOptions,
 	calculateDuration,
+	setEndDate,
+	calculateEndTime,
 };

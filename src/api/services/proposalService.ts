@@ -5,6 +5,7 @@ import type {
 	ProposalResponse,
 	ProposalFilterRequest,
 	CreateBudgetRequest,
+	BudgetResponse,
 } from "../types";
 
 /**
@@ -48,6 +49,33 @@ export const proposalService = {
 		const response = await apiClient.post<ProposalResponse>(
 			`produtomusical/${productId}/orcamento`,
 			data
+		);
+		return response;
+	},
+
+	/**
+	 * List proposals with filters
+	 * @param filters - The filter criteria
+	 * @returns Promise with list of proposals
+	 */
+	async listBudgets(
+		filters: ProposalFilterRequest
+	): Promise<Array<BudgetResponse>> {
+		// Normalize payload to match API contract: ensure all expected keys are present and never undefined
+		const payload = {
+			Id: filters.Id ?? null,
+			IdentificadorUnico: filters.IdentificadorUnico ?? null,
+			IdContratante: filters.IdContratante ?? null,
+			IdProdutoMusicalContratante: filters.IdProdutoMusicalContratante,
+			IdProdutoMusical: filters.IdProdutoMusical ?? null,
+			DataDe: filters.DataDe ?? null,
+			DataAte: filters.DataAte ?? null,
+			Enviado: null,
+		};
+
+		const response = await apiClient.post<Array<BudgetResponse>>(
+			"produtomusical/listarOrcamentos",
+			payload
 		);
 		return response;
 	},

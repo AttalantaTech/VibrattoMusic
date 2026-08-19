@@ -1,6 +1,7 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { Eye, File, Pen, SquarePen } from "lucide-react";
 import type {
+	EventsTableBudgetsData,
 	EventsTableHiresData,
 	EventsTableHiresRow,
 	EventsTableSaleData,
@@ -16,8 +17,9 @@ import { handleCurrencyFormatting } from "@/utils";
 interface EventsTableProps {
 	dataSales?: EventsTableSaleData;
 	dataProposals?: EventsTableHiresData;
+	dataBudgets?: EventsTableBudgetsData;
 	pageSize?: number;
-	mode?: "hires" | "sale";
+	mode?: "hires" | "sale" | "budgets";
 }
 
 const columnHelperHires = createColumnHelper<EventsTableHiresRow>();

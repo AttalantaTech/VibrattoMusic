@@ -44,7 +44,10 @@ const createProposalSchema = z
 		idCondicoesPagamento: z
 			.number()
 			.min(1, "O campo Condição de Pagamento é obrigatório."),
+		idOrcamento: z.number().optional().nullable(),
+		idPropostaGerouContraProposta: z.number().optional().nullable(),
 	})
+
 	.superRefine((data, context) => {
 		if (!data.definirHorarioEvento) return;
 
