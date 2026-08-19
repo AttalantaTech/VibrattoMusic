@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const createProposalSchema = z
+const createProposalSchema = z
 	.object({
 		idContratante: z.number().optional(),
 		nomeContratante: z.string().optional(),
@@ -9,10 +9,33 @@ export const createProposalSchema = z
 		valor: z.number().min(0.01, "Valor deve ser maior que zero"),
 		local: z.string().trim().min(3, "Local é obrigatório"),
 		definirHorarioEvento: z.boolean().optional(),
-		dataInicio: z.string().min(1, "Data de início é obrigatória"),
-		dataFim: z.string().nullable(),
-		horaInicio: z.string().nullable(),
-		horaFim: z.string().nullable(),
+		dataVencimentoSinalPagamento: z.coerce
+			.number({
+				errorMap: (issue, context) => {
+					if (issue.code === "invalid_type" || isNaN(Number(context.data))) {
+						return {
+							message: "Data de vencimento do pagamento do Sinal é obrigatória",
+						};
+					}
+					return { message: context.defaultError };
+				},
+			})
+			.min(1, "Data de vencimento do pagamento do Sinal é obrigatória"),
+		dataVencimentoAceite: z
+			.number({
+				errorMap: (issue, context) => {
+					if (issue.code === "invalid_type" || isNaN(Number(context.data))) {
+						return {
+							message: "Data de vencimento Aceite é obrigatória",
+						};
+					}
+					return { message: context.defaultError };
+				},
+			})
+			.min(1, "Data de vencimento Aceite é obrigatória"),
+		dataEvento: z.string().min(1, "Data do Evento é obrigatória"),
+		horaInicio: z.string(),
+		duracao: z.string().nullable(),
 		transporteIncluso: z.boolean().optional(),
 		acomodacaoInclusa: z.boolean().optional(),
 		formaPagamento: z
@@ -27,7 +50,7 @@ export const createProposalSchema = z
 
 		const requiredFields = [
 			{ key: "horaInicio", label: "Hora de início" },
-			{ key: "horaFim", label: "Hora de Fim" },
+			{ key: "duracao", label: "Duração" },
 		] as const;
 
 		const patternTime = /^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/;
@@ -51,4 +74,5 @@ export const createProposalSchema = z
 		});
 	});
 
-export type CreateProposalSchema = z.infer<typeof createProposalSchema>;
+export type CreateProposalForm = z.infer<typeof createProposalSchema>;
+export { createProposalSchema };

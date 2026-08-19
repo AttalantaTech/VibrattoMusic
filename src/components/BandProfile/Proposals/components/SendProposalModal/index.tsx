@@ -29,7 +29,11 @@ import { useProposalForm } from "../../hooks/useProposalForm";
 import { useProposalSubmit } from "../../hooks/useProposalSubmit";
 import { Controller } from "react-hook-form";
 import { useProposalState } from "../../hooks/useProposalState";
-import { handleCurrencyFormatting } from "@/utils";
+import {
+	handleCurrencyFormatting,
+	quickTimeOptions,
+	timeToSeconds,
+} from "@/utils";
 import { Select } from "@/components/forms/Select/Select";
 import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
 
@@ -43,20 +47,6 @@ interface SendProposalModalProps {
 	onProposalSent?: (proposalDetails: string) => Promise<void>; // Callback to send a message after the proposal
 	proposal?: ProposalResponse | null;
 }
-
-// Quick time options
-const quickTimeOptions = [
-	{ label: "30 min", duration: 30 },
-	{ label: "1h", duration: 60 },
-	{ label: "1h30", duration: 90 },
-	{ label: "2h", duration: 120 },
-	{ label: "2h30", duration: 150 },
-	{ label: "3h", duration: 180 },
-	{ label: "3h30", duration: 210 },
-	{ label: "4h", duration: 240 },
-	{ label: "4h30", duration: 270 },
-	{ label: "5h", duration: 300 },
-];
 
 export const SendProposalModal = ({
 	isOpen,
@@ -94,7 +84,6 @@ export const SendProposalModal = ({
 		setQuickDuration,
 		handleHasDefineEventTime,
 		isSectionComplete,
-		updateEndDateByTime,
 	} = useProposalForm({
 		proposal,
 		contractorId,
@@ -104,8 +93,11 @@ export const SendProposalModal = ({
 	const {
 		handleSubmit,
 		control,
+		watch,
 		formState: { errors },
 	} = form;
+
+	const duration = watch("duracao") || "";
 
 	const handleClose = () => {
 		onClose();
@@ -271,24 +263,93 @@ export const SendProposalModal = ({
 							</div>
 
 							{/* Date fields */}
-							<div className="grid grid-cols-2 gap-4">
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 								<div className="space-y-2">
 									<Controller
 										control={control}
-										name="dataInicio"
+										name="dataEvento"
 										render={({ field }) => (
 											<>
-												<Label htmlFor="startDate">Data</Label>
+												<Label htmlFor="dataEvento">Data do Evento</Label>
 												<Input
-													id="startDate"
+													id="dataEvento"
 													type="date"
 													{...field}
 													placeholder="dd/mm/aaaa"
 												/>
 
-												{errors.dataInicio?.message && (
+												{errors.dataEvento?.message && (
 													<div className="text-red-500 text-sm">
-														{errors.dataInicio.message}
+														{errors.dataEvento.message}
+													</div>
+												)}
+											</>
+										)}
+									/>
+								</div>
+							</div>
+
+							{/* Date fields */}
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								<div className="space-y-2">
+									<Controller
+										control={control}
+										name="dataVencimentoAceite"
+										render={({ field }) => (
+											<>
+												<Label htmlFor="dataVencimentoAceite">
+													Prazo para aceitar{" "}
+													<span className="text-xs text-gray-400 font-light italic">
+														( dias )
+													</span>
+												</Label>
+												<Input
+													id="dataVencimentoAceite"
+													type="number"
+													min={1}
+													{...field}
+													onChange={(event) => {
+														const days = parseInt(event.target.value);
+														field.onChange(days);
+													}}
+												/>
+
+												{errors.dataVencimentoAceite?.message && (
+													<div className="text-red-500 text-sm">
+														{errors.dataVencimentoAceite.message}
+													</div>
+												)}
+											</>
+										)}
+									/>
+								</div>
+
+								<div className="space-y-2">
+									<Controller
+										control={control}
+										name="dataVencimentoSinalPagamento"
+										render={({ field }) => (
+											<>
+												<Label htmlFor="dataVencimentoSinalPagamento">
+													Prazo para Pagar Sinal{" "}
+													<span className="text-xs text-gray-400 font-light italic">
+														( dias )
+													</span>
+												</Label>
+												<Input
+													id="dataVencimentoSinalPagamento"
+													type="number"
+													min={1}
+													{...field}
+													onChange={(event) => {
+														const days = parseInt(event.target.value);
+														field.onChange(days);
+													}}
+												/>
+
+												{errors.dataVencimentoSinalPagamento?.message && (
+													<div className="text-red-500 text-sm">
+														{errors.dataVencimentoSinalPagamento.message}
 													</div>
 												)}
 											</>
@@ -326,59 +387,20 @@ export const SendProposalModal = ({
 													<>
 														<Label htmlFor="startTime">Hora de Início</Label>
 														<Input
-															id="startTime"
+															id="horaInicio"
 															type="time"
 															{...field}
 															placeholder="--:--"
 															onChange={(event) => {
 																const startTime = event.target.value;
-																const endTime = form.getValues("horaFim");
 
 																field.onChange(startTime);
-
-																if (endTime) {
-																	updateEndDateByTime(startTime, endTime);
-																}
 															}}
 														/>
 
 														{errors.horaInicio?.message && (
 															<div className="text-red-500 text-sm">
 																{errors.horaInicio.message}
-															</div>
-														)}
-													</>
-												)}
-											/>
-										</div>
-
-										<div className="space-y-2">
-											<Controller
-												control={control}
-												name="horaFim"
-												render={({ field }) => (
-													<>
-														<Label htmlFor="endTime">Hora de Fim</Label>
-														<Input
-															id="endTime"
-															type="time"
-															{...field}
-															placeholder="--:--"
-															onChange={(event) => {
-																const startTime = form.getValues("horaInicio");
-																const endTime = event.target.value;
-
-																field.onChange(endTime);
-
-																if (startTime) {
-																	updateEndDateByTime(startTime, endTime);
-																}
-															}}
-														/>
-
-														{errors.horaFim?.message && (
-															<div className="text-red-500 text-sm">
-																{errors.horaFim.message}
 															</div>
 														)}
 													</>
@@ -399,7 +421,15 @@ export const SendProposalModal = ({
 												onClick={() => {
 													setQuickDuration(option.duration);
 												}}
-												className="px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-md hover:bg-gray-50 hover:border-gray-300 transition-colors"
+												className={`px-3 py-1.5 text-sm  border border-gray-200
+													rounded-md transition-colors
+												${
+													duration &&
+													timeToSeconds(duration) === option.duration
+														? "bg-primary-500 text-white"
+														: "bg-white hover:bg-primary-50 hover:border-primary-300"
+												}
+													`}
 											>
 												{option.label}
 											</button>
@@ -648,7 +678,7 @@ export const SendProposalModal = ({
 						</div>
 					</div>
 
-					<DialogFooter>
+					<DialogFooter className="gap-2">
 						<Button type="button" variant="secondary" onClick={handleClose}>
 							Cancelar
 						</Button>
@@ -661,7 +691,9 @@ export const SendProposalModal = ({
 								? "Enviando..."
 								: !userProductId
 									? "Sem produto musical"
-									: "Enviar Proposta"}
+									: proposal
+										? "Salvar"
+										: "Enviar Proposta"}
 						</Button>
 					</DialogFooter>
 				</form>
