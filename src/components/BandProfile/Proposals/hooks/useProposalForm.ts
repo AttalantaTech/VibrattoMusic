@@ -1,12 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
+import type { CreateProposalForm } from "../schemas/proposal.schema";
 import { createProposalSchema } from "../schemas/proposal.schema";
 
-import { addDays, format, parseISO } from "date-fns";
+import { differenceInDays, format } from "date-fns";
 import type { ProposalResponse } from "@/api/types";
 import { useAuthStore } from "@/store/authStore";
-import type { ProposalFormData } from "../types";
+import { calculateDuration, secondsToTime, toBR } from "@/utils";
 
 interface ProposalFormProps {
 	proposal?: ProposalResponse | null;
@@ -70,7 +71,40 @@ export const useProposalForm = ({
 		return 0;
 	}, [contractorId, user]);
 
-	const initialValues = useMemo<ProposalFormData>(() => {
+	const dataEvento = useMemo(
+		() =>
+			proposal?.dataInicio
+				? format(proposal.dataInicio, "yyyy-MM-dd")
+				: format(toBR(new Date()), "yyyy-MM-dd"),
+		[proposal?.dataInicio]
+	);
+
+	const dataVencimentoAceite = useMemo(
+		() =>
+			proposal?.dataVencimentoAceite
+				? differenceInDays(proposal.dataVencimentoAceite, dataEvento)
+				: 15,
+		[dataEvento, proposal?.dataVencimentoAceite]
+	);
+
+	const dataVencimentoSinalPagamento = useMemo(
+		() =>
+			proposal?.dataVencimentoSinalPagamento
+				? differenceInDays(proposal.dataVencimentoSinalPagamento, dataEvento)
+				: 30,
+		[dataEvento, proposal?.dataVencimentoSinalPagamento]
+	);
+
+	const duration = useMemo(
+		() =>
+			proposal?.horaInicio && proposal.horaFim
+				? calculateDuration(proposal.horaInicio, proposal.horaFim)
+						.durationFormatted
+				: "",
+		[proposal]
+	);
+
+	const initialValues: CreateProposalForm = useMemo<CreateProposalForm>(() => {
 		return {
 			idContratante: proposal?.idContratante || getContractorId(),
 			nomeContratante: proposal?.contratante.nome || contractorName || "",
@@ -78,106 +112,48 @@ export const useProposalForm = ({
 			descricao: proposal?.descricao || "",
 			valor: proposal?.valor || 0,
 			local: proposal?.local || "",
-			dataInicio: proposal?.dataInicio
-				? format(proposal.dataInicio, "yyyy-MM-dd")
-				: format(new Date(), "yyyy-MM-dd"),
-			dataFim: proposal?.dataFim
-				? format(String(proposal.dataFim), "yyyy-MM-dd")
-				: "",
+			dataEvento,
+			dataVencimentoAceite,
+			dataVencimentoSinalPagamento,
 			horaInicio: proposal?.horaInicio || "",
-			horaFim: proposal?.horaFim || "",
+			duracao: duration || "",
 			transporteIncluso: proposal?.transporteIncluso || false,
 			acomodacaoInclusa: proposal?.acomodacaoInclusa || false,
 			formaPagamento: proposal?.formaPagamento.map((item) => item.id) || [],
 			idCondicoesPagamento: proposal?.condicoesPagamento.id || 2,
 		};
-	}, [proposal, contractorName, getContractorId]);
+	}, [
+		proposal,
+		contractorName,
+		getContractorId,
+		dataEvento,
+		dataVencimentoAceite,
+		dataVencimentoSinalPagamento,
+		duration,
+	]);
 
-	const form = useForm<ProposalFormData>({
+	const form = useForm<CreateProposalForm>({
 		resolver: zodResolver(createProposalSchema),
 		defaultValues: initialValues,
 	});
 
-	const timeToMinutes = (time: string) => {
-		const [hours = 0, minutes = 0] = time.split(":").map(Number);
-
-		return hours * 60 + minutes;
-	};
-
-	const minutesToTime = (totalMinutes: number) => {
-		const minutesInDays = 24 * 60;
-
-		const normalizedMinutes = totalMinutes % minutesInDays;
-
-		const hours = Math.floor(normalizedMinutes / 60);
-		const minutes = normalizedMinutes % 60;
-
-		return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-	};
-
-	const calculateEndTime = (startTime: string, durationMinutes: number) => {
-		const startMinutes = timeToMinutes(startTime);
-		const endMinutes = startMinutes + durationMinutes;
-
-		return {
-			endTime: minutesToTime(endMinutes),
-			isNextDay: endMinutes >= 24 * 60,
-		};
-	};
-
-	const updateEndDate = (isNextDay: boolean) => {
-		const startDate = form.getValues("dataInicio");
-
-		if (!startDate) return;
-
-		const parsedStartDate = parseISO(startDate);
-
-		const endDate = isNextDay ? addDays(parsedStartDate, 1) : parsedStartDate;
-
-		form.setValue("dataFim", format(endDate, "yyyy-MM-dd"));
-	};
-
-	const setQuickDuration = (durationMinutes: number) => {
+	const setQuickDuration = (durationSeconds: number) => {
 		const startTime = form.getValues("horaInicio");
 
 		if (!startTime) return;
 
-		const { endTime, isNextDay } = calculateEndTime(startTime, durationMinutes);
+		const duration = secondsToTime(durationSeconds);
 
-		form.setValue("horaFim", endTime);
-
-		updateEndDate(isNextDay);
-	};
-
-	const updateEndDateByTime = (startTime: string, endTime: string) => {
-		const startDate = form.getValues("dataInicio");
-
-		if (!startDate || !startTime || !endTime) {
-			return;
-		}
-
-		const startMinutes = timeToMinutes(startTime);
-		const endMinutes = timeToMinutes(endTime);
-
-		const isNextDay = endMinutes < startMinutes;
-
-		const parsedStartDate = parseISO(startDate);
-
-		const endDate = isNextDay ? addDays(parsedStartDate, 1) : parsedStartDate;
-
-		form.setValue("dataFim", format(endDate, "yyyy-MM-dd"));
+		form.setValue("duracao", duration);
 	};
 
 	const handleHasDefineEventTime = (state: boolean) => {
 		setHasDefineEventTime(state);
 
-		const startDate = form.getValues("dataInicio");
 		const currentStartTime = form.getValues("horaInicio");
-		const currentEndTime = form.getValues("horaFim");
 
 		if (!state) {
 			form.setValue("horaInicio", "");
-			form.setValue("horaFim", "");
 
 			return;
 		}
@@ -190,34 +166,9 @@ export const useProposalForm = ({
 		});
 
 		const startTime = currentStartTime || hourPtBR;
-		const startMinutes = timeToMinutes(startTime);
-
-		let endMinutes: number;
-		let isNextDay: boolean;
-
-		if (currentEndTime) {
-			endMinutes = timeToMinutes(currentEndTime);
-
-			// Checks if it is past midnight.
-			isNextDay = endMinutes < startMinutes;
-		} else {
-			endMinutes = startMinutes + 120;
-
-			// Checks if it is past midnight.
-			isNextDay = endMinutes >= 24 * 60;
-		}
-
-		const endTime = minutesToTime(endMinutes);
 
 		form.setValue("horaInicio", startTime);
-		form.setValue("horaFim", endTime);
-
-		if (startDate) {
-			const parsedStartDate = parseISO(startDate);
-
-			const endDate = isNextDay ? addDays(parsedStartDate, 1) : parsedStartDate;
-			form.setValue("dataFim", format(endDate, "yyyy-MM-dd"));
-		}
+		form.setValue("duracao", "02:00:00");
 	};
 
 	const isSectionComplete = (
@@ -240,10 +191,9 @@ export const useProposalForm = ({
 					form.watch("nomeContratante") &&
 					form.watch("descricao") &&
 					form.watch("local") &&
-					form.watch("dataInicio") &&
-					form.watch("dataFim") &&
+					form.watch("dataEvento") &&
 					form.watch("horaInicio") &&
-					form.watch("horaFim")
+					form.watch("duracao")
 				);
 			case "paymentConditions":
 				return !!(
@@ -273,6 +223,5 @@ export const useProposalForm = ({
 		setQuickDuration,
 		isSectionComplete,
 		handleHasDefineEventTime,
-		updateEndDateByTime,
 	};
 };

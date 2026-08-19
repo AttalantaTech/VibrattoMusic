@@ -773,19 +773,32 @@ export interface CreateProposalRequest {
 	descricao: string;
 	valor: number;
 	local: string;
-	dataInicio: string;
-	dataFim: string | null;
+	dataEvento: string;
 	horaInicio: string | null;
-	horaFim: string | null;
+	duracao: string | null;
 	formaPagamento: Array<number>;
 	idCondicoesPagamento: number;
 	idCondicoesPagamentoRestante?: number | null;
 	tipoSinalPagamento?: "P" | "V" | null;
 	valorSinalPagamento?: number | null;
-	dataVencimentoSinalPagamento?: string | null;
+	dataVencimentoSinalPagamento: string;
+	dataVencimentoAceite: string;
 	transporteIncluso?: boolean;
 	acomodacaoInclusa?: boolean;
 	camarimIncluso?: boolean;
+	idOrcamento?: number | null;
+	idPropostaGerouContraProposta?: number | null;
+}
+
+// Proposal types
+export interface CreateBudgetRequest {
+	idProdutoMusical: number;
+	idTipoEvento: number;
+	descricao: string;
+	local: string;
+	dataEvento: string;
+	horaInicio: string | null;
+	duracao: string | null;
 }
 
 export interface ProposalFilterRequest {
@@ -855,6 +868,7 @@ export interface ProposalResponse {
 	tipoSinalPagamento: string | null;
 	valorSinalPagamento: number | null;
 	dataVencimentoSinalPagamento: string | null;
+	dataVencimentoAceite: string | null;
 	idPropostaGerouContraProposta?: number | null;
 	aceitaContraProposta: boolean;
 	status: {
@@ -881,6 +895,38 @@ export interface ProposalResponse {
 	nomeContratante?: string;
 	nomeTipoEvento?: string;
 	nomeProdutoMusical?: string;
+	idCondicoesPagamento: number;
+	idCondicoesPagamentoRestante?: number | null;
+}
+
+export interface BudgetResponse {
+	id: number;
+	identificadorUnico: string;
+	contratante: {
+		id: number;
+		nome: string;
+	};
+	produtoMusicalContratante: {
+		id: number;
+		nome: string;
+	};
+	produtoMusical: {
+		id: number;
+		nome: string;
+	};
+
+	tipoEvento: {
+		id: number;
+		nome: string;
+	};
+	descricao: string;
+	local: string;
+	dataEvento: string;
+	horaInicio: string | null;
+	duracao: string | null;
+	enviado: boolean;
+	dataCriacao: string;
+	dataAtualizacao: string;
 }
 
 // ===== Reports and Analytics Types =====

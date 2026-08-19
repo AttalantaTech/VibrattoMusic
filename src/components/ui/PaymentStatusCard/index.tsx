@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import { StatusCardConfigDict, type PaymentStatusCardProps } from "./types";
-import { splitOnUppercase } from "../../../../../../../utils/labels";
+import { splitOnUppercase } from "@/utils/labels";
 
 export const PaymentStatusCard: FC<PaymentStatusCardProps> = ({ name }) => {
 	const paymentStatusCardInfo = StatusCardConfigDict[name];

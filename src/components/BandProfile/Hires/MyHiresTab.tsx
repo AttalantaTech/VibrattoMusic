@@ -19,11 +19,11 @@ import {
 	useFilteredProposals,
 	useUpdateProposalStatus,
 } from "@/hooks/useProposals";
-import type { EventsTableHiresData } from "../Sales/components/EventsTable/types";
+import type { EventsTableHiresData } from "../../EventsTable/types";
 import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
 import { Button } from "@/components/ui/Button/Button";
 import { splitOnUppercase } from "@/utils/labels";
-import { EventsTable } from "../Sales/components/EventsTable";
+import { EventsTable } from "../../EventsTable";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalDetailsModal } from "../Proposals/components/ProposalDetailsModal";
 import type { ProposalResponse } from "@/api/types";

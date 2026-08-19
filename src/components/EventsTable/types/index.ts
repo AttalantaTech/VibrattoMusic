@@ -1,3 +1,4 @@
+import type { BudgetResponse } from "@/api/types";
 import type { ReactElement } from "react";
 
 export type EventsTableHiresRow = {
@@ -33,5 +34,11 @@ export type EventsTableSaleRow = {
 	onEditContract: (proposalId: string) => void;
 };
 
+export type EventsTableBudgetsRow = {
+	budget: BudgetResponse;
+	createProposal: (budget: BudgetResponse) => void;
+};
+
 export type EventsTableHiresData = Array<EventsTableHiresRow>;
 export type EventsTableSaleData = Array<EventsTableSaleRow>;
+export type EventsTableBudgetsData = Array<EventsTableBudgetsRow>;

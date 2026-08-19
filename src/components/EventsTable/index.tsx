@@ -1,23 +1,25 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { Eye, File, Pen, SquarePen } from "lucide-react";
 import type {
+	EventsTableBudgetsData,
 	EventsTableHiresData,
 	EventsTableHiresRow,
 	EventsTableSaleData,
 	EventsTableSaleRow,
 } from "./types";
-import { GenericTable } from "../../../../ui/Table/Table";
-import { Dropdown } from "../../../../ui/Dropdown/Dropdown";
-import { MoreOptionsDropdownItem } from "./components/MoreOptionsDropdownItem";
-import { formatDate } from "../../../../../utils/validation";
+import { GenericTable } from "../ui/Table/Table";
+import { Dropdown } from "../ui/Dropdown/Dropdown";
+import { MoreOptionsDropdownItem } from "../ui/MoreOptionsDropdownItem";
+import { formatDate } from "../../utils/validation";
 import { Button } from "@/components/ui/Button/Button";
 import { handleCurrencyFormatting } from "@/utils";
 
 interface EventsTableProps {
 	dataSales?: EventsTableSaleData;
 	dataProposals?: EventsTableHiresData;
+	dataBudgets?: EventsTableBudgetsData;
 	pageSize?: number;
-	mode?: "hires" | "sale";
+	mode?: "hires" | "sale" | "budgets";
 }
 
 const columnHelperHires = createColumnHelper<EventsTableHiresRow>();

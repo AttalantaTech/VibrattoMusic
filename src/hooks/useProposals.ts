@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { proposalService } from "../api/services/proposalService";
 import type {
+	BudgetResponse,
+	CreateBudgetRequest,
 	CreateProposalRequest,
 	ProposalFilterRequest,
 	ProposalResponse,
@@ -51,6 +53,37 @@ export const useCreateProposal = () => {
 };
 
 /**
+ * Hook to create a new Budget
+ */
+export const useCreateBudget = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({
+			productId,
+			data,
+		}: {
+			productId: number;
+			data: CreateBudgetRequest;
+		}) => proposalService.createBudget(productId, data),
+		onSuccess: () => {
+			// Invalidate relevant queries
+			void queryClient.invalidateQueries({ queryKey: ["filtered-budgets"] });
+
+			toast.success("Verificação de orçamento enviado com sucesso!");
+		},
+		onError: (error) => {
+			toast.error("Ocorreu um erro. Tente novamente mais tarde!");
+
+			console.error("❌ Budget creation error:", error);
+
+			// Don't show toast here as it's handled in the modal
+			// This allows for more specific error handling in the component
+		},
+	});
+};
+
+/**
  * Hook to fetch my proposals (as contractor)
  * This assumes the current user is fetching proposals they created as a contractor
  */
@@ -76,6 +109,24 @@ export const useMyProposals = () => {
  */
 
 export const useProductProposals = ({
+	productId,
+	IdContratante,
+}: UseProductProposalsParameters) => {
+	return useQuery({
+		queryKey: PROPOSAL_QUERY_KEYS.byProduct(productId ?? IdContratante),
+		queryFn: () => {
+			return proposalService.getProductProposals({ productId, IdContratante });
+		},
+		enabled: true,
+		staleTime: 5 * 60 * 1000, // 5 minutes
+	});
+};
+
+/**
+ * Hook to fetch proposals for a specific product
+ */
+
+export const useListBudget = ({
 	productId,
 	IdContratante,
 }: UseProductProposalsParameters) => {
@@ -256,6 +307,121 @@ export const useFilteredProposals = (filters: {
 							return (
 								(a.nomeTipoEvento || "").localeCompare(b.nomeTipoEvento || "") *
 								factor
+							);
+						default:
+							return 0;
+					}
+				});
+			}
+			// Local pagination
+			if (filters.pagina !== undefined && filters.limite !== undefined) {
+				const start = (filters.pagina - 1) * filters.limite;
+				const end = start + filters.limite;
+				filtered = filtered.slice(start, end);
+			}
+
+			// Return a shape similar to previous advanced response
+			return {
+				data: filtered,
+				pagination: {
+					total: results.length,
+					pagina: filters.pagina ?? 1,
+					limite: filters.limite ?? results.length,
+					totalPaginas: filters.limite
+						? Math.ceil(results.length / filters.limite)
+						: 1,
+					hasNextPage: !!(
+						filters.limite &&
+						filters.pagina &&
+						filters.pagina * filters.limite < results.length
+					),
+					hasPreviousPage: !!(
+						filters.limite &&
+						filters.pagina &&
+						filters.pagina > 1
+					),
+				},
+			};
+		},
+		enabled: true,
+		staleTime: 2 * 60 * 1000, // 2 minutes
+		retry: 2,
+		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+	});
+};
+
+/**
+ * Hook to fetch filtered proposals with local filtering/sorting/pagination
+ */
+export const useFilteredBudgets = (filters: {
+	searchTerm?: string;
+	ordenacao?: {
+		campo: "data" | "cliente" | "evento";
+		direcao: "asc" | "desc";
+	};
+	pagina?: number;
+	limite?: number;
+	IdProdutoMusical?: number | null;
+	IdContratante?: number | null;
+	IdProdutoMusicalContratante?: number | null;
+}) => {
+	const IdContratante = filters.IdContratante;
+	const IdProdutoMusical = filters.IdProdutoMusical;
+	const IdProdutoMusicalContratante = filters.IdProdutoMusicalContratante;
+
+	return useQuery({
+		queryKey: ["filtered-budgets", filters, IdProdutoMusical],
+		queryFn: async () => {
+			// Server supports only basic filters. Fetch and filter locally.
+			const payload: ProposalFilterRequest = {
+				Id: null,
+				IdentificadorUnico: null,
+				IdContratante,
+				IdProdutoMusicalContratante,
+				IdProdutoMusical,
+				DataDe: null,
+				DataAte: null,
+			};
+
+			const results = await proposalService.listBudgets(payload);
+
+			let filtered: Array<BudgetResponse> = results;
+
+			// Local search by term (in descricao, local, nomes)
+			if (filters.searchTerm && filters.searchTerm.trim().length > 0) {
+				const term = filters.searchTerm.trim().toLowerCase();
+				filtered = filtered.filter((p) => {
+					return (
+						p.descricao?.toLowerCase().includes(term) ||
+						p.local?.toLowerCase().includes(term) ||
+						p.contratante.nome?.toLowerCase().includes(term) ||
+						p.produtoMusicalContratante.nome?.toLowerCase().includes(term) ||
+						p.dataEvento?.toLowerCase().includes(term)
+					);
+				});
+			}
+			// Local sorting
+			if (filters.ordenacao) {
+				const { campo, direcao } = filters.ordenacao;
+				const factor = direcao === "asc" ? 1 : -1;
+				filtered = [...filtered].sort((a, b) => {
+					switch (campo) {
+						case "data": {
+							const da = new Date(a.dataEvento).getTime();
+							const db = new Date(b.dataEvento).getTime();
+							return (da - db) * factor;
+						}
+						case "cliente":
+							return (
+								(a.contratante.nome || "").localeCompare(
+									b.contratante.nome || ""
+								) * factor
+							);
+						case "evento":
+							return (
+								(a.tipoEvento.nome || "").localeCompare(
+									b.tipoEvento.nome || ""
+								) * factor
 							);
 						default:
 							return 0;
