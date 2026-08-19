@@ -1,10 +1,14 @@
 import type { AxiosError, AxiosResponse } from "axios";
 
+interface Data {
+	erros: Array<string>;
+}
+
 export interface ApiError {
 	code: string;
 	message: string;
 	statusCode: number;
-	data?: unknown;
+	data?: Data | undefined;
 	timestamp: string;
 	traceId?: string;
 }
@@ -12,7 +16,7 @@ export interface ApiError {
 export class VibrattoApiError extends Error {
 	public readonly code: string;
 	public readonly statusCode: number;
-	public readonly data?: unknown;
+	public readonly data?: Data | undefined;
 	public readonly timestamp: string;
 	public readonly traceId?: string;
 
@@ -181,7 +185,7 @@ export class ErrorHandler {
 		}
 		const response = error.response;
 		const statusCode = response.status;
-		const responseData = response.data as Record<string, unknown> | undefined;
+		const responseData = response.data as Data;
 
 		// Try to extract error information from response
 		const errorData = responseData as
