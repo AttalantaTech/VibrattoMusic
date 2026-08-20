@@ -87,7 +87,7 @@ export const useCheckAvailabilitySubmit = ({
 		const content = buildMessage(formData, musicalProduct, tipoEventoOptions);
 
 		const budgetData: CreateBudgetRequest = {
-			idProdutoMusical: musicalProduct.id,
+			idProdutoMusicalContratante: musicalProduct.id,
 			idTipoEvento: formData.idTipoEvento,
 			descricao: formData.descricao || "",
 			local: formData.local,

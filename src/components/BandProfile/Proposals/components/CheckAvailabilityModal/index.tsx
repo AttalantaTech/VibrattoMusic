@@ -304,8 +304,13 @@ export const CheckAvailabilityModal = ({
 													setQuickDuration(option.duration);
 												}}
 												className={`px-3 py-1.5 text-sm  border border-gray-200
-													rounded-md hover:bg-gray-50 hover:border-gray-300 transition-colors
-												${duration && timeToSeconds(duration) === option.duration ? "bg-primary-500 text-white" : "bg-white"}
+													rounded-md transition-colors
+												${
+													duration &&
+													timeToSeconds(duration) === option.duration
+														? "bg-primary-500 text-white"
+														: "bg-white hover:bg-primary-50 hover:border-primary-300"
+												}
 													`}
 											>
 												{option.label}

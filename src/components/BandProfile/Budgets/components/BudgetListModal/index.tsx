@@ -1,23 +1,34 @@
-import { FileText } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import type { BudgetResponse, ProposalResponse } from "@/api/types";
+import { SendBudgetToProposal } from "@/components/BandProfile/Proposals/components/SendBudgetToProposal";
+import type { CreateProposalForm } from "@/components/BandProfile/Proposals/schemas/proposal.schema";
 import { EventsTable } from "@/components/EventsTable";
 import type { EventsTableBudgetsData } from "@/components/EventsTable/types";
-import { useFilteredBudgets } from "../../../hooks/useProposals";
-import { EmptyState, ErrorState, TableSkeleton } from "../../ui/LoadingStates";
-import type { BudgetResponse, ProposalResponse } from "@/api/types";
-import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import {
+	EmptyState,
+	ErrorState,
+	TableSkeleton,
+} from "@/components/ui/LoadingStates";
+import { useFilteredBudgets } from "@/hooks/useProposals";
+import { FileText } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 
-interface BudgetsTabProps {
-	productId?: number;
+interface BudgetListModalProps {
+	isOpen: boolean;
+	onClose: (value: boolean) => void;
+	idProdutoMusicalConversa?: number;
+	idDestinatario?: number;
 }
-
-import type { CreateProposalForm } from "../Proposals/schemas/proposal.schema";
-import { SendBudgetToProposal } from "../Proposals/components/SendBudgetToProposal";
 
 const getInitialFormValues = (
 	proposal?: ProposalResponse | BudgetResponse | null
 ): CreateProposalForm => {
-	// 1. Caso nulo/vazio (Criando proposta do zero)
 	if (!proposal) {
 		return {
 			idTipoEvento: 0,
@@ -38,7 +49,6 @@ const getInitialFormValues = (
 		};
 	}
 
-	// 2. Caso seja um BudgetResponse (Veio da aba de Orçamentos)
 	if ("dataEvento" in proposal) {
 		return {
 			idTipoEvento: proposal.tipoEvento?.id || 0,
@@ -56,10 +66,10 @@ const getInitialFormValues = (
 			transporteIncluso: false,
 			acomodacaoInclusa: false,
 			definirHorarioEvento: Boolean(proposal.horaInicio),
+			idOrcamento: proposal.id,
 		};
 	}
 
-	// 3. Caso seja um ProposalResponse (Modo edição de proposta existente)
 	return {
 		idTipoEvento: proposal.idTipoEvento || proposal.tipoEvento?.id || 0,
 		nomeContratante: proposal.nomeContratante || "",
@@ -79,31 +89,22 @@ const getInitialFormValues = (
 	};
 };
 
-export const BudgetsTab = ({ productId }: BudgetsTabProps) => {
+export const BudgetListModal = ({
+	isOpen,
+	onClose,
+	idProdutoMusicalConversa,
+	idDestinatario,
+}: BudgetListModalProps) => {
 	const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
-
 	const [budget, setBudget] = useState<BudgetResponse | null>(null);
-
-	const { activeProduct } = useMusicalProductStore();
-
-	const currentProductId =
-		productId || (activeProduct?.id ? Number(activeProduct.id) : undefined);
 
 	const {
 		data: filteredBudgets,
 		isLoading,
 		error,
 	} = useFilteredBudgets({
-		IdProdutoMusical: activeProduct?.id,
+		IdProdutoMusical: idProdutoMusicalConversa,
 	});
-
-	// const dataEvento = useMemo(
-	// 	() =>
-	// 		budget?.dataEvento
-	// 			? format(budget.dataEvento, "yyyy-MM-dd")
-	// 			: format(toBR(new Date()), "yyyy-MM-dd"),
-	// 	[budget?.dataEvento]
-	// );
 
 	const budgetDetails = useMemo<CreateProposalForm>(
 		() => getInitialFormValues(budget),
@@ -128,58 +129,65 @@ export const BudgetsTab = ({ productId }: BudgetsTabProps) => {
 		) || [];
 
 	return (
-		<div className="w-full h-full flex flex-col gap-4">
-			<div className="flex w-full items-center justify-between">
-				<div>
-					<h1 className="font-bold text-2xl">Solicitação de Orçamentos</h1>
-					<p className="text-gray-600 mt-1">
+		<Dialog
+			open={isOpen}
+			onOpenChange={(open) => {
+				if (!open) onClose(false);
+			}}
+		>
+			<DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+				<DialogHeader>
+					<DialogTitle>Solicitação de Orçamentos</DialogTitle>
+					<DialogDescription>
 						Acompanhe aqui todas verificações de disponibilidade que você
 						recebeu e transforme em propostas.
-					</p>
+					</DialogDescription>
+				</DialogHeader>
+				<div className="w-full h-full flex flex-col gap-4">
+					<hr className="w-full" />
+
+					<div className="flex justify-between">
+						<p className="text-gray-600 text-sm">
+							{filteredBudgets?.data.length} de{" "}
+							{filteredBudgets?.pagination.total} Solicitações de orçamento
+						</p>
+					</div>
+
+					{isLoading && <TableSkeleton />}
+					{error && !isLoading && (
+						<ErrorState
+							message="Erro ao carregar vendas e propostas"
+							onRetry={() => {
+								window.location.reload();
+							}}
+						/>
+					)}
+					{!isLoading && !error && tableData.length === 0 && (
+						<EmptyState
+							icon={<FileText className="h-12 w-12 text-gray-400" />}
+							title={"Nenhum Orçamento encontrado"}
+							message={
+								filteredBudgets && filteredBudgets?.pagination.total > 0
+									? "Tente ajustar os filtros."
+									: "Você não tem orçamentos pendentes."
+							}
+						/>
+					)}
+					{tableData.length > 0 && (
+						<EventsTable dataBudgets={tableData} mode="budgets" />
+					)}
 				</div>
-			</div>
-			<hr className="w-full" />
 
-			<div className="flex justify-between">
-				<p className="text-gray-600 text-sm">
-					{filteredBudgets?.data.length} de {filteredBudgets?.pagination.total}{" "}
-					Solicitações de orçamento
-				</p>
-			</div>
-
-			{isLoading && <TableSkeleton />}
-			{error && !isLoading && (
-				<ErrorState
-					message="Erro ao carregar vendas e propostas"
-					onRetry={() => {
-						window.location.reload();
+				<SendBudgetToProposal
+					isOpen={isProposalModalOpen}
+					budget={budgetDetails}
+					onClose={() => {
+						setIsProposalModalOpen(false);
+						setBudget(null);
 					}}
+					recipientId={idDestinatario}
 				/>
-			)}
-			{!isLoading && !error && tableData.length === 0 && (
-				<EmptyState
-					icon={<FileText className="h-12 w-12 text-gray-400" />}
-					title={"Nenhum Orçamento encontrado"}
-					message={
-						filteredBudgets && filteredBudgets?.pagination.total > 0
-							? "Tente ajustar os filtros."
-							: "Você não tem orçamentos pendentes."
-					}
-				/>
-			)}
-			{tableData.length > 0 && (
-				<EventsTable dataBudgets={tableData} mode="budgets" />
-			)}
-
-			<SendBudgetToProposal
-				isOpen={isProposalModalOpen}
-				budget={budgetDetails}
-				onClose={() => {
-					setIsProposalModalOpen(false);
-					setBudget(null);
-				}}
-				recipientId={currentProductId}
-			/>
-		</div>
+			</DialogContent>
+		</Dialog>
 	);
 };

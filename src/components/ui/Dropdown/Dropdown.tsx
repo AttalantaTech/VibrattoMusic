@@ -7,6 +7,7 @@ interface DropdownProps {
 	children: React.ReactNode;
 	className?: string;
 	align?: "left" | "right" | "center";
+	side?: "top" | "bottom";
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({
@@ -14,6 +15,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
 	children,
 	className,
 	align = "right",
+	side = "bottom",
 }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
@@ -40,6 +42,11 @@ export const Dropdown: React.FC<DropdownProps> = ({
 		center: "left-1/2 transform -translate-x-1/2",
 	};
 
+	const sideClasses = {
+		bottom: "top-full mt-1",
+		top: "bottom-full mb-1",
+	};
+
 	return (
 		<div ref={dropdownRef} className="relative inline-block">
 			<div
@@ -58,6 +65,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
 					}}
 					className={cn(
 						"absolute z-50 mt-1 min-w-[8rem] rounded-md border bg-white flex flex-col shadow-md w-max",
+						sideClasses[side],
 						alignmentClasses[align],
 						className
 					)}

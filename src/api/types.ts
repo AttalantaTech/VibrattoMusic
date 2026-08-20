@@ -786,13 +786,15 @@ export interface CreateProposalRequest {
 	transporteIncluso?: boolean;
 	acomodacaoInclusa?: boolean;
 	camarimIncluso?: boolean;
+	estruturaPalcoSomIluminacaoInclusa?: boolean;
+	geradorIncluso?: boolean;
 	idOrcamento?: number | null;
 	idPropostaGerouContraProposta?: number | null;
 }
 
 // Proposal types
 export interface CreateBudgetRequest {
-	idProdutoMusical: number;
+	idProdutoMusicalContratante: number;
 	idTipoEvento: number;
 	descricao: string;
 	local: string;

@@ -317,7 +317,11 @@ export const useProposalSubmit = ({
 			valorSinalPagamento: null,
 			transporteIncluso: Boolean(finalFormData.transporteIncluso),
 			acomodacaoInclusa: Boolean(finalFormData.acomodacaoInclusa),
-			camarimIncluso: false,
+			camarimIncluso: Boolean(finalFormData.camarimIncluso),
+			estruturaPalcoSomIluminacaoInclusa: Boolean(
+				finalFormData.estruturaPalcoSomIluminacaoInclusa
+			),
+			// geradorIncluso: Boolean(finalFormData.geradorIncluso),
 		};
 
 		try {

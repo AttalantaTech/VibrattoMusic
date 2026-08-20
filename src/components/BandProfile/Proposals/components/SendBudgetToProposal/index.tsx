@@ -136,7 +136,7 @@ export const SendBudgetToProposal = ({
 			<DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
 				<form onSubmit={handleSubmit(onSubmit)}>
 					<DialogHeader>
-						<DialogTitle>"Criar Nova Proposta</DialogTitle>
+						<DialogTitle>Criar Nova Proposta</DialogTitle>
 						<DialogDescription>
 							Configure todos os campos necessários para criar a proposta
 						</DialogDescription>
@@ -576,11 +576,10 @@ export const SendBudgetToProposal = ({
 								toggleSection("includedServices");
 							}}
 						>
-							{/* Changing Room Included */}
 							<div className="flex items-center justify-between">
 								<Controller
 									control={control}
-									name="acomodacaoInclusa"
+									name="camarimIncluso"
 									render={({ field }) => (
 										<>
 											<div>
@@ -591,7 +590,8 @@ export const SendBudgetToProposal = ({
 													Camarim Incluso
 												</Label>
 												<p className="text-sm text-gray-500">
-													Local reservado para preparação
+													Local reservado para preparação da equipe antes do
+													show
 												</p>
 											</div>
 											<Switch
@@ -607,7 +607,6 @@ export const SendBudgetToProposal = ({
 								/>
 							</div>
 
-							{/* Transport Included */}
 							<div className="flex items-center justify-between">
 								<Controller
 									control={control}
@@ -637,6 +636,98 @@ export const SendBudgetToProposal = ({
 									)}
 								/>
 							</div>
+
+							<div className="flex items-center justify-between">
+								<Controller
+									control={control}
+									name="acomodacaoInclusa"
+									render={({ field }) => (
+										<>
+											<div>
+												<Label
+													htmlFor="acomodacaoInclusa"
+													className="text-base font-medium"
+												>
+													Acomodação Inclusa
+												</Label>
+												<p className="text-sm text-gray-500">
+													Hospedagem para acomodar a equipe antes do evento
+												</p>
+											</div>
+											<Switch
+												onBlur={field.onBlur}
+												id="acomodacaoInclusa"
+												checked={field.value}
+												onCheckedChange={(checked) => {
+													field.onChange(checked);
+												}}
+											/>
+										</>
+									)}
+								/>
+							</div>
+
+							<div className="flex items-center justify-between">
+								<Controller
+									control={control}
+									name="estruturaPalcoSomIluminacaoInclusa"
+									render={({ field }) => (
+										<>
+											<div>
+												<Label
+													htmlFor="estruturaPalcoSomIluminacaoInclusa"
+													className="text-base font-medium"
+												>
+													Estrutura de Palco Inclusa
+												</Label>
+												<p className="text-sm text-gray-500">
+													Estrutura de som e iluminacao para realização do
+													evento
+												</p>
+											</div>
+											<Switch
+												onBlur={field.onBlur}
+												id="estruturaPalcoSomIluminacaoInclusa"
+												checked={field.value}
+												onCheckedChange={(checked) => {
+													field.onChange(checked);
+												}}
+											/>
+										</>
+									)}
+								/>
+							</div>
+
+							{/* <div className="flex items-center justify-between">
+								<Controller
+									control={control}
+									name="geradorIncluso"
+									render={({ field }) => (
+										<>
+											<div>
+												<Label
+													htmlFor="estruturaPalcoSomIluminacaoInclusa"
+													className="text-base font-medium"
+												>
+													Gerador Incluso
+												</Label>
+												<p className="text-sm text-gray-500">
+													Gerador de energia para garantir o funcionamento
+													elétrico do evento
+												</p>
+											</div>
+											<Switch
+												onBlur={field.onBlur}
+												id="geradorIncluso"
+												checked={field.value}
+												onCheckedChange={(checked) => {
+													field.onChange(checked);
+												}}
+											/>
+										</>
+									)}
+								/>
+							</div> */}
 						</Accordion>
 
 						{/* Digital Contract Section */}

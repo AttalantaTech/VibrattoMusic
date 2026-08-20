@@ -11,6 +11,8 @@ const buttonVariants = cva(
 					"bg-primary-600 text-white border border-primary-300 shadow-sm hover:bg-primary-700 disabled:hover:bg-primary-600",
 				secondary:
 					"bg-gray-200 text-gray-700 border border-gray-300 hover:bg-gray-300 disabled:hover:bg-gray-200",
+				success:
+					"bg-green-500 text-white border border-green-300 hover:bg-green-600 disabled:hover:bg-green-200 transition-colors",
 				gradient:
 					"bg-gradient-to-r from-[bg-primary-800] to-[bg-primary-50] text-white font-semibold",
 				transparent: "bg-transparent text-gray-600 hover:bg-gray-100",
