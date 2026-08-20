@@ -117,10 +117,13 @@ export const useProposalForm = ({
 			dataVencimentoSinalPagamento,
 			horaInicio: proposal?.horaInicio || "",
 			duracao: duration || "",
-			transporteIncluso: proposal?.transporteIncluso || false,
-			acomodacaoInclusa: proposal?.acomodacaoInclusa || false,
 			formaPagamento: proposal?.formaPagamento.map((item) => item.id) || [],
 			idCondicoesPagamento: proposal?.condicoesPagamento.id || 2,
+			transporteIncluso: proposal?.transporteIncluso || false,
+			acomodacaoInclusa: proposal?.acomodacaoInclusa || false,
+			camarimIncluso: proposal?.acomodacaoInclusa || false,
+			estruturaPalcoSomIluminacaoInclusa: proposal?.acomodacaoInclusa || false,
+			// geradorIncluso: proposal?.geradorIncluso || false
 		};
 	}, [
 		proposal,

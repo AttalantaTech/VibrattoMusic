@@ -1,4 +1,10 @@
-import { ArrowLeft, Circle, DollarSign, MessageSquare } from "lucide-react";
+import {
+	ArrowLeft,
+	Circle,
+	DollarSign,
+	MessageSquare,
+	PlusCircle,
+} from "lucide-react";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { Loading } from "@/shared/components/Loading";
 import { useAuthStore } from "@/store/authStore";
@@ -18,12 +24,20 @@ import { getParticipantInitials } from "../../utils/Message";
 import type { Message } from "@/api/services/messages/types";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
+import { MoreOptionsDropdownItem } from "@/components/ui/MoreOptionsDropdownItem";
+import { IconButton } from "@/components/ui/IconButton/IconButton";
+import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
+import { BudgetListModal } from "@/components/BandProfile/Budgets/components/BudgetListModal";
+import { useState } from "react";
+
 export const Chat = () => {
 	const { user } = useAuthStore();
 
 	const { activeProduct } = useMusicalProductStore();
 	const currentProductId = activeProduct?.id;
 	const { isProfileComplete } = useProfileStatus();
+
+	const [openBudgetListModal, setOpenBudgetListModal] = useState(false);
 
 	const {
 		messageInput,
@@ -102,18 +116,6 @@ export const Chat = () => {
 								<span className="text-sm font-medium">Completar Perfil</span>
 							</button>
 						)}
-						{currentProductId === selectedConversation?.participanteId &&
-							isProfileComplete && (
-								<button
-									onClick={() => {
-										setIsProposalModalOpen?.(true);
-									}}
-									className="flex items-center space-x-1 px-2 md:space-x-2 md:px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-								>
-									<DollarSign className="w-4 h-4" />
-									<span className="text-sm font-medium">Criar Proposta</span>
-								</button>
-							)}
 					</ChatHeaderContainer>
 
 					<ChatMessagesContainer messagesContainerRef={messagesContainerRef}>
@@ -176,27 +178,75 @@ export const Chat = () => {
 					</ChatMessagesContainer>
 
 					<ChatInputContainer>
-						<ChatInput
-							value={messageInput}
-							onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
-								setMessageInput?.(event.target.value);
-							}}
-							onSend={(content: string) => {
-								if (handleSendMessage) {
-									void handleSendMessage(
-										content,
-										activeProduct?.id ? 2 : 1,
-										activeProduct?.id ? activeProduct.id : null
-									);
+						<div className="flex items-center gap-2">
+							{currentProductId === selectedConversation?.participanteId &&
+								isProfileComplete && (
+									<Dropdown
+										align="center"
+										side="top"
+										trigger={
+											<IconButton
+												variant="none"
+												icon={<PlusCircle size={24} />}
+											/>
+										}
+									>
+										<MoreOptionsDropdownItem
+											onClick={() => {
+												setIsProposalModalOpen?.(true);
+											}}
+										>
+											<span className="text-sm font-medium">
+												Criar Proposta
+											</span>
+										</MoreOptionsDropdownItem>
+
+										<MoreOptionsDropdownItem
+											onClick={() => {
+												setOpenBudgetListModal(true);
+											}}
+										>
+											<span className="text-sm font-medium">
+												Solicitações de Orçamentos
+											</span>
+										</MoreOptionsDropdownItem>
+									</Dropdown>
+								)}
+
+							<ChatInput
+								value={messageInput}
+								onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
+									setMessageInput?.(event.target.value);
+								}}
+								onSend={(content: string) => {
+									if (handleSendMessage) {
+										void handleSendMessage(
+											content,
+											activeProduct?.id ? 2 : 1,
+											activeProduct?.id ? activeProduct.id : null
+										);
+									}
+								}}
+								disabled={isMessagesLoading}
+								placeholder={
+									isMessagesLoading ? "Carregando..." : "Digite sua mensagem..."
 								}
-							}}
-							disabled={isMessagesLoading}
-							placeholder={
-								isMessagesLoading ? "Carregando..." : "Digite sua mensagem..."
-							}
-						/>
+							/>
+						</div>
 					</ChatInputContainer>
 				</>
+			)}
+
+			{selectedConversation?.pair.id && (
+				<BudgetListModal
+					isOpen={openBudgetListModal}
+					onClose={setOpenBudgetListModal}
+					idProdutoMusicalConversa={selectedConversation?.pair.id}
+					idDestinatario={
+						selectedConversation.produtoMusicalContratanteId ||
+						selectedConversation.contratanteId
+					}
+				/>
 			)}
 		</ChatContainer>
 	);

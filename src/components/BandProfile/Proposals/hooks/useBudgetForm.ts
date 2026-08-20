@@ -93,11 +93,14 @@ export const useBudgetForm = ({
 			dataVencimentoSinalPagamento: 30,
 			horaInicio: budget?.horaInicio || "",
 			duracao: budget?.duracao || "",
-			transporteIncluso: false,
-			acomodacaoInclusa: false,
 			formaPagamento: [],
 			idCondicoesPagamento: 2,
 			idOrcamento: budget?.idOrcamento || null,
+			transporteIncluso: false,
+			acomodacaoInclusa: false,
+			camarimIncluso: false,
+			estruturaPalcoSomIluminacaoInclusa: false,
+			// geradorIncluso: false
 		};
 	}, [budget, contractorName, getContractorId, dataEvento]);
 

@@ -64,12 +64,12 @@ export const proposalService = {
 		// Normalize payload to match API contract: ensure all expected keys are present and never undefined
 		const payload = {
 			Id: filters.Id ?? null,
-			IdentificadorUnico: filters.IdentificadorUnico ?? null,
-			IdContratante: filters.IdContratante ?? null,
-			IdProdutoMusicalContratante: filters.IdProdutoMusicalContratante,
-			IdProdutoMusical: filters.IdProdutoMusical ?? null,
-			DataDe: filters.DataDe ?? null,
-			DataAte: filters.DataAte ?? null,
+			IdentificadorUnico: filters.IdentificadorUnico || null,
+			IdContratante: filters.IdContratante || null,
+			IdProdutoMusicalContratante: filters.IdProdutoMusicalContratante || null,
+			IdProdutoMusical: filters.IdProdutoMusical || null,
+			DataDe: filters.DataDe || null,
+			DataAte: filters.DataAte || null,
 			Enviado: null,
 		};
 

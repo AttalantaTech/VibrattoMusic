@@ -40,6 +40,7 @@ export const useCreateProposal = () => {
 		onSuccess: () => {
 			// Invalidate relevant queries
 			void queryClient.invalidateQueries({ queryKey: ["filtered-proposals"] });
+			void queryClient.invalidateQueries({ queryKey: ["filtered-budgets"] });
 
 			toast.success("Proposta enviada com sucesso!");
 		},
@@ -109,24 +110,6 @@ export const useMyProposals = () => {
  */
 
 export const useProductProposals = ({
-	productId,
-	IdContratante,
-}: UseProductProposalsParameters) => {
-	return useQuery({
-		queryKey: PROPOSAL_QUERY_KEYS.byProduct(productId ?? IdContratante),
-		queryFn: () => {
-			return proposalService.getProductProposals({ productId, IdContratante });
-		},
-		enabled: true,
-		staleTime: 5 * 60 * 1000, // 5 minutes
-	});
-};
-
-/**
- * Hook to fetch proposals for a specific product
- */
-
-export const useListBudget = ({
 	productId,
 	IdContratante,
 }: UseProductProposalsParameters) => {

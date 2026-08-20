@@ -580,11 +580,10 @@ export const SendProposalModal = ({
 								toggleSection("includedServices");
 							}}
 						>
-							{/* Changing Room Included */}
 							<div className="flex items-center justify-between">
 								<Controller
 									control={control}
-									name="acomodacaoInclusa"
+									name="camarimIncluso"
 									render={({ field }) => (
 										<>
 											<div>
@@ -595,7 +594,8 @@ export const SendProposalModal = ({
 													Camarim Incluso
 												</Label>
 												<p className="text-sm text-gray-500">
-													Local reservado para preparação
+													Local reservado para preparação da equipe antes do
+													show
 												</p>
 											</div>
 											<Switch
@@ -611,7 +611,6 @@ export const SendProposalModal = ({
 								/>
 							</div>
 
-							{/* Transport Included */}
 							<div className="flex items-center justify-between">
 								<Controller
 									control={control}
@@ -641,6 +640,98 @@ export const SendProposalModal = ({
 									)}
 								/>
 							</div>
+
+							<div className="flex items-center justify-between">
+								<Controller
+									control={control}
+									name="acomodacaoInclusa"
+									render={({ field }) => (
+										<>
+											<div>
+												<Label
+													htmlFor="acomodacaoInclusa"
+													className="text-base font-medium"
+												>
+													Acomodação Inclusa
+												</Label>
+												<p className="text-sm text-gray-500">
+													Hospedagem para acomodar a equipe antes do evento
+												</p>
+											</div>
+											<Switch
+												onBlur={field.onBlur}
+												id="acomodacaoInclusa"
+												checked={field.value}
+												onCheckedChange={(checked) => {
+													field.onChange(checked);
+												}}
+											/>
+										</>
+									)}
+								/>
+							</div>
+
+							<div className="flex items-center justify-between">
+								<Controller
+									control={control}
+									name="estruturaPalcoSomIluminacaoInclusa"
+									render={({ field }) => (
+										<>
+											<div>
+												<Label
+													htmlFor="estruturaPalcoSomIluminacaoInclusa"
+													className="text-base font-medium"
+												>
+													Estrutura de Palco Inclusa
+												</Label>
+												<p className="text-sm text-gray-500">
+													Estrutura de som e iluminacao para realização do
+													evento
+												</p>
+											</div>
+											<Switch
+												onBlur={field.onBlur}
+												id="estruturaPalcoSomIluminacaoInclusa"
+												checked={field.value}
+												onCheckedChange={(checked) => {
+													field.onChange(checked);
+												}}
+											/>
+										</>
+									)}
+								/>
+							</div>
+
+							{/* <div className="flex items-center justify-between">
+								<Controller
+									control={control}
+									name="geradorIncluso"
+									render={({ field }) => (
+										<>
+											<div>
+												<Label
+													htmlFor="estruturaPalcoSomIluminacaoInclusa"
+													className="text-base font-medium"
+												>
+													Gerador Incluso
+												</Label>
+												<p className="text-sm text-gray-500">
+													Gerador de energia para garantir o funcionamento
+													elétrico do evento
+												</p>
+											</div>
+											<Switch
+												onBlur={field.onBlur}
+												id="geradorIncluso"
+												checked={field.value}
+												onCheckedChange={(checked) => {
+													field.onChange(checked);
+												}}
+											/>
+										</>
+									)}
+								/>
+							</div> */}
 						</Accordion>
 
 						{/* Digital Contract Section */}

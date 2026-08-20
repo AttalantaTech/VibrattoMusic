@@ -38,6 +38,9 @@ const createProposalSchema = z
 		duracao: z.string().nullable(),
 		transporteIncluso: z.boolean().optional(),
 		acomodacaoInclusa: z.boolean().optional(),
+		camarimIncluso: z.boolean().optional(),
+		estruturaPalcoSomIluminacaoInclusa: z.boolean().optional(),
+		geradorIncluso: z.boolean().optional(),
 		formaPagamento: z
 			.array(z.number().min(1))
 			.min(1, "O campo Forma de Pagamento é obrigatório."),

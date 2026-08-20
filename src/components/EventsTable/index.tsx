@@ -2,6 +2,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Eye, File, Pen, SquarePen } from "lucide-react";
 import type {
 	EventsTableBudgetsData,
+	EventsTableBudgetsRow,
 	EventsTableHiresData,
 	EventsTableHiresRow,
 	EventsTableSaleData,
@@ -23,7 +24,6 @@ interface EventsTableProps {
 }
 
 const columnHelperHires = createColumnHelper<EventsTableHiresRow>();
-
 const columnsHires = [
 	columnHelperHires.accessor("event", {
 		header: "Evento",
@@ -202,9 +202,49 @@ const columnsSale = [
 	}),
 ];
 
+const columnHelperBudget = createColumnHelper<EventsTableBudgetsRow>();
+const columnBudget = [
+	columnHelperBudget.accessor("budget", {
+		header: "Evento",
+		cell: (info) => {
+			const event = info.getValue<EventsTableBudgetsRow["budget"]>();
+			return (
+				<div className="flex flex-col">
+					<div className="font-medium text-gray-900">{event.descricao}</div>
+					<div className="text-gray-500">{formatDate(event.dataEvento)}</div>
+				</div>
+			);
+		},
+	}),
+	columnHelperBudget.accessor("budget.contratante.nome", {
+		header: "Cliente",
+	}),
+	columnHelperBudget.display({
+		header: "Ações",
+		id: "actions",
+		cell: ({ row }) => {
+			return (
+				<div className="min-w-[100px]">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => {
+							row.original.createProposal(row.original.budget);
+						}}
+					>
+						<SquarePen size={16} className="mr-1" />
+						<p>Criar Proposta</p>
+					</Button>
+				</div>
+			);
+		},
+	}),
+];
+
 export const EventsTable = ({
 	dataProposals = [],
 	dataSales = [],
+	dataBudgets = [],
 	mode,
 }: EventsTableProps) => {
 	return (
@@ -213,6 +253,11 @@ export const EventsTable = ({
 				<GenericTable<EventsTableSaleRow>
 					columns={columnsSale}
 					data={dataSales}
+				/>
+			) : mode === "budgets" ? (
+				<GenericTable<EventsTableBudgetsRow>
+					columns={columnBudget}
+					data={dataBudgets}
 				/>
 			) : (
 				<GenericTable<EventsTableHiresRow>
