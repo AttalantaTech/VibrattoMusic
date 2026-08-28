@@ -1,10 +1,4 @@
-import {
-	ArrowLeft,
-	Circle,
-	DollarSign,
-	MessageSquare,
-	PlusCircle,
-} from "lucide-react";
+import { ArrowLeft, Circle, MessageSquare, PlusCircle } from "lucide-react";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { Loading } from "@/shared/components/Loading";
 import { useAuthStore } from "@/store/authStore";
@@ -49,7 +43,6 @@ export const Chat = () => {
 		isMessagesLoading,
 		handleSendMessage,
 		setIsProposalModalOpen,
-		setIsProfileIncompleteModalOpen,
 		messagesContainerRef,
 		messagesEndRef,
 	} = useChat() || {};
@@ -105,17 +98,6 @@ export const Chat = () => {
 								{selectedConversation.pair.name ?? "Usuário"}
 							</h2>
 						</div>
-						{activeProduct && !isProfileComplete && (
-							<button
-								onClick={() => {
-									setIsProfileIncompleteModalOpen?.(true);
-								}}
-								className="flex items-center space-x-1 px-2 md:space-x-2 md:px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-							>
-								<DollarSign className="w-4 h-4" />
-								<span className="text-sm font-medium">Completar Perfil</span>
-							</button>
-						)}
 					</ChatHeaderContainer>
 
 					<ChatMessagesContainer messagesContainerRef={messagesContainerRef}>
