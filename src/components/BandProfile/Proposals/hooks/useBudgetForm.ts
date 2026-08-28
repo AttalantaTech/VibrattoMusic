@@ -23,8 +23,6 @@ export const useBudgetForm = ({
 }: BudgetFormProps) => {
 	const { user } = useAuthStore();
 
-	console.log(budget);
-
 	// Helper function to get contractor ID
 	const getContractorId = useCallback(() => {
 		// First try the prop and user.id
