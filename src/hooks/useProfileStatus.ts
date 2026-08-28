@@ -40,8 +40,8 @@ export const isMusicianProfileComplete = (
 	const essentialFields = [
 		product.nome, // Product name
 		product.descricao, // Description
-		product.fotoPerfil, // Profile picture
-		product.logomarca, // Logo
+		// product.fotoPerfil, // Profile picture
+		// product.logomarca, // Logo
 		product.cepContato, // Contact CEP
 		product.logradouroContato, // Contact address
 		product.numeroContato, // Contact number
@@ -60,9 +60,6 @@ export const isMusicianProfileComplete = (
 	const hasCity = product.cidade?.id > 0;
 	const hasEventTypes = product.tipoEvento && product.tipoEvento.length > 0;
 	const hasGenres = product.generoMusical && product.generoMusical.length > 0;
-	const hasProductionTypes =
-		product.tiposProducao && product.tiposProducao.length > 0;
-	const hasImages = product.imagens && product.imagens.length > 0;
 
 	// Profile is complete if it has all essential fields AND required related data
 	return (
@@ -70,9 +67,7 @@ export const isMusicianProfileComplete = (
 		hasCategories &&
 		hasCity &&
 		hasEventTypes &&
-		hasGenres &&
-		hasProductionTypes &&
-		hasImages
+		hasGenres
 	);
 };
 
