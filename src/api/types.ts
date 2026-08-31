@@ -811,6 +811,7 @@ export interface ProposalFilterRequest {
 	IdProdutoMusical?: number | null;
 	DataDe?: string | null;
 	DataAte?: string | null;
+	Enviado?: boolean;
 }
 
 export type ProposalStatusResponse =

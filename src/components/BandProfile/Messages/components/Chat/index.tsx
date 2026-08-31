@@ -223,11 +223,15 @@ export const Chat = () => {
 				<BudgetListModal
 					isOpen={openBudgetListModal}
 					onClose={setOpenBudgetListModal}
-					idProdutoMusicalConversa={selectedConversation?.pair.id}
+					idProdutoMusicalConversa={
+						selectedConversation.produtoMusicalContratanteId
+					}
+					idContratanteConversa={selectedConversation.contratanteId}
 					idDestinatario={
 						selectedConversation.produtoMusicalContratanteId ||
 						selectedConversation.contratanteId
 					}
+					conversationId={selectedConversation.id}
 				/>
 			)}
 		</ChatContainer>

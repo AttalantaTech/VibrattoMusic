@@ -70,7 +70,7 @@ export const proposalService = {
 			IdProdutoMusical: filters.IdProdutoMusical || null,
 			DataDe: filters.DataDe || null,
 			DataAte: filters.DataAte || null,
-			Enviado: null,
+			Enviado: true,
 		};
 
 		const response = await apiClient.post<Array<BudgetResponse>>(

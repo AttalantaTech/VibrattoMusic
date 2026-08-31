@@ -22,7 +22,9 @@ import { useCallback, useMemo, useState } from "react";
 interface BudgetListModalProps {
 	isOpen: boolean;
 	onClose: (value: boolean) => void;
-	idProdutoMusicalConversa?: number;
+	idProdutoMusicalConversa?: number | null;
+	idContratanteConversa?: number;
+	conversationId?: number;
 	idDestinatario?: number;
 }
 
@@ -93,6 +95,8 @@ export const BudgetListModal = ({
 	isOpen,
 	onClose,
 	idProdutoMusicalConversa,
+	idContratanteConversa,
+	conversationId,
 	idDestinatario,
 }: BudgetListModalProps) => {
 	const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
@@ -104,6 +108,7 @@ export const BudgetListModal = ({
 		error,
 	} = useFilteredBudgets({
 		IdProdutoMusical: idProdutoMusicalConversa,
+		IdContratante: idProdutoMusicalConversa ? null : idContratanteConversa,
 	});
 
 	const budgetDetails = useMemo<CreateProposalForm>(
@@ -185,6 +190,7 @@ export const BudgetListModal = ({
 						setIsProposalModalOpen(false);
 						setBudget(null);
 					}}
+					conversationId={conversationId}
 					recipientId={idDestinatario}
 				/>
 			</DialogContent>
