@@ -197,6 +197,7 @@ export const useBudgetSubmit = ({
 	paymentConditions,
 	handleClose,
 	hasDefineEventTime,
+	conversationId,
 }: UseBudgetSubmitProps) => {
 	const { user } = useAuthStore();
 	const { isProfileComplete, refetch: refetchProfile } = useProfileStatus();
@@ -269,8 +270,7 @@ export const useBudgetSubmit = ({
 
 		// Build payload in camelCase exactly as API expects
 		const budgetData: CreateProposalRequest = {
-			id: 0,
-			idConversa: 0,
+			idConversa: conversationId || 0,
 			nomeContratante: String(
 				finalFormData.nomeContratante || user?.nome || ""
 			),

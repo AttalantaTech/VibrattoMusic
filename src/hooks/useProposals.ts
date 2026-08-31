@@ -364,6 +364,7 @@ export const useFilteredBudgets = (filters: {
 				IdProdutoMusical,
 				DataDe: null,
 				DataAte: null,
+				Enviado: true,
 			};
 
 			const results = await proposalService.listBudgets(payload);
