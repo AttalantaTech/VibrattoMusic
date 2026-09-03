@@ -6,6 +6,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary/ErrorBoundary";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { NotificationContainer } from "./components/ui/Notification/Notification";
 import { MessagesProvider } from "./contexts/MessagesContext";
+import { FloatingWhatsApp } from "./FloatingWhatsApp";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ const App = ({ router }: AppProps): FunctionComponent => {
 						<RouterProvider router={router} />
 						<Toaster position="top-right" richColors />
 						<NotificationContainer />
+						<FloatingWhatsApp />
 					</MessagesProvider>
 				</AuthProvider>
 			</QueryClientProvider>
