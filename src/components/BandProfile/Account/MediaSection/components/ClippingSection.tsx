@@ -4,6 +4,7 @@ import { SectionHeader } from "./shared/SectionHeader";
 import { TooltipCustom } from "@/components/ui/TooltipCustom/TooltipCustom";
 import { isMP4File, isPdfFile, isPngImage } from "@/utils/validation";
 import type { FilePropsLocal } from "@/api/types";
+import { TextAreaField } from "@/components/forms/TextAreaField/TextAreaField";
 
 type ClippingSectionProps = {
 	clipping: Array<FilePropsLocal>;
@@ -11,6 +12,7 @@ type ClippingSectionProps = {
 	markAsLoaded: (url: string) => void;
 	onUpload: (file: File | null) => Promise<void>;
 	onRemove: (id: number | null, index: number) => Promise<void>;
+	onLegendClipping: (file: FilePropsLocal, legend: string) => void;
 };
 
 export function ClippingSection({
@@ -19,6 +21,7 @@ export function ClippingSection({
 	onUpload,
 	onRemove,
 	markAsLoaded,
+	onLegendClipping,
 }: ClippingSectionProps) {
 	return (
 		<div className="bg-gray-50 py-6 border-b">
@@ -47,13 +50,10 @@ export function ClippingSection({
 				onFileSelected={onUpload}
 			/>
 
-			{clipping.length > 0 && (
-				<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
-					{clipping.map((file, index) => (
-						<div
-							key={file.link}
-							className="relative aspect-square rounded-lg overflow-hidden border border-white-200 bg-white"
-						>
+			<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+				{clipping.map((file, index) => (
+					<div key={file.link} className="px-1">
+						<div className="relative aspect-square rounded-lg overflow-hidden border border-white-200 bg-white">
 							{!loadingMap[file.link] && (
 								<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
 									<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
@@ -107,9 +107,22 @@ export function ClippingSection({
 								<X className="w-3 h-3" />
 							</button>
 						</div>
-					))}
-				</div>
-			)}
+
+						<TextAreaField
+							placeholder="Adicione uma legenda ao seu arquivo"
+							name="Legenda"
+							rows={3}
+							showCharCount
+							maxLength={100}
+							className="w-full"
+							value={file.legenda || ""}
+							onChange={(event) => {
+								onLegendClipping(file, event.target.value);
+							}}
+						/>
+					</div>
+				))}
+			</div>
 		</div>
 	);
 }

@@ -9,7 +9,7 @@ import type {
 } from "@/api/types";
 
 import { extractSpotifyResource } from "@/lib/utils/cn";
-import { onboardingService } from "@/api";
+import { onboardingService, VibrattoApiError } from "@/api";
 import { useOnboarding } from "@/contexts/hooks/useOnboarding";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -67,7 +67,13 @@ export function useMediaSubmit({ musicalProductId, mode }: Props) {
 						: null
 					: null,
 				redeSocial: redeSocial ?? [],
-				clipagem: clippings?.map((item) => item.link) ?? [],
+				clipagem:
+					clippings?.map((item) => {
+						return {
+							link: item.link,
+							legenda: item.legenda,
+						};
+					}) ?? [],
 			};
 
 			if (mode === "edit") {
@@ -114,16 +120,22 @@ export function useMediaSubmit({ musicalProductId, mode }: Props) {
 
 				await navigate({ to: "/band/register/onboarding/4" });
 			}
-		} catch (error: unknown) {
-			console.error(error);
+		} catch (error) {
+			if (error instanceof VibrattoApiError) {
+				const errorMessage = error.data?.erros.find((error_) => error_);
 
-			const errorMessage =
-				error instanceof Error
-					? error.message
-					: ((error as any)?.response?.data?.mensagem ??
-						"Erro ao salvar mídias");
-
-			toast.error(String(errorMessage));
+				if (error.statusCode === 500) {
+					toast.error(
+						"Erro interno do servidor. Por favor, verifique os dados e tente novamente."
+					);
+					return;
+				} else if (errorMessage) {
+					toast.error(errorMessage);
+					return;
+				}
+				toast.error("Aconteceu um erro ao tentar salvar mídias.");
+				return;
+			}
 		}
 	};
 

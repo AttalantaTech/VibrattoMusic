@@ -46,6 +46,19 @@ export function useImageUpload({
 		);
 	};
 
+	const handleLegendClipping = (file: FilePropsLocal, legend: string) => {
+		setClippings((previous) =>
+			previous.map((clipping) =>
+				clipping.link === file.link
+					? {
+							...clipping,
+							legenda: legend,
+						}
+					: clipping
+			)
+		);
+	};
+
 	const uploadImage = async (file: File, type: FileEventType) => {
 		if (!activeProductId) {
 			toast.error("Perfil Profissional não encontrado");
@@ -191,5 +204,6 @@ export function useImageUpload({
 		setClippings,
 		uploadingType,
 		handleLegendImage,
+		handleLegendClipping,
 	};
 }

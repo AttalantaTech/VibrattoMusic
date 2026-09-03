@@ -70,6 +70,7 @@ export default function MediaStep() {
 		uploadingType,
 		clippings,
 		handleLegendImage,
+		handleLegendClipping,
 	} = useImageUpload({
 		activeProductId: onboardingData?.id,
 		initialProfilePhoto: onboardingData?.fotoPerfil,
@@ -129,8 +130,9 @@ export default function MediaStep() {
 						{/* CLIPPINGS */}
 						<ClippingSection
 							clipping={clippings}
-							markAsLoaded={markAsLoaded}
+							onLegendClipping={handleLegendClipping}
 							loadingMap={loadedItems}
+							markAsLoaded={markAsLoaded}
 							onUpload={async (file) => {
 								if (file) {
 									await uploadImage(file, "ProdutoMusicalOnboardingClipagem");

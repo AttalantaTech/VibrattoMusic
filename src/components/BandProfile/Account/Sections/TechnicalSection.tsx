@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { Loader2, MapIcon, HelpCircle, ChevronLeft } from "lucide-react";
-import { imageUploadService } from "../../../../api";
+import { imageUploadService, VibrattoApiError } from "../../../../api";
 import { Button } from "../../../ui/Button/Button";
 import { IconTabNavigation } from "../../../ui/IconTabNavigation/IconTabNavigation";
 import { FileUploadBox } from "../../../forms/FileUploadBox/FileUploadBox";
@@ -418,9 +418,24 @@ export default function TechnicalSection({
 			});
 
 			toast.success("Rider e Configurações Técnicas salvos com sucesso");
-		} catch (error: any) {
-			console.error("Error saving technical data:", error);
-			toast.error("Erro ao salvar configurações técnicas");
+		} catch (error) {
+			if (error instanceof VibrattoApiError) {
+				const errorMessage = error.data?.erros.find((error_) => error_);
+
+				if (error.statusCode === 500) {
+					toast.error(
+						"Erro interno do servidor. Por favor, verifique os dados e tente novamente."
+					);
+					return;
+				} else if (errorMessage) {
+					toast.error(errorMessage);
+					return;
+				}
+				toast.error(
+					"Aconteceu um erro ao tentar salvar configurações técnicas."
+				);
+				return;
+			}
 		} finally {
 			setLoading(false);
 		}

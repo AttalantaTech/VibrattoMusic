@@ -10,7 +10,7 @@ import { useInstrumentos } from "@/hooks/useFilters";
 import { isMP4File, isPdfFile, isPngImage } from "@/utils/validation";
 import { Disc, Loader2, MapPin, Verified } from "lucide-react";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 interface ProfileDetailsProps {
 	musicalProduct: MusicalProduct;
@@ -42,6 +42,16 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 	}>({ isOpen: false, file: null });
 	const [loadedFiles, setLoadedFiles] = useState<Record<string, boolean>>({});
 
+	const getBustUrl = useMemo(() => {
+		const timestamp = new Date().getTime();
+		return (url: string) => {
+			if (!url) return "";
+			const separator = url.includes("?") ? "&" : "?";
+			return `${url}${separator}safariBust=${timestamp}`;
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeTab]);
+
 	const handleFileLoad = (link: string) => {
 		setLoadedFiles((previous) => ({
 			...previous,
@@ -65,68 +75,72 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 						<>
 							{musicalProduct && musicalProduct?.clipagem.length > 0 && (
 								<Carousel>
-									{musicalProduct.clipagem.map((file, index) => (
-										<CarouselItem
-											key={index}
-											className=" basis-full md:basis-1/2 lg:basis-1/3 cursor-pointer"
-											onClick={() => {
-												setViewFile({
-													isOpen: true,
-													file,
-												});
-											}}
-										>
-											<div
+									{musicalProduct.clipagem.map((file, index) => {
+										const freshLink = getBustUrl(file.link);
+
+										return (
+											<CarouselItem
 												key={index}
-												className="relative aspect-square rounded-lg overflow-hidden border border-white-200 bg-white"
+												className=" basis-full md:basis-1/2 lg:basis-1/3 cursor-pointer"
+												onClick={() => {
+													setViewFile({
+														isOpen: true,
+														file,
+													});
+												}}
 											>
-												<div className="relative w-full h-full">
-													{!loadedFiles[file.link] && (
-														<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-															<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-														</div>
-													)}
+												<div
+													key={index}
+													className="relative aspect-square rounded-lg overflow-hidden border border-white-200 bg-white"
+												>
+													<div className="relative w-full h-full">
+														{!loadedFiles[file.link] && (
+															<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+																<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+															</div>
+														)}
 
-													{isPdfFile(file.link) ? (
-														<div className="relative group">
-															<iframe
-																key={file.id || index}
-																className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] pointer-events-none"
-																src={`${file.link}#toolbar=0`}
-															/>
+														{isPdfFile(file.link) ? (
+															<div className="relative group">
+																<iframe
+																	key={freshLink}
+																	className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] pointer-events-none"
+																	src={`${file.link}#toolbar=0`}
+																/>
 
-															<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
-														</div>
-													) : isMP4File(file.link) ? (
-														<div className="relative group rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200">
-															<video
-																className="w-full h-full aspect-square"
-																onLoadedMetadata={() => {
-																	handleFileLoad(file.link);
-																}}
-															>
-																<source src={file.link} type="video/mp4" />
-															</video>
+																<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
+															</div>
+														) : isMP4File(file.link) ? (
+															<div className="relative group rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200">
+																<video
+																	className="w-full h-full aspect-square"
+																	onLoadedMetadata={() => {
+																		handleFileLoad(file.link);
+																	}}
+																>
+																	<source src={file.link} type="video/mp4" />
+																</video>
 
-															<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
-														</div>
-													) : (
-														<div className="relative group">
-															<LazyImage
-																key={file.id || index}
-																alt="Band clipping photo"
-																className={`rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200
+																<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
+															</div>
+														) : (
+															<div className="relative group">
+																<LazyImage
+																	key={file.id || index}
+																	alt="Band clipping photo"
+																	className={`rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200
                                   ${isPngImage(file.link) ? "bg-white" : "bg-black"}`}
-																src={file.link}
-															/>
+																	src={file.link}
+																/>
 
-															<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/20 transition-colors rounded-lg" />
-														</div>
-													)}
+																<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/20 transition-colors rounded-lg" />
+															</div>
+														)}
+													</div>
 												</div>
-											</div>
-										</CarouselItem>
-									))}
+											</CarouselItem>
+										);
+									})}
 								</Carousel>
 							)}
 						</>
@@ -141,9 +155,11 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 						/>
 					);
 				} else if (musicalProduct?.mapaPalcoLink) {
+					const freshLink = getBustUrl(musicalProduct.mapaPalcoLink);
+
 					return (
 						<div className="flex w-full min-h-[680px]">
-							<embed className="w-full" src={musicalProduct.mapaPalcoLink} />
+							<embed key={freshLink} className="w-full" src={freshLink} />
 						</div>
 					);
 				} else {
@@ -157,9 +173,11 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 				}
 			case "technicalRider":
 				if (musicalProduct?.rider) {
+					const freshLink = getBustUrl(musicalProduct.rider);
+
 					return (
 						<div className="flex w-full min-h-[680px]">
-							<embed className="w-full" src={musicalProduct.rider} />
+							<embed key={freshLink} className="w-full" src={freshLink} />
 						</div>
 					);
 				} else if (musicalProduct?.riderTexto) {
@@ -181,9 +199,11 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 				}
 			default:
 				if (musicalProduct?.infraCamarim) {
+					const freshLink = getBustUrl(musicalProduct.infraCamarim);
+
 					return (
 						<div className="flex w-full min-h-[680px]">
-							<embed className="w-full" src={musicalProduct.infraCamarim} />
+							<embed key={freshLink} className="w-full" src={freshLink} />
 						</div>
 					);
 				} else if (musicalProduct?.infraCamarimTexto) {

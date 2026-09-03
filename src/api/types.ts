@@ -476,7 +476,7 @@ export interface MusicalProductMedia {
 		idRedeSocial: number;
 		link: string;
 	}>;
-	clipagem: Array<string>;
+	clipagem: Array<{ link: string; legenda?: string }>;
 }
 
 export interface MusicalProductImages {

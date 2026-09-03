@@ -57,6 +57,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 		uploadingType,
 		clippings,
 		handleLegendImage,
+		handleLegendClipping,
 	} = useImageUpload({
 		activeProductId: activeProduct?.id,
 		initialProfilePhoto: activeProduct?.fotoPerfil,
@@ -115,8 +116,9 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 						{/* CLIPPINGS */}
 						<ClippingSection
 							clipping={clippings}
-							markAsLoaded={markAsLoaded}
+							onLegendClipping={handleLegendClipping}
 							loadingMap={loadedItems}
+							markAsLoaded={markAsLoaded}
 							onUpload={async (file) => {
 								if (file) {
 									await uploadImage(file, "ProdutoMusicalClipagem");
