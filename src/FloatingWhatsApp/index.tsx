@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 
+const DRAG_THRESHOLD = 5;
 const BUTTON_SIZE = 56;
 const MARGIN = 16;
 
@@ -14,15 +15,20 @@ const WHATSAPP_STORAGE = "whatsapp-button-position";
 export function FloatingWhatsApp() {
 	const [position, setPosition] = useState<Position | null>(null);
 
-	const isDragging = useRef(false);
+	const isPointerDown = useRef(false);
 	const hasMoved = useRef(false);
+
+	const startPosition = useRef({
+		x: 0,
+		y: 0,
+	});
 
 	const offset = useRef({
 		x: 0,
 		y: 0,
 	});
 
-	// Posição inicial
+	// Initial Position
 	useEffect(() => {
 		const saved = localStorage.getItem(WHATSAPP_STORAGE);
 
@@ -52,14 +58,13 @@ export function FloatingWhatsApp() {
 			}
 		}
 
-		// Inicialmente: canto inferior direito
 		setPosition({
 			top: window.innerHeight - BUTTON_SIZE - MARGIN,
 			right: MARGIN,
 		});
 	}, []);
 
-	// Corrige a posição ao redimensionar
+	// Fix Position
 	useEffect(() => {
 		const handleResize = () => {
 			setPosition((current) => {
@@ -86,7 +91,7 @@ export function FloatingWhatsApp() {
 	const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
 		if (!position) return;
 
-		isDragging.current = true;
+		isPointerDown.current = true;
 		hasMoved.current = false;
 
 		const rect = event.currentTarget.getBoundingClientRect();
@@ -96,21 +101,34 @@ export function FloatingWhatsApp() {
 			y: event.clientY - rect.top,
 		};
 
+		startPosition.current = {
+			x: event.clientX,
+			y: event.clientY,
+		};
+
 		event.currentTarget.setPointerCapture(event.pointerId);
 	};
 
 	const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
-		if (!isDragging.current) return;
+		if (!isPointerDown.current) return;
+
+		const deltaX = event.clientX - startPosition.current.x;
+
+		const deltaY = event.clientY - startPosition.current.y;
+
+		const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+		if (distance < DRAG_THRESHOLD) {
+			return;
+		}
 
 		hasMoved.current = true;
 
-		// Calcula o TOP
 		const top = Math.min(
 			Math.max(0, event.clientY - offset.current.y),
 			window.innerHeight - BUTTON_SIZE
 		);
 
-		// Calcula o RIGHT
 		const right = Math.min(
 			Math.max(
 				0,
@@ -125,18 +143,24 @@ export function FloatingWhatsApp() {
 		});
 	};
 
-	const handlePointerUp = () => {
-		if (!isDragging.current) return;
+	const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+		if (!isPointerDown.current) return;
 
-		isDragging.current = false;
+		isPointerDown.current = false;
 
-		setPosition((current) => {
-			if (!current) return current;
+		if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+			event.currentTarget.releasePointerCapture(event.pointerId);
+		}
 
-			localStorage.setItem(WHATSAPP_STORAGE, JSON.stringify(current));
+		if (hasMoved.current) {
+			setPosition((current) => {
+				if (!current) return current;
 
-			return current;
-		});
+				localStorage.setItem(WHATSAPP_STORAGE, JSON.stringify(current));
+
+				return current;
+			});
+		}
 	};
 
 	const handleClick = () => {
@@ -162,22 +186,21 @@ export function FloatingWhatsApp() {
 			onPointerUp={handlePointerUp}
 			onClick={handleClick}
 			className="
-        fixed
-        z-50
-        flex
-        h-14
-        w-14
-        cursor-grab
-        touch-none
-        items-center
-        justify-center
-        rounded-full
-        bg-[#25D366]
-        text-white
-        shadow-lg
-        hover:shadow-xl
-        active:cursor-grabbing
-      "
+    fixed
+    z-50
+    flex
+    h-14
+    w-14
+    cursor-pointer
+    touch-none
+    items-center
+    justify-center
+    rounded-full
+    bg-[#25D366]
+    text-white
+    shadow-lg
+    hover:shadow-xl
+  "
 			style={{
 				top: `${position.top}px`,
 				right: `${position.right}px`,
