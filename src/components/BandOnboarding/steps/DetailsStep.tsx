@@ -27,6 +27,7 @@ import {
 } from "../../../hooks/useOnboarding";
 import { toast } from "sonner";
 import { decryptValue } from "@/utils/encryptValue";
+import { useBandRegistration } from "@/contexts/BandRegistrationContext";
 
 const detailsSchema = z.object({
 	nome: z.string().min(1, "Nome é obrigatório"),
@@ -48,6 +49,9 @@ type DetailsFormData = z.infer<typeof detailsSchema>;
 
 export default function DetailsStep() {
 	const { data } = useOnboardingData();
+	const { state } = useBandRegistration();
+
+	const profileTypeId = state.profileTypes.find((item) => item)?.value;
 
 	const searchParameters = useSearch({ from: "/band/register/onboarding/2" });
 	const onboardingID = searchParameters.registerId
@@ -96,17 +100,20 @@ export default function DetailsStep() {
 
 	const detailedValues: DetailsFormData = useMemo(() => {
 		return {
-			nome: onboardingData?.nome ?? "",
-			idCategoria: onboardingData?.categoria.id ?? 0,
-			descricao: onboardingData?.descricao ?? "",
-			podeDeslocamento: onboardingData?.podeDeslocamento ?? false,
-			codigoMunicipio: onboardingData?.cidade.id ?? 0,
-			tipoEvento: onboardingData?.tipoEvento.map((item) => item.id) ?? [],
-			generoMusical: onboardingData?.generoMusical.map((item) => item.id) ?? [],
-			tipoProducao: onboardingData?.tiposProducao.map((item) => item.id) ?? [],
-			numeroIntegrantes: onboardingData?.numeroIntegrantes ?? 0,
+			nome: onboardingData?.nome || "",
+			idCategoria:
+				onboardingData?.categoria.id ||
+				(profileTypeId && parseInt(profileTypeId)) ||
+				0,
+			descricao: onboardingData?.descricao || "",
+			podeDeslocamento: onboardingData?.podeDeslocamento || false,
+			codigoMunicipio: onboardingData?.cidade.id || 0,
+			tipoEvento: onboardingData?.tipoEvento.map((item) => item.id) || [],
+			generoMusical: onboardingData?.generoMusical.map((item) => item.id) || [],
+			tipoProducao: onboardingData?.tiposProducao.map((item) => item.id) || [],
+			numeroIntegrantes: onboardingData?.numeroIntegrantes || 0,
 		};
-	}, [onboardingData]);
+	}, [onboardingData, profileTypeId]);
 
 	const { setValue, formState, reset, watch, handleSubmit } =
 		useForm<DetailsFormData>({

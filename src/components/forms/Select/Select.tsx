@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { cn } from "../../../lib/utils/cn";
 import type { FunctionComponent } from "../../../common/types";
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown, Search, X } from "lucide-react";
 
 export type Option = {
 	value: string;
@@ -36,10 +36,17 @@ export const Select = ({
 	multiple,
 	disabled = false,
 }: SelectProps): FunctionComponent => {
+	const [searchTerm, setSearchTerm] = useState("");
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
-	const computedOptions = multiple ? [ALL_OPTION, ...options] : options;
+	const filteredOptions = options.filter((option) =>
+		option.label.toLowerCase().includes(searchTerm.toLowerCase())
+	);
+
+	const computedOptions = multiple
+		? [ALL_OPTION, ...filteredOptions]
+		: filteredOptions;
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -48,6 +55,7 @@ export const Select = ({
 				!dropdownRef.current.contains(event.target as Node)
 			) {
 				setIsOpen(false);
+				setSearchTerm("");
 			}
 		};
 
@@ -62,6 +70,7 @@ export const Select = ({
 
 	const toggleDropdown = () => {
 		setIsOpen(!isOpen);
+		setSearchTerm("");
 	};
 
 	const toggleOption = (option: Option) => {
@@ -69,12 +78,12 @@ export const Select = ({
 
 		if (multiple) {
 			if (isAll) {
-				const isAllSelected = selectedOptions.length === options.length;
+				const isAllSelected = selectedOptions.length === filteredOptions.length;
 
 				if (isAllSelected) {
 					setSelectedOptions([]);
 				} else {
-					setSelectedOptions(options);
+					setSelectedOptions(filteredOptions);
 				}
 				return;
 			}
@@ -108,7 +117,7 @@ export const Select = ({
 		if (selectedOptions.length === 0) return placeholder;
 
 		if (multiple) {
-			if (selectedOptions.length === options.length) {
+			if (selectedOptions.length === filteredOptions.length) {
 				return "Todos selecionados";
 			}
 
@@ -162,7 +171,35 @@ export const Select = ({
 
 				{/* Dropdown */}
 				{isOpen && (
-					<div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-auto">
+					<div
+						className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-auto"
+						onClick={(event) => {
+							event.stopPropagation();
+						}}
+					>
+						<div className="p-2 border-b border-gray-200">
+							<div className="relative">
+								<Search
+									size={16}
+									className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+								/>
+
+								<input
+									type="text"
+									value={searchTerm}
+									onChange={(event) => {
+										setSearchTerm(event.target.value);
+									}}
+									placeholder="Pesquisar..."
+									className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm
+                    text-gray-900 placeholder-gray-400 focus:border-primary-500
+                    focus:outline-none focus:ring-1 focus:ring-primary-500"
+									onClick={(event) => {
+										event.stopPropagation();
+									}}
+								/>
+							</div>
+						</div>
 						<ul className="py-1">
 							{computedOptions.map((option) => {
 								const isAll = option.value === ALL_OPTION.value;
@@ -181,7 +218,7 @@ export const Select = ({
 											type={multiple ? "checkbox" : "radio"}
 											checked={
 												isAll
-													? selectedOptions.length === options.length
+													? selectedOptions.length === filteredOptions.length
 													: selectedOptions.some(
 															(o) => o.value === option.value
 														)
