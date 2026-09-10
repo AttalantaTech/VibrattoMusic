@@ -2,6 +2,10 @@ import { Binoculars, ChevronRight } from "lucide-react";
 import { Select, type Option } from "../../forms/Select/Select";
 import { Button } from "../../ui/Button/Button";
 import { OnboardingHeader } from "../../BandOnboarding/OnboardingHeader/OnboardingHeader";
+import { filterService } from "@/api";
+import { toast } from "sonner";
+import { useCallback, useEffect, useState } from "react";
+import type { FilterOption } from "@/api/types";
 
 interface ProfileTypeProps {
 	onNext: () => void;
@@ -14,16 +18,34 @@ export const ProfileType = ({
 	selectedOptions,
 	setSelectedOptions,
 }: ProfileTypeProps) => {
-	const options = [
-		{ label: "Banda", value: "band" },
-		{ label: "Duo", value: "duo" },
-		{ label: "Cantor Solo", value: "solo" },
-		{ label: "Instrumentista Solo", value: "solo_instrumentalist" },
-		{ label: "DJ", value: "dj" },
-		{ label: "Produtor", value: "producer" },
-		{ label: "Engenheiro de Áudio", value: "engineer" },
-		{ label: "StaC (Roadie)", value: "roadie" },
-	];
+	const [loadingCategories, setLoadingCategories] = useState(true);
+	const [categories, setCategories] = useState<Array<FilterOption>>([]);
+
+	// Transform API data to select options with proper null checks
+	const categoriaOptions: Array<Option> = (categories || []).map((cat) => ({
+		value: cat.Id.toString(),
+		label: cat.Nome,
+	}));
+
+	const loadFilters = useCallback(async () => {
+		try {
+			setLoadingCategories(true);
+
+			const categoriesResponse = await filterService.getCategorias();
+
+			setCategories(categoriesResponse ?? []);
+		} catch (loadError) {
+			console.error("Failed to load filters:", loadError);
+			// TODO: Replace with proper toast system
+			toast.error("Erro ao carregar categorias");
+		} finally {
+			setLoadingCategories(false);
+		}
+	}, []); // Removed toast dependency as it's no longer used
+
+	useEffect(() => {
+		void loadFilters();
+	}, [loadFilters]);
 
 	return (
 		<div className="flex flex-col w-screen h-screen justify-start items-center">
@@ -49,8 +71,12 @@ export const ProfileType = ({
 								<Select
 									label="Escolher Perfil"
 									name="profile"
-									options={options}
-									placeholder="Selecionar..."
+									options={categoriaOptions}
+									placeholder={
+										loadingCategories
+											? "Carregando..."
+											: "Selecione uma categoria"
+									}
 									selectedOptions={selectedOptions}
 									setSelectedOptions={setSelectedOptions}
 								/>
