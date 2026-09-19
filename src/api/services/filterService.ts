@@ -3,7 +3,10 @@ import type {
 	FilterHomeImage,
 	FilterOption,
 	FilterOptionInstrument,
+	FilterOptionsRequest,
+	FilterOptionsWithPagination,
 	FilterType,
+	PaginationFilter,
 } from "../types";
 
 export class FilterService {
@@ -12,7 +15,22 @@ export class FilterService {
 	/**
 	 * Get filter options by type
 	 */
-	async getFilterOptions(filterType: FilterType): Promise<Array<FilterOption>> {
+
+	async getFilterOptions({
+		filterType,
+		paginationFilter,
+	}: FilterOptionsRequest): Promise<Array<FilterOption>> {
+		if (paginationFilter) {
+			const response = await this.apiClient.get<FilterOptionsWithPagination>(
+				`filtro/${filterType}`,
+				{
+					params: paginationFilter,
+				}
+			);
+
+			return response.dados;
+		}
+
 		return this.apiClient.get<Array<FilterOption>>(`filtro/${filterType}`);
 	}
 
@@ -40,35 +58,44 @@ export class FilterService {
 	 * Get all filter types
 	 */
 	async getTipoFiltro(): Promise<Array<FilterOption>> {
-		return this.getFilterOptions("TipoFiltro" as FilterType);
+		return this.getFilterOptions({ filterType: "TipoFiltro" as FilterType });
 	}
 
 	/**
 	 * Get categories
 	 */
 	async getCategorias(): Promise<Array<FilterOption>> {
-		return this.getFilterOptions("Categoria" as FilterType);
+		return this.getFilterOptions({ filterType: "Categoria" as FilterType });
 	}
 
 	/**
 	 * Get cities
 	 */
-	async getCidades(): Promise<Array<FilterOption>> {
-		return this.getFilterOptions("Cidade" as FilterType);
+	async getCidades(
+		paginationFilter?: PaginationFilter
+	): Promise<Array<FilterOption>> {
+		return this.getFilterOptions({
+			filterType: "Cidade" as FilterType,
+			paginationFilter: {
+				nome: paginationFilter?.nome,
+				pagina: paginationFilter?.pagina,
+				tamanhoPagina: paginationFilter?.tamanhoPagina,
+			},
+		});
 	}
 
 	/**
 	 * Get event types
 	 */
 	async getTiposEvento(): Promise<Array<FilterOption>> {
-		return this.getFilterOptions("TipoEvento" as FilterType);
+		return this.getFilterOptions({ filterType: "TipoEvento" as FilterType });
 	}
 
 	/**
 	 * Get musical genres
 	 */
 	async getGenerosMusicais(): Promise<Array<FilterOption>> {
-		return this.getFilterOptions("GeneroMusical" as FilterType);
+		return this.getFilterOptions({ filterType: "GeneroMusical" as FilterType });
 	}
 
 	/**
@@ -82,42 +109,50 @@ export class FilterService {
 	 * Get social networks
 	 */
 	async getSocialNetworks(): Promise<Array<FilterOption>> {
-		return this.getFilterOptions("RedeSocial" as FilterType);
+		return this.getFilterOptions({ filterType: "RedeSocial" as FilterType });
 	}
 
 	/**
 	 * Get production types
 	 */
 	async getProductionTypes(): Promise<Array<FilterOption>> {
-		return this.getFilterOptions("TipoProducao" as FilterType);
+		return this.getFilterOptions({ filterType: "TipoProducao" as FilterType });
 	}
 
 	/**
 	 * Get payment methods (Forma de Pagamento)
 	 */
 	async getFormasPagamento(): Promise<Array<FilterOption>> {
-		return this.getFilterOptions("FormaPagamento" as FilterType);
+		return this.getFilterOptions({
+			filterType: "FormaPagamento" as FilterType,
+		});
 	}
 
 	/**
 	 * Get payment conditions (Condições de Pagamento)
 	 */
 	async getCondicoesPagamento(): Promise<Array<FilterOption>> {
-		return this.getFilterOptions("CondicoesPagamento" as FilterType);
+		return this.getFilterOptions({
+			filterType: "CondicoesPagamento" as FilterType,
+		});
 	}
 
 	/**
 	 * Get remaining payment conditions (Condição restante)
 	 */
 	async getCondicoesPagamentoRestante(): Promise<Array<FilterOption>> {
-		return this.getFilterOptions("CondicoesPagamentoRestante" as FilterType);
+		return this.getFilterOptions({
+			filterType: "CondicoesPagamentoRestante" as FilterType,
+		});
 	}
 
 	/**
 	 * Get proposal rejection reasons (Motivos de Rejeição de Proposta)
 	 */
 	async getMotivosRejeicaoProposta(): Promise<Array<FilterOption>> {
-		return this.getFilterOptions("MotivoRejeicaoProposta" as FilterType);
+		return this.getFilterOptions({
+			filterType: "MotivoRejeicaoProposta" as FilterType,
+		});
 	}
 
 	/**

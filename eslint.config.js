@@ -174,7 +174,7 @@ const unicornConfig = {
 					ref: false,
 					refs: false,
 				},
-				ignore: ["semVer", "SemVer"],
+				ignore: ["semVer", "SemVer", "params"],
 			},
 		],
 	},

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { cn } from "../../../lib/utils/cn";
 import type { FunctionComponent } from "../../../common/types";
-import { ChevronDown, Search, X } from "lucide-react";
+import { ChevronDown, Loader, Search, X } from "lucide-react";
 
 export type Option = {
 	value: string;
@@ -18,6 +18,10 @@ type SelectProps = {
 	className?: string;
 	multiple?: boolean;
 	disabled?: boolean;
+	onReachEnd?: () => void;
+	searchTerm?: string;
+	setSearchTerm?: (value: string) => void;
+	isLoading?: boolean;
 };
 
 const ALL_OPTION: Option = {
@@ -35,10 +39,17 @@ export const Select = ({
 	className,
 	multiple,
 	disabled = false,
+	onReachEnd,
+	searchTerm = "",
+	setSearchTerm,
+	isLoading,
 }: SelectProps): FunctionComponent => {
-	const [searchTerm, setSearchTerm] = useState("");
 	const [isOpen, setIsOpen] = useState(false);
+
+	const containerRef = useRef<HTMLDivElement>(null);
 	const dropdownRef = useRef<HTMLDivElement>(null);
+	const sentinelRef = useRef<HTMLLIElement>(null);
+	const onReachEndRef = useRef(onReachEnd);
 
 	const filteredOptions = options.filter((option) =>
 		option.label.toLowerCase().includes(searchTerm.toLowerCase())
@@ -48,29 +59,9 @@ export const Select = ({
 		? [ALL_OPTION, ...filteredOptions]
 		: filteredOptions;
 
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				dropdownRef.current &&
-				!dropdownRef.current.contains(event.target as Node)
-			) {
-				setIsOpen(false);
-				setSearchTerm("");
-			}
-		};
-
-		if (isOpen) {
-			document.addEventListener("mousedown", handleClickOutside);
-		}
-
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, [isOpen]);
-
 	const toggleDropdown = () => {
 		setIsOpen(!isOpen);
-		setSearchTerm("");
+		setSearchTerm?.("");
 	};
 
 	const toggleOption = (option: Option) => {
@@ -130,15 +121,63 @@ export const Select = ({
 
 		return `${selectedOptions.length} selecionado`;
 	};
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				containerRef.current &&
+				!containerRef.current.contains(event.target as Node)
+			) {
+				setIsOpen(false);
+				setSearchTerm?.("");
+			}
+		};
+
+		if (isOpen) {
+			document.addEventListener("mousedown", handleClickOutside);
+		}
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, [isOpen, setSearchTerm]);
+
+	useEffect(() => {
+		onReachEndRef.current = onReachEnd;
+	}, [onReachEnd]);
+
+	useEffect(() => {
+		if (!isOpen) return;
+
+		const root = dropdownRef.current;
+		const target = sentinelRef.current;
+
+		if (!root || !target) return;
+
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry?.isIntersecting) {
+					onReachEndRef.current?.();
+				}
+			},
+			{
+				root,
+				threshold: 0.1,
+			}
+		);
+
+		observer.observe(target);
+
+		return () => {
+			observer.disconnect();
+		};
+	}, [isOpen]);
 
 	return (
 		<div className="flex flex-col gap-2 w-full">
-			<label className="text-sm font-medium text-gray-700" htmlFor={name}>
-				{label}
-			</label>
+			<label className="text-sm font-medium text-gray-700">{label}</label>
 
 			{/* Input com dropdown */}
-			<div className="relative" ref={dropdownRef}>
+			<div className="relative" ref={containerRef}>
 				<div
 					id={name}
 					className={cn(
@@ -172,6 +211,7 @@ export const Select = ({
 				{/* Dropdown */}
 				{isOpen && (
 					<div
+						ref={dropdownRef}
 						className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200 max-h-60 overflow-auto"
 						onClick={(event) => {
 							event.stopPropagation();
@@ -185,10 +225,12 @@ export const Select = ({
 								/>
 
 								<input
+									id={`${name}-search`}
+									name={`${name}-search`}
 									type="text"
 									value={searchTerm}
 									onChange={(event) => {
-										setSearchTerm(event.target.value);
+										setSearchTerm?.(event.target.value);
 									}}
 									placeholder="Pesquisar..."
 									className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm
@@ -228,6 +270,15 @@ export const Select = ({
 									</li>
 								);
 							})}
+
+							<li
+								ref={sentinelRef}
+								className="h-10 flex justify-center items-center"
+							>
+								{isLoading && (
+									<Loader size={16} className="animate-spin text-primary-500" />
+								)}
+							</li>
 						</ul>
 					</div>
 				)}
