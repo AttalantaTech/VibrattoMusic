@@ -22,7 +22,7 @@ export const ProfileType = ({
 	const [categories, setCategories] = useState<Array<FilterOption>>([]);
 
 	// Transform API data to select options with proper null checks
-	const categoriaOptions: Array<Option> = (categories || []).map((cat) => ({
+	const categoryOptions: Array<Option> = (categories || []).map((cat) => ({
 		value: cat.Id.toString(),
 		label: cat.Nome,
 	}));
@@ -71,7 +71,7 @@ export const ProfileType = ({
 								<Select
 									label="Escolher Perfil"
 									name="profile"
-									options={categoriaOptions}
+									options={categoryOptions}
 									placeholder={
 										loadingCategories
 											? "Carregando..."

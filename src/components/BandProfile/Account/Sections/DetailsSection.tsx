@@ -48,10 +48,10 @@ export default function DetailsSection({
 	} = useDetailsForm({ musicalProduct });
 
 	const {
-		categoriaOptions,
-		cidadeOptions,
-		tipoEventoOptions,
-		generoMusicalOptions,
+		categoryOptions,
+		cityOptions,
+		eventTypeOptions,
+		musicalGenreOptions,
 		isLoadingCategories,
 		isLoadingEventTypes,
 		isLoadingGenresMusical,
@@ -91,11 +91,11 @@ export default function DetailsSection({
 					<div className="text-red-500 text-sm">
 						{formState.errors.nome.message}
 					</div>
-				)}{" "}
+				)}
 				<Select
 					label="Categoria"
 					name="categoria"
-					options={categoriaOptions}
+					options={categoryOptions}
 					placeholder={
 						isLoadingCategories ? "Carregando..." : "Selecione uma categoria"
 					}
@@ -115,7 +115,7 @@ export default function DetailsSection({
 				<Select
 					label="Cidade"
 					name="cidade"
-					options={cidadeOptions}
+					options={cityOptions}
 					placeholder={
 						isLoadingCities ? "Carregando..." : "Selecione uma cidade"
 					}
@@ -146,7 +146,7 @@ export default function DetailsSection({
 					label="Gênero Musical"
 					name="genres"
 					multiple
-					options={generoMusicalOptions}
+					options={musicalGenreOptions}
 					placeholder={
 						isLoadingGenresMusical ? "Carregando..." : "Selecione os gêneros"
 					}
@@ -166,7 +166,7 @@ export default function DetailsSection({
 					label="Tipos de Eventos"
 					name="events"
 					multiple
-					options={tipoEventoOptions}
+					options={eventTypeOptions}
 					placeholder={
 						isLoadingEventTypes
 							? "Carregando..."

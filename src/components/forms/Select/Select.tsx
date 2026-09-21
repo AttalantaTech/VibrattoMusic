@@ -9,6 +9,7 @@ export type Option = {
 };
 
 type SelectProps = {
+	icon?: React.ReactNode;
 	label: string;
 	name: string;
 	placeholder?: string;
@@ -32,6 +33,7 @@ const ALL_OPTION: Option = {
 export const Select = ({
 	label,
 	name,
+	icon,
 	placeholder = "Selecionar...",
 	options,
 	selectedOptions,
@@ -174,7 +176,10 @@ export const Select = ({
 
 	return (
 		<div className="flex flex-col gap-2 w-full">
-			<label className="text-sm font-medium text-gray-700">{label}</label>
+			<div className="flex items-center gap-1">
+				{icon}
+				<label className="text-sm font-medium text-gray-700">{label}</label>
+			</div>
 
 			{/* Input com dropdown */}
 			<div className="relative" ref={containerRef}>

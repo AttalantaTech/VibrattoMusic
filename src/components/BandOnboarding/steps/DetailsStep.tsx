@@ -64,10 +64,10 @@ export default function DetailsStep() {
 	} = useDetailsForm({ musicalProduct: onboardingData || null });
 
 	const {
-		categoriaOptions,
-		cidadeOptions,
-		tipoEventoOptions,
-		generoMusicalOptions,
+		categoryOptions,
+		cityOptions,
+		eventTypeOptions,
+		musicalGenreOptions,
 		isLoadingCategories,
 		isLoadingEventTypes,
 		isLoadingGenresMusical,
@@ -118,7 +118,7 @@ export default function DetailsStep() {
 				<Select
 					label="Categoria"
 					name="categoria"
-					options={categoriaOptions}
+					options={categoryOptions}
 					placeholder={
 						isLoadingCategories ? "Carregando..." : "Selecione uma categoria"
 					}
@@ -138,7 +138,7 @@ export default function DetailsStep() {
 				<Select
 					label="Cidade"
 					name="cidade"
-					options={cidadeOptions}
+					options={cityOptions}
 					placeholder={
 						isLoadingCities ? "Carregando..." : "Selecione uma cidade"
 					}
@@ -169,7 +169,7 @@ export default function DetailsStep() {
 					label="Gênero Musical"
 					name="genres"
 					multiple
-					options={generoMusicalOptions}
+					options={musicalGenreOptions}
 					placeholder={
 						isLoadingGenresMusical ? "Carregando..." : "Selecione os gêneros"
 					}
@@ -189,7 +189,7 @@ export default function DetailsStep() {
 					label="Tipos de Eventos"
 					name="events"
 					multiple
-					options={tipoEventoOptions}
+					options={eventTypeOptions}
 					placeholder={
 						isLoadingEventTypes
 							? "Carregando..."
