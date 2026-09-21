@@ -278,7 +278,7 @@ export const Select = ({
 
 							<li
 								ref={sentinelRef}
-								className="h-10 flex justify-center items-center"
+								className={`${isLoading ? "h-10" : ""} flex justify-center items-center`}
 							>
 								{isLoading && (
 									<Loader size={16} className="animate-spin text-primary-500" />
