@@ -168,8 +168,6 @@ export const Home = (): FunctionComponent => {
 			true // Always fetch for homepage
 		);
 
-	console.log(searchFilters);
-
 	// Clear all filters
 	const clearAllFilters = () => {
 		setPlace("");
