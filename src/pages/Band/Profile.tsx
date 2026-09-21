@@ -18,6 +18,7 @@ import { OnboardingsPedingModal } from "@/components/BandProfile/Account/Onboard
 import { useState } from "react";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ChecklistTab } from "@/components/BandProfile/Checklist/ChecklistTab";
+import { BandRegistrationProvider } from "@/contexts/BandRegistrationContext";
 
 export const BandProfile = () => {
 	// Use URL-synced tab state
@@ -92,7 +93,13 @@ export const BandProfile = () => {
 				return <FavoritesTab />;
 			case "account":
 			default:
-				return <ProfileTab />;
+				return (
+					<OnboardingProvider>
+						<BandRegistrationProvider>
+							<ProfileTab />
+						</BandRegistrationProvider>
+					</OnboardingProvider>
+				);
 		}
 	};
 	return (
