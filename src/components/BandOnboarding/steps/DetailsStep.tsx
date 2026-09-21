@@ -1,7 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useEffect, useMemo } from "react";
 
 import {
 	ChevronLeft,
@@ -12,46 +9,20 @@ import {
 	User,
 } from "lucide-react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { useOnboarding } from "../../../contexts/hooks/useOnboarding";
-import { filterService } from "../../../api";
-import type { FilterOption, OnboardingApiResponse } from "../../../api/types";
+import type { OnboardingApiResponse } from "../../../api/types";
 import { StepLayout } from "../layout/StepLayout/StepLayout";
 import { InputField } from "../../forms/InputField/InputField";
-import { Select, type Option } from "../../forms/Select/Select";
+import { Select } from "../../forms/Select/Select";
 import { ToggleSwitch } from "../../forms/ToggleSwitch/ToggleSwitch";
 import { TextAreaField } from "../../forms/TextAreaField/TextAreaField";
 import { Button } from "../../ui/Button/Button";
-import {
-	useOnboardingData,
-	useSaveOnboardingDetails,
-} from "../../../hooks/useOnboarding";
-import { toast } from "sonner";
+import { useOnboardingData } from "../../../hooks/useOnboarding";
 import { decryptValue } from "@/utils/encryptValue";
-import { useBandRegistration } from "@/contexts/BandRegistrationContext";
-
-const detailsSchema = z.object({
-	nome: z.string().min(1, "Nome é obrigatório"),
-	idCategoria: z.number().min(1, "Categoria é obrigatória"),
-	descricao: z.string().min(10, "Descrição deve ter pelo menos 10 caracteres"),
-	podeDeslocamento: z.boolean().default(false),
-	codigoMunicipio: z.number().min(1, "Cidade é obrigatória"),
-	tipoEvento: z
-		.array(z.number())
-		.min(1, "Selecione pelo menos um tipo de evento"),
-	generoMusical: z
-		.array(z.number())
-		.min(1, "Selecione pelo menos um gênero musical"),
-	tipoProducao: z.array(z.number()).optional(),
-	numeroIntegrantes: z.number().optional(),
-});
-
-type DetailsFormData = z.infer<typeof detailsSchema>;
+import { useFilterLookup } from "@/domains/MusicalProfile/hooks/useFilterLookup";
+import { useDetailsForm } from "@/domains/MusicalProfile/hooks/useDetailsForm";
 
 export default function DetailsStep() {
 	const { data } = useOnboardingData();
-	const { state } = useBandRegistration();
-
-	const profileTypeId = state.profileTypes.find((item) => item)?.value;
 
 	const searchParameters = useSearch({ from: "/band/register/onboarding/2" });
 	const onboardingID = searchParameters.registerId
@@ -70,254 +41,54 @@ export default function DetailsStep() {
 		return data[0];
 	}, [data, onboardingID, onboardingType]);
 
-	const produtoMusicalId = onboardingData ? onboardingData.id : 0;
-
-	const saveOnboardingDetails = useSaveOnboardingDetails();
-
-	const [loading, setLoading] = useState(false);
-	const [categories, setCategories] = useState<Array<FilterOption>>([]);
-	const [cities, setCities] = useState<Array<FilterOption>>([]);
-	const [eventTypes, setEventTypes] = useState<Array<FilterOption>>([]);
-	const [musicalGenres, setMusicalGenres] = useState<Array<FilterOption>>([]);
-
-	// Loading states for dropdowns
-	const [loadingCategories, setLoadingCategories] = useState(true);
-	const [loadingCities, setLoadingCities] = useState(true);
-	const [loadingEventTypes, setLoadingEventTypes] = useState(true);
-	const [loadingGenres, setLoadingGenres] = useState(true);
-
-	// State for multi-select options
-	const [selectedCategoria, setSelectedCategoria] = useState<Array<Option>>([]);
-	const [selectedCidade, setSelectedCidade] = useState<Array<Option>>([]);
-	const [selectedGenres, setSelectedGenres] = useState<Array<Option>>([]);
-	const [selectedEventTypes, setSelectedEventTypes] = useState<Array<Option>>(
-		[]
-	);
-
 	const navigate = useNavigate();
 
-	const { updateData, markStepComplete } = useOnboarding();
+	const {
+		form,
+		loading,
+		selectedCategoria,
+		setSelectedCategoria,
+		selectedCidade,
+		setSelectedCidade,
+		selectedGenres,
+		setSelectedGenres,
+		selectedEventTypes,
+		setSelectedEventTypes,
+		searchCity,
+		setSearchCity,
+		cityPage,
+		setCityPage,
+		setHasMoreCities,
+		hasMoreCities,
+		onSubmitOnboarding,
+	} = useDetailsForm({ musicalProduct: onboardingData || null });
 
-	const detailedValues: DetailsFormData = useMemo(() => {
-		return {
-			nome: onboardingData?.nome || "",
-			idCategoria:
-				onboardingData?.categoria.id ||
-				(profileTypeId && parseInt(profileTypeId)) ||
-				0,
-			descricao: onboardingData?.descricao || "",
-			podeDeslocamento: onboardingData?.podeDeslocamento || false,
-			codigoMunicipio: onboardingData?.cidade.id || 0,
-			tipoEvento: onboardingData?.tipoEvento.map((item) => item.id) || [],
-			generoMusical: onboardingData?.generoMusical.map((item) => item.id) || [],
-			tipoProducao: onboardingData?.tiposProducao.map((item) => item.id) || [],
-			numeroIntegrantes: onboardingData?.numeroIntegrantes || 0,
-		};
-	}, [onboardingData, profileTypeId]);
-
-	const { setValue, formState, reset, watch, handleSubmit } =
-		useForm<DetailsFormData>({
-			resolver: zodResolver(detailsSchema),
-			defaultValues: {
-				...detailedValues,
-			},
-		});
-
-	// Transform API data to select options with proper null checks
-	const categoriaOptions: Array<Option> = (categories || []).map((cat) => ({
-		value: cat.Id.toString(),
-		label: cat.Nome,
-	}));
-
-	const cidadeOptions: Array<Option> = (cities || []).map((cidade) => ({
-		value: cidade.Id.toString(),
-		label: cidade.Nome,
-	}));
-
-	const tipoEventoOptions: Array<Option> = (eventTypes || []).map((tipo) => ({
-		value: tipo.Id.toString(),
-		label: tipo.Nome,
-	}));
-
-	const generoMusicalOptions: Array<Option> = (musicalGenres || []).map(
-		(genero) => ({
-			value: genero.Id.toString(),
-			label: genero.Nome,
-		})
-	);
-
-	const loadFilters = useCallback(async () => {
-		try {
-			setLoadingCategories(true);
-			setLoadingCities(true);
-			setLoadingEventTypes(true);
-			setLoadingGenres(true);
-
-			const [
-				categoriesResponse,
-				citiesResponse,
-				eventTypesResponse,
-				genresResponse,
-			] = await Promise.all([
-				filterService.getCategorias(),
-				filterService.getCidades(),
-				filterService.getTiposEvento(),
-				filterService.getGenerosMusicais(),
-			]);
-
-			setCategories(categoriesResponse ?? []);
-			setCities(citiesResponse ?? []);
-			setEventTypes(eventTypesResponse ?? []);
-			setMusicalGenres(genresResponse ?? []);
-		} catch (loadError) {
-			console.error("Failed to load filters:", loadError);
-			// TODO: Replace with proper toast system
-			toast.error("Erro ao carregar filtros");
-		} finally {
-			setLoadingCategories(false);
-			setLoadingCities(false);
-			setLoadingEventTypes(false);
-			setLoadingGenres(false);
-		}
-	}, []); // Removed toast dependency as it's no longer used
+	const {
+		categoryOptions,
+		cityOptions,
+		eventTypeOptions,
+		musicalGenreOptions,
+		isLoadingCategories,
+		isLoadingEventTypes,
+		isLoadingGenresMusical,
+		isLoadingCities,
+		isFetchingCities,
+	} = useFilterLookup({
+		cityPage,
+		setCityPage,
+		setHasMoreCities,
+		hasMoreCities,
+		cityPageSize: 20,
+		searchCityByName: searchCity,
+	});
 
 	useEffect(() => {
-		void loadFilters();
-	}, [loadFilters]);
+		setCityPage(1);
+		setHasMoreCities(true);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [searchCity]);
 
-	// Initialize select fields with previously saved data
-	useEffect(() => {
-		const details = { ...detailedValues };
-
-		if (
-			details &&
-			categories.length &&
-			cities.length &&
-			eventTypes.length &&
-			musicalGenres.length
-		) {
-			// Initialize categoria
-			if (details.idCategoria) {
-				const categoriaOption = categories.find(
-					(cat) => cat.Id === details.idCategoria
-				);
-				if (categoriaOption) {
-					setSelectedCategoria([
-						{
-							value: categoriaOption.Id.toString(),
-							label: categoriaOption.Nome,
-						},
-					]);
-				}
-			}
-
-			// Initialize cidade
-			if (details.codigoMunicipio) {
-				const cidadeOption = cities.find(
-					(cidade) => cidade.Id === details.codigoMunicipio
-				);
-				if (cidadeOption) {
-					setSelectedCidade([
-						{ value: cidadeOption.Id.toString(), label: cidadeOption.Nome },
-					]);
-				}
-			}
-
-			// Initialize genres
-			if (details.generoMusical?.length) {
-				const genreOptions = details.generoMusical
-					.map((id: number) => musicalGenres.find((genero) => genero.Id === id))
-					.filter((genero): genero is FilterOption => genero !== undefined)
-					.map((genero) => ({
-						value: genero.Id.toString(),
-						label: genero.Nome,
-					}));
-				setSelectedGenres(genreOptions);
-			}
-
-			// Initialize event types
-			if (details.tipoEvento?.length) {
-				const eventOptions = details.tipoEvento
-					.map((id: number) => eventTypes.find((tipo) => tipo.Id === id))
-					.filter((tipo): tipo is FilterOption => tipo !== undefined)
-					.map((tipo) => ({ value: tipo.Id.toString(), label: tipo.Nome }));
-				setSelectedEventTypes(eventOptions);
-			}
-		}
-	}, [categories, cities, eventTypes, musicalGenres, detailedValues]);
-
-	useEffect(() => {
-		if (onboardingData) {
-			const { categoria, cidade } = onboardingData;
-			if (categoria.id > 0)
-				setSelectedCategoria([
-					{
-						value: String(categoria.id),
-						label: categoria.nome,
-					},
-				]);
-			if (cidade.id > 0)
-				setSelectedCidade([
-					{
-						value: String(cidade.id),
-						label: cidade.nome,
-					},
-				]);
-
-			setSelectedGenres(
-				onboardingData.generoMusical.map((gender) => {
-					return { value: String(gender.id), label: gender.nome };
-				})
-			);
-			setSelectedEventTypes(
-				onboardingData.tipoEvento.map((evento) => {
-					return { value: String(evento.id), label: evento.nome };
-				})
-			);
-
-			reset({ ...detailedValues });
-		}
-	}, [onboardingData, detailedValues, reset]);
-
-	const onSubmit = async (data: DetailsFormData) => {
-		setLoading(true);
-		try {
-			const detailsData = {
-				nome: data.nome,
-				idCategoria: data.idCategoria,
-				descricao: data.descricao,
-				podeDeslocamento: data.podeDeslocamento,
-				codigoMunicipio: data.codigoMunicipio,
-				tipoEvento: data.tipoEvento,
-				generoMusical: data.generoMusical,
-				tipoProducao: data.tipoProducao ?? [],
-				numeroIntegrantes: data.numeroIntegrantes ?? 0,
-			};
-
-			await saveOnboardingDetails.mutateAsync({
-				productId: produtoMusicalId,
-				detailsData,
-			});
-
-			updateData("details", data);
-			markStepComplete("2");
-
-			toast.success("Informações da Banda salvas com sucesso");
-
-			void navigate({ to: "/band/register/onboarding/3" });
-		} catch (submitError) {
-			console.error("Failed to submit details:", submitError);
-			const errorMessage =
-				submitError instanceof Error
-					? submitError.message
-					: "Erro ao salvar detalhes";
-			console.error("❌ Erro ao salvar detalhes:", errorMessage);
-
-			toast.error(errorMessage);
-		} finally {
-			setLoading(false);
-		}
-	};
+	const { setValue, watch, formState } = form;
 
 	return (
 		<StepLayout
@@ -326,7 +97,7 @@ export default function DetailsStep() {
 			headerIcon={<Info className="text-primary-700" size={24} />}
 		>
 			<form
-				onSubmit={handleSubmit(onSubmit)}
+				onSubmit={onSubmitOnboarding}
 				className="flex flex-col w-full h-full gap-6"
 			>
 				<InputField
@@ -347,9 +118,9 @@ export default function DetailsStep() {
 				<Select
 					label="Categoria"
 					name="categoria"
-					options={categoriaOptions}
+					options={categoryOptions}
 					placeholder={
-						loadingCategories ? "Carregando..." : "Selecione uma categoria"
+						isLoadingCategories ? "Carregando..." : "Selecione uma categoria"
 					}
 					selectedOptions={selectedCategoria}
 					setSelectedOptions={(options) => {
@@ -367,8 +138,10 @@ export default function DetailsStep() {
 				<Select
 					label="Cidade"
 					name="cidade"
-					options={cidadeOptions}
-					placeholder={loadingCities ? "Carregando..." : "Selecione uma cidade"}
+					options={cityOptions}
+					placeholder={
+						isLoadingCities ? "Carregando..." : "Selecione uma cidade"
+					}
 					selectedOptions={selectedCidade}
 					setSelectedOptions={(options) => {
 						setSelectedCidade(options);
@@ -376,6 +149,16 @@ export default function DetailsStep() {
 							setValue("codigoMunicipio", Number(options[0]?.value));
 						}
 					}}
+					searchTerm={searchCity}
+					setSearchTerm={setSearchCity}
+					onReachEnd={() => {
+						if (!hasMoreCities || isFetchingCities) {
+							return;
+						}
+
+						setCityPage((previous) => previous + 1);
+					}}
+					isLoading={isFetchingCities}
 				/>
 				{formState.errors.codigoMunicipio && (
 					<div className="text-red-500 text-sm">
@@ -386,8 +169,10 @@ export default function DetailsStep() {
 					label="Gênero Musical"
 					name="genres"
 					multiple
-					options={generoMusicalOptions}
-					placeholder={loadingGenres ? "Carregando..." : "Selecione os gêneros"}
+					options={musicalGenreOptions}
+					placeholder={
+						isLoadingGenresMusical ? "Carregando..." : "Selecione os gêneros"
+					}
 					selectedOptions={selectedGenres}
 					setSelectedOptions={(options) => {
 						setSelectedGenres(options);
@@ -404,9 +189,11 @@ export default function DetailsStep() {
 					label="Tipos de Eventos"
 					name="events"
 					multiple
-					options={tipoEventoOptions}
+					options={eventTypeOptions}
 					placeholder={
-						loadingEventTypes ? "Carregando..." : "Selecione os tipos de evento"
+						isLoadingEventTypes
+							? "Carregando..."
+							: "Selecione os tipos de evento"
 					}
 					selectedOptions={selectedEventTypes}
 					setSelectedOptions={(options) => {

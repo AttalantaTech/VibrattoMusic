@@ -12,6 +12,23 @@ export interface ApiResponse<T = unknown> {
 	}>;
 }
 
+export interface FilterOptionsRequest {
+	filterType: FilterType;
+	paginationFilter?: PaginationFilter;
+}
+
+export interface FilterOptionsWithPagination {
+	dados: Array<FilterOption>;
+	paginacao: {
+		itensPorPagina: number;
+		paginaAtual: number;
+		temPaginaAnterior: boolean;
+		temProximaPagina: boolean;
+		totalItens: number;
+		totalPaginas: number;
+	};
+}
+
 export interface PaginationParameters {
 	page?: number;
 	limit?: number;
@@ -62,6 +79,12 @@ export interface FilterOptionInstrument {
 export interface FilterHomeImage {
 	Id: number;
 	Link: string;
+}
+
+export interface PaginationFilter {
+	pagina?: number;
+	tamanhoPagina?: number;
+	nome?: string;
 }
 
 export type FilterType =
@@ -434,7 +457,6 @@ export type MusicalProduct = MusicalProductApiResponse;
 export interface OnboardingApiResponse extends MusicalProductApiResponse {
 	etapaCadastro: number;
 	idCadastro: number;
-	numeroIntegrantes: number;
 }
 
 export interface MusicalProductContact {

@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { filterService } from "../api";
-import type { FilterType } from "../api/types";
+import type { FilterType, PaginationFilter } from "../api/types";
 
 // Query Keys
 export const filterKeys = {
 	all: ["filters"] as const,
-	byType: (type: FilterType) => [...filterKeys.all, type] as const,
+	byType: (type: FilterType, search?: string, page?: number) =>
+		[...filterKeys.all, type, search, page] as const,
 };
 
 /**
@@ -13,13 +14,24 @@ export const filterKeys = {
  */
 export const useFilterOptions = (
 	filterType: FilterType,
-	enabled: boolean = true
+	enabled: boolean = true,
+	paginationFilter?: PaginationFilter
 ) => {
 	return useQuery({
-		queryKey: filterKeys.byType(filterType),
-		queryFn: () => filterService.getFilterOptions(filterType),
+		queryKey: filterKeys.byType(
+			filterType,
+			paginationFilter?.nome,
+			paginationFilter?.pagina
+		),
+		queryFn: () => {
+			const params = paginationFilter
+				? { filterType, paginationFilter }
+				: { filterType };
+
+			return filterService.getFilterOptions(params);
+		},
 		enabled,
-		staleTime: 10 * 60 * 1000, // 10 minutes - filters don't change often
+		staleTime: 0,
 	});
 };
 
@@ -63,8 +75,14 @@ export const useCategorias = (enabled: boolean = true) => {
 /**
  * Hook to get cities
  */
-export const useCidades = (enabled: boolean = true) => {
-	return useFilterOptions("Cidade", enabled);
+export const useCidades = ({
+	enabled = true,
+	paginationFilter,
+}: {
+	enabled?: boolean;
+	paginationFilter?: PaginationFilter;
+}) => {
+	return useFilterOptions("Cidade", enabled, paginationFilter);
 };
 
 /**

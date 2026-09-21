@@ -1,30 +1,24 @@
 import { useEffect, useState, useRef } from "react";
-import { Search, MapPin, X, ArrowLeft } from "lucide-react";
+import { Search, X, ArrowLeft, MapPin } from "lucide-react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { Button } from "../components/ui/Button/Button";
 import { InputField } from "../components/forms/InputField/InputField";
-import { SingleSelect } from "../components/forms/SingleSelect/SingleSelect";
+import type { Option } from "../components/forms/Select/Select";
 import { Select } from "../components/forms/Select/Select";
 import { ArtistCardWithFavorites } from "../components/cards/ArtistCard/ArtistCardWithFavorites";
 import { MainLayout } from "../components/layout/MainLayout";
 import { useSearchMusicalProducts } from "../hooks/useMusicalProducts";
-import {
-	useCidades,
-	useCategorias,
-	useTiposEvento,
-	useGenerosMusicais,
-} from "../hooks/useFilters";
-// Removed imports that are now handled by ArtistCardWithFavorites
-// Removed authStore import - now handled by ArtistCardWithFavorites
+
 import { useSearchFiltersWithURL } from "../hooks/useSearchFiltersWithURL";
 import { useDebounce } from "../hooks/useDebounceSimple";
 import type { MusicalProductApiResponse } from "../api/types";
+import { useFilterLookup } from "@/domains/MusicalProfile/hooks/useFilterLookup";
 
 export const SearchPage = () => {
 	const location = useLocation();
 	const navigate = useNavigate();
 
-	// Ref para focar no input de busca
+	// Ref to focus on the search input
 	const searchInputRef = useRef<HTMLInputElement>(null);
 
 	// URL-aware filters hook
@@ -32,7 +26,6 @@ export const SearchPage = () => {
 		filters,
 		updateFilters,
 		toSearchRequest,
-		arrayToOptions,
 		optionsToArray,
 		hasActiveFilters,
 		clearFilters,
@@ -42,18 +35,49 @@ export const SearchPage = () => {
 	const [searchInput, setSearchInput] = useState(filters.NomeOuDescricao ?? "");
 	const debouncedSearchTerm = useDebounce(searchInput, 500);
 
+	const [selectedCities, setSelectedCities] = useState<Array<Option>>([]);
+	const [selectedCategories, setSelectedCategories] = useState<Array<Option>>(
+		[]
+	);
+	const [selectedGenres, setSelectedGenres] = useState<Array<Option>>([]);
+	const [selectedEventTypes, setSelectedEventTypes] = useState<Array<Option>>(
+		[]
+	);
+
+	const [searchCity, setSearchCity] = useState("");
+	const [cityPage, setCityPage] = useState(1);
+	const [hasMoreCities, setHasMoreCities] = useState(true);
+
 	const handleClearFilters = () => {
 		clearFilters();
 		setSearchInput("");
+		setSelectedCities([]);
+		setSelectedCategories([]);
+		setSelectedGenres([]);
+		setSelectedEventTypes([]);
 	};
 
 	// API hooks
-	const { data: cidades } = useCidades();
-	const { data: categorias } = useCategorias();
-	const { data: tiposEvento } = useTiposEvento();
-	const { data: generos } = useGenerosMusicais();
+	const {
+		cityOptions,
+		categoryOptions,
+		eventTypeOptions,
+		musicalGenreOptions,
+		isLoadingCities,
+		isLoadingCategories,
+		isLoadingEventTypes,
+		isLoadingGenresMusical,
+		isFetchingCities,
+	} = useFilterLookup({
+		cityPage,
+		setCityPage,
+		setHasMoreCities,
+		hasMoreCities,
+		cityPageSize: 20,
+		searchCityByName: searchCity,
+	});
 
-	// Focar no input de busca quando o componente for montado
+	// Focus on the search input when the component mounts.
 	useEffect(() => {
 		if (searchInputRef.current) {
 			searchInputRef.current.focus();
@@ -113,6 +137,7 @@ export const SearchPage = () => {
 			window.location.href = "/";
 		}
 	};
+
 	return (
 		<MainLayout>
 			<div className="min-h-screen bg-primary-50/30">
@@ -161,23 +186,38 @@ export const SearchPage = () => {
 							<div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
 								{/* Location Filter */}
 								<div className="flex-1">
-									<SingleSelect
-										icon={<MapPin size={20} />}
+									<Select
+										icon={<MapPin size={18} />}
 										label="Localização"
-										placeholder="Selecione a cidade"
-										value={filters.codigoMunicipio?.toString()}
-										options={
-											cidades?.map((cidade) => ({
-												value: cidade.Id.toString(),
-												label: cidade.Nome,
-											})) ?? []
+										name="Localizacao"
+										options={cityOptions}
+										placeholder={
+											isLoadingCities
+												? "Carregando..."
+												: "Filtrar pela localização"
 										}
-										onChange={(value: string | undefined) => {
+										selectedOptions={selectedCities}
+										setSelectedOptions={(options) => {
+											setSelectedCities(options);
+											const option = options.find((item) => item);
+
 											updateFilters({
-												codigoMunicipio: value ? parseInt(value) : undefined,
+												codigoMunicipio: option
+													? Number(option.value)
+													: undefined,
 												pagina: 1,
 											});
 										}}
+										searchTerm={searchCity}
+										setSearchTerm={setSearchCity}
+										onReachEnd={() => {
+											if (!hasMoreCities || isFetchingCities) {
+												return;
+											}
+
+											setCityPage((previous) => previous + 1);
+										}}
+										isLoading={isFetchingCities}
 									/>
 								</div>
 							</div>
@@ -197,18 +237,16 @@ export const SearchPage = () => {
 										<Select
 											label="Categoria"
 											name="categorias"
-											placeholder="Todas as categorias"
-											options={
-												categorias?.map((cat) => ({
-													value: cat.Id.toString(),
-													label: cat.Nome,
-												})) ?? []
+											placeholder={
+												isLoadingCategories
+													? "Carregando..."
+													: "Filtrar por categoria"
 											}
-											selectedOptions={arrayToOptions(
-												filters.categorias,
-												categorias ?? []
-											)}
+											options={categoryOptions}
+											selectedOptions={selectedCategories}
 											setSelectedOptions={(options) => {
+												setSelectedCategories(options);
+
 												updateFilters({
 													categorias: optionsToArray(options),
 													pagina: 1,
@@ -222,18 +260,16 @@ export const SearchPage = () => {
 										<Select
 											label="Tipo de Evento"
 											name="tipos-evento"
-											placeholder="Todos os tipos"
-											options={
-												tiposEvento?.map((tipo) => ({
-													value: tipo.Id.toString(),
-													label: tipo.Nome,
-												})) ?? []
+											placeholder={
+												isLoadingEventTypes
+													? "Carregando..."
+													: "Filtrar por tipo de evento"
 											}
-											selectedOptions={arrayToOptions(
-												filters.tiposEvento,
-												tiposEvento ?? []
-											)}
+											options={eventTypeOptions}
+											selectedOptions={selectedEventTypes}
 											setSelectedOptions={(options) => {
+												setSelectedEventTypes(options);
+
 												updateFilters({
 													tiposEvento: optionsToArray(options),
 													pagina: 1,
@@ -247,18 +283,16 @@ export const SearchPage = () => {
 										<Select
 											label="Gênero Musical"
 											name="generos"
-											placeholder="Todos os gêneros"
-											options={
-												generos?.map((genero) => ({
-													value: genero.Id.toString(),
-													label: genero.Nome,
-												})) ?? []
+											placeholder={
+												isLoadingGenresMusical
+													? "Carregando..."
+													: "Filtrar por gênero musical"
 											}
-											selectedOptions={arrayToOptions(
-												filters.generosMusicais,
-												generos ?? []
-											)}
+											options={musicalGenreOptions}
+											selectedOptions={selectedGenres}
 											setSelectedOptions={(options) => {
+												setSelectedGenres(options);
+
 												updateFilters({
 													generosMusicais: optionsToArray(options),
 													pagina: 1,
