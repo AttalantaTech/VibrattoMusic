@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { Search, X, ArrowLeft, MapPin } from "lucide-react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { Button } from "../components/ui/Button/Button";
@@ -93,6 +93,24 @@ export const SearchPage = () => {
 		searchRequest,
 		true
 	);
+
+	const visiblePagination = useMemo(() => {
+		const totalpages = searchResults?.paginacao.totalPaginas || 0;
+		const currentpage = searchResults?.paginacao.paginaAtual || 1;
+
+		let start = Math.max(1, currentpage - 2);
+		const end = Math.min(totalpages, start + 4);
+
+		if (end - start < 4) {
+			start = Math.min(1, end - 4);
+		}
+
+		const length = Math.max(0, end - start + 1);
+		return Array.from({ length }, (_, index) => start + index);
+	}, [
+		searchResults?.paginacao.totalPaginas,
+		searchResults?.paginacao.paginaAtual,
+	]);
 
 	// Force initial search for São Paulo when no filters are active
 	useEffect(() => {
@@ -456,37 +474,27 @@ export const SearchPage = () => {
 												</Button>
 
 												<div className="flex space-x-1">
-													{Array.from(
-														{
-															length: Math.min(
-																5,
-																searchResults.paginacao.totalPaginas
-															),
-														},
-														(_, index) => {
-															const page = index + 1;
-															const isCurrentPage =
-																page === searchResults.paginacao.paginaAtual;
-															return (
-																<Button
-																	key={page}
-																	variant={
-																		isCurrentPage ? "primary" : "outline"
-																	}
-																	className={`px-4 py-2 text-sm font-medium ${
-																		isCurrentPage
-																			? "bg-primary-600 text-white"
-																			: "text-gray-700 hover:text-primary-600"
-																	}`}
-																	onClick={() => {
-																		handlePageChange(page);
-																	}}
-																>
-																	{page}
-																</Button>
-															);
-														}
-													)}
+													{visiblePagination.map((page) => {
+														const isCurrentPage =
+															page === searchResults.paginacao.paginaAtual;
+
+														return (
+															<Button
+																key={page}
+																variant={isCurrentPage ? "primary" : "outline"}
+																className={`px-4 py-2 text-sm font-medium ${
+																	isCurrentPage
+																		? "bg-primary-600 text-white"
+																		: "text-gray-700 hover:text-primary-600 hover:bg-primary-100"
+																}`}
+																onClick={() => {
+																	handlePageChange(page);
+																}}
+															>
+																{page}
+															</Button>
+														);
+													})}
 												</div>
 
 												<Button
