@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { useSearch } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import type { MusicalProductSearchRequest } from "../api/types";
 import type { Option } from "../components/forms/Select/Select";
 
@@ -23,6 +23,7 @@ const isOptionType = (object: any): object is Option => {
 };
 
 export const useSearchFiltersWithURL = () => {
+	const navigate = useNavigate();
 	const [selectedCities, setSelectedCities] = useState<Array<Option>>([]);
 	const [selectedCategories, setSelectedCategories] = useState<Array<Option>>(
 		[]
@@ -53,27 +54,27 @@ export const useSearchFiltersWithURL = () => {
 		};
 
 		const getCategory = () => {
-			const categorias = getSearchParameter("categorias");
-			if (isOptionType(categorias)) {
-				return categorias;
+			const category = getSearchParameter("categorias");
+			if (isOptionType(category)) {
+				return category;
 			}
 
 			return null;
 		};
 
 		const getEventType = () => {
-			const tipos = getSearchParameter("tipos");
-			if (isOptionType(tipos)) {
-				return tipos;
+			const eventType = getSearchParameter("tipos");
+			if (isOptionType(eventType)) {
+				return eventType;
 			}
 
 			return null;
 		};
 
 		const getGenre = () => {
-			const generos = getSearchParameter("generos");
-			if (isOptionType(generos)) {
-				return generos;
+			const genre = getSearchParameter("generos");
+			if (isOptionType(genre)) {
+				return genre;
 			}
 
 			return null;
@@ -109,46 +110,60 @@ export const useSearchFiltersWithURL = () => {
 	}, [filters]);
 
 	// Update URL when filters change
-	const updateURL = useCallback((newFilters: SearchFilters) => {
-		const urlSearchParameters: Record<string, string | Array<string>> = {};
+	const updateURL = useCallback(
+		(newFilters: SearchFilters) => {
+			const urlSearchParameters: Record<string, string | Array<string>> = {};
 
-		if (newFilters.NomeOuDescricao?.trim()) {
-			urlSearchParameters["q"] = newFilters.NomeOuDescricao.trim();
-		}
+			if (newFilters.NomeOuDescricao?.trim()) {
+				urlSearchParameters["q"] = newFilters.NomeOuDescricao.trim();
+			}
 
-		if (newFilters.codigoMunicipio) {
-			urlSearchParameters["codigoMunicipio"] = newFilters.codigoMunicipio.value;
-		}
+			if (newFilters.codigoMunicipio) {
+				urlSearchParameters["codigoMunicipio"] =
+					newFilters.codigoMunicipio.value;
+			}
 
-		if (newFilters.categorias) {
-			urlSearchParameters["categorias"] = newFilters.categorias
-				? [...newFilters.categorias.value]
-				: [];
-		}
+			if (newFilters.categorias) {
+				urlSearchParameters["categorias"] = newFilters.categorias
+					? [...newFilters.categorias.value]
+					: [];
+			}
 
-		if (newFilters.tiposEvento) {
-			urlSearchParameters["tipos"] = newFilters.tiposEvento
-				? [...newFilters.tiposEvento.value]
-				: [];
-		}
+			if (newFilters.tiposEvento) {
+				urlSearchParameters["tipos"] = newFilters.tiposEvento
+					? [...newFilters.tiposEvento.value]
+					: [];
+			}
 
-		if (newFilters.generosMusicais) {
-			urlSearchParameters["generos"] = newFilters.generosMusicais
-				? [...newFilters.generosMusicais.value]
-				: [];
-		}
+			if (newFilters.generosMusicais) {
+				urlSearchParameters["generos"] = newFilters.generosMusicais
+					? [...newFilters.generosMusicais.value]
+					: [];
+			}
 
-		if (newFilters.ordenarPorAvaliacao) {
-			urlSearchParameters["ordenar"] = "avaliacao";
-		}
+			if (newFilters.ordenarPorAvaliacao) {
+				urlSearchParameters["ordenar"] = "avaliacao";
+			}
 
-		if (newFilters.pagina > 1) {
-			urlSearchParameters["pagina"] = newFilters.pagina.toString();
-		}
-		// void navigate({
-		// 	search: urlSearchParameters as any,
-		// });
-	}, []);
+			if (newFilters.pagina > 1) {
+				urlSearchParameters["pagina"] = newFilters.pagina.toString();
+			}
+			void navigate({
+				search: {
+					...(newFilters.codigoMunicipio && {
+						codigoMunicipio: newFilters.codigoMunicipio,
+					}),
+					...(newFilters.categorias && { categorias: newFilters.categorias }),
+					...(newFilters.tiposEvento && { tipos: newFilters.tiposEvento }),
+					...(newFilters.generosMusicais && {
+						generos: newFilters.generosMusicais,
+					}),
+					...(newFilters.NomeOuDescricao && { q: newFilters.NomeOuDescricao }),
+				} as any,
+			});
+		},
+		[navigate]
+	);
 
 	// Update filters and URL
 	const updateFilters = useCallback(
@@ -185,37 +200,10 @@ export const useSearchFiltersWithURL = () => {
 		};
 	}, [filters]);
 
-	// Helper functions to convert arrays to/from Option format
-	const arrayToOptions = useCallback(
-		(
-			ids: Array<number>,
-			allOptions: Array<{ Id: number; Nome: string }>
-		): Array<Option> => {
-			return ids
-				.map((id) => {
-					const option = allOptions.find((opt) => opt.Id === id);
-					return option ? { value: id.toString(), label: option.Nome } : null;
-				})
-				.filter((option): option is Option => option !== null);
-		},
-		[]
-	);
-
-	const optionsToArray = useCallback(
-		(options: Array<Option>): Array<number> => {
-			return options
-				.map((opt) => parseInt(opt.value))
-				.filter((id) => !isNaN(id));
-		},
-		[]
-	);
-
 	return {
 		filters,
 		updateFilters,
 		toSearchRequest,
-		arrayToOptions,
-		optionsToArray,
 		hasActiveFilters: Boolean(
 			filters.NomeOuDescricao ||
 			filters.codigoMunicipio ||
