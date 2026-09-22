@@ -11,10 +11,10 @@ interface DropdownSelectProps {
 	icon?: React.ReactNode;
 	id: string;
 	options: Array<Option>;
-	selected: string;
 	label?: string;
 	className?: string;
-	onChange: (value: string) => void;
+	selectedOption: Option | null;
+	setSelectedOption: (options: Option | null) => void;
 	onReachEnd?: () => void;
 	searchTerm?: string;
 	setSearchTerm?: (value: string) => void;
@@ -26,9 +26,9 @@ export const DropdownSelect = ({
 	label,
 	icon,
 	options,
-	selected,
 	className,
-	onChange,
+	selectedOption,
+	setSelectedOption,
 	onReachEnd,
 	searchTerm = "",
 	setSearchTerm,
@@ -42,7 +42,9 @@ export const DropdownSelect = ({
 	const onReachEndRef = useRef(onReachEnd);
 
 	const current =
-		options.find((o) => o.value === selected)?.label || label || "Selecionar";
+		options.find((o) => o.value === selectedOption?.value)?.label ||
+		label ||
+		"Selecionar";
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -160,7 +162,7 @@ export const DropdownSelect = ({
 								<button
 									className="w-full text-left px-4 py-2 hover:bg-gray-100"
 									onClick={() => {
-										onChange(option.value);
+										setSelectedOption(option);
 										setIsOpen(false);
 									}}
 								>
@@ -168,12 +170,12 @@ export const DropdownSelect = ({
 								</button>
 							</li>
 						))}
-						{selected && (
+						{selectedOption && (
 							<li>
 								<button
 									className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 border-t border-gray-200"
 									onClick={() => {
-										onChange("");
+										setSelectedOption(null);
 										setIsOpen(!isOpen);
 										setSearchTerm?.("");
 									}}

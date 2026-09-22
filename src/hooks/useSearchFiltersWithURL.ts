@@ -5,16 +5,34 @@ import type { Option } from "../components/forms/Select/Select";
 
 interface SearchFilters {
 	NomeOuDescricao?: string;
-	codigoMunicipio?: number;
-	categorias: Array<number>;
-	tiposEvento: Array<number>;
-	generosMusicais: Array<number>;
+	codigoMunicipio: Option | null;
+	categorias: Option | null;
+	tiposEvento: Option | null;
+	generosMusicais: Option | null;
 	ordenarPorAvaliacao: boolean;
 	pagina: number;
 }
 
+const isOptionType = (object: any): object is Option => {
+	return (
+		typeof object === "object" &&
+		object !== null &&
+		typeof object.label === "string" &&
+		typeof object.value === "string"
+	);
+};
+
 export const useSearchFiltersWithURL = () => {
 	const navigate = useNavigate();
+	const [selectedCities, setSelectedCities] = useState<Array<Option>>([]);
+	const [selectedCategories, setSelectedCategories] = useState<Array<Option>>(
+		[]
+	);
+	const [selectedGenres, setSelectedGenres] = useState<Array<Option>>([]);
+	const [selectedEventTypes, setSelectedEventTypes] = useState<Array<Option>>(
+		[]
+	);
+
 	const searchParameters = useSearch({ strict: false });
 	// Helper function to safely get search parameter
 	const getSearchParameter = useCallback(
@@ -26,55 +44,52 @@ export const useSearchFiltersWithURL = () => {
 
 	// Parse URL parameters to initial state
 	const getInitialFilters = useCallback((): SearchFilters => {
-		const getCategorias = () => {
-			const categorias = getSearchParameter("categorias");
-			if (Array.isArray(categorias)) {
-				return categorias
-					.map((c) => parseInt(c as string))
-					.filter((c) => !isNaN(c));
+		const getCity = () => {
+			const city = getSearchParameter("codigoMunicipio");
+			if (isOptionType(city)) {
+				return city;
 			}
-			if (typeof categorias === "string") {
-				return [parseInt(categorias)].filter((c) => !isNaN(c));
-			}
-			return [];
+
+			return null;
 		};
 
-		const getTiposEvento = () => {
-			const tipos = getSearchParameter("tipos");
-			if (Array.isArray(tipos)) {
-				return tipos.map((t) => parseInt(t as string)).filter((t) => !isNaN(t));
+		const getCategory = () => {
+			const category = getSearchParameter("categorias");
+			if (isOptionType(category)) {
+				return category;
 			}
-			if (typeof tipos === "string") {
-				return [parseInt(tipos)].filter((t) => !isNaN(t));
-			}
-			return [];
+
+			return null;
 		};
 
-		const getGeneros = () => {
-			const generos = getSearchParameter("generos");
-			if (Array.isArray(generos)) {
-				return generos
-					.map((g) => parseInt(g as string))
-					.filter((g) => !isNaN(g));
+		const getEventType = () => {
+			const eventType = getSearchParameter("tipos");
+			if (isOptionType(eventType)) {
+				return eventType;
 			}
-			if (typeof generos === "string") {
-				return [parseInt(generos)].filter((g) => !isNaN(g));
+
+			return null;
+		};
+
+		const getGenre = () => {
+			const genre = getSearchParameter("generos");
+			if (isOptionType(genre)) {
+				return genre;
 			}
-			return [];
+
+			return null;
 		};
 
 		const q = getSearchParameter("q");
-		const codigo = getSearchParameter("codigoMunicipio");
 		const ordenar = getSearchParameter("ordenar");
 		const pagina = getSearchParameter("pagina");
 
 		return {
 			NomeOuDescricao: typeof q === "string" ? q : undefined,
-			codigoMunicipio:
-				typeof codigo === "string" ? parseInt(codigo) : undefined,
-			categorias: getCategorias(),
-			tiposEvento: getTiposEvento(),
-			generosMusicais: getGeneros(),
+			codigoMunicipio: getCity(),
+			categorias: getCategory(),
+			tiposEvento: getEventType(),
+			generosMusicais: getGenre(),
 			ordenarPorAvaliacao: ordenar === "avaliacao",
 			pagina: typeof pagina === "string" ? parseInt(pagina) || 1 : 1,
 		};
@@ -87,6 +102,13 @@ export const useSearchFiltersWithURL = () => {
 		setFilters(newFilters);
 	}, [getInitialFilters]);
 
+	useEffect(() => {
+		setSelectedCities(filters.codigoMunicipio ? [filters.codigoMunicipio] : []);
+		setSelectedCategories(filters.categorias ? [filters.categorias] : []);
+		setSelectedGenres(filters.generosMusicais ? [filters.generosMusicais] : []);
+		setSelectedEventTypes(filters.tiposEvento ? [filters.tiposEvento] : []);
+	}, [filters]);
+
 	// Update URL when filters change
 	const updateURL = useCallback(
 		(newFilters: SearchFilters) => {
@@ -98,25 +120,25 @@ export const useSearchFiltersWithURL = () => {
 
 			if (newFilters.codigoMunicipio) {
 				urlSearchParameters["codigoMunicipio"] =
-					newFilters.codigoMunicipio.toString();
+					newFilters.codigoMunicipio.value;
 			}
 
-			if (newFilters.categorias.length > 0) {
-				urlSearchParameters["categorias"] = newFilters.categorias.map((cat) =>
-					cat.toString()
-				);
+			if (newFilters.categorias) {
+				urlSearchParameters["categorias"] = newFilters.categorias
+					? [...newFilters.categorias.value]
+					: [];
 			}
 
-			if (newFilters.tiposEvento.length > 0) {
-				urlSearchParameters["tipos"] = newFilters.tiposEvento.map((tipo) =>
-					tipo.toString()
-				);
+			if (newFilters.tiposEvento) {
+				urlSearchParameters["tipos"] = newFilters.tiposEvento
+					? [...newFilters.tiposEvento.value]
+					: [];
 			}
 
-			if (newFilters.generosMusicais.length > 0) {
-				urlSearchParameters["generos"] = newFilters.generosMusicais.map(
-					(genero) => genero.toString()
-				);
+			if (newFilters.generosMusicais) {
+				urlSearchParameters["generos"] = newFilters.generosMusicais
+					? [...newFilters.generosMusicais.value]
+					: [];
 			}
 
 			if (newFilters.ordenarPorAvaliacao) {
@@ -127,7 +149,17 @@ export const useSearchFiltersWithURL = () => {
 				urlSearchParameters["pagina"] = newFilters.pagina.toString();
 			}
 			void navigate({
-				search: urlSearchParameters as any,
+				search: {
+					...(newFilters.codigoMunicipio && {
+						codigoMunicipio: newFilters.codigoMunicipio,
+					}),
+					...(newFilters.categorias && { categorias: newFilters.categorias }),
+					...(newFilters.tiposEvento && { tipos: newFilters.tiposEvento }),
+					...(newFilters.generosMusicais && {
+						generos: newFilters.generosMusicais,
+					}),
+					...(newFilters.NomeOuDescricao && { q: newFilters.NomeOuDescricao }),
+				} as any,
 			});
 		},
 		[navigate]
@@ -153,66 +185,58 @@ export const useSearchFiltersWithURL = () => {
 			pagina: filters.pagina,
 			ordenarPorAvaliacao: filters.ordenarPorAvaliacao,
 			NomeOuDescricao: filters.NomeOuDescricao,
-			codigoMunicipio: filters.codigoMunicipio,
-			categorias:
-				filters.categorias.length > 0 ? filters.categorias : undefined,
-			tiposEvento:
-				filters.tiposEvento.length > 0 ? filters.tiposEvento : undefined,
-			generosMusicais:
-				filters.generosMusicais.length > 0
-					? filters.generosMusicais
-					: undefined,
+			codigoMunicipio: filters.codigoMunicipio
+				? parseInt(filters.codigoMunicipio?.value)
+				: undefined,
+			categorias: filters.categorias
+				? [parseInt(filters.categorias.value)]
+				: undefined,
+			tiposEvento: filters.tiposEvento
+				? [parseInt(filters.tiposEvento.value)]
+				: undefined,
+			generosMusicais: filters.generosMusicais
+				? [parseInt(filters.generosMusicais.value)]
+				: undefined,
 		};
 	}, [filters]);
-
-	// Helper functions to convert arrays to/from Option format
-	const arrayToOptions = useCallback(
-		(
-			ids: Array<number>,
-			allOptions: Array<{ Id: number; Nome: string }>
-		): Array<Option> => {
-			return ids
-				.map((id) => {
-					const option = allOptions.find((opt) => opt.Id === id);
-					return option ? { value: id.toString(), label: option.Nome } : null;
-				})
-				.filter((option): option is Option => option !== null);
-		},
-		[]
-	);
-
-	const optionsToArray = useCallback(
-		(options: Array<Option>): Array<number> => {
-			return options
-				.map((opt) => parseInt(opt.value))
-				.filter((id) => !isNaN(id));
-		},
-		[]
-	);
 
 	return {
 		filters,
 		updateFilters,
 		toSearchRequest,
-		arrayToOptions,
-		optionsToArray,
 		hasActiveFilters: Boolean(
 			filters.NomeOuDescricao ||
 			filters.codigoMunicipio ||
-			filters.categorias.length > 0 ||
-			filters.tiposEvento.length > 0 ||
-			filters.generosMusicais.length > 0
+			filters.categorias ||
+			filters.tiposEvento ||
+			filters.generosMusicais
 		),
+
+		selectedCities,
+		selectedCategories,
+		selectedGenres,
+		selectedEventTypes,
+		setSelectedCities,
+		setSelectedCategories,
+		setSelectedGenres,
+		setSelectedEventTypes,
+
 		clearFilters: () => {
 			const clearedFilters: SearchFilters = {
-				categorias: [],
-				tiposEvento: [],
-				generosMusicais: [],
+				codigoMunicipio: null,
+				categorias: null,
+				tiposEvento: null,
+				generosMusicais: null,
 				ordenarPorAvaliacao: false,
 				pagina: 1,
 			};
 			setFilters(clearedFilters);
 			updateURL(clearedFilters);
+
+			setSelectedCities([]);
+			setSelectedCategories([]);
+			setSelectedGenres([]);
+			setSelectedEventTypes([]);
 		},
 	};
 };

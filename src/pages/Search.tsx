@@ -3,7 +3,6 @@ import { Search, X, ArrowLeft, MapPin } from "lucide-react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { Button } from "../components/ui/Button/Button";
 import { InputField } from "../components/forms/InputField/InputField";
-import type { Option } from "../components/forms/Select/Select";
 import { Select } from "../components/forms/Select/Select";
 import { ArtistCardWithFavorites } from "../components/cards/ArtistCard/ArtistCardWithFavorites";
 import { MainLayout } from "../components/layout/MainLayout";
@@ -26,23 +25,22 @@ export const SearchPage = () => {
 		filters,
 		updateFilters,
 		toSearchRequest,
-		optionsToArray,
 		hasActiveFilters,
 		clearFilters,
+
+		selectedCities,
+		selectedCategories,
+		selectedGenres,
+		selectedEventTypes,
+		setSelectedCities,
+		setSelectedCategories,
+		setSelectedGenres,
+		setSelectedEventTypes,
 	} = useSearchFiltersWithURL();
 
 	// Local state for search input with debounce
 	const [searchInput, setSearchInput] = useState(filters.NomeOuDescricao ?? "");
 	const debouncedSearchTerm = useDebounce(searchInput, 500);
-
-	const [selectedCities, setSelectedCities] = useState<Array<Option>>([]);
-	const [selectedCategories, setSelectedCategories] = useState<Array<Option>>(
-		[]
-	);
-	const [selectedGenres, setSelectedGenres] = useState<Array<Option>>([]);
-	const [selectedEventTypes, setSelectedEventTypes] = useState<Array<Option>>(
-		[]
-	);
 
 	const [searchCity, setSearchCity] = useState("");
 	const [cityPage, setCityPage] = useState(1);
@@ -51,10 +49,6 @@ export const SearchPage = () => {
 	const handleClearFilters = () => {
 		clearFilters();
 		setSearchInput("");
-		setSelectedCities([]);
-		setSelectedCategories([]);
-		setSelectedGenres([]);
-		setSelectedEventTypes([]);
 	};
 
 	// API hooks
@@ -202,9 +196,7 @@ export const SearchPage = () => {
 											const option = options.find((item) => item);
 
 											updateFilters({
-												codigoMunicipio: option
-													? Number(option.value)
-													: undefined,
+												codigoMunicipio: option,
 												pagina: 1,
 											});
 										}}
@@ -247,8 +239,10 @@ export const SearchPage = () => {
 											setSelectedOptions={(options) => {
 												setSelectedCategories(options);
 
+												const option = options.find((item) => item);
+
 												updateFilters({
-													categorias: optionsToArray(options),
+													categorias: option,
 													pagina: 1,
 												});
 											}}
@@ -270,8 +264,10 @@ export const SearchPage = () => {
 											setSelectedOptions={(options) => {
 												setSelectedEventTypes(options);
 
+												const option = options.find((item) => item);
+
 												updateFilters({
-													tiposEvento: optionsToArray(options),
+													tiposEvento: option,
 													pagina: 1,
 												});
 											}}
@@ -293,8 +289,10 @@ export const SearchPage = () => {
 											setSelectedOptions={(options) => {
 												setSelectedGenres(options);
 
+												const option = options.find((item) => item);
+
 												updateFilters({
-													generosMusicais: optionsToArray(options),
+													generosMusicais: option,
 													pagina: 1,
 												});
 											}}
