@@ -31,7 +31,7 @@ import {
 } from "../../../hooks/useOnboarding";
 import { toast } from "sonner";
 import type { OnboardingApiResponse } from "@/api/types";
-import { decryptValue } from "@/utils/encryptValue";
+import { decryptValue, encryptValue } from "@/utils/encryptValue";
 import { useUser } from "@/hooks/useUser";
 
 // helper text matching Step1
@@ -136,7 +136,14 @@ export default function ContactStep() {
 			toast.success("Informações de contato salvas com sucesso");
 
 			// Navigate to next step
-			await navigate({ to: "/band/register/onboarding/2" });
+			if (onboardingData?.id) {
+				await navigate({
+					to: "/band/register/onboarding/2",
+					search: {
+						registerId: encryptValue(onboardingData.id.toString()),
+					},
+				});
+			}
 		} catch (error: unknown) {
 			console.error("Error saving contact data:", error);
 			toast.error("Erro ao salvar informações de contato");

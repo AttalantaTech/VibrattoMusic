@@ -57,7 +57,7 @@ export const PreviewProfileModal = ({
 				.publishOnboarding(Number(produtoMusicalId))
 				.then(async (id) => {
 					await queryClient.invalidateQueries({
-						queryKey: profileKeys.musicalProducts(user?.id),
+						queryKey: profileKeys.musicalProducts({ userId: user?.id }),
 					});
 
 					setNewProductCreated(id);

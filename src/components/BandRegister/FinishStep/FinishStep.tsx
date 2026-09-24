@@ -37,7 +37,7 @@ export const FinishStep = ({
 
 			// Invalidate profile cache to refresh profile status
 			await queryClient.invalidateQueries({
-				queryKey: profileKeys.musicalProducts(user?.id),
+				queryKey: profileKeys.musicalProducts({ userId: user?.id }),
 			});
 
 			onComplete?.();

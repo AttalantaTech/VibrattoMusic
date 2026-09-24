@@ -127,7 +127,7 @@ export const useUpdateMusicalProduct = () => {
 		onSuccess: () => {
 			// Invalidate related queries
 			void queryClient.invalidateQueries({
-				queryKey: profileKeys.musicalProducts(user?.id),
+				queryKey: profileKeys.musicalProducts({ userId: user?.id }),
 			});
 		},
 	});

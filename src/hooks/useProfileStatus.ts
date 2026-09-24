@@ -6,8 +6,13 @@ import { musicalProductService } from "../api";
 // Query keys for better organization
 export const profileKeys = {
 	all: ["profile"] as const,
-	musicalProducts: (userId?: number) =>
-		[...profileKeys.all, "musicalProducts", userId] as const,
+	musicalProducts: ({
+		userId,
+		allowRequest,
+	}: {
+		userId?: number;
+		allowRequest?: boolean;
+	}) => [...profileKeys.all, "musicalProducts", userId, allowRequest] as const,
 };
 
 export type ProfileStatus = "COMPLETE" | "INCOMPLETE";
@@ -80,7 +85,7 @@ export const useProfileStatus = () => {
 		isLoading,
 		refetch,
 	} = useQuery({
-		queryKey: profileKeys.musicalProducts(user?.id),
+		queryKey: profileKeys.musicalProducts({ userId: user?.id }),
 		queryFn: async () => {
 			return musicalProductService.getMyProducts();
 		},
