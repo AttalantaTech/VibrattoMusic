@@ -164,14 +164,16 @@ export function useDetailsForm({ musicalProduct }: UseDetailsFormProps) {
 
 			toast.success("Informações da Banda salvas com sucesso");
 
-			if (musicalProduct?.id) {
-				await navigate({
-					to: "/band/register/onboarding/3",
-					search: {
+			const search = musicalProduct?.id
+				? {
 						registerId: encryptValue(musicalProduct.id.toString()),
-					},
-				});
-			}
+					}
+				: {};
+
+			await navigate({
+				to: "/band/register/onboarding/3",
+				search,
+			});
 		} catch (error) {
 			if (error instanceof VibrattoApiError) {
 				const errorMessage = error.data?.erros.find((error_) => error_);

@@ -136,14 +136,16 @@ export default function ContactStep() {
 			toast.success("Informações de contato salvas com sucesso");
 
 			// Navigate to next step
-			if (onboardingData?.id) {
-				await navigate({
-					to: "/band/register/onboarding/2",
-					search: {
+			const search = onboardingData?.id
+				? {
 						registerId: encryptValue(onboardingData.id.toString()),
-					},
-				});
-			}
+					}
+				: {};
+
+			await navigate({
+				to: "/band/register/onboarding/2",
+				search,
+			});
 		} catch (error: unknown) {
 			console.error("Error saving contact data:", error);
 			toast.error("Erro ao salvar informações de contato");

@@ -252,14 +252,16 @@ export default function DetailsStep() {
 						variant="outline"
 						className="w-full sm:w-auto"
 						onClick={async () => {
-							if (onboardingData?.id) {
-								await navigate({
-									to: "/band/register/onboarding/1",
-									search: {
+							const search = onboardingData?.id
+								? {
 										registerId: encryptValue(onboardingData.id.toString()),
-									},
-								});
-							}
+									}
+								: {};
+
+							await navigate({
+								to: "/band/register/onboarding/1",
+								search,
+							});
 						}}
 					>
 						<div className="flex items-center gap-1">

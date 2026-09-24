@@ -221,14 +221,16 @@ export default function PublishStep() {
 								type="button"
 								variant="outline"
 								onClick={async () => {
-									if (onboardingData?.id) {
-										await navigate({
-											to: "/band/register/onboarding/5",
-											search: {
+									const search = onboardingData?.id
+										? {
 												registerId: encryptValue(onboardingData.id.toString()),
-											},
-										});
-									}
+											}
+										: {};
+
+									await navigate({
+										to: "/band/register/onboarding/5",
+										search,
+									});
 								}}
 								className="w-full sm:w-auto"
 							>

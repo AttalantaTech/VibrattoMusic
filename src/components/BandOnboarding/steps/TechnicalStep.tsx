@@ -472,14 +472,16 @@ export default function TechnicalStep() {
 
 			toast.success("Rider e Configurações Técnicas salvos com sucesso");
 
-			if (onboardingData?.id) {
-				await navigate({
-					to: "/band/register/onboarding/5",
-					search: {
+			const search = onboardingData?.id
+				? {
 						registerId: encryptValue(onboardingData.id.toString()),
-					},
-				});
-			}
+					}
+				: {};
+
+			await navigate({
+				to: "/band/register/onboarding/5",
+				search,
+			});
 		} catch (error) {
 			if (error instanceof VibrattoApiError) {
 				const errorMessage = error.data?.erros.find((error_) => error_);
@@ -819,14 +821,16 @@ export default function TechnicalStep() {
 							type="button"
 							variant="outline"
 							onClick={async () => {
-								if (onboardingData?.id) {
-									await navigate({
-										to: "/band/register/onboarding/3",
-										search: {
+								const search = onboardingData?.id
+									? {
 											registerId: encryptValue(onboardingData.id.toString()),
-										},
-									});
-								}
+										}
+									: {};
+
+								await navigate({
+									to: "/band/register/onboarding/3",
+									search,
+								});
 							}}
 						>
 							<div className="flex items-center gap-1">

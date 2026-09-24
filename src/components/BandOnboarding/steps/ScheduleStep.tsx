@@ -168,14 +168,16 @@ export default function ScheduleStep() {
 
 					toast.success("Agenda salva com sucesso");
 
-					if (onboardingData?.id) {
-						await navigate({
-							to: "/band/register/onboarding/6",
-							search: {
+					const search = onboardingData?.id
+						? {
 								registerId: encryptValue(onboardingData.id.toString()),
-							},
-						});
-					}
+							}
+						: {};
+
+					await navigate({
+						to: "/band/register/onboarding/6",
+						search,
+					});
 				})
 				.catch((error: any) => {
 					if (
@@ -296,14 +298,16 @@ export default function ScheduleStep() {
 								type="button"
 								variant="outline"
 								onClick={async () => {
-									if (onboardingData?.id) {
-										await navigate({
-											to: "/band/register/onboarding/4",
-											search: {
+									const search = onboardingData?.id
+										? {
 												registerId: encryptValue(onboardingData.id.toString()),
-											},
-										});
-									}
+											}
+										: {};
+
+									await navigate({
+										to: "/band/register/onboarding/4",
+										search,
+									});
 								}}
 							>
 								<div className="flex items-center gap-1">
