@@ -39,7 +39,7 @@ import type {
 } from "@/api/types";
 import { useInstrumentos } from "@/hooks/useFilters";
 import { toast } from "sonner";
-import { decryptValue } from "@/utils/encryptValue";
+import { decryptValue, encryptValue } from "@/utils/encryptValue";
 import { StageMapArea } from "@/components/StageMap/StageMapArea";
 import { ViewStageMapModal } from "@/components/ViewStageMapModal";
 
@@ -472,7 +472,16 @@ export default function TechnicalStep() {
 
 			toast.success("Rider e Configurações Técnicas salvos com sucesso");
 
-			await navigate({ to: "/band/register/onboarding/5" });
+			const search = onboardingData?.id
+				? {
+						registerId: encryptValue(onboardingData.id.toString()),
+					}
+				: {};
+
+			await navigate({
+				to: "/band/register/onboarding/5",
+				search,
+			});
 		} catch (error) {
 			if (error instanceof VibrattoApiError) {
 				const errorMessage = error.data?.erros.find((error_) => error_);
@@ -812,7 +821,16 @@ export default function TechnicalStep() {
 							type="button"
 							variant="outline"
 							onClick={async () => {
-								await navigate({ to: "/band/register/onboarding/3" });
+								const search = onboardingData?.id
+									? {
+											registerId: encryptValue(onboardingData.id.toString()),
+										}
+									: {};
+
+								await navigate({
+									to: "/band/register/onboarding/3",
+									search,
+								});
 							}}
 						>
 							<div className="flex items-center gap-1">

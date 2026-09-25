@@ -17,7 +17,7 @@ import { ToggleSwitch } from "../../forms/ToggleSwitch/ToggleSwitch";
 import { TextAreaField } from "../../forms/TextAreaField/TextAreaField";
 import { Button } from "../../ui/Button/Button";
 import { useOnboardingData } from "../../../hooks/useOnboarding";
-import { decryptValue } from "@/utils/encryptValue";
+import { decryptValue, encryptValue } from "@/utils/encryptValue";
 import { useFilterLookup } from "@/domains/MusicalProfile/hooks/useFilterLookup";
 import { useDetailsForm } from "@/domains/MusicalProfile/hooks/useDetailsForm";
 
@@ -251,7 +251,18 @@ export default function DetailsStep() {
 						type="button"
 						variant="outline"
 						className="w-full sm:w-auto"
-						onClick={() => navigate({ to: "/band/register/onboarding/1" })}
+						onClick={async () => {
+							const search = onboardingData?.id
+								? {
+										registerId: encryptValue(onboardingData.id.toString()),
+									}
+								: {};
+
+							await navigate({
+								to: "/band/register/onboarding/1",
+								search,
+							});
+						}}
 					>
 						<div className="flex items-center gap-1">
 							<ChevronLeft />
