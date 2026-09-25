@@ -179,7 +179,7 @@ export const Chat = () => {
 											}}
 										>
 											<span className="text-sm font-medium">
-												Criar Proposta
+												Proposta Avulsa
 											</span>
 										</MoreOptionsDropdownItem>
 
