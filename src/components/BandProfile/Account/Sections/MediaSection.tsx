@@ -4,7 +4,6 @@ import { ChevronLeft, Loader2 } from "lucide-react";
 import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
 
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-// import { useUpdateMusicalProduct } from "@/hooks/useMusicalProducts";
 
 import { useMediaForm } from "../MediaSection/hooks/useMediaForm";
 import { useImageUpload } from "../MediaSection/hooks/useImageUpload";
@@ -24,6 +23,7 @@ import { PriceSection } from "../MediaSection/components/PriceSection";
 import { Image as ImageIcon } from "lucide-react";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/Button/Button";
+import type { FilePropsLocal } from "@/api/types";
 
 interface MediaSectionProps {
 	onActiveSection: (section: string) => void;
@@ -36,6 +36,12 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 	const { form } = useMediaForm(activeProduct);
 
 	const { handleSubmit, watch } = form;
+
+	// SPOTIFY
+	const spotifyPlaylistId = watch("spotifyPlaylistId");
+	const spotifyResource = useMemo(() => {
+		return extractSpotifyResource(spotifyPlaylistId || "");
+	}, [spotifyPlaylistId]);
 
 	// SOCIAL NETWORKS
 	const {
@@ -69,16 +75,16 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 	const { loadedItems, markAsLoaded } = useMediaPreview();
 
 	// SUBMIT
-	const { submit, loading } = useMediaSubmit({
+	const {
+		submit,
+		loading,
+		addProfilePhoto,
+		addCarouselImage,
+		addClippingFile,
+	} = useMediaSubmit({
 		musicalProductId: activeProduct?.id,
 		mode: "edit",
 	});
-
-	// SPOTIFY
-	const spotifyPlaylistId = watch("spotifyPlaylistId");
-	const spotifyResource = useMemo(() => {
-		return extractSpotifyResource(spotifyPlaylistId || "");
-	}, [spotifyPlaylistId]);
 
 	const onSubmit = handleSubmit(async (data) => {
 		await submit({
@@ -93,6 +99,43 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 		});
 	});
 
+	const handleProfilePhoto = async (file: File | null) => {
+		if (!file) return;
+
+		const blobUrl = await uploadImage(file, "ProdutoMusicalFotoPerfil");
+
+		await addProfilePhoto(blobUrl);
+	};
+
+	const handleUploadCarouselImage = async (file: File | null) => {
+		if (!file) return;
+
+		const blobUrl = await uploadImage(file, "ProdutoMusicalCarrossel");
+
+		if (blobUrl) {
+			const images: Array<FilePropsLocal> = [
+				...carouselImages,
+				{ id: null, link: blobUrl, legenda: "" },
+			];
+
+			await addCarouselImage(images);
+		}
+	};
+
+	const handleUploadClipping = async (file: File | null) => {
+		if (!file) return;
+		const blobUrl = await uploadImage(file, "ProdutoMusicalClipagem");
+
+		if (blobUrl) {
+			const newClippings: Array<FilePropsLocal> = [
+				...clippings,
+				{ id: null, link: blobUrl, legenda: "" },
+			];
+
+			await addClippingFile(newClippings);
+		}
+	};
+
 	return (
 		<AccountLayout
 			headerIcon={<ImageIcon className="text-primary-700" size={24} />}
@@ -105,28 +148,20 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 						<ProfileImageSection
 							image={profilePhoto}
 							uploading={uploadingType === "ProdutoMusicalFotoPerfil"}
-							onUpload={async (file) => {
-								if (file) {
-									await uploadImage(file, "ProdutoMusicalFotoPerfil");
-								}
-							}}
+							onUpload={(file) => handleProfilePhoto(file)}
 							onDelete={() => removeImage("ProdutoMusicalFotoPerfil")}
 						/>
 
-						{/* CLIPPINGS */}
-						<ClippingSection
-							clipping={clippings}
-							onLegendClipping={handleLegendClipping}
+						{/* CAROUSEL */}
+						<CarouselSection
+							carousel={carouselImages}
+							onLegendCarousel={handleLegendImage}
 							loadingMap={loadedItems}
 							markAsLoaded={markAsLoaded}
-							onUpload={async (file) => {
-								if (file) {
-									await uploadImage(file, "ProdutoMusicalClipagem");
-								}
-							}}
-							onRemove={async (id: number | null, index: number) => {
-								await removeImage("ProdutoMusicalClipagem", id, index);
-							}}
+							onUpload={(file) => handleUploadCarouselImage(file)}
+							onRemove={(id: number | null, index: number) =>
+								removeImage("ProdutoMusicalCarrossel", id, index)
+							}
 						/>
 
 						{/* SOCIAL NETWORKS */}
@@ -137,22 +172,6 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 							networks={socialNetworks}
 							append={appendSocial}
 							remove={removeSocial}
-						/>
-
-						{/* CAROUSEL */}
-						<CarouselSection
-							carousel={carouselImages}
-							onLegendCarousel={handleLegendImage}
-							loadingMap={loadedItems}
-							markAsLoaded={markAsLoaded}
-							onUpload={async (file) => {
-								if (file) {
-									await uploadImage(file, "ProdutoMusicalCarrossel");
-								}
-							}}
-							onRemove={async (id: number | null, index: number) => {
-								await removeImage("ProdutoMusicalCarrossel", id, index);
-							}}
 						/>
 
 						{/* MAIN MEDIA */}
@@ -169,6 +188,18 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 								spotifyResource
 									? `https://open.spotify.com/embed/${spotifyResource.type}/${spotifyResource.id}`
 									: null
+							}
+						/>
+
+						{/* CLIPPINGS */}
+						<ClippingSection
+							clipping={clippings}
+							onLegendClipping={handleLegendClipping}
+							loadingMap={loadedItems}
+							markAsLoaded={markAsLoaded}
+							onUpload={(file) => handleUploadClipping(file)}
+							onRemove={(id: number | null, index: number) =>
+								removeImage("ProdutoMusicalClipagem", id, index)
 							}
 						/>
 
