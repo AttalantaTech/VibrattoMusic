@@ -21,12 +21,17 @@ import { useMemo } from "react";
 import { Button } from "@/components/ui/Button/Button";
 import { useOnboardingData } from "@/hooks/useOnboarding";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { decryptValue } from "@/utils/encryptValue";
-import type { OnboardingApiResponse } from "@/api/types";
+import { decryptValue, encryptValue } from "@/utils/encryptValue";
+import type {
+	FileEventType,
+	MusicalProductImages,
+	OnboardingApiResponse,
+} from "@/api/types";
 import { StepLayout } from "../layout/StepLayout/StepLayout";
 
 export default function MediaStep() {
 	const navigate = useNavigate();
+
 	const { data } = useOnboardingData();
 	const searchParameters = useSearch({ from: "/band/register/onboarding/3" });
 
@@ -47,8 +52,13 @@ export default function MediaStep() {
 
 	// FORM
 	const { form } = useMediaForm(onboardingData);
-
 	const { handleSubmit, watch } = form;
+
+	// SPOTIFY
+	const spotifyPlaylistId = watch("spotifyPlaylistId");
+	const spotifyResource = useMemo(() => {
+		return extractSpotifyResource(spotifyPlaylistId || "");
+	}, [spotifyPlaylistId]);
 
 	// SOCIAL NETWORKS
 	const {
@@ -82,16 +92,11 @@ export default function MediaStep() {
 	const { loadedItems, markAsLoaded } = useMediaPreview();
 
 	// SUBMIT
-	const { submit, loading } = useMediaSubmit({
-		musicalProductId: onboardingData?.id,
-		mode: "onboarding",
-	});
-
-	// SPOTIFY
-	const spotifyPlaylistId = watch("spotifyPlaylistId");
-	const spotifyResource = useMemo(() => {
-		return extractSpotifyResource(spotifyPlaylistId || "");
-	}, [spotifyPlaylistId]);
+	const { submit, loading, addMediaOnboarding, addImageOnboarding } =
+		useMediaSubmit({
+			musicalProductId: onboardingData?.id,
+			mode: "onboarding",
+		});
 
 	const onSubmit = handleSubmit(async (data) => {
 		await submit({
@@ -106,6 +111,67 @@ export default function MediaStep() {
 		});
 	});
 
+	const handleUploadImage = async (
+		eventType: FileEventType,
+		file: File | null
+	) => {
+		if (!file) return;
+
+		const blobUrl = await uploadImage(file, eventType);
+
+		if (blobUrl) {
+			const imageData: MusicalProductImages =
+				eventType === "ProdutoMusicalOnboardingFotoPerfil"
+					? {
+							FotoPerfil: blobUrl ?? null,
+							ImagensCarrossel: carouselImages,
+						}
+					: {
+							FotoPerfil: profilePhoto ?? null,
+							ImagensCarrossel: [
+								...carouselImages,
+								{ link: blobUrl, legenda: "" },
+							],
+						};
+
+			await addImageOnboarding({
+				...imageData,
+			});
+		}
+	};
+
+	const handleUploadClipping = async (file: File | null) => {
+		if (file) {
+			const blobUrl = await uploadImage(
+				file,
+				"ProdutoMusicalOnboardingClipagem"
+			);
+
+			if (blobUrl) {
+				const exibirValorServico = watch("exibirValorServico");
+				const redeSocial = watch("redeSocial");
+				const videosYouTube = watch("videosYouTube");
+				const valor = watch("valorServico");
+
+				const valorServico = exibirValorServico
+					? valor
+						? Number(valor)
+						: null
+					: null;
+
+				await addMediaOnboarding({
+					exibirValorServico,
+					redeSocial: redeSocial || [],
+					videosYouTube: videosYouTube || [],
+					spotifyPlaylistId,
+					valorServico,
+
+					clipagem: [...clippings, { id: null, link: blobUrl, legenda: "" }],
+				});
+			}
+		}
+	};
+
 	return (
 		<StepLayout
 			currentStep={3}
@@ -119,32 +185,24 @@ export default function MediaStep() {
 						<ProfileImageSection
 							image={profilePhoto}
 							uploading={uploadingType === "ProdutoMusicalOnboardingFotoPerfil"}
-							onUpload={async (file) => {
-								if (file) {
-									await uploadImage(file, "ProdutoMusicalOnboardingFotoPerfil");
-								}
-							}}
+							onUpload={(file) =>
+								handleUploadImage("ProdutoMusicalOnboardingFotoPerfil", file)
+							}
 							onDelete={() => removeImage("ProdutoMusicalOnboardingFotoPerfil")}
 						/>
 
-						{/* CLIPPINGS */}
-						<ClippingSection
-							clipping={clippings}
-							onLegendClipping={handleLegendClipping}
+						{/* CAROUSEL */}
+						<CarouselSection
+							carousel={carouselImages}
+							onLegendCarousel={handleLegendImage}
 							loadingMap={loadedItems}
 							markAsLoaded={markAsLoaded}
-							onUpload={async (file) => {
-								if (file) {
-									await uploadImage(file, "ProdutoMusicalOnboardingClipagem");
-								}
-							}}
-							onRemove={async (id: number | null, index: number) => {
-								await removeImage(
-									"ProdutoMusicalOnboardingClipagem",
-									id,
-									index
-								);
-							}}
+							onUpload={(file) =>
+								handleUploadImage("ProdutoMusicalOnboardingCarrossel", file)
+							}
+							onRemove={(id: number | null, index: number) =>
+								removeImage("ProdutoMusicalOnboardingCarrossel", id, index)
+							}
 						/>
 
 						{/* SOCIAL NETWORKS */}
@@ -155,26 +213,6 @@ export default function MediaStep() {
 							networks={socialNetworks}
 							append={appendSocial}
 							remove={removeSocial}
-						/>
-
-						{/* CAROUSEL */}
-						<CarouselSection
-							carousel={carouselImages}
-							onLegendCarousel={handleLegendImage}
-							loadingMap={loadedItems}
-							markAsLoaded={markAsLoaded}
-							onUpload={async (file) => {
-								if (file) {
-									await uploadImage(file, "ProdutoMusicalOnboardingCarrossel");
-								}
-							}}
-							onRemove={async (id: number | null, index: number) => {
-								await removeImage(
-									"ProdutoMusicalOnboardingCarrossel",
-									id,
-									index
-								);
-							}}
 						/>
 
 						{/* MAIN MEDIA */}
@@ -191,6 +229,18 @@ export default function MediaStep() {
 								spotifyResource
 									? `https://open.spotify.com/embed/${spotifyResource.type}/${spotifyResource.id}`
 									: null
+							}
+						/>
+
+						{/* CLIPPINGS */}
+						<ClippingSection
+							clipping={clippings}
+							onLegendClipping={handleLegendClipping}
+							loadingMap={loadedItems}
+							markAsLoaded={markAsLoaded}
+							onUpload={(file) => handleUploadClipping(file)}
+							onRemove={(id: number | null, index: number) =>
+								removeImage("ProdutoMusicalOnboardingClipagem", id, index)
 							}
 						/>
 
@@ -212,8 +262,17 @@ export default function MediaStep() {
 								type="button"
 								variant="secondary"
 								className="w-full sm:w-auto"
-								onClick={() => {
-									void navigate({ to: "/band/register/onboarding/2" });
+								onClick={async () => {
+									const search = onboardingData?.id
+										? {
+												registerId: encryptValue(onboardingData.id.toString()),
+											}
+										: {};
+
+									await navigate({
+										to: "/band/register/onboarding/2",
+										search,
+									});
 								}}
 							>
 								<div className="flex items-center gap-1">

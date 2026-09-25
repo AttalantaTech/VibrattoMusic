@@ -11,6 +11,7 @@ import { useSaveOnboardingDetails } from "@/hooks/useOnboarding";
 import { useNavigate } from "@tanstack/react-router";
 import { useOnboarding } from "@/contexts/hooks/useOnboarding";
 import { useBandRegistration } from "@/contexts/BandRegistrationContext";
+import { encryptValue } from "@/utils/encryptValue";
 
 interface UseDetailsFormProps {
 	musicalProduct: OnboardingApiResponse | null;
@@ -163,7 +164,16 @@ export function useDetailsForm({ musicalProduct }: UseDetailsFormProps) {
 
 			toast.success("Informações da Banda salvas com sucesso");
 
-			void navigate({ to: "/band/register/onboarding/3" });
+			const search = musicalProduct?.id
+				? {
+						registerId: encryptValue(musicalProduct.id.toString()),
+					}
+				: {};
+
+			await navigate({
+				to: "/band/register/onboarding/3",
+				search,
+			});
 		} catch (error) {
 			if (error instanceof VibrattoApiError) {
 				const errorMessage = error.data?.erros.find((error_) => error_);

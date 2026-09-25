@@ -25,7 +25,7 @@ import {
 	useOnboardingData,
 } from "@/hooks/useOnboarding";
 import { ptBR } from "date-fns/locale";
-import { decryptValue } from "@/utils/encryptValue";
+import { decryptValue, encryptValue } from "@/utils/encryptValue";
 import { mapAgendaEventToFormData } from "@/utils/mapAgendaEventToFormData";
 import { EventModal } from "@/components/BandProfile/Agenda/EventModal/EventModal";
 import { calculateDuration } from "@/components/BandProfile/Agenda/utils";
@@ -167,7 +167,17 @@ export default function ScheduleStep() {
 					markStepComplete("5");
 
 					toast.success("Agenda salva com sucesso");
-					await navigate({ to: "/band/register/onboarding/6" });
+
+					const search = onboardingData?.id
+						? {
+								registerId: encryptValue(onboardingData.id.toString()),
+							}
+						: {};
+
+					await navigate({
+						to: "/band/register/onboarding/6",
+						search,
+					});
 				})
 				.catch((error: any) => {
 					if (
@@ -288,7 +298,16 @@ export default function ScheduleStep() {
 								type="button"
 								variant="outline"
 								onClick={async () => {
-									await navigate({ to: "/band/register/onboarding/4" });
+									const search = onboardingData?.id
+										? {
+												registerId: encryptValue(onboardingData.id.toString()),
+											}
+										: {};
+
+									await navigate({
+										to: "/band/register/onboarding/4",
+										search,
+									});
 								}}
 							>
 								<div className="flex items-center gap-1">

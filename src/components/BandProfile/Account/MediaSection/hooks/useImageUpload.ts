@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { toast } from "sonner";
 
-import { imageUploadService } from "@/api";
+import { VibrattoApiError } from "@/api";
 
 import type { FileEventType, FilePropsLocal } from "@/api/types";
+import { useQueryClient } from "@tanstack/react-query";
+import { profileKeys, useProfileStatus } from "@/hooks/useProfileStatus";
+import { useDeleteImage, useUploadImage } from "@/hooks/useImage";
+import { onboardingKeys } from "@/hooks/useOnboarding";
 
 interface Props {
 	activeProductId?: number;
@@ -19,6 +23,12 @@ export function useImageUpload({
 	initialCarousel = [],
 	initialClipping = [],
 }: Props) {
+	const { user } = useProfileStatus();
+	const queryClient = useQueryClient();
+
+	const uploadImageMutation = useUploadImage();
+	const deleteImageMutation = useDeleteImage();
+
 	const [uploadingType, setUploadingType] = useState<FileEventType | null>(
 		null
 	);
@@ -59,10 +69,13 @@ export function useImageUpload({
 		);
 	};
 
-	const uploadImage = async (file: File, type: FileEventType) => {
+	const uploadImage = async (
+		file: File,
+		type: FileEventType
+	): Promise<string | null> => {
 		if (!activeProductId) {
 			toast.error("Perfil Profissional não encontrado");
-			return;
+			return null;
 		}
 
 		try {
@@ -74,15 +87,15 @@ export function useImageUpload({
 					type === "ProdutoMusicalOnboardingFotoPerfil") &&
 				profilePhoto
 			) {
-				await imageUploadService.deleteImage({
+				await deleteImageMutation.mutateAsync({
 					idCadastro: activeProductId,
-					evento: type,
+					tipoEvento: type,
 				});
 			}
 
-			const blobUrl = await imageUploadService.uploadImage({
+			const blobUrl = await uploadImageMutation.mutateAsync({
 				file,
-				evento: type,
+				tipoEvento: type,
 				idCadastro: activeProductId,
 				idLista:
 					type === "ProdutoMusicalCarrossel" ||
@@ -126,11 +139,26 @@ export function useImageUpload({
 					},
 				]);
 			}
-		} catch (error) {
-			console.error(error);
-			toast.error("Erro ao fazer upload");
 
-			return;
+			return blobUrl;
+		} catch (error) {
+			if (error instanceof VibrattoApiError) {
+				const errorMessage = error.data?.erros.find((error_) => error_);
+
+				if (error.statusCode === 500) {
+					toast.error(
+						"Erro interno do servidor. Por favor, verifique os dados e tente novamente."
+					);
+					return null;
+				} else if (errorMessage) {
+					toast.error(errorMessage);
+					return null;
+				}
+				toast.error("Aconteceu um erro ao tentar processar sua solicitação.");
+				return null;
+			}
+
+			return null;
 		} finally {
 			setUploadingType(null);
 		}
@@ -148,9 +176,9 @@ export function useImageUpload({
 
 		try {
 			if (imageId) {
-				await imageUploadService.deleteImage({
+				await deleteImageMutation.mutateAsync({
 					idCadastro: activeProductId,
-					evento: type,
+					tipoEvento: type,
 					idLista: imageId,
 				});
 			}
@@ -159,9 +187,9 @@ export function useImageUpload({
 				type === "ProdutoMusicalFotoPerfil" ||
 				type === "ProdutoMusicalOnboardingFotoPerfil"
 			) {
-				await imageUploadService.deleteImage({
+				await deleteImageMutation.mutateAsync({
 					idCadastro: activeProductId,
-					evento: type,
+					tipoEvento: type,
 				});
 
 				setProfilePhoto(null);
@@ -186,12 +214,38 @@ export function useImageUpload({
 					previous.filter((_, index_) => index_ !== index)
 				);
 			}
+
+			if (
+				type === "ProdutoMusicalFotoPerfil" ||
+				type === "ProdutoMusicalCarrossel" ||
+				type === "ProdutoMusicalClipagem"
+			) {
+				await queryClient.invalidateQueries({
+					queryKey: profileKeys.musicalProducts(user?.id),
+				});
+			} else {
+				await queryClient.invalidateQueries({
+					queryKey: onboardingKeys.pending(),
+				});
+			}
 		} catch (error) {
 			console.error(error);
 
 			toast.error("Erro ao remover imagem");
 		}
 	};
+
+	useEffect(() => {
+		setProfilePhoto(initialProfilePhoto);
+	}, [initialProfilePhoto]);
+
+	useEffect(() => {
+		setCarouselImages(initialCarousel);
+	}, [initialCarousel]);
+
+	useEffect(() => {
+		setClippings(initialClipping);
+	}, [initialClipping]);
 
 	return {
 		uploadImage,

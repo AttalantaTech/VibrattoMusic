@@ -12,7 +12,7 @@ import { Button } from "../../ui/Button/Button";
 import { StepLayout } from "../layout/StepLayout/StepLayout";
 import { useOnboardingData } from "@/hooks/useOnboarding";
 import type { OnboardingApiResponse } from "@/api/types";
-import { decryptValue } from "@/utils/encryptValue";
+import { decryptValue, encryptValue } from "@/utils/encryptValue";
 import { PreviewProfileModal } from "../PreviewProfileModal";
 
 export default function PublishStep() {
@@ -116,7 +116,20 @@ export default function PublishStep() {
 												<Button
 													variant="outline"
 													size="sm"
-													onClick={() => navigate({ to: getStepUrl(step) })}
+													onClick={async () => {
+														const search = onboardingData?.id
+															? {
+																	registerId: encryptValue(
+																		onboardingData.id.toString()
+																	),
+																}
+															: {};
+
+														await navigate({
+															to: getStepUrl(step),
+															search,
+														});
+													}}
 													className="flex items-center gap-2 text-sm"
 												>
 													<span>Completar</span>
@@ -207,7 +220,18 @@ export default function PublishStep() {
 							<Button
 								type="button"
 								variant="outline"
-								onClick={() => navigate({ to: "/band/register/onboarding/5" })}
+								onClick={async () => {
+									const search = onboardingData?.id
+										? {
+												registerId: encryptValue(onboardingData.id.toString()),
+											}
+										: {};
+
+									await navigate({
+										to: "/band/register/onboarding/5",
+										search,
+									});
+								}}
 								className="w-full sm:w-auto"
 							>
 								<div className="flex items-center gap-1">
