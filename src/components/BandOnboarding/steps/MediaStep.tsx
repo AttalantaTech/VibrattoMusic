@@ -1,33 +1,34 @@
+import { useMemo } from "react";
+import { Image as ImageIcon } from "lucide-react";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+
 import { FormProvider, useFieldArray } from "react-hook-form";
 import { ChevronLeft, Loader2 } from "lucide-react";
-
-import { useMediaForm } from "../../BandProfile/Account/MediaSection/hooks/useMediaForm";
-import { useImageUpload } from "../../BandProfile/Account/MediaSection/hooks/useImageUpload";
-import { useSocialNetworksData } from "../../BandProfile/Account/MediaSection/hooks/useSocialNetworks";
-import { useMediaSubmit } from "../../BandProfile/Account/MediaSection/hooks/useMediaSubmit";
-import { useMediaPreview } from "../../BandProfile/Account/MediaSection/hooks/useMediaPreview";
-
 import { extractSpotifyResource } from "@/lib/utils/cn";
 
-import { ProfileImageSection } from "../../BandProfile/Account/MediaSection/components/ProfileImageSection";
-import { ClippingSection } from "../../BandProfile/Account/MediaSection/components/ClippingSection";
-import { SocialNetworksSection } from "../../BandProfile/Account/MediaSection/components/SocialNetworksSection";
-import { CarouselSection } from "../../BandProfile/Account/MediaSection/components/CarouselSection";
-import { MainMediaSection } from "../../BandProfile/Account/MediaSection/components/MainMediaSection";
-import { PriceSection } from "../../BandProfile/Account/MediaSection/components/PriceSection";
-
-import { Image as ImageIcon } from "lucide-react";
-import { useMemo } from "react";
 import { Button } from "@/components/ui/Button/Button";
 import { useOnboardingData } from "@/hooks/useOnboarding";
-import { useNavigate, useSearch } from "@tanstack/react-router";
 import { decryptValue, encryptValue } from "@/utils/encryptValue";
 import type {
 	FileEventType,
 	MusicalProductImages,
 	OnboardingApiResponse,
 } from "@/api/types";
+
 import { StepLayout } from "../layout/StepLayout/StepLayout";
+
+import { useMediaForm } from "@/features/MediaSection/hooks/useMediaForm";
+import { useImageUpload } from "@/features/MediaSection/hooks/useImageUpload";
+import { useSocialNetworksData } from "@/features/MediaSection/hooks/useSocialNetworks";
+import { useMediaSubmit } from "@/features/MediaSection/hooks/useMediaSubmit";
+import { useMediaPreview } from "@/features/MediaSection/hooks/useMediaPreview";
+
+import { ProfileImageSection } from "@/features/MediaSection/components/ProfileImageSection";
+import { ClippingSection } from "@/features/MediaSection/components/ClippingSection";
+import { SocialNetworksSection } from "@/features/MediaSection/components/SocialNetworksSection";
+import { CarouselSection } from "@/features/MediaSection/components/CarouselSection";
+import { MainMediaSection } from "@/features/MediaSection/components/MainMediaSection";
+import { PriceSection } from "@/features/MediaSection/components/PriceSection";
 
 export default function MediaStep() {
 	const navigate = useNavigate();

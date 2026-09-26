@@ -18,8 +18,8 @@ import { TextAreaField } from "../../forms/TextAreaField/TextAreaField";
 import { Button } from "../../ui/Button/Button";
 import { useOnboardingData } from "../../../hooks/useOnboarding";
 import { decryptValue, encryptValue } from "@/utils/encryptValue";
-import { useFilterLookup } from "@/domains/MusicalProfile/hooks/useFilterLookup";
-import { useDetailsForm } from "@/domains/MusicalProfile/hooks/useDetailsForm";
+import { useFilterLookup } from "@/features/MusicalProfile/hooks/useFilterLookup";
+import { useDetailsForm } from "@/features/MusicalProfile/hooks/useDetailsForm";
 
 export default function DetailsStep() {
 	const { data } = useOnboardingData();

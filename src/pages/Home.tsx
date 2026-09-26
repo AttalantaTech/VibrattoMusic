@@ -29,7 +29,7 @@ import type { MusicalProductSearchRequest } from "@/api/types";
 import { useUser } from "@/hooks/useUser";
 import { InputField } from "@/components/forms/InputField/InputField";
 import { useDebounce } from "@/hooks/useDebounceSimple";
-import { useFilterLookup } from "@/domains/MusicalProfile/hooks/useFilterLookup";
+import { useFilterLookup } from "@/features/MusicalProfile/hooks/useFilterLookup";
 import type { Option } from "@/components/forms/Select/Select";
 
 const promos = [

@@ -1,29 +1,27 @@
-import { FormProvider, useFieldArray } from "react-hook-form";
-import { ChevronLeft, Loader2 } from "lucide-react";
-
-import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
-
-import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-
-import { useMediaForm } from "../MediaSection/hooks/useMediaForm";
-import { useImageUpload } from "../MediaSection/hooks/useImageUpload";
-import { useSocialNetworksData } from "../MediaSection/hooks/useSocialNetworks";
-import { useMediaSubmit } from "../MediaSection/hooks/useMediaSubmit";
-import { useMediaPreview } from "../MediaSection/hooks/useMediaPreview";
-
-import { extractSpotifyResource } from "@/lib/utils/cn";
-
-import { ProfileImageSection } from "../MediaSection/components/ProfileImageSection";
-import { ClippingSection } from "../MediaSection/components/ClippingSection";
-import { SocialNetworksSection } from "../MediaSection/components/SocialNetworksSection";
-import { CarouselSection } from "../MediaSection/components/CarouselSection";
-import { MainMediaSection } from "../MediaSection/components/MainMediaSection";
-import { PriceSection } from "../MediaSection/components/PriceSection";
+import { useMemo } from "react";
 
 import { Image as ImageIcon } from "lucide-react";
-import { useMemo } from "react";
 import { Button } from "@/components/ui/Button/Button";
+import { FormProvider, useFieldArray } from "react-hook-form";
+import { ChevronLeft, Loader2 } from "lucide-react";
 import type { FilePropsLocal } from "@/api/types";
+
+import { extractSpotifyResource } from "@/lib/utils/cn";
+import { AccountLayout } from "../../layout/AccountLayout/AccountLayout";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+
+import { useMediaForm } from "@/features/MediaSection/hooks/useMediaForm";
+import { useImageUpload } from "@/features/MediaSection/hooks/useImageUpload";
+import { useSocialNetworksData } from "@/features/MediaSection/hooks/useSocialNetworks";
+import { useMediaSubmit } from "@/features/MediaSection/hooks/useMediaSubmit";
+import { useMediaPreview } from "@/features/MediaSection/hooks/useMediaPreview";
+
+import { ProfileImageSection } from "@/features/MediaSection/components/ProfileImageSection";
+import { ClippingSection } from "@/features/MediaSection/components/ClippingSection";
+import { SocialNetworksSection } from "@/features/MediaSection/components/SocialNetworksSection";
+import { CarouselSection } from "@/features/MediaSection/components/CarouselSection";
+import { MainMediaSection } from "@/features/MediaSection/components/MainMediaSection";
+import { PriceSection } from "@/features/MediaSection/components/PriceSection";
 
 interface MediaSectionProps {
 	onActiveSection: (section: string) => void;
