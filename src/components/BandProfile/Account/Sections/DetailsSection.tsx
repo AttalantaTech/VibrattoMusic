@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/Button/Button";
 
 import { AccountLayout } from "@/components/BandProfile/layout/AccountLayout/AccountLayout";
 
-import { useFilterLookup } from "@/domains/MusicalProfile/hooks/useFilterLookup";
-import { useDetailsForm } from "@/domains/MusicalProfile/hooks/useDetailsForm";
+import { useFilterLookup } from "@/features/MusicalProfile/hooks/useFilterLookup";
+import { useDetailsForm } from "@/features/MusicalProfile/hooks/useDetailsForm";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { musicalProductMapper } from "@/domains/MusicalProfile/utils/musicalProductMapper";
+import { musicalProductMapper } from "@/features/MusicalProfile/utils/musicalProductMapper";
 
 interface DetailsSectionProps {
 	onActiveSection: Dispatch<SetStateAction<string>>;

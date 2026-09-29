@@ -15,31 +15,29 @@ import type {
 	UseFieldArrayRemove,
 } from "react-hook-form";
 import type { MediaData } from "../types";
-
-interface SocialNetwork {
-	idRedeSocial: number;
-	name: string;
-	icon: React.ReactNode;
-	placeholder: string;
-}
+import { useSocialNetworksData } from "../hooks/useSocialNetworks";
 
 interface SocialNetworksSectionProps {
 	control: Control<MediaData>;
 	errors: FieldErrors<MediaData>;
-	fields: MediaData["redeSocial"];
-	networks: Array<SocialNetwork>;
+	socialFields: MediaData["redeSocial"];
 	append: UseFieldArrayAppend<MediaData, "redeSocial">;
 	remove: UseFieldArrayRemove;
 }
 
 export function SocialNetworksSection({
-	networks,
 	append,
 	control,
 	errors,
-	fields,
+	socialFields,
 	remove,
 }: SocialNetworksSectionProps) {
+	const {
+		socialNetworks: networks,
+		extractUsernameFromUrl,
+		sanitizeSocialUsername,
+	} = useSocialNetworksData();
+
 	return (
 		<div className="bg-gray-50 py-6 border-b">
 			<SectionHeader
@@ -47,13 +45,20 @@ export function SocialNetworksSection({
 				subtitle="Conecte suas redes sociais para aumentar sua visibilidade."
 			/>
 
-			{fields?.map((field, index) => {
+			{socialFields?.map((socialField, index) => {
 				const network = networks.find(
-					(n) => n.idRedeSocial === field.idRedeSocial
+					(n) => n.idRedeSocial === socialField.idRedeSocial
 				);
 
+				if (!network) {
+					return;
+				}
+
 				return (
-					<div key={field.idRedeSocial} className="flex gap-2 items-start">
+					<div
+						key={socialField.idRedeSocial}
+						className="flex gap-2 items-start"
+					>
 						<FormField
 							control={control}
 							name={`redeSocial.${index}.link`}
@@ -62,11 +67,34 @@ export function SocialNetworksSection({
 									<FormControl>
 										<IconInput
 											className="w-full"
-											icon={network?.icon}
+											icon={network.icon}
+											initialText={network.baseUrl}
+											finalText={
+												network.name === "Bandcamp" ? ".bandcamp.com" : ""
+											}
 											name={`social.${index}.Link`}
-											placeholder={network?.placeholder ?? ""}
+											placeholder={network.placeholder}
 											value={field.value ?? ""}
-											onChange={field.onChange}
+											onChange={(event) => {
+												const value = sanitizeSocialUsername(
+													event.target.value,
+													network.name
+												);
+
+												field.onChange(value);
+											}}
+											onPaste={(event) => {
+												event.preventDefault();
+
+												const pastedValue = event.clipboardData.getData("text");
+
+												const username = extractUsernameFromUrl(
+													pastedValue,
+													network.name
+												);
+
+												field.onChange(username);
+											}}
 										/>
 									</FormControl>
 									<p
@@ -97,7 +125,7 @@ export function SocialNetworksSection({
 				{networks
 					.filter(
 						(network) =>
-							!fields?.some(
+							!socialFields?.some(
 								(field) => field.idRedeSocial === network.idRedeSocial
 							)
 					)
@@ -112,6 +140,7 @@ export function SocialNetworksSection({
 									link: "",
 									idProdutoMusical: 0,
 									nomeRedeSocial: network.name,
+									baseUrl: network.baseUrl,
 								});
 							}}
 						>

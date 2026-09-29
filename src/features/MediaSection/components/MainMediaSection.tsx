@@ -28,7 +28,11 @@ export function MainMediaSection({
 				name="youtubelink"
 				placeholder="https://www.youtube.com/watch?v=..."
 				value={youtubeUrl}
-				onChange={onYoutubeChange}
+				onChange={(event) => {
+					event.stopPropagation();
+
+					onYoutubeChange(event.target.value);
+				}}
 			/>
 
 			{youtubeUrl ? (
@@ -50,7 +54,11 @@ export function MainMediaSection({
 				name="spotifylink"
 				placeholder="https://open.spotify.com/..."
 				value={spotifyUrl}
-				onChange={onSpotifyChange}
+				onChange={(event) => {
+					event.stopPropagation();
+
+					onSpotifyChange(event.target.value);
+				}}
 			/>
 
 			{spotifyEmbed ? (

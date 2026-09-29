@@ -11,7 +11,7 @@ import { useSearchMusicalProducts } from "../hooks/useMusicalProducts";
 import { useSearchFiltersWithURL } from "../hooks/useSearchFiltersWithURL";
 import { useDebounce } from "../hooks/useDebounceSimple";
 import type { MusicalProductApiResponse } from "../api/types";
-import { useFilterLookup } from "@/domains/MusicalProfile/hooks/useFilterLookup";
+import { useFilterLookup } from "@/features/MusicalProfile/hooks/useFilterLookup";
 
 export const SearchPage = () => {
 	const location = useLocation();

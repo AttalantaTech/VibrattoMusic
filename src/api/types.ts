@@ -139,15 +139,6 @@ export interface MusicalGenre {
 	descricao?: string;
 }
 
-// ===== Social Network Types =====
-
-export interface SocialNetwork {
-	id: number;
-	idRedeSocial: number;
-	link: string;
-	nome?: string;
-}
-
 // ===== Booking Status =====
 
 export enum BookingStatus {
@@ -343,11 +334,22 @@ export interface UpdateBookingRequest {
 	observacoes?: string;
 }
 
+export type SocialNetworkName =
+	| "Bandcamp"
+	| "Facebook"
+	| "Instagram"
+	| "LinkedIn"
+	| "SoundCloud"
+	| "TikTok"
+	| "Twitter/X"
+	| "YouTube";
+
 export interface RedeSocial {
 	idProdutoMusical: number;
 	idRedeSocial: number;
 	link: string;
-	nomeRedeSocial: string;
+	nomeRedeSocial: SocialNetworkName;
+	baseUrl: string;
 }
 
 export interface IStageMap {

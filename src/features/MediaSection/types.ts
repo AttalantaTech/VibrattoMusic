@@ -1,4 +1,4 @@
-import type { RedeSocial } from "@/api/types";
+import type { RedeSocial, SocialNetworkName } from "@/api/types";
 
 export interface MediaData {
 	videosYouTube?: Array<string>;
@@ -8,4 +8,11 @@ export interface MediaData {
 	exibirValorServico: boolean;
 	valorServico?: string | null;
 	imagensCarrossel?: Array<{ id: number | null; link: string }>;
+}
+
+export interface SocialNetworkCatalogItem {
+	name: SocialNetworkName;
+	icon: React.ReactNode;
+	placeholder: string;
+	baseUrl: string;
 }
