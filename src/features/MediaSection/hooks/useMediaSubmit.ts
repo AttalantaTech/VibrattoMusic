@@ -23,7 +23,7 @@ interface SubmitData {
 	youtubeUrl: string;
 	spotifyUrl: string;
 	showPriceTab: boolean;
-	redeSocial?: Array<RedeSocial>;
+	redeSocial?: Array<Omit<RedeSocial, "baseUrl">>;
 	valorServico?: string | null;
 	profilePhoto?: string | null;
 	carouselImages?: Array<FilePropsLocal>;

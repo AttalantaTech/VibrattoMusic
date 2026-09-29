@@ -12,7 +12,6 @@ import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProduct
 
 import { useMediaForm } from "@/features/MediaSection/hooks/useMediaForm";
 import { useImageUpload } from "@/features/MediaSection/hooks/useImageUpload";
-import { useSocialNetworksData } from "@/features/MediaSection/hooks/useSocialNetworks";
 import { useMediaSubmit } from "@/features/MediaSection/hooks/useMediaSubmit";
 import { useMediaPreview } from "@/features/MediaSection/hooks/useMediaPreview";
 
@@ -22,6 +21,10 @@ import { SocialNetworksSection } from "@/features/MediaSection/components/Social
 import { CarouselSection } from "@/features/MediaSection/components/CarouselSection";
 import { MainMediaSection } from "@/features/MediaSection/components/MainMediaSection";
 import { PriceSection } from "@/features/MediaSection/components/PriceSection";
+import {
+	socialNetworkCatalog,
+	useSocialNetworksData,
+} from "@/features/MediaSection/hooks/useSocialNetworks";
 
 interface MediaSectionProps {
 	onActiveSection: (section: string) => void;
@@ -50,7 +53,6 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 		control: form.control,
 		name: "redeSocial",
 	});
-	const { socialNetworks } = useSocialNetworksData();
 
 	// IMAGE UPLOAD
 	const {
@@ -84,12 +86,40 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 		mode: "edit",
 	});
 
+	const { buildSocialUrl } = useSocialNetworksData();
+
 	const onSubmit = handleSubmit(async (data) => {
+		const socialNetworkFormatted =
+			data.redeSocial
+				?.map((item) => {
+					const catalogItem = socialNetworkCatalog.find(
+						(catalogItem) =>
+							item.nomeRedeSocial.toLowerCase().trim() ===
+							catalogItem.name.toLowerCase().trim()
+					);
+
+					if (!catalogItem) {
+						return null;
+					}
+
+					return {
+						idProdutoMusical: item.idProdutoMusical,
+						idRedeSocial: item.idRedeSocial,
+						nomeRedeSocial: item.nomeRedeSocial,
+						link: buildSocialUrl(
+							item.link,
+							item.nomeRedeSocial,
+							catalogItem.baseUrl
+						),
+					};
+				})
+				.filter((item) => item !== null) || [];
+
 		await submit({
 			youtubeUrl: data.videosYouTube?.[0] ?? "",
 			spotifyUrl: data.spotifyPlaylistId ?? "",
 			showPriceTab: data.exibirValorServico,
-			redeSocial: data.redeSocial,
+			redeSocial: socialNetworkFormatted,
 			valorServico: data.valorServico,
 			profilePhoto,
 			carouselImages,
@@ -166,8 +196,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 						<SocialNetworksSection
 							control={form.control}
 							errors={form.formState.errors}
-							fields={socialFields}
-							networks={socialNetworks}
+							socialFields={socialFields}
 							append={appendSocial}
 							remove={removeSocial}
 						/>
