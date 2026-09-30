@@ -6,7 +6,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary/ErrorBoundary";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { NotificationContainer } from "./components/ui/Notification/Notification";
 import { MessagesProvider } from "./contexts/MessagesContext";
-import { FloatingWhatsApp } from "./FloatingWhatsApp";
+import { FloatingWhatsApp } from "./components/FloatingWhatsApp";
 
 const queryClient = new QueryClient();
 
