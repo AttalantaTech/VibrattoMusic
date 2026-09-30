@@ -23,7 +23,7 @@ interface SubmitData {
 	youtubeUrl: string;
 	spotifyUrl: string;
 	showPriceTab: boolean;
-	redeSocial?: Array<RedeSocial>;
+	redeSocial?: Array<Omit<RedeSocial, "baseUrl">>;
 	valorServico?: string | null;
 	profilePhoto?: string | null;
 	carouselImages?: Array<FilePropsLocal>;
@@ -83,51 +83,6 @@ export function useMediaSubmit({ musicalProductId, mode }: Props) {
 		}
 	};
 
-	const addProfilePhotoOnboarding = async (
-		profilePhoto?: string | null,
-		carouselImages?: Array<FilePropsLocal>
-	) => {
-		try {
-			if (!musicalProductId) return;
-
-			if (mode === "onboarding") {
-				const imagesData = {
-					FotoPerfil: profilePhoto ?? null,
-					ImagensCarrossel:
-						carouselImages?.map((item) => {
-							return {
-								link: item.link,
-								legenda: item.legenda,
-							};
-						}) ?? [],
-				};
-
-				await saveOnboardingImagesMutation.mutateAsync({
-					productId: musicalProductId,
-					imagesData,
-				});
-			}
-		} catch (error) {
-			if (error instanceof VibrattoApiError) {
-				const errorMessage = error.data?.erros.find((error_) => error_);
-
-				if (error.statusCode === 500) {
-					toast.error(
-						"Erro interno do servidor. Por favor, verifique os dados e tente novamente."
-					);
-					return;
-				} else if (errorMessage) {
-					toast.error(errorMessage);
-					return;
-				}
-				toast.error("Aconteceu um erro ao tentar processar sua solicitação.");
-				return;
-			}
-
-			return;
-		}
-	};
-
 	const addMediaOnboarding = async (mediaPayload: MusicalProductMedia) => {
 		try {
 			if (!musicalProductId) return;
@@ -157,16 +112,14 @@ export function useMediaSubmit({ musicalProductId, mode }: Props) {
 					toast.error(
 						"Erro interno do servidor. Por favor, verifique os dados e tente novamente."
 					);
-					return;
 				} else if (errorMessage) {
 					toast.error(errorMessage);
-					return;
+				} else {
+					toast.error("Aconteceu um erro ao tentar processar sua solicitação.");
 				}
-				toast.error("Aconteceu um erro ao tentar processar sua solicitação.");
-				return;
-			}
 
-			return;
+				throw error;
+			}
 		}
 	};
 
@@ -199,16 +152,14 @@ export function useMediaSubmit({ musicalProductId, mode }: Props) {
 					toast.error(
 						"Erro interno do servidor. Por favor, verifique os dados e tente novamente."
 					);
-					return;
 				} else if (errorMessage) {
 					toast.error(errorMessage);
-					return;
+				} else {
+					toast.error("Aconteceu um erro ao tentar processar sua solicitação.");
 				}
-				toast.error("Aconteceu um erro ao tentar processar sua solicitação.");
-				return;
-			}
 
-			return;
+				throw error;
+			}
 		}
 	};
 
@@ -222,31 +173,58 @@ export function useMediaSubmit({ musicalProductId, mode }: Props) {
 		profilePhoto,
 		carouselImages,
 	}: SubmitData) => {
-		try {
-			if (!musicalProductId) {
-				toast.error("ID do produto musical não encontrado");
+		if (!musicalProductId) {
+			toast.error("ID do produto musical não encontrado");
 
-				return;
-			}
+			return;
+		}
 
-			const spotifyResource = extractSpotifyResource(spotifyUrl);
+		const spotifyResource = extractSpotifyResource(spotifyUrl);
 
-			const spotifyPlaylistId = spotifyResource
-				? `spotify:${spotifyResource.type}:${spotifyResource.id}`
-				: "";
+		const spotifyPlaylistId = spotifyResource
+			? `spotify:${spotifyResource.type}:${spotifyResource.id}`
+			: "";
 
-			const mediaData: MusicalProductMedia = {
-				videosYouTube: youtubeUrl.trim() !== "" ? [youtubeUrl] : [],
-				spotifyPlaylistId,
-				exibirValorServico: showPriceTab,
-				valorServico: showPriceTab
-					? valorServico
-						? Number(valorServico)
-						: null
-					: null,
-				redeSocial: redeSocial ?? [],
-				clipagem:
-					clippings?.map((item) => {
+		const mediaData: MusicalProductMedia = {
+			videosYouTube: youtubeUrl.trim() !== "" ? [youtubeUrl] : [],
+			spotifyPlaylistId,
+			exibirValorServico: showPriceTab,
+			valorServico: showPriceTab
+				? valorServico
+					? Number(valorServico)
+					: null
+				: null,
+			redeSocial: redeSocial ?? [],
+			clipagem:
+				clippings?.map((item) => {
+					return {
+						link: item.link,
+						legenda: item.legenda,
+					};
+				}) ?? [],
+		};
+
+		if (mode === "edit") {
+			await updateMusicalProductMutation.mutateAsync({
+				id: musicalProductId,
+				...mediaData,
+
+				FotoPerfil: profilePhoto,
+				ImagensCarrossel:
+					carouselImages?.map((item) => {
+						return {
+							link: item.link,
+							legenda: item.legenda,
+						};
+					}) ?? [],
+			});
+
+			toast.success("Informações atualizadas com sucesso");
+		} else {
+			const imagesData = {
+				FotoPerfil: profilePhoto ?? null,
+				ImagensCarrossel:
+					carouselImages?.map((item) => {
 						return {
 							link: item.link,
 							legenda: item.legenda,
@@ -254,76 +232,30 @@ export function useMediaSubmit({ musicalProductId, mode }: Props) {
 					}) ?? [],
 			};
 
-			if (mode === "edit") {
-				await updateMusicalProductMutation.mutateAsync({
-					id: musicalProductId,
-					...mediaData,
+			await addMediaOnboarding(mediaData);
+			await addImageOnboarding(imagesData);
 
-					FotoPerfil: profilePhoto,
-					ImagensCarrossel:
-						carouselImages?.map((item) => {
-							return {
-								link: item.link,
-								legenda: item.legenda,
-							};
-						}) ?? [],
-				});
+			updateData("media", mediaData);
+			markStepComplete("3");
 
-				toast.success("Informações atualizadas com sucesso");
-			} else {
-				const imagesData = {
-					FotoPerfil: profilePhoto ?? null,
-					ImagensCarrossel:
-						carouselImages?.map((item) => {
-							return {
-								link: item.link,
-								legenda: item.legenda,
-							};
-						}) ?? [],
-				};
+			toast.success("Informações de Mídia e Visibilidade salvas com sucesso");
 
-				await addMediaOnboarding(mediaData);
-				await addImageOnboarding(imagesData);
+			const search = musicalProductId
+				? {
+						registerId: encryptValue(musicalProductId.toString()),
+					}
+				: {};
 
-				updateData("media", mediaData);
-				markStepComplete("3");
-
-				toast.success("Informações de Mídia e Visibilidade salvas com sucesso");
-
-				const search = musicalProductId
-					? {
-							registerId: encryptValue(musicalProductId.toString()),
-						}
-					: {};
-
-				await navigate({
-					to: "/band/register/onboarding/4",
-					search,
-				});
-			}
-		} catch (error) {
-			if (error instanceof VibrattoApiError) {
-				const errorMessage = error.data?.erros.find((error_) => error_);
-
-				if (error.statusCode === 500) {
-					toast.error(
-						"Erro interno do servidor. Por favor, verifique os dados e tente novamente."
-					);
-					return;
-				} else if (errorMessage) {
-					toast.error(errorMessage);
-					return;
-				}
-				toast.error("Aconteceu um erro ao tentar salvar mídias.");
-				return;
-			}
+			await navigate({
+				to: "/band/register/onboarding/4",
+				search,
+			});
 		}
 	};
 
 	return {
 		submit,
 		addProfilePhoto,
-		addProfilePhotoOnboarding,
 		addCarouselImage,
 		addClippingFile,
 		addMediaOnboarding,

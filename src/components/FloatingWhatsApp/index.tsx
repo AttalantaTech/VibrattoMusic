@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 
-const DRAG_THRESHOLD = 5;
-const BUTTON_SIZE = 56;
-const MARGIN = 16;
-
 type Position = {
 	top: number;
 	right: number;
@@ -15,18 +11,18 @@ const WHATSAPP_STORAGE = "whatsapp-button-position";
 export function FloatingWhatsApp() {
 	const [position, setPosition] = useState<Position | null>(null);
 
+	const mediaQuery = window.matchMedia("(pointer: coarse)");
+
+	const DRAG_THRESHOLD = 5;
+	const BUTTON_HEIGHT = mediaQuery.matches ? 32 : 48;
+	const BUTTON_WIDTH = mediaQuery.matches ? 115 : 161;
+	const MARGIN = 16;
+
 	const isPointerDown = useRef(false);
 	const hasMoved = useRef(false);
 
-	const startPosition = useRef({
-		x: 0,
-		y: 0,
-	});
-
-	const offset = useRef({
-		x: 0,
-		y: 0,
-	});
+	const startPosition = useRef({ x: 0, y: 0 });
+	const offset = useRef({ x: 0, y: 0 });
 
 	// Initial Position
 	useEffect(() => {
@@ -44,11 +40,11 @@ export function FloatingWhatsApp() {
 				setPosition({
 					top: Math.max(
 						0,
-						Math.min(parsed.top, window.innerHeight - BUTTON_SIZE)
+						Math.min(parsed.top, window.innerHeight - BUTTON_HEIGHT)
 					),
 					right: Math.max(
 						0,
-						Math.min(parsed.right, window.innerWidth - BUTTON_SIZE)
+						Math.min(parsed.right, window.innerWidth - BUTTON_WIDTH)
 					),
 				});
 
@@ -59,10 +55,10 @@ export function FloatingWhatsApp() {
 		}
 
 		setPosition({
-			top: window.innerHeight - BUTTON_SIZE - MARGIN,
+			top: window.innerHeight - BUTTON_HEIGHT - MARGIN,
 			right: MARGIN,
 		});
-	}, []);
+	}, [BUTTON_HEIGHT, BUTTON_WIDTH]);
 
 	// Fix Position
 	useEffect(() => {
@@ -71,8 +67,8 @@ export function FloatingWhatsApp() {
 				if (!current) return current;
 
 				const newPosition = {
-					top: Math.min(current.top, window.innerHeight - BUTTON_SIZE),
-					right: Math.min(current.right, window.innerWidth - BUTTON_SIZE),
+					top: Math.min(current.top, window.innerHeight - BUTTON_HEIGHT),
+					right: Math.min(current.right, window.innerWidth - BUTTON_WIDTH),
 				};
 
 				localStorage.setItem(WHATSAPP_STORAGE, JSON.stringify(newPosition));
@@ -86,7 +82,7 @@ export function FloatingWhatsApp() {
 		return () => {
 			window.removeEventListener("resize", handleResize);
 		};
-	}, []);
+	}, [BUTTON_HEIGHT, BUTTON_WIDTH]);
 
 	const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
 		if (!position) return;
@@ -113,7 +109,6 @@ export function FloatingWhatsApp() {
 		if (!isPointerDown.current) return;
 
 		const deltaX = event.clientX - startPosition.current.x;
-
 		const deltaY = event.clientY - startPosition.current.y;
 
 		const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -126,15 +121,15 @@ export function FloatingWhatsApp() {
 
 		const top = Math.min(
 			Math.max(0, event.clientY - offset.current.y),
-			window.innerHeight - BUTTON_SIZE
+			window.innerHeight - BUTTON_HEIGHT
 		);
 
 		const right = Math.min(
 			Math.max(
 				0,
-				window.innerWidth - (event.clientX - offset.current.x) - BUTTON_SIZE
+				window.innerWidth - (event.clientX - offset.current.x) - BUTTON_WIDTH
 			),
-			window.innerWidth - BUTTON_SIZE
+			window.innerWidth - BUTTON_WIDTH
 		);
 
 		setPosition({
@@ -180,33 +175,54 @@ export function FloatingWhatsApp() {
 	return (
 		<button
 			type="button"
-			aria-label="Abrir WhatsApp"
+			aria-label="Fale conosco pelo Whatsapp"
 			onPointerDown={handlePointerDown}
 			onPointerMove={handlePointerMove}
 			onPointerUp={handlePointerUp}
 			onClick={handleClick}
-			className="
-    fixed
-    z-50
-    flex
-    h-14
-    w-14
-    cursor-pointer
-    touch-none
-    items-center
-    justify-center
-    rounded-full
-    bg-[#25D366]
-    text-white
-    shadow-lg
-    hover:shadow-xl
-  "
+			className={`
+        fixed
+        z-50
+        flex
+        w-auto
+        select-none
+        p-1
+        cursor-pointer
+        touch-none
+        items-center
+        justify-center
+        rounded-full
+        bg-[#25D366]
+        text-white
+        shadow-lg
+        hover:shadow-xl
+        active:scale-95
+        transition-transform
+			`}
 			style={{
 				top: `${position.top}px`,
 				right: `${position.right}px`,
+				height: `${BUTTON_HEIGHT}px`,
 			}}
 		>
-			<FaWhatsapp size={28} />
+			<div
+				className="flex items-center justify-center rounded-full bg-white shadow-md flex-shrink-0"
+				style={{
+					height: mediaQuery.matches ? "1.5rem" : "2.5rem",
+					width: mediaQuery.matches ? "1.5rem" : "2.5rem",
+				}}
+			>
+				<FaWhatsapp
+					style={{ fontSize: mediaQuery.matches ? "1.5rem" : "2.5rem" }}
+					className="text-[#25D366]"
+				/>
+			</div>
+			<div
+				className="ml-2.5 flex flex-col items-start leading-tight pr-3 font-bold text-xs tracking-tight uppercase whitespace-nowrap"
+				style={{ fontSize: mediaQuery.matches ? "0.5rem" : "0.75rem" }}
+			>
+				<span>Fale Conosco</span>
+			</div>
 		</button>
 	);
 }

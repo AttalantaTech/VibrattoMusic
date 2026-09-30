@@ -13,10 +13,10 @@ export const mediaSchema = z.object({
 					link: z
 						.string()
 						.min(1, "O campo é obrigatório caso esteja visível")
-						.url("URL inválida")
 						.optional(),
 					idProdutoMusical: z.number(),
 					nomeRedeSocial: z.string(),
+					baseUrl: z.string(),
 				})
 				.optional()
 		)
