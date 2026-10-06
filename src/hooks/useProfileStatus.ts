@@ -1,13 +1,19 @@
 import { useAuthStore } from "../store/authStore";
-import type { MusicalProductApiResponse, User } from "../api/types";
+import type {
+	MusicalProductApiResponse,
+	MusicalProductSearchRequest,
+	User,
+} from "../api/types";
 import { useQuery } from "@tanstack/react-query";
 import { musicalProductService } from "../api";
 
 // Query keys for better organization
 export const profileKeys = {
 	all: ["profile"] as const,
-	musicalProducts: (userId?: number) =>
-		[...profileKeys.all, "musicalProducts", userId] as const,
+	musicalProducts: (
+		userId?: number,
+		searchRequest?: Partial<MusicalProductSearchRequest>
+	) => [...profileKeys.all, "musicalProducts", userId, searchRequest] as const,
 };
 
 export type ProfileStatus = "COMPLETE" | "INCOMPLETE";
@@ -71,7 +77,9 @@ export const isMusicianProfileComplete = (
 	);
 };
 
-export const useProfileStatus = () => {
+export const useProfileStatus = (
+	searchRequest?: Partial<MusicalProductSearchRequest>
+) => {
 	const { user } = useAuthStore();
 
 	// Fetch user's musical products directly from the API
@@ -80,13 +88,11 @@ export const useProfileStatus = () => {
 		isLoading,
 		refetch,
 	} = useQuery({
-		queryKey: profileKeys.musicalProducts(user?.id),
+		queryKey: profileKeys.musicalProducts(user?.id, searchRequest),
 		queryFn: async () => {
-			return musicalProductService.getMyProducts();
+			return musicalProductService.getMyProducts(searchRequest);
 		},
-		enabled: user?.id !== undefined && user?.id !== null,
-		staleTime: 5 * 60 * 1000, // 5 minutes
-		gcTime: 10 * 60 * 1000, // 10 minutes
+
 		retry: 2,
 	});
 

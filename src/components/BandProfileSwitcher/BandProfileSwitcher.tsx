@@ -1,6 +1,13 @@
 import type React from "react";
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Check, LogOut, Music2Icon, Plus } from "lucide-react";
+import {
+	ChevronDown,
+	Check,
+	LogOut,
+	Music2Icon,
+	Plus,
+	Loader,
+} from "lucide-react";
 import { Avatar } from "../Avatar/Avatar";
 import { cn } from "../../lib/utils/cn";
 import type { ActiveMusicalProduct } from "@/hooks/useActiveMusicalProduct";
@@ -20,6 +27,8 @@ export interface BandProfileSwitcherProps {
 	musicalProducts: Array<MusicalProduct>;
 	onProductChange: (product: MusicalProduct | null) => void;
 	className?: string;
+	onReachEnd?: () => void;
+	isLoading?: boolean;
 }
 
 export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
@@ -27,6 +36,8 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 	musicalProducts,
 	onProductChange,
 	className,
+	onReachEnd,
+	isLoading,
 }) => {
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -38,7 +49,11 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 
 	const [isOpen, setIsOpen] = useState(false);
 	const [openOnboardingsPending, setOpenOnboardingsPending] = useState(false);
+
+	const containerScrollRef = useRef<HTMLDivElement>(null);
 	const dropdownRef = useRef<HTMLDivElement>(null);
+	const sentinelRef = useRef<HTMLDivElement>(null);
+	const onReachEndRef = useRef(onReachEnd);
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -55,6 +70,37 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
 	}, []);
+
+	useEffect(() => {
+		onReachEndRef.current = onReachEnd;
+	}, [onReachEnd]);
+
+	useEffect(() => {
+		if (!isOpen) return;
+
+		const root = containerScrollRef.current;
+		const target = sentinelRef.current;
+
+		if (!root || !target) return;
+
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry?.isIntersecting) {
+					onReachEndRef.current?.();
+				}
+			},
+			{
+				root,
+				threshold: 0.1,
+			}
+		);
+
+		observer.observe(target);
+
+		return () => {
+			observer.disconnect();
+		};
+	}, [isOpen]);
 
 	const handleProductSelect = (product: MusicalProduct | null) => {
 		onProductChange(product);
@@ -121,7 +167,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 
 			{isOpen && (
 				<div className="absolute z-50 left-0 mt-1 w-64 overflow-hidden rounded-md border bg-white shadow-md">
-					<div className="w-64 py-1">
+					<div className="w-64">
 						<div className="px-3 py-2">
 							<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
 								Perfil de Contratante
@@ -132,7 +178,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 							onClick={() => {
 								handleProductSelect(null);
 							}}
-							className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors"
+							className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors ${activeMusicalProduct ? "" : "bg-gray-100"}`}
 						>
 							<Avatar src={""} alt={userData?.nome ?? ""} size={24} />
 							<span className="text-sm text-gray-700 truncate">
@@ -144,46 +190,62 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 						</button>
 
 						{/* Section Musical Products */}
+
 						<div className="px-3 py-2">
 							<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
 								Perfil Profissional
 							</p>
 						</div>
 
-						{musicalProducts.length > 0 ? (
-							musicalProducts.map((product) => (
-								<button
-									key={product.id}
-									onClick={() => {
-										handleProductSelect(product);
-									}}
-									className="w-full mb-1 flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors"
-								>
-									<Avatar
-										src={product.fotoPerfil ?? ""}
-										alt={product.nome}
-										size={24}
-									/>
-									<span className="text-sm text-gray-700 truncate">
-										{product.nome}
+						<div
+							ref={containerScrollRef}
+							className="max-h-[150px] overflow-auto"
+						>
+							{musicalProducts.length > 0 ? (
+								musicalProducts.map((product) => (
+									<button
+										key={product.id}
+										onClick={() => {
+											handleProductSelect(product);
+										}}
+										className={`w-full mb-1 flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors ${product.id === activeMusicalProduct?.id ? "bg-gray-100" : ""}`}
+									>
+										<Avatar
+											src={product.fotoPerfil ?? ""}
+											alt={product.nome}
+											size={24}
+										/>
+										<span className="text-sm text-gray-700 truncate">
+											{product.nome}
+										</span>
+										{product.id === activeMusicalProduct?.id && (
+											<Check className="h-4 w-4 text-primary-600 ml-auto" />
+										)}
+									</button>
+								))
+							) : (
+								<div className="flex justify-center my-2">
+									<span className="text-xs text-center font-light text-gray-400">
+										Nenhum cadastrado
 									</span>
-									{product.id === activeMusicalProduct?.id && (
-										<Check className="h-4 w-4 text-primary-600 ml-auto" />
-									)}
-								</button>
-							))
-						) : (
-							<div className="flex justify-center my-2">
-								<span className="text-xs text-center font-light text-gray-400">
-									Nenhum cadastrado
-								</span>
-							</div>
-						)}
-						<div className="pb-6" />
+								</div>
+							)}
 
+							<div
+								ref={sentinelRef}
+								className={`${isLoading ? "h-10" : ""} flex justify-center items-center`}
+							>
+								{isLoading && (
+									<Loader size={16} className="animate-spin text-primary-500" />
+								)}
+							</div>
+						</div>
+					</div>
+
+					<div className="p-1 border-t-[1px]">
 						<button
 							onClick={handleCreateProfessionalProfile}
-							className="w-full text-left px-4 py-2 bg-primary-50 hover:bg-primary-100 transition-all duration-300 flex items-center gap-2 mb-1"
+							className="w-full rounded-sm text-left px-4 py-2 bg-primary-50 hover:bg-primary-100 transition-all duration-300 flex items-center gap-2 mb-1"
 						>
 							<div className="flex relative">
 								<Music2Icon className="w-4 h-4" />
@@ -197,7 +259,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 
 						<button
 							onClick={handleLogout}
-							className="w-full  text-left px-4 py-2  flex items-center justify-center gap-2 bg-primary-700 text-white hover:bg-primary-700/90 transition-all duration-300"
+							className="w-full rounded-sm text-left px-4 py-2  flex items-center justify-center gap-2 bg-primary-700 text-white hover:bg-primary-700/90 transition-all duration-300"
 						>
 							<LogOut className="w-4 h-4" />
 							<span>Sair</span>
