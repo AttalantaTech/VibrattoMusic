@@ -99,10 +99,10 @@ export class MusicalProductService {
 	): Promise<MusicalProductListApiResponse> {
 		try {
 			const defaultRequest: MusicalProductSearchRequest = {
-				limite: 10,
-				ordenarPorAvaliacao: true,
-				tamanhoPagina: 10,
-				pagina: 1,
+				limite: searchRequest?.limite || 10,
+				ordenarPorAvaliacao: searchRequest?.ordenarPorAvaliacao || true,
+				tamanhoPagina: searchRequest?.tamanhoPagina || 10,
+				pagina: searchRequest?.pagina || 1,
 				...searchRequest,
 			};
 

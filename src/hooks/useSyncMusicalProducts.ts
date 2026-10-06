@@ -1,9 +1,24 @@
 import { useEffect } from "react";
-import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import type { MusicalProductListApiResponse, User } from "@/api/types";
 
-export const useSyncMusicalProducts = () => {
-	const { musicalProducts, user, isLoading } = useProfileStatus();
+interface SyncMusicalProducts {
+	musicalProducts: MusicalProductListApiResponse | null;
+	user: User | null;
+	isLoading: boolean;
+	setHasMoreProfiles: (value: boolean) => void;
+	profilePage: number;
+	profilePageSize: number;
+}
+
+export const useSyncMusicalProducts = ({
+	musicalProducts,
+	user,
+	isLoading,
+	setHasMoreProfiles,
+	profilePageSize,
+	profilePage,
+}: SyncMusicalProducts) => {
 	const {
 		setAvailableProducts,
 		setIsLoadingMusicalProduct,
@@ -11,7 +26,9 @@ export const useSyncMusicalProducts = () => {
 		activeProduct,
 		newProductCreated,
 		setNewProductCreated,
+		availableProducts,
 	} = useMusicalProductStore();
+
 	const clear = useMusicalProductStore((s) => s.clear);
 
 	useEffect(() => {
@@ -20,36 +37,62 @@ export const useSyncMusicalProducts = () => {
 			return;
 		}
 
+		if (!musicalProducts?.dados) return;
+
 		setIsLoadingMusicalProduct(isLoading);
 
-		if (musicalProducts && musicalProducts.dados.length > 0) {
+		if (musicalProducts.dados.length < profilePageSize) {
+			setHasMoreProfiles?.(false);
+		}
+
+		if (profilePage === 1) {
 			setAvailableProducts(musicalProducts.dados);
+		} else {
+			const existingIds = new Set(availableProducts.map((city) => city.id));
 
-			if (newProductCreated) {
-				const product = musicalProducts.dados.find(
-					(item) => item.id === newProductCreated
-				);
+			const uniqueProducts = musicalProducts.dados.filter(
+				(product) => !existingIds.has(product.id)
+			);
 
-				if (product) setActiveProduct(product);
-
-				setNewProductCreated(null);
-			} else if (activeProduct) {
-				const product = musicalProducts.dados.find(
-					(item) => item.id === activeProduct.id
-				);
-
-				if (product) setActiveProduct(product);
+			if (uniqueProducts.length > 0) {
+				setAvailableProducts([...availableProducts, ...uniqueProducts]);
 			}
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+
+		if (newProductCreated) {
+			const product = musicalProducts.dados.find(
+				(item) => item.id === newProductCreated
+			);
+
+			if (product) {
+				setActiveProduct(product);
+			}
+
+			setNewProductCreated(null);
+			return;
+		}
+
+		if (activeProduct) {
+			const product = musicalProducts.dados.find(
+				(item) => item.id === activeProduct.id
+			);
+
+			if (product) setActiveProduct(product);
+		}
 	}, [
 		musicalProducts,
 		user?.id,
-		setAvailableProducts,
-		clear,
-		setIsLoadingMusicalProduct,
 		isLoading,
+		profilePage,
+		profilePageSize,
+		availableProducts,
 		activeProduct,
+		newProductCreated,
+		setAvailableProducts,
+		setIsLoadingMusicalProduct,
 		setActiveProduct,
+		setNewProductCreated,
+		setHasMoreProfiles,
+		clear,
 	]);
 };
