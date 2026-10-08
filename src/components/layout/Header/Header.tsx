@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from "react";
 import { BandProfileSwitcher } from "../../BandProfileSwitcher";
 import { useSyncMusicalProducts } from "@/hooks/useSyncMusicalProducts";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { useProfileStatus } from "@/hooks/useProfileStatus";
 
 export const Header = () => {
 	const { isAuthenticated } = useAuthStore();
@@ -17,7 +18,27 @@ export const Header = () => {
 	const [showDropdown, setShowDropdown] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
-	useSyncMusicalProducts();
+	const [profilePage, setProfilePage] = useState(1);
+	const [hasMoreProfiles, setHasMoreProfiles] = useState(true);
+
+	const {
+		musicalProducts,
+		user,
+		isLoading: isFetchingProfiles,
+	} = useProfileStatus({
+		pagina: profilePage,
+		tamanhoPagina: 10,
+		ordenarPorAvaliacao: true,
+	});
+
+	useSyncMusicalProducts({
+		musicalProducts,
+		user,
+		isLoading: isFetchingProfiles,
+		setHasMoreProfiles,
+		profilePage,
+		profilePageSize: 10,
+	});
 
 	const { activeProduct, availableProducts, setActiveProduct } =
 		useMusicalProductStore();
@@ -135,6 +156,14 @@ export const Header = () => {
 							activeMusicalProduct={activeProduct}
 							musicalProducts={availableProducts}
 							onProductChange={setActiveProduct}
+							onReachEnd={() => {
+								if (!hasMoreProfiles || isFetchingProfiles) {
+									return;
+								}
+
+								setProfilePage((previous) => previous + 1);
+							}}
+							isLoading={isFetchingProfiles}
 						/>
 					)}
 				</div>
