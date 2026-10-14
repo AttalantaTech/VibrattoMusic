@@ -6,11 +6,12 @@ import { Lock, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { useResetPassword } from "../hooks/useUser";
 import { Button } from "../components/ui/Button/Button";
 import { InputField } from "../components/forms/InputField/InputField";
-import { Link, useRouter, useSearch } from "@tanstack/react-router";
-import { createFileRoute } from "@tanstack/react-router";
-import LogoVibratto from "../assets/images/Logo_Vibratto.png";
-import VibrattoName from "../assets/images/Vibratto.png";
-import ShowImg from "../assets/images/show.jpg";
+import { Link, useParams, useRouter } from "@tanstack/react-router";
+import LogoVibratto from "@/assets/images/Logo_Vibratto.png";
+import VibrattoName from "@/assets/images/Vibratto.png";
+import ShowImg from "@/assets/images/show.jpg";
+import { VibrattoApiError } from "@/api";
+import { toast } from "sonner";
 
 const resetPasswordSchema = z
 	.object({
@@ -30,30 +31,27 @@ const resetPasswordSchema = z
 
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
-function ResetPasswordComponent() {
+export function ResetPassword() {
 	const [showPassword, setShowPassword] = useState(false);
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 	const [passwordReset, setPasswordReset] = useState(false);
 	const resetPasswordMutation = useResetPassword();
 	const router = useRouter();
-	const searchParameters = useSearch({ from: "/reset-password" });
-	const token = searchParameters.token;
+	const { token } = useParams({ from: "/reset-password/$token/edit" });
 
 	const {
 		register,
 		handleSubmit,
 		formState: { errors, isSubmitting },
-		setError,
 	} = useForm<ResetPasswordFormData>({
 		resolver: zodResolver(resetPasswordSchema),
 	});
 
 	const onSubmit = async (data: ResetPasswordFormData) => {
 		if (!token) {
-			setError("root", {
-				message:
-					"Token de redefinição não encontrado. Por favor, use o link enviado por email.",
-			});
+			toast.error(
+				"Token de redefinição não encontrado. Por favor, use o link enviado por email."
+			);
 			return;
 		}
 
@@ -68,91 +66,19 @@ function ResetPasswordComponent() {
 				void router.navigate({ to: "/login" });
 			}, 3000);
 		} catch (error: unknown) {
-			console.error("❌ Reset password error details:", error);
+			if (error instanceof VibrattoApiError) {
+				const errorMessage = error.data?.erros.find((error_) => error_);
 
-			if (error && typeof error === "object" && "response" in error) {
-				const responseError = error as {
-					response?: {
-						status?: number;
-						data?:
-							| { mensagem?: string }
-							| Array<{
-									propertyName?: string;
-									errorMessage?: string;
-									errorCode?: string;
-							  }>;
-					};
-				};
-
-				const status = responseError.response?.status;
-				const data = responseError.response?.data;
-
-				// Check if error is validation array format
-				let message: string | undefined;
-				if (Array.isArray(data) && data.length > 0) {
-					// Extract error message from validation array
-					const firstError = data[0];
-					if (firstError && firstError.errorMessage) {
-						message = firstError.errorMessage;
-						// Check for specific error codes
-						if (
-							firstError.errorCode === "GreaterThanValidator" &&
-							firstError.propertyName === "Expiracao"
-						) {
-							message =
-								"Este link de redefinição de senha expirou. Por favor, solicite um novo link.";
-						}
-					}
-				} else if (data && typeof data === "object" && "mensagem" in data) {
-					message = data.mensagem;
+				if (error.statusCode === 500) {
+					toast.error("Erro interno do servidor. Tente novamente mais tarde.");
+					return;
+				} else if (errorMessage) {
+					toast.error(errorMessage);
+					return;
 				}
-
-				switch (status) {
-					case 400:
-						setError("root", {
-							message:
-								message ??
-								"Token inválido ou expirado. Por favor, solicite um novo link.",
-						});
-						break;
-					case 401:
-						setError("root", {
-							message:
-								message ??
-								"Token inválido. Por favor, use o link enviado por email.",
-						});
-						break;
-					case 404:
-						setError("root", {
-							message:
-								message ??
-								"Token não encontrado. Por favor, solicite um novo link de redefinição.",
-						});
-						break;
-					case 410:
-						setError("root", {
-							message:
-								message ??
-								"Este link de redefinição expirou. Por favor, solicite um novo.",
-						});
-						break;
-					case 500:
-						setError("root", {
-							message:
-								"Erro interno do servidor. Tente novamente em alguns minutos.",
-						});
-						break;
-					default:
-						setError("root", {
-							message:
-								message ??
-								"Erro ao redefinir senha. Por favor, tente novamente.",
-						});
-				}
+				toast.error("Aconteceu um erro ao tentar processar sua solicitação.");
 			} else {
-				setError("root", {
-					message: "Erro de conexão. Por favor, verifique sua internet.",
-				});
+				toast.error("Erro de conexão. Por favor, verifique sua internet.");
 			}
 		}
 	};
@@ -399,10 +325,3 @@ function ResetPasswordComponent() {
 		</div>
 	);
 }
-
-export const Route = createFileRoute("/reset-password")({
-	component: ResetPasswordComponent,
-	validateSearch: z.object({
-		token: z.string().optional(),
-	}),
-});

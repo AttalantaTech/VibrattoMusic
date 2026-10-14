@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as SearchRouteImport } from './routes/search'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as FavoritesRouteImport } from './routes/favorites'
@@ -23,7 +22,7 @@ import { Route as BandProfileTypeRouteImport } from './routes/band/profile-type'
 import { Route as BandMeRouteImport } from './routes/band/me'
 import { Route as BandDashboardRouteImport } from './routes/band/dashboard'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
-import { Route as Password_resetsTokenEditRouteImport } from './routes/password_resets/$token/edit'
+import { Route as ResetPasswordTokenEditRouteImport } from './routes/reset-password/$token/edit'
 import { Route as BandProfileIdRouteImport } from './routes/band/profile/$id'
 import { Route as BandContractCreateRouteImport } from './routes/band/contract/create'
 import { Route as BandContractIdRouteImport } from './routes/band/contract/$id'
@@ -42,11 +41,6 @@ const WelcomeRoute = WelcomeRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -104,12 +98,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Password_resetsTokenEditRoute =
-  Password_resetsTokenEditRouteImport.update({
-    id: '/password_resets/$token/edit',
-    path: '/password_resets/$token/edit',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+const ResetPasswordTokenEditRoute = ResetPasswordTokenEditRouteImport.update({
+  id: '/reset-password/$token/edit',
+  path: '/reset-password/$token/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BandProfileIdRoute = BandProfileIdRouteImport.update({
   id: '/band/profile/$id',
   path: '/band/profile/$id',
@@ -162,7 +155,6 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/welcome': typeof WelcomeRoute
   '/admin/login': typeof AdminLoginRoute
@@ -174,7 +166,7 @@ export interface FileRoutesByFullPath {
   '/band/contract/$id': typeof BandContractIdRoute
   '/band/contract/create': typeof BandContractCreateRoute
   '/band/profile/$id': typeof BandProfileIdRoute
-  '/password_resets/$token/edit': typeof Password_resetsTokenEditRoute
+  '/reset-password/$token/edit': typeof ResetPasswordTokenEditRoute
   '/band/register/onboarding/1': typeof BandRegisterOnboarding1Route
   '/band/register/onboarding/2': typeof BandRegisterOnboarding2Route
   '/band/register/onboarding/3': typeof BandRegisterOnboarding3Route
@@ -188,7 +180,6 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/welcome': typeof WelcomeRoute
   '/admin/login': typeof AdminLoginRoute
@@ -200,7 +191,7 @@ export interface FileRoutesByTo {
   '/band/contract/$id': typeof BandContractIdRoute
   '/band/contract/create': typeof BandContractCreateRoute
   '/band/profile/$id': typeof BandProfileIdRoute
-  '/password_resets/$token/edit': typeof Password_resetsTokenEditRoute
+  '/reset-password/$token/edit': typeof ResetPasswordTokenEditRoute
   '/band/register/onboarding/1': typeof BandRegisterOnboarding1Route
   '/band/register/onboarding/2': typeof BandRegisterOnboarding2Route
   '/band/register/onboarding/3': typeof BandRegisterOnboarding3Route
@@ -215,7 +206,6 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/search': typeof SearchRoute
   '/welcome': typeof WelcomeRoute
   '/admin/login': typeof AdminLoginRoute
@@ -227,7 +217,7 @@ export interface FileRoutesById {
   '/band/contract/$id': typeof BandContractIdRoute
   '/band/contract/create': typeof BandContractCreateRoute
   '/band/profile/$id': typeof BandProfileIdRoute
-  '/password_resets/$token/edit': typeof Password_resetsTokenEditRoute
+  '/reset-password/$token/edit': typeof ResetPasswordTokenEditRoute
   '/band/register/onboarding/1': typeof BandRegisterOnboarding1Route
   '/band/register/onboarding/2': typeof BandRegisterOnboarding2Route
   '/band/register/onboarding/3': typeof BandRegisterOnboarding3Route
@@ -243,7 +233,6 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/forgot-password'
     | '/login'
-    | '/reset-password'
     | '/search'
     | '/welcome'
     | '/admin/login'
@@ -255,7 +244,7 @@ export interface FileRouteTypes {
     | '/band/contract/$id'
     | '/band/contract/create'
     | '/band/profile/$id'
-    | '/password_resets/$token/edit'
+    | '/reset-password/$token/edit'
     | '/band/register/onboarding/1'
     | '/band/register/onboarding/2'
     | '/band/register/onboarding/3'
@@ -269,7 +258,6 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/forgot-password'
     | '/login'
-    | '/reset-password'
     | '/search'
     | '/welcome'
     | '/admin/login'
@@ -281,7 +269,7 @@ export interface FileRouteTypes {
     | '/band/contract/$id'
     | '/band/contract/create'
     | '/band/profile/$id'
-    | '/password_resets/$token/edit'
+    | '/reset-password/$token/edit'
     | '/band/register/onboarding/1'
     | '/band/register/onboarding/2'
     | '/band/register/onboarding/3'
@@ -295,7 +283,6 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/forgot-password'
     | '/login'
-    | '/reset-password'
     | '/search'
     | '/welcome'
     | '/admin/login'
@@ -307,7 +294,7 @@ export interface FileRouteTypes {
     | '/band/contract/$id'
     | '/band/contract/create'
     | '/band/profile/$id'
-    | '/password_resets/$token/edit'
+    | '/reset-password/$token/edit'
     | '/band/register/onboarding/1'
     | '/band/register/onboarding/2'
     | '/band/register/onboarding/3'
@@ -322,7 +309,6 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
-  ResetPasswordRoute: typeof ResetPasswordRoute
   SearchRoute: typeof SearchRoute
   WelcomeRoute: typeof WelcomeRoute
   AdminLoginRoute: typeof AdminLoginRoute
@@ -334,7 +320,7 @@ export interface RootRouteChildren {
   BandContractIdRoute: typeof BandContractIdRoute
   BandContractCreateRoute: typeof BandContractCreateRoute
   BandProfileIdRoute: typeof BandProfileIdRoute
-  Password_resetsTokenEditRoute: typeof Password_resetsTokenEditRoute
+  ResetPasswordTokenEditRoute: typeof ResetPasswordTokenEditRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -351,13 +337,6 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -437,11 +416,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/password_resets/$token/edit': {
-      id: '/password_resets/$token/edit'
-      path: '/password_resets/$token/edit'
-      fullPath: '/password_resets/$token/edit'
-      preLoaderRoute: typeof Password_resetsTokenEditRouteImport
+    '/reset-password/$token/edit': {
+      id: '/reset-password/$token/edit'
+      path: '/reset-password/$token/edit'
+      fullPath: '/reset-password/$token/edit'
+      preLoaderRoute: typeof ResetPasswordTokenEditRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/band/profile/$id': {
@@ -538,7 +517,6 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
-  ResetPasswordRoute: ResetPasswordRoute,
   SearchRoute: SearchRoute,
   WelcomeRoute: WelcomeRoute,
   AdminLoginRoute: AdminLoginRoute,
@@ -550,7 +528,7 @@ const rootRouteChildren: RootRouteChildren = {
   BandContractIdRoute: BandContractIdRoute,
   BandContractCreateRoute: BandContractCreateRoute,
   BandProfileIdRoute: BandProfileIdRoute,
-  Password_resetsTokenEditRoute: Password_resetsTokenEditRoute,
+  ResetPasswordTokenEditRoute: ResetPasswordTokenEditRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
