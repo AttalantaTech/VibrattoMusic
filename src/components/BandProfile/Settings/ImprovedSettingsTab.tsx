@@ -11,9 +11,6 @@ import {
 	Eye,
 	EyeOff,
 	Save,
-	Moon,
-	Sun,
-	Globe,
 	Smartphone,
 	Mail,
 	MessageSquare,
@@ -93,10 +90,6 @@ export const ImprovedSettingsTab = () => {
 		showAvailability: true,
 	});
 
-	// Theme and language
-	const [theme, setTheme] = useState<"light" | "dark" | "auto">("light");
-	const [language, setLanguage] = useState("pt-BR");
-
 	const handlePasswordChange = async () => {
 		if (passwords.new !== passwords.confirm) {
 			toast.error("As senhas não coincidem");
@@ -135,7 +128,6 @@ export const ImprovedSettingsTab = () => {
 		{ id: "privacy", label: "Privacidade", icon: <Shield size={20} /> },
 		{ id: "security", label: "Segurança", icon: <Lock size={20} /> },
 		{ id: "billing", label: "Pagamentos", icon: <CreditCard size={20} /> },
-		{ id: "preferences", label: "Preferências", icon: <Globe size={20} /> },
 		{ id: "help", label: "Ajuda", icon: <HelpCircle size={20} /> },
 	];
 
@@ -518,66 +510,6 @@ export const ImprovedSettingsTab = () => {
 								>
 									Excluir Conta
 								</Button>
-							</div>
-						</div>
-					</SettingsSection>
-				);
-
-			case "preferences":
-				return (
-					<SettingsSection
-						title="Preferências do Sistema"
-						description="Personalize sua experiência"
-						icon={<Globe size={24} />}
-					>
-						<div className="space-y-6">
-							<div>
-								<h4 className="font-medium text-gray-900 mb-3">Tema</h4>
-								<div className="flex gap-2">
-									{[
-										{ value: "light", label: "Claro", icon: <Sun size={18} /> },
-										{
-											value: "dark",
-											label: "Escuro",
-											icon: <Moon size={18} />,
-										},
-										{
-											value: "auto",
-											label: "Automático",
-											icon: <Globe size={18} />,
-										},
-									].map(({ value, label, icon }) => (
-										<button
-											key={value}
-											onClick={() => {
-												setTheme(value as typeof theme);
-											}}
-											className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-												theme === value
-													? "border-primary-500 bg-primary-50 text-primary-600"
-													: "border-gray-200 hover:border-gray-300"
-											}`}
-										>
-											{icon}
-											{label}
-										</button>
-									))}
-								</div>
-							</div>
-
-							<div>
-								<h4 className="font-medium text-gray-900 mb-3">Idioma</h4>
-								<select
-									value={language}
-									onChange={(e) => {
-										setLanguage(e.target.value);
-									}}
-									className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-								>
-									<option value="pt-BR">Português (Brasil)</option>
-									<option value="en">English</option>
-									<option value="es">Español</option>
-								</select>
 							</div>
 						</div>
 					</SettingsSection>
