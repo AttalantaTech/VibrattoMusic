@@ -33,7 +33,9 @@ export const useSyncMusicalProducts = ({
 
 	useEffect(() => {
 		if (!user?.id) {
-			clear();
+			// clear() creates a new empty array; calling it when the store is
+			// already empty changes `availableProducts` and re-runs this effect forever
+			if (availableProducts.length > 0 || activeProduct) clear();
 			return;
 		}
 
