@@ -43,17 +43,15 @@ export function ResetPassword() {
 		register,
 		handleSubmit,
 		formState: { errors, isSubmitting },
-		setError,
 	} = useForm<ResetPasswordFormData>({
 		resolver: zodResolver(resetPasswordSchema),
 	});
 
 	const onSubmit = async (data: ResetPasswordFormData) => {
 		if (!token) {
-			setError("root", {
-				message:
-					"Token de redefinição não encontrado. Por favor, use o link enviado por email.",
-			});
+			toast.error(
+				"Token de redefinição não encontrado. Por favor, use o link enviado por email."
+			);
 			return;
 		}
 
@@ -72,21 +70,15 @@ export function ResetPassword() {
 				const errorMessage = error.data?.erros.find((error_) => error_);
 
 				if (error.statusCode === 500) {
-					toast.error(
-						"Erro interno do servidor. Por favor, verifique os dados e tente novamente."
-					);
+					toast.error("Erro interno do servidor. Tente novamente mais tarde.");
 					return;
 				} else if (errorMessage) {
 					toast.error(errorMessage);
 					return;
 				}
-				toast.error(
-					"Aconteceu um erro ao tentar salvar configurações técnicas."
-				);
+				toast.error("Aconteceu um erro ao tentar processar sua solicitação.");
 			} else {
-				setError("root", {
-					message: "Erro de conexão. Por favor, verifique sua internet.",
-				});
+				toast.error("Erro de conexão. Por favor, verifique sua internet.");
 			}
 		}
 	};
