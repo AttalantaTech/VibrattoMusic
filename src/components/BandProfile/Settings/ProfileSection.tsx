@@ -165,7 +165,10 @@ export const ProfileSection = () => {
 									label={isCnpj ? "CNPJ" : "CPF"}
 									mask={isCnpj ? CNPJ_MASK : CPF_MASK}
 									maskPlaceholder={
-										isCnpj ? "00.000.000/0000-00" : "000.000.000-00"
+										isCnpj ? "XX.XXX.XXX/XXXX-00" : "000.000.000-00"
+									}
+									helperText={
+										isCnpj ? "O CNPJ pode conter letras e números." : undefined
 									}
 									disabled={isBusy}
 								/>
