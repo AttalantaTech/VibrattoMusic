@@ -8,67 +8,22 @@ import {
 	HelpCircle,
 	LogOut,
 	ChevronRight,
-	Eye,
-	EyeOff,
-	Save,
 	Smartphone,
 	Mail,
 	MessageSquare,
 } from "lucide-react";
 import { Button } from "../../ui/Button/Button";
 import { useAuthStore } from "../../../store/authStore";
+import { SettingsSection } from "./SettingsSection";
+import { ProfileSection } from "./ProfileSection";
+import { ChangePasswordForm } from "./ChangePasswordForm";
 import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 
-interface SettingsSectionProps {
-	title: string;
-	description?: string;
-	icon: React.ReactNode;
-	children: React.ReactNode;
-	className?: string;
-}
-
-const SettingsSection = ({
-	title,
-	description,
-	icon,
-	children,
-	className = "",
-}: SettingsSectionProps) => (
-	<div
-		className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}
-	>
-		<div className="flex items-start gap-4 mb-6">
-			<div className="p-2 bg-primary-50 rounded-lg text-primary-600">
-				{icon}
-			</div>
-			<div className="flex-1">
-				<h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-				{description && (
-					<p className="text-sm text-gray-600 mt-1">{description}</p>
-				)}
-			</div>
-		</div>
-		{children}
-	</div>
-);
-
 export const ImprovedSettingsTab = () => {
 	const router = useRouter();
-	const { user, logout } = useAuthStore();
+	const { logout } = useAuthStore();
 	const [activeSection, setActiveSection] = useState("profile");
-	const [isChangingPassword, setIsChangingPassword] = useState(false);
-	const [showPasswords, setShowPasswords] = useState({
-		current: false,
-		new: false,
-		confirm: false,
-	});
-	const [passwords, setPasswords] = useState({
-		current: "",
-		new: "",
-		confirm: "",
-	});
-
 	// Notification preferences
 	const [notifications, setNotifications] = useState({
 		email: true,
@@ -89,22 +44,6 @@ export const ImprovedSettingsTab = () => {
 		allowMessages: true,
 		showAvailability: true,
 	});
-
-	const handlePasswordChange = async () => {
-		if (passwords.new !== passwords.confirm) {
-			toast.error("As senhas não coincidem");
-			return;
-		}
-		if (passwords.new.length < 6) {
-			toast.error("A nova senha deve ter pelo menos 6 caracteres");
-			return;
-		}
-
-		// TODO: Implement password change API call
-		toast.success("Senha alterada com sucesso!");
-		setIsChangingPassword(false);
-		setPasswords({ current: "", new: "", confirm: "" });
-	};
 
 	const handleLogout = () => {
 		logout();
@@ -134,53 +73,7 @@ export const ImprovedSettingsTab = () => {
 	const renderContent = () => {
 		switch (activeSection) {
 			case "profile":
-				return (
-					<SettingsSection
-						title="Informações do Perfil"
-						description="Gerencie suas informações pessoais e profissionais"
-						icon={<User size={24} />}
-					>
-						<div className="space-y-4">
-							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-1">
-									Nome Completo
-								</label>
-								<input
-									type="text"
-									className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-									defaultValue={user?.nome}
-								/>
-							</div>
-							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-1">
-									Email
-								</label>
-								<input
-									type="email"
-									className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-									defaultValue={user?.email}
-								/>
-							</div>
-							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-1">
-									WhatsApp
-								</label>
-								<input
-									type="tel"
-									className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-									defaultValue={user?.telefoneWhatsApp}
-									placeholder="(11) 99999-9999"
-								/>
-							</div>
-							<div className="pt-4">
-								<Button className="flex items-center gap-2">
-									<Save size={18} />
-									Salvar Alterações
-								</Button>
-							</div>
-						</div>
-					</SettingsSection>
-				);
+				return <ProfileSection />;
 
 			case "notifications":
 				return (
@@ -353,138 +246,7 @@ export const ImprovedSettingsTab = () => {
 						icon={<Lock size={24} />}
 					>
 						<div className="space-y-6">
-							{!isChangingPassword ? (
-								<div>
-									<h4 className="font-medium text-gray-900 mb-2">Senha</h4>
-									<p className="text-sm text-gray-600 mb-4">
-										Última alteração há 30 dias
-									</p>
-									<Button
-										variant="outline"
-										onClick={() => {
-											setIsChangingPassword(true);
-										}}
-									>
-										Alterar Senha
-									</Button>
-								</div>
-							) : (
-								<div className="space-y-4">
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-1">
-											Senha Atual
-										</label>
-										<div className="relative">
-											<input
-												type={showPasswords.current ? "text" : "password"}
-												className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-												value={passwords.current}
-												onChange={(e) => {
-													setPasswords({
-														...passwords,
-														current: e.target.value,
-													});
-												}}
-											/>
-											<button
-												type="button"
-												onClick={() => {
-													setShowPasswords({
-														...showPasswords,
-														current: !showPasswords.current,
-													});
-												}}
-												className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-											>
-												{showPasswords.current ? (
-													<EyeOff size={20} />
-												) : (
-													<Eye size={20} />
-												)}
-											</button>
-										</div>
-									</div>
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-1">
-											Nova Senha
-										</label>
-										<div className="relative">
-											<input
-												type={showPasswords.new ? "text" : "password"}
-												className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-												value={passwords.new}
-												onChange={(e) => {
-													setPasswords({ ...passwords, new: e.target.value });
-												}}
-											/>
-											<button
-												type="button"
-												onClick={() => {
-													setShowPasswords({
-														...showPasswords,
-														new: !showPasswords.new,
-													});
-												}}
-												className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-											>
-												{showPasswords.new ? (
-													<EyeOff size={20} />
-												) : (
-													<Eye size={20} />
-												)}
-											</button>
-										</div>
-									</div>
-									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-1">
-											Confirmar Nova Senha
-										</label>
-										<div className="relative">
-											<input
-												type={showPasswords.confirm ? "text" : "password"}
-												className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-												value={passwords.confirm}
-												onChange={(e) => {
-													setPasswords({
-														...passwords,
-														confirm: e.target.value,
-													});
-												}}
-											/>
-											<button
-												type="button"
-												onClick={() => {
-													setShowPasswords({
-														...showPasswords,
-														confirm: !showPasswords.confirm,
-													});
-												}}
-												className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-											>
-												{showPasswords.confirm ? (
-													<EyeOff size={20} />
-												) : (
-													<Eye size={20} />
-												)}
-											</button>
-										</div>
-									</div>
-									<div className="flex gap-2">
-										<Button onClick={handlePasswordChange}>
-											Salvar Nova Senha
-										</Button>
-										<Button
-											variant="outline"
-											onClick={() => {
-												setIsChangingPassword(false);
-												setPasswords({ current: "", new: "", confirm: "" });
-											}}
-										>
-											Cancelar
-										</Button>
-									</div>
-								</div>
-							)}
+							<ChangePasswordForm />
 
 							<div className="pt-6 border-t border-gray-200">
 								<h4 className="font-medium text-gray-900 mb-2">

@@ -210,8 +210,28 @@ export interface ResetPasswordRequest {
 }
 
 export interface ChangePasswordRequest {
-	currentPassword: string;
-	newPassword: string;
+	senhaAtual: string;
+	novaSenha: string;
+}
+
+// PUT usuario: the API expects the full registration data
+export interface UpdateUserProfileRequest {
+	nome: string;
+	cpfOuCnpj: string;
+	cpfResponsavelLegal: string;
+	nomeResponsavelLegal: string;
+	cep: string;
+	logradouro: string;
+	numero: string;
+	bairro: string;
+	cidade: string;
+	estado: string;
+	complemento: string;
+	celular: string;
+}
+
+export interface ApiMessageResponse {
+	mensagem: string;
 }
 
 export interface UserProfile {
@@ -450,6 +470,9 @@ export interface UserApiResponse {
 	nome: string;
 	numero: string | null;
 	telefone?: string | null;
+	celular?: string | null;
+	cpfResponsavelLegal?: string | null;
+	nomeResponsavelLegal?: string | null;
 }
 
 // ===== Musical Product Types =====
