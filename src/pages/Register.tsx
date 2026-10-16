@@ -1,211 +1,47 @@
-import { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { Controller } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
-import { useRegisterUser, useLogin } from "../hooks/useUser";
-import { Button } from "../components/ui/Button/Button";
-import LogoVibratto from "../assets/images/Logo_Vibratto.png";
-import VibrattoName from "../assets/images/Vibratto.png";
-import ShowImg from "../assets/images/show.jpg";
-import { InputField } from "../components/forms/InputField/InputField";
-import { useRouter } from "@tanstack/react-router";
-import { useAuthStore } from "../store/authStore";
-import { getStoredUserType, setStoredUserType } from "../utils/userType";
-import { addressService } from "../api/services/addressService";
+import { useRegisterUser } from "@/hooks/useUser";
+import { Button } from "@/components/ui/Button/Button";
+import LogoVibratto from "@/assets/images/Logo_Vibratto.png";
+import VibrattoName from "@/assets/images/Vibratto.png";
+import ShowImg from "@/assets/images/show.jpg";
+import { InputField } from "@/components/forms/InputField/InputField";
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "../components/ui/Select/Select";
-
-const registerSchema = z
-	.object({
-		email: z.string().email("Email inválido"),
-		nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-		cpfOuCnpj: z.string().min(1, "Documento é obrigatório"),
-		cep: z
-			.string()
-			.min(8, "CEP deve ter no mínimo 6 dígitos")
-			.max(9, "CEP deve ter no máximo 9 dígitos"),
-		logradouro: z.string().min(1, "Logradouro é obrigatório"),
-		bairro: z.string().min(1, "Bairro é obrigatório"),
-		cidade: z.string().min(1, "Cidade é obrigatória"),
-		estado: z.string().min(1, "Estado é obrigatório"),
-		numero: z.string().min(1, "Número é obrigatório"),
-		complemento: z.string().optional(),
-		senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
-		confirmarSenha: z.string(),
-	})
-	.refine((data) => data.senha === data.confirmarSenha, {
-		message: "As senhas não coincidem",
-		path: ["confirmarSenha"],
-	})
-	.refine(
-		(data) => {
-			const digitsOnly = data.cpfOuCnpj.replace(/\D/g, "");
-			return digitsOnly.length === 11 || digitsOnly.length === 14;
-		},
-		{
-			message: "Documento deve ter 11 (CPF) ou 14 (CNPJ) dígitos",
-			path: ["cpfOuCnpj"],
-		}
-	);
-
-type RegisterFormData = z.infer<typeof registerSchema>;
+} from "@/components/ui/Select/Select";
+import { useRegisterForm } from "@/features/Register/hooks/useRegisterForm";
+import { useRegisterSubmit } from "@/features/Register/hooks/useRegisterSubmit";
 
 export const Register = () => {
-	const [showPassword, setShowPassword] = useState(false);
-	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-	const [showAddressFields, setShowAddressFields] = useState(false);
-	const [isLoadingAddress, setIsLoadingAddress] = useState(false);
-	const [tipoDocumento, setTipoDocumento] = useState<"cpf" | "cnpj">("cpf");
-	const router = useRouter();
 	const registerMutation = useRegisterUser();
-	const loginMutation = useLogin();
-	const setAuth = useAuthStore((state) => state.setAuth);
+
+	const {
+		form,
+		showPassword,
+		setShowPassword,
+		showConfirmPassword,
+		setShowConfirmPassword,
+		showAddressFields,
+		isLoadingAddress,
+		tipoDocumento,
+		setTipoDocumento,
+	} = useRegisterForm();
 
 	const {
 		register,
 		handleSubmit,
 		formState: { errors, isSubmitting },
-		setError,
-		watch,
-		setValue,
 		control,
-	} = useForm<RegisterFormData>({
-		resolver: zodResolver(registerSchema),
-	});
+	} = form;
 
-	const cepValue = watch("cep");
+	const { onSubmit } = useRegisterSubmit();
+
 	const isCPF = tipoDocumento === "cpf";
 
-	// Effect to handle CEP changes and fetch address data
-	useEffect(() => {
-		const fetchAddress = async () => {
-			if (cepValue && cepValue.replace(/\D/g, "").length === 8) {
-				setIsLoadingAddress(true);
-				try {
-					const addressData = await addressService.getAddressByCep(cepValue);
-					setValue("logradouro", addressData.logradouro);
-					setValue("bairro", addressData.bairro);
-					setValue("cidade", addressData.cidade);
-					setValue("estado", addressData.estado);
-					setValue("complemento", addressData.complemento || "");
-					setShowAddressFields(true);
-				} catch (error) {
-					console.error("Error fetching address:", error);
-					setError("cep", { message: "CEP não encontrado" });
-					setShowAddressFields(false);
-				} finally {
-					setIsLoadingAddress(false);
-				}
-			} else if (cepValue && cepValue.replace(/\D/g, "").length < 8) {
-				setShowAddressFields(false);
-			}
-		};
-
-		const timeoutId = setTimeout(() => {
-			void fetchAddress();
-		}, 500); // Debounce
-		return () => {
-			clearTimeout(timeoutId);
-		};
-	}, [cepValue, setValue, setError]);
-
-	const onSubmit = async (data: RegisterFormData) => {
-		try {
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const { confirmarSenha, cpfOuCnpj, ...registerData } = data;
-
-			// Map document according to selected type and remove formatting from CEP
-			const finalRegisterData = {
-				...registerData,
-				cep: registerData.cep?.replace(/\D/g, "") || "", // Remove non-numeric characters from CEP
-				cpfOuCnpj: cpfOuCnpj.replace(/\D/g, "") || "",
-				// ...(tipoDocumento === "cpf" ? { cpf: cpfOuCnpj } : { cnpj: cpfOuCnpj }),
-			};
-
-			// Don't include userType yet - it will be selected after registration
-			// confirmarSenha is used for validation but not sent to API
-			const registeredUser =
-				await registerMutation.mutateAsync(finalRegisterData);
-
-			// Automatically log in the user after registration
-			const loginResponse = await loginMutation.mutateAsync({
-				email: data.email,
-				senha: data.senha,
-			});
-
-			// Set authentication state
-			const user = loginResponse.user || registeredUser;
-			setAuth(
-				user,
-				loginResponse.token || loginResponse.Token,
-				loginResponse.refreshToken
-			);
-
-			// Check for temporary user choice made during user type selection
-			const temporaryUserChoice = localStorage.getItem("temp-user-choice") as
-				| "cliente"
-				| "produto_musical"
-				| null;
-			if (temporaryUserChoice) {
-				// Set the user type based on the temporary choice
-				setStoredUserType(temporaryUserChoice);
-				localStorage.removeItem("temp-user-choice"); // Clean up
-
-				// Navigate based on user type: clients skip onboarding and go to home
-				if (temporaryUserChoice === "cliente") {
-					await router.navigate({ to: "/" });
-				} else if (temporaryUserChoice === "produto_musical") {
-					await router.navigate({ to: "/band/profile-type" });
-				}
-				return;
-			}
-
-			// Fallback: Redirect based on persisted userType in vibratto-auth
-			const userType = getStoredUserType();
-			// If userType isn't set yet, force selection
-			if (!userType) {
-				await router.navigate({ to: "/welcome" });
-				return;
-			}
-			// Ensure store reflects persisted value
-			setStoredUserType(userType);
-			if (userType === "cliente") {
-				await router.navigate({ to: "/" });
-			} else if (userType === "produto_musical") {
-				await router.navigate({ to: "/band/profile-type" });
-			}
-		} catch (error: unknown) {
-			// Extract error message from VibrattoApiError or use fallback
-			let errorMessage = "Erro ao criar conta. Tente novamente.";
-
-			if (error && typeof error === "object") {
-				// Check if it's a validation error with structured errors
-				const validationError = error as {
-					status?: number;
-					errors?: Record<string, Array<string>>;
-					title?: string;
-					message?: string;
-				};
-
-				if (validationError.status === 400 && validationError.errors) {
-					// It's a validation error - show user-friendly message
-					errorMessage =
-						"Erro ao criar conta. Preencha os campos obrigatórios e tente novamente.";
-				} else if ("message" in error) {
-					const errorWithMessage = error as { message: string };
-					errorMessage = `Erro ao criar conta, ${errorWithMessage.message.toLocaleLowerCase()}`;
-				}
-			}
-
-			setError("root", { message: errorMessage });
-		}
-	};
 	return (
 		<div className="flex flex-col lg:flex-row h-screen w-screen justify-center items-center">
 			{/* Content */}
@@ -315,6 +151,28 @@ export const Register = () => {
 										)}
 									</div>
 								</div>
+							</div>
+							<div className="col-span-3">
+								<Controller
+									name="celular"
+									control={control}
+									render={({ field }) => (
+										<InputField
+											{...field}
+											label="Celular"
+											placeholder={"00.000.000/0000-00"}
+											mask={"00 00000-0000"}
+											maskPlaceholder=""
+											type="text"
+											required
+										/>
+									)}
+								/>
+								{errors.celular && (
+									<p className="text-red-600 text-sm mt-1">
+										{errors.celular.message}
+									</p>
+								)}
 							</div>
 							{/* CEP Field */}
 							<div>
