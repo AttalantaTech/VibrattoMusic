@@ -7,6 +7,8 @@ import type {
 	FavoriteRequest,
 	ForgotPasswordRequest,
 	ResetPasswordRequest,
+	ChangePasswordRequest,
+	UpdateUserProfileRequest,
 	MusicalProductApiResponse,
 	PaginatedResponse,
 } from "../api/types";
@@ -294,5 +296,33 @@ export const useUser = (enabled: boolean = true) => {
 		queryKey: userKeys.user(),
 		queryFn: () => userService.getUser(),
 		enabled,
+	});
+};
+
+/**
+ * Hook to update the logged user's profile (only the fields sent are changed)
+ */
+export const useUpdateUser = () => {
+	const queryClient = useQueryClient();
+	const updateAuthUser = useAuthStore((state) => state.updateUser);
+
+	return useMutation({
+		mutationFn: (request: UpdateUserProfileRequest) =>
+			userService.updateProfile(request),
+		onSuccess: (_data, request) => {
+			// Keep the name shown across the app (header, menus) in sync
+			if (request.nome) updateAuthUser({ nome: request.nome });
+			void queryClient.invalidateQueries({ queryKey: userKeys.user() });
+		},
+	});
+};
+
+/**
+ * Hook to change the logged user's password
+ */
+export const useChangePassword = () => {
+	return useMutation({
+		mutationFn: (request: ChangePasswordRequest) =>
+			userService.changePassword(request),
 	});
 };

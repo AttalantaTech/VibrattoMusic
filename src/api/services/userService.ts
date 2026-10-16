@@ -9,6 +9,8 @@ import type {
 	ForgotPasswordRequest,
 	ResetPasswordRequest,
 	ChangePasswordRequest,
+	UpdateUserProfileRequest,
+	ApiMessageResponse,
 	UserProfile,
 	UserSettings,
 	PaginationParameters,
@@ -166,8 +168,13 @@ export class UserService {
 	/**
 	 * Change password (authenticated user)
 	 */
-	public async changePassword(request: ChangePasswordRequest): Promise<void> {
-		return this.apiClient.post<void>("usuario/change-password", request);
+	public async changePassword(
+		request: ChangePasswordRequest
+	): Promise<ApiMessageResponse> {
+		return this.apiClient.post<ApiMessageResponse>(
+			"usuario/alterarsenha",
+			request
+		);
 	}
 
 	// Profile management
@@ -181,8 +188,10 @@ export class UserService {
 	/**
 	 * Update user profile
 	 */
-	public async updateProfile(userData: Partial<User>): Promise<User> {
-		return this.apiClient.put<User>("usuario/profile", userData);
+	public async updateProfile(
+		userData: UpdateUserProfileRequest
+	): Promise<void> {
+		return this.apiClient.put<void>("usuario", userData);
 	}
 
 	/**
