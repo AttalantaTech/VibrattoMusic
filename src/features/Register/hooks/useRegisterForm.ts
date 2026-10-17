@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { RegisterFormData } from "../schemas/registerSchema";
 import { registerSchema } from "../schemas/registerSchema";
 import { addressService } from "@/api/services/addressService";
@@ -28,9 +28,11 @@ export function useRegisterForm() {
 	const [isLoadingAddress, setIsLoadingAddress] = useState(false);
 	const [tipoDocumento, setTipoDocumento] = useState<"cpf" | "cnpj">("cpf");
 
+	const schema = useMemo(() => registerSchema(tipoDocumento), [tipoDocumento]);
+
 	const form = useForm<RegisterFormData>({
 		defaultValues,
-		resolver: zodResolver(registerSchema),
+		resolver: zodResolver(schema),
 	});
 
 	const cepValue = form.watch("cep");

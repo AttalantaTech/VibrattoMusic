@@ -1,5 +1,5 @@
 import { Controller } from "react-hook-form";
-import { Eye, EyeOff } from "lucide-react";
+import { Briefcase, Eye, EyeOff, User } from "lucide-react";
 import { useRegisterUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/Button/Button";
 import LogoVibratto from "@/assets/images/Logo_Vibratto.png";
@@ -135,10 +135,9 @@ export const Register = () => {
 												<InputField
 													{...field}
 													placeholder={
-														isCPF ? "000.000.000-00" : "00.000.000/0000-00"
+														isCPF ? "XXX.XXX.XXX-00" : "XX.XXX.XXX/XXXX-00"
 													}
 													mask={isCPF ? "000.000.000-00" : "00.000.000/0000-00"}
-													maskPlaceholder=""
 													type="text"
 													required
 												/>
@@ -154,15 +153,50 @@ export const Register = () => {
 							</div>
 							<div className="col-span-3">
 								<Controller
+									name="cpfResponsavelLegal"
+									control={control}
+									render={({ field }) => (
+										<InputField
+											{...field}
+											value={field.value ?? ""}
+											required={!isCPF}
+											icon={<Briefcase size={20} />}
+											label="CPF do Responsável Legal"
+											mask="000.000.000-00"
+											placeholder="XXX.XXX.XXX-00"
+										/>
+									)}
+								/>
+								{errors.cpfResponsavelLegal?.message && (
+									<div className="text-red-500 text-sm">
+										{errors.cpfResponsavelLegal.message}
+									</div>
+								)}
+							</div>
+							<div className="col-span-3">
+								<InputField
+									required={!isCPF}
+									icon={<User size={20} />}
+									label="Nome do Responsável Legal"
+									placeholder="Ex: Banda LTDA"
+									{...register("nomeResponsavelLegal")}
+								/>
+								{errors.nomeResponsavelLegal?.message && (
+									<div className="text-red-500 text-sm">
+										{errors.nomeResponsavelLegal.message}
+									</div>
+								)}
+							</div>
+							<div className="col-span-3">
+								<Controller
 									name="celular"
 									control={control}
 									render={({ field }) => (
 										<InputField
 											{...field}
 											label="Celular"
-											placeholder={"00.000.000/0000-00"}
-											mask={"00 00000-0000"}
-											maskPlaceholder=""
+											mask="(00) 00000-0000"
+											placeholder="(00) 00000-0000"
 											type="text"
 											required
 										/>
