@@ -59,6 +59,34 @@ export const validateCNPJ = (cnpj: string): boolean => {
 	return true;
 };
 
+/**
+ * Validates numeric and alphanumeric CNPJ (Receita Federal, from July 2026).
+ * The first 12 characters may be letters or digits; the 2 check digits are numeric.
+ * Each character is worth its ASCII code minus 48, so digits keep their value.
+ */
+export const validateAlphanumericCNPJ = (cnpj: string): boolean => {
+	const cleaned = cnpj.replace(/[^0-9A-Za-z]/g, "").toUpperCase();
+
+	if (!/^[0-9A-Z]{12}\d{2}$/.test(cleaned)) return false;
+	if (/^(.)\1{13}$/.test(cleaned)) return false; // All same characters
+
+	const calculateDigit = (base: string) => {
+		let sum = 0;
+		let weight = 2;
+		for (let index = base.length - 1; index >= 0; index--) {
+			sum += (base.charCodeAt(index) - 48) * weight;
+			weight = weight === 9 ? 2 : weight + 1;
+		}
+		const remainder = sum % 11;
+		return remainder < 2 ? 0 : 11 - remainder;
+	};
+
+	const digit1 = calculateDigit(cleaned.slice(0, 12));
+	const digit2 = calculateDigit(cleaned.slice(0, 12) + String(digit1));
+
+	return cleaned.endsWith(`${digit1}${digit2}`);
+};
+
 // Enhanced validation schemas
 export const ContactValidationSchema = z
 	.object({
