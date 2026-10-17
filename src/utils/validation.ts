@@ -92,26 +92,32 @@ export const ContactValidationSchema = z
 	.object({
 		usaCnpj: z.boolean().default(false),
 
-		nome: z.string().optional(),
-		nomeFantasia: z.string().nullable(),
-
-		cnpj: z
-			.string()
-			.optional()
-			.refine((value) => {
-				if (!value) return true;
-				return validateCNPJ(value);
-			}, "CNPJ inválido"),
-
+		nome: z.string().nullable(),
 		cpf: z
 			.string()
-			.optional()
+			.nullable()
 			.refine((value) => {
 				if (!value) return true;
 				return validateCPF(value);
 			}, "CPF inválido"),
 
-		razaoSocial: z.string().optional(),
+		cnpj: z
+			.string()
+			.nullable()
+			.refine((value) => {
+				if (!value) return true;
+				return validateCNPJ(value);
+			}, "CNPJ inválido"),
+		nomeFantasia: z.string().nullable(),
+		cpfResponsavelLegal: z
+			.string()
+			.nullable()
+			.refine((value) => {
+				if (!value) return true;
+				return validateCPF(value);
+			}, "CPF inválido"),
+		nomeResponsavelLegal: z.string().nullable(),
+		razaoSocial: z.string().nullable(),
 
 		telefone: z
 			.string()
@@ -154,6 +160,8 @@ export const ContactValidationSchema = z
 		const requiredFields = [
 			{ key: "cnpj", label: "CNPJ" },
 			{ key: "razaoSocial", label: "Razão social" },
+			{ key: "cpfResponsavelLegal", label: "CPF do responsável legal" },
+			{ key: "nomeResponsavelLegal", label: "Nome do responsável legal" },
 			{ key: "telefone", label: "Telefone" },
 			{ key: "cepContato", label: "CEP" },
 			{ key: "logradouroContato", label: "Logradouro" },
@@ -400,6 +408,8 @@ export type OnboardingContactData = z.infer<typeof ContactValidationSchema> & {
 	id: number;
 	email?: string;
 };
+
+export type ContactFormData = z.infer<typeof ContactValidationSchema>;
 
 export const isPdfFile = (link: string): boolean => {
 	const regex = /\.pdf$/i;
