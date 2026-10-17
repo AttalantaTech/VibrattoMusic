@@ -19,6 +19,11 @@ export function useRegisterSubmit() {
 
 			const finalRegisterData = {
 				...registerData,
+
+				cpfResponsavelLegal:
+					registerData.cpfResponsavelLegal?.replace(/\D/g, "") || null,
+				nomeResponsavelLegal: registerData.nomeResponsavelLegal || null,
+
 				cep: registerData.cep?.replace(/\D/g, "") || "", // Remove non-numeric characters from CEP
 				cpfOuCnpj: cpfOuCnpj.replace(/\D/g, "") || "",
 				celular: registerData.celular.replace(/\D/g, ""),
