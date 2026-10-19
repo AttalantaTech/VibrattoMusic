@@ -10,6 +10,7 @@ import { BandProfileSwitcher } from "../../BandProfileSwitcher";
 import { useSyncMusicalProducts } from "@/hooks/useSyncMusicalProducts";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
+import { SUPPORT_WHATSAPP_URL, openSupportWhatsapp } from "@/utils/support";
 
 export const Header = () => {
 	const { isAuthenticated } = useAuthStore();
@@ -121,18 +122,20 @@ export const Header = () => {
 										<span>Meu Perfil</span>
 									</button>
 
-									{/* Help link */}
-									<a
-										href="mailto:ayav@ic.ufal.br"
-										target="_blank"
-										onClick={() => {
-											setShowDropdown(false);
-										}}
-										className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-gray-700"
-									>
-										<HelpCircle className="w-4 h-4" />
-										<span>Preciso de ajuda</span>
-									</a>
+									{/* Help link: opens the support WhatsApp */}
+									{SUPPORT_WHATSAPP_URL && (
+										<button
+											type="button"
+											onClick={() => {
+												setShowDropdown(false);
+												openSupportWhatsapp();
+											}}
+											className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-gray-700"
+										>
+											<HelpCircle className="w-4 h-4" />
+											<span>Preciso de ajuda</span>
+										</button>
+									)}
 								</div>
 							)}
 						</div>
