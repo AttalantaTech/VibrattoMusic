@@ -29,36 +29,6 @@ export const validateCPF = (cpf: string): boolean => {
 	return true;
 };
 
-export const validateCNPJ = (cnpj: string): boolean => {
-	const cleaned = cnpj.replace(/\D/g, "");
-
-	if (cleaned.length !== 14) return false;
-	if (/^(\d)\1{13}$/.test(cleaned)) return false; // All same digits
-	// Validate first check digit
-	let sum = 0;
-	let weight = 2;
-	for (let index = 11; index >= 0; index--) {
-		sum += parseInt(cleaned.charAt(index)) * weight;
-		weight = weight === 9 ? 2 : weight + 1;
-	}
-	let remainder = sum % 11;
-	const digit1 = remainder < 2 ? 0 : 11 - remainder;
-	if (digit1 !== parseInt(cleaned.charAt(12))) return false;
-
-	// Validate second check digit
-	sum = 0;
-	weight = 2;
-	for (let index = 12; index >= 0; index--) {
-		sum += parseInt(cleaned.charAt(index)) * weight;
-		weight = weight === 9 ? 2 : weight + 1;
-	}
-	remainder = sum % 11;
-	const digit2 = remainder < 2 ? 0 : 11 - remainder;
-	if (digit2 !== parseInt(cleaned.charAt(13))) return false;
-
-	return true;
-};
-
 /**
  * Validates numeric and alphanumeric CNPJ (Receita Federal, from July 2026).
  * The first 12 characters may be letters or digits; the 2 check digits are numeric.
@@ -87,6 +57,51 @@ export const validateAlphanumericCNPJ = (cnpj: string): boolean => {
 	return cleaned.endsWith(`${digit1}${digit2}`);
 };
 
+export const onlyDigits = (value: string) => value.replace(/\D/g, "");
+
+// Keeps letters: an alphanumeric CNPJ must not lose them
+export const onlyAlphanumeric = (value: string) =>
+	value.replace(/[^0-9A-Za-z]/g, "").toUpperCase();
+
+// Formats raw API values ("11987456622") the same way the input masks display
+// them, so the form does not look "changed" right after loading
+const formatWithPattern = (raw: string, pattern: string) => {
+	const size = pattern.split("").filter((char) => char === "#").length;
+	if (raw.length !== size) return raw;
+
+	let position = 0;
+	return pattern.replace(/#/g, () => raw[position++] ?? "");
+};
+
+export const formatPhone = (value?: string | null) =>
+	formatWithPattern(onlyDigits(value ?? ""), "## #####-####");
+
+export const formatCep = (value?: string | null) =>
+	formatWithPattern(onlyDigits(value ?? ""), "#####-###");
+
+export const formatCpf = (value?: string | null) =>
+	formatWithPattern(onlyDigits(value ?? ""), "###.###.###-##");
+
+export const formatDocument = (value?: string | null) => {
+	const raw = onlyAlphanumeric(value ?? "");
+	return raw.length === 14
+		? formatWithPattern(raw, "##.###.###/####-##")
+		: formatCpf(raw);
+};
+
+export const PHONE_MASK = "00 00000-0000";
+export const CPF_MASK = "000.000.000-00";
+export const CEP_MASK = "00000-000";
+// "#" accepts letters or digits: alphanumeric CNPJ (Receita Federal, July 2026).
+// Passed as a dynamic mask so the custom definition and uppercase go together
+export const CNPJ_MASK = [
+	{
+		mask: "##.###.###/####-00",
+		definitions: { "#": /[0-9A-Za-z]/ },
+		prepareChar: (char: string) => char.toUpperCase(),
+	},
+];
+
 // Enhanced validation schemas
 export const ContactValidationSchema = z
 	.object({
@@ -106,7 +121,7 @@ export const ContactValidationSchema = z
 			.nullable()
 			.refine((value) => {
 				if (!value) return true;
-				return validateCNPJ(value);
+				return validateAlphanumericCNPJ(value);
 			}, "CNPJ inválido"),
 		nomeFantasia: z.string().nullable(),
 		cpfResponsavelLegal: z

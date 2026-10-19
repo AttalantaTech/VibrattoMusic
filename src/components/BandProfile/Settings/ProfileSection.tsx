@@ -14,6 +14,10 @@ import { useUpdateUser, useUser } from "@/hooks/useUser";
 import { useAuthStore } from "@/store/authStore";
 import { SettingsSection } from "./SettingsSection";
 import { useProfileSettingsForm } from "./hooks/useProfileSettingsForm";
+import type {
+	DocumentType,
+	ProfileSettingsFormData,
+} from "./schemas/settingsSchemas";
 import {
 	CEP_MASK,
 	CNPJ_MASK,
@@ -21,10 +25,8 @@ import {
 	PHONE_MASK,
 	onlyAlphanumeric,
 	onlyDigits,
-	type DocumentType,
-	type ProfileSettingsFormData,
-} from "./schemas/settingsSchemas";
-import { showApiError } from "./utils/showApiError";
+} from "@/utils/validation";
+import { showApiError } from "@/utils/showApiError";
 
 const FieldError = ({ message }: { message?: string }) =>
 	message ? <p className="text-red-600 text-sm mt-1">{message}</p> : null;
