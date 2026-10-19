@@ -66,9 +66,12 @@ export const CheckAvailabilityModal = ({
 		label: tipo.Nome,
 	}));
 
+	// The modal stays mounted while closed; only load the schedule when it opens
+	// (opening requires login, so visitors never call the protected endpoint)
 	const { data: agendaData } = useSchedule(
 		musicalProduct?.id ?? 0,
-		currentMonth
+		currentMonth,
+		isOpen
 	);
 	// const { activeProduct } = useMusicalProductStore();
 	const { isPending } = useStartConversation();
