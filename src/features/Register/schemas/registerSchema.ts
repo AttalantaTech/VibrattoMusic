@@ -1,5 +1,10 @@
 import { validateAlphanumericCNPJ, validateCPF } from "@/utils/validation";
 import z from "zod";
+import {
+	PERSONAL_DATA_MESSAGE,
+	containsPersonalData,
+	passwordSchema,
+} from "@/utils/password";
 
 export const registerSchema = z
 	.object({
@@ -21,7 +26,7 @@ export const registerSchema = z
 		estado: z.string().min(1, "Estado é obrigatório"),
 		numero: z.string().min(1, "Número é obrigatório"),
 		complemento: z.string().optional(),
-		senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
+		senha: passwordSchema,
 		confirmarSenha: z.string(),
 	})
 	.refine((data) => data.senha === data.confirmarSenha, {
@@ -29,6 +34,14 @@ export const registerSchema = z
 		path: ["confirmarSenha"],
 	})
 	.superRefine((data, context) => {
+		if (containsPersonalData(data.senha, [data.email, data.nome])) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["senha"],
+				message: PERSONAL_DATA_MESSAGE,
+			});
+		}
+
 		if (data.tipoDocumento === "cpf") {
 			if (!validateCPF(data.cpfOuCnpj)) {
 				context.addIssue({

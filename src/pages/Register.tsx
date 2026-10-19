@@ -17,6 +17,7 @@ import { useRegisterForm } from "@/features/Register/hooks/useRegisterForm";
 import { useRegisterSubmit } from "@/features/Register/hooks/useRegisterSubmit";
 import { CNPJ_MASK, CPF_MASK } from "@/utils/validation";
 import { FieldError } from "@/components/forms/FieldError";
+import { PasswordRequirements } from "@/components/forms/PasswordRequirements";
 
 type DocumentType = "cpf" | "cnpj";
 
@@ -45,6 +46,7 @@ export const Register = () => {
 	const { onSubmit } = useRegisterSubmit();
 
 	const isCnpj = watch("tipoDocumento") === "cnpj";
+	const password = watch("senha");
 
 	return (
 		<div className="flex flex-col lg:flex-row h-screen w-screen justify-center items-center">
@@ -316,6 +318,7 @@ export const Register = () => {
 										)}
 									</button>
 								</div>
+								<PasswordRequirements password={password} />
 								<FieldError message={errors.senha?.message} />
 							</div>
 							<div>

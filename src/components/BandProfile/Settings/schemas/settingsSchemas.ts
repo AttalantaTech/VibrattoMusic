@@ -5,6 +5,11 @@ import {
 	validateAlphanumericCNPJ,
 	validateCPF,
 } from "@/utils/validation";
+import {
+	PERSONAL_DATA_MESSAGE,
+	containsPersonalData,
+	passwordSchema,
+} from "@/utils/password";
 
 export type DocumentType = "cpf" | "cnpj";
 
@@ -74,21 +79,29 @@ export const profileSettingsSchema = z
 
 export type ProfileSettingsFormData = z.infer<typeof profileSettingsSchema>;
 
-export const changePasswordSchema = z
-	.object({
-		senhaAtual: z.string().min(1, "Informe sua senha atual"),
-		novaSenha: z
-			.string()
-			.min(6, "A nova senha deve ter pelo menos 6 caracteres"),
-		confirmarSenha: z.string(),
-	})
-	.refine((data) => data.novaSenha === data.confirmarSenha, {
-		message: "As senhas não coincidem",
-		path: ["confirmarSenha"],
-	})
-	.refine((data) => data.novaSenha !== data.senhaAtual, {
-		message: "A nova senha deve ser diferente da atual",
-		path: ["novaSenha"],
-	});
+// Receives the logged user's name and email to block them inside the password
+export const createChangePasswordSchema = (
+	personalData: Array<string | null | undefined>
+) =>
+	z
+		.object({
+			senhaAtual: z.string().min(1, "Informe sua senha atual"),
+			novaSenha: passwordSchema,
+			confirmarSenha: z.string(),
+		})
+		.refine((data) => data.novaSenha === data.confirmarSenha, {
+			message: "As senhas não coincidem",
+			path: ["confirmarSenha"],
+		})
+		.refine((data) => data.novaSenha !== data.senhaAtual, {
+			message: "A nova senha deve ser diferente da atual",
+			path: ["novaSenha"],
+		})
+		.refine((data) => !containsPersonalData(data.novaSenha, personalData), {
+			message: PERSONAL_DATA_MESSAGE,
+			path: ["novaSenha"],
+		});
 
-export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
+export type ChangePasswordFormData = z.infer<
+	ReturnType<typeof createChangePasswordSchema>
+>;

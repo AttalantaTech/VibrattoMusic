@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm, type UseFormRegisterReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
@@ -6,18 +6,26 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/Button/Button";
 import { useChangePassword } from "@/hooks/useUser";
 import {
-	changePasswordSchema,
+	createChangePasswordSchema,
 	type ChangePasswordFormData,
 } from "./schemas/settingsSchemas";
 import { showApiError } from "@/utils/showApiError";
+import { useAuthStore } from "@/store/authStore";
+import { PasswordRequirements } from "@/components/forms/PasswordRequirements";
 
 interface PasswordInputProps {
 	label: string;
 	registration: UseFormRegisterReturn;
 	error?: string;
+	hint?: React.ReactNode;
 }
 
-const PasswordInput = ({ label, registration, error }: PasswordInputProps) => {
+const PasswordInput = ({
+	label,
+	registration,
+	error,
+	hint,
+}: PasswordInputProps) => {
 	const [isVisible, setIsVisible] = useState(false);
 
 	return (
@@ -41,6 +49,7 @@ const PasswordInput = ({ label, registration, error }: PasswordInputProps) => {
 					{isVisible ? <EyeOff size={20} /> : <Eye size={20} />}
 				</button>
 			</div>
+			{hint}
 			{error && <p className="text-red-600 text-sm mt-1">{error}</p>}
 		</div>
 	);
@@ -49,14 +58,21 @@ const PasswordInput = ({ label, registration, error }: PasswordInputProps) => {
 export const ChangePasswordForm = () => {
 	const [isChangingPassword, setIsChangingPassword] = useState(false);
 	const changePasswordMutation = useChangePassword();
+	const user = useAuthStore((state) => state.user);
+
+	const schema = useMemo(
+		() => createChangePasswordSchema([user?.nome, user?.email]),
+		[user?.nome, user?.email]
+	);
 
 	const {
 		register,
 		handleSubmit,
 		reset,
+		watch,
 		formState: { errors },
 	} = useForm<ChangePasswordFormData>({
-		resolver: zodResolver(changePasswordSchema),
+		resolver: zodResolver(schema),
 		defaultValues: { senhaAtual: "", novaSenha: "", confirmarSenha: "" },
 	});
 
@@ -111,6 +127,7 @@ export const ChangePasswordForm = () => {
 				label="Nova Senha"
 				registration={register("novaSenha")}
 				error={errors.novaSenha?.message}
+				hint={<PasswordRequirements password={watch("novaSenha")} />}
 			/>
 			<PasswordInput
 				label="Confirmar Nova Senha"
