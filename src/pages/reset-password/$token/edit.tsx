@@ -12,16 +12,12 @@ import VibrattoName from "@/assets/images/Vibratto.png";
 import ShowImg from "@/assets/images/show.jpg";
 import { VibrattoApiError } from "@/api";
 import { toast } from "sonner";
+import { passwordSchema } from "@/utils/password";
+import { PasswordRequirements } from "@/components/forms/PasswordRequirements";
 
 const resetPasswordSchema = z
 	.object({
-		password: z
-			.string()
-			.min(6, "A senha deve ter pelo menos 6 caracteres")
-			.regex(
-				/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-				"A senha deve conter pelo menos uma letra maiúscula, uma minúscula e um número"
-			),
+		password: passwordSchema,
 		confirmPassword: z.string(),
 	})
 	.refine((data) => data.password === data.confirmPassword, {
@@ -42,6 +38,7 @@ export function ResetPassword() {
 	const {
 		register,
 		handleSubmit,
+		watch,
 		formState: { errors, isSubmitting },
 	} = useForm<ResetPasswordFormData>({
 		resolver: zodResolver(resetPasswordSchema),
@@ -251,6 +248,7 @@ export function ResetPassword() {
 										<Eye className="h-5 w-5 text-gray-400" />
 									)}
 								</button>
+								<PasswordRequirements password={watch("password")} />
 								{errors.password && (
 									<p className="text-red-600 text-sm mt-1">
 										{errors.password.message}
