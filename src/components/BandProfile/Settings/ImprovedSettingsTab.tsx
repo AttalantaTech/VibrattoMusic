@@ -4,7 +4,6 @@ import {
 	Lock,
 	Bell,
 	Shield,
-	CreditCard,
 	HelpCircle,
 	LogOut,
 	ChevronRight,
@@ -66,7 +65,6 @@ export const ImprovedSettingsTab = () => {
 		{ id: "notifications", label: "Notificações", icon: <Bell size={20} /> },
 		{ id: "privacy", label: "Privacidade", icon: <Shield size={20} /> },
 		{ id: "security", label: "Segurança", icon: <Lock size={20} /> },
-		{ id: "billing", label: "Pagamentos", icon: <CreditCard size={20} /> },
 		{ id: "help", label: "Ajuda", icon: <HelpCircle size={20} /> },
 	];
 
@@ -114,10 +112,10 @@ export const ImprovedSettingsTab = () => {
 												checked={
 													notifications[key as keyof typeof notifications]
 												}
-												onChange={(e) => {
+												onChange={(event) => {
 													setNotifications({
 														...notifications,
-														[key]: e.target.checked,
+														[key]: event.target.checked,
 													});
 												}}
 												className="w-5 h-5 text-primary-600 rounded focus:ring-blue-500"
@@ -152,10 +150,10 @@ export const ImprovedSettingsTab = () => {
 												checked={
 													notifications[key as keyof typeof notifications]
 												}
-												onChange={(e) => {
+												onChange={(event) => {
 													setNotifications({
 														...notifications,
-														[key]: e.target.checked,
+														[key]: event.target.checked,
 													});
 												}}
 												className="w-5 h-5 text-primary-600 rounded focus:ring-blue-500"
