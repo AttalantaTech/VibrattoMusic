@@ -443,6 +443,8 @@ export interface MusicalProductApiResponse {
 	infraCamarim: string | null;
 	infraCamarimTexto: string | null;
 	numeroIntegrantes?: number | null;
+	cpfResponsavelLegal: string | null;
+	nomeResponsavelLegal: string | null;
 }
 
 export interface MusicalProductListApiResponse {
@@ -469,10 +471,9 @@ export interface UserApiResponse {
 	logradouro: string;
 	nome: string;
 	numero: string | null;
-	telefone?: string | null;
-	celular?: string | null;
-	cpfResponsavelLegal?: string | null;
-	nomeResponsavelLegal?: string | null;
+	celular: string;
+	cpfResponsavelLegal: string | null;
+	nomeResponsavelLegal: string | null;
 }
 
 // ===== Musical Product Types =====

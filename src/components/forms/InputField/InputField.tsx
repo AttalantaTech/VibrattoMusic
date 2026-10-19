@@ -20,12 +20,12 @@ type MaskedInputProps = {
 type InputFieldProps = MaskedInputProps & InputHTMLAttributes<HTMLInputElement>;
 
 const MaskedInput = forwardRef<HTMLInputElement, MaskedInputProps>(
-	({ name, onChange, maskPlaceholder, ...props }, ref) => (
+	({ name, onChange, maskPlaceholder, placeholder, ...props }, ref) => (
 		<IMaskInput
 			{...props}
-			inputRef={ref}
+			ref={ref}
 			name={name}
-			placeholder={maskPlaceholder}
+			placeholder={maskPlaceholder ?? placeholder}
 			onAccept={(value) => {
 				onChange?.({
 					target: { value: String(value) },
@@ -69,10 +69,11 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
 						<MaskedInput
 							{...props}
 							mask={mask}
-							inputRef={ref}
+							ref={ref}
 							id={name}
 							name={name}
-							maskPlaceholder={maskPlaceholder ?? placeholder}
+							maskPlaceholder={maskPlaceholder}
+							placeholder={placeholder}
 							type={type}
 							className={cn(
 								"w-full rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500",

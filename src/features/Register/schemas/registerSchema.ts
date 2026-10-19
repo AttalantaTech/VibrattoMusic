@@ -1,10 +1,15 @@
+import { validateAlphanumericCNPJ, validateCPF } from "@/utils/validation";
 import z from "zod";
 
 export const registerSchema = z
 	.object({
 		email: z.string().email("Email inválido"),
 		nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-		cpfOuCnpj: z.string().min(1, "Documento é obrigatório"),
+		tipoDocumento: z.enum(["cpf", "cnpj"]),
+		cpfOuCnpj: z.string(),
+		nomeResponsavelLegal: z.string().trim(),
+		cpfResponsavelLegal: z.string(),
+
 		celular: z.string().min(13, "celular é obrigatório"),
 		cep: z
 			.string()
@@ -23,15 +28,38 @@ export const registerSchema = z
 		message: "As senhas não coincidem",
 		path: ["confirmarSenha"],
 	})
-	.refine(
-		(data) => {
-			const digitsOnly = data.cpfOuCnpj.replace(/\D/g, "");
-			return digitsOnly.length === 11 || digitsOnly.length === 14;
-		},
-		{
-			message: "Documento deve ter 11 (CPF) ou 14 (CNPJ) dígitos",
-			path: ["cpfOuCnpj"],
+	.superRefine((data, context) => {
+		if (data.tipoDocumento === "cpf") {
+			if (!validateCPF(data.cpfOuCnpj)) {
+				context.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ["cpfOuCnpj"],
+					message: "CPF inválido",
+				});
+			}
+			return;
 		}
-	);
+		if (!validateAlphanumericCNPJ(data.cpfOuCnpj)) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["cpfOuCnpj"],
+				message: "CNPJ inválido",
+			});
+		}
+		if (data.nomeResponsavelLegal.length < 2) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["nomeResponsavelLegal"],
+				message: "Informe o nome do responsável legal",
+			});
+		}
+		if (!validateCPF(data.cpfResponsavelLegal)) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["cpfResponsavelLegal"],
+				message: "CPF do responsável legal inválido",
+			});
+		}
+	});
 
 export type RegisterFormData = z.infer<typeof registerSchema>;

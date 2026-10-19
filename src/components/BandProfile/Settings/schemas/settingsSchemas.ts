@@ -1,52 +1,12 @@
 import z from "zod";
-import { validateAlphanumericCNPJ, validateCPF } from "@/utils/validation";
-
-export const PHONE_MASK = "00 00000-0000";
-export const CPF_MASK = "000.000.000-00";
-export const CEP_MASK = "00000-000";
-// "#" accepts letters or digits: alphanumeric CNPJ (Receita Federal, July 2026).
-// Passed as a dynamic mask so the custom definition and uppercase go together
-export const CNPJ_MASK = [
-	{
-		mask: "##.###.###/####-00",
-		definitions: { "#": /[0-9A-Za-z]/ },
-		prepareChar: (char: string) => char.toUpperCase(),
-	},
-];
+import {
+	onlyAlphanumeric,
+	onlyDigits,
+	validateAlphanumericCNPJ,
+	validateCPF,
+} from "@/utils/validation";
 
 export type DocumentType = "cpf" | "cnpj";
-
-export const onlyDigits = (value: string) => value.replace(/\D/g, "");
-
-// Keeps letters: an alphanumeric CNPJ must not lose them
-export const onlyAlphanumeric = (value: string) =>
-	value.replace(/[^0-9A-Za-z]/g, "").toUpperCase();
-
-// Formats raw API values ("11987456622") the same way the input masks display
-// them, so the form does not look "changed" right after loading
-const formatWithPattern = (raw: string, pattern: string) => {
-	const size = pattern.split("").filter((char) => char === "#").length;
-	if (raw.length !== size) return raw;
-
-	let position = 0;
-	return pattern.replace(/#/g, () => raw[position++] ?? "");
-};
-
-export const formatPhone = (value?: string | null) =>
-	formatWithPattern(onlyDigits(value ?? ""), "## #####-####");
-
-export const formatCep = (value?: string | null) =>
-	formatWithPattern(onlyDigits(value ?? ""), "#####-###");
-
-export const formatCpf = (value?: string | null) =>
-	formatWithPattern(onlyDigits(value ?? ""), "###.###.###-##");
-
-export const formatDocument = (value?: string | null) => {
-	const raw = onlyAlphanumeric(value ?? "");
-	return raw.length === 14
-		? formatWithPattern(raw, "##.###.###/####-##")
-		: formatCpf(raw);
-};
 
 export const getDocumentType = (value?: string | null): DocumentType =>
 	onlyAlphanumeric(value ?? "").length === 14 ? "cnpj" : "cpf";

@@ -5,9 +5,12 @@ import { addressService } from "@/api/services/addressService";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const defaultValues = {
+const defaultValues: RegisterFormData = {
 	email: "",
 	nome: "",
+	tipoDocumento: "cpf",
+	cpfResponsavelLegal: "",
+	nomeResponsavelLegal: "",
 	cpfOuCnpj: "",
 	celular: "",
 	cep: "",
@@ -26,7 +29,6 @@ export function useRegisterForm() {
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 	const [showAddressFields, setShowAddressFields] = useState(false);
 	const [isLoadingAddress, setIsLoadingAddress] = useState(false);
-	const [tipoDocumento, setTipoDocumento] = useState<"cpf" | "cnpj">("cpf");
 
 	const form = useForm<RegisterFormData>({
 		defaultValues,
@@ -77,7 +79,5 @@ export function useRegisterForm() {
 		setShowAddressFields,
 		isLoadingAddress,
 		setIsLoadingAddress,
-		tipoDocumento,
-		setTipoDocumento,
 	};
 }
