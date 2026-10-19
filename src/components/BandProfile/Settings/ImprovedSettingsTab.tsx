@@ -16,6 +16,7 @@ import { useAuthStore } from "../../../store/authStore";
 import { SettingsSection } from "./SettingsSection";
 import { ProfileSection } from "./ProfileSection";
 import { ChangePasswordForm } from "./ChangePasswordForm";
+import { SUPPORT_WHATSAPP_URL, openSupportWhatsapp } from "@/utils/support";
 import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 
@@ -283,52 +284,29 @@ export const ImprovedSettingsTab = () => {
 						icon={<HelpCircle size={24} />}
 					>
 						<div className="space-y-4">
-							<a
-								href="#"
-								className="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
-							>
-								<div className="flex items-center justify-between">
-									<div>
-										<h4 className="font-medium text-gray-900">
-											Perguntas Frequentes
-										</h4>
-										<p className="text-sm text-gray-600">
-											Encontre respostas rápidas
-										</p>
+							{SUPPORT_WHATSAPP_URL ? (
+								<button
+									type="button"
+									onClick={openSupportWhatsapp}
+									className="block w-full text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+								>
+									<div className="flex items-center justify-between">
+										<div>
+											<h4 className="font-medium text-gray-900">
+												Contatar Suporte
+											</h4>
+											<p className="text-sm text-gray-600">
+												Fale com nossa equipe pelo WhatsApp
+											</p>
+										</div>
+										<ChevronRight size={20} className="text-gray-400" />
 									</div>
-									<ChevronRight size={20} className="text-gray-400" />
-								</div>
-							</a>
-							<a
-								href="#"
-								className="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
-							>
-								<div className="flex items-center justify-between">
-									<div>
-										<h4 className="font-medium text-gray-900">Tutoriais</h4>
-										<p className="text-sm text-gray-600">
-											Aprenda a usar a plataforma
-										</p>
-									</div>
-									<ChevronRight size={20} className="text-gray-400" />
-								</div>
-							</a>
-							<a
-								href="#"
-								className="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
-							>
-								<div className="flex items-center justify-between">
-									<div>
-										<h4 className="font-medium text-gray-900">
-											Contatar Suporte
-										</h4>
-										<p className="text-sm text-gray-600">
-											Fale com nossa equipe
-										</p>
-									</div>
-									<ChevronRight size={20} className="text-gray-400" />
-								</div>
-							</a>
+								</button>
+							) : (
+								<p className="text-sm text-gray-600">
+									Canal de suporte indisponível no momento.
+								</p>
+							)}
 						</div>
 					</SettingsSection>
 				);
