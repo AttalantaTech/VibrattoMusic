@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
+import { openSupportWhatsapp } from "@/utils/support";
 
 type Position = {
 	top: number;
@@ -161,11 +162,7 @@ export function FloatingWhatsApp() {
 	const handleClick = () => {
 		if (hasMoved.current) return;
 
-		const supportWhatsapp = import.meta.env[
-			"VITE_VIBRATTO_SUPPORT_WHATSAPP"
-		] as string;
-
-		window.open(`${supportWhatsapp}`, "_blank", "noopener,noreferrer");
+		openSupportWhatsapp();
 	};
 
 	if (!position) {
