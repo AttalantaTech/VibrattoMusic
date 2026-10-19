@@ -74,13 +74,16 @@ export const useLogout = () => {
  * Hook to get user favorites
  */
 export const useFavorites = (enabled: boolean = true) => {
+	// Favorites require login; a 401 here would clear the visitor's session data
+	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
 	return useQuery({
 		queryKey: userKeys.favorites(),
 		queryFn: async () => {
 			const favorites = await userService.getFavorites();
 			return favorites;
 		},
-		enabled,
+		enabled: enabled && isAuthenticated,
 		staleTime: 5 * 60 * 1000, // 5 minutes
 		retry: (failureCount, error) => {
 			// Don't retry on 401 errors (authentication issues)
@@ -292,10 +295,13 @@ export const useResetPassword = () => {
 };
 
 export const useUser = (enabled: boolean = true) => {
+	// GET usuario requires login; a 401 here would clear the visitor's session data
+	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
 	return useQuery({
 		queryKey: userKeys.user(),
 		queryFn: () => userService.getUser(),
-		enabled,
+		enabled: enabled && isAuthenticated,
 	});
 };
 

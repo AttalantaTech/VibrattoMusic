@@ -10,10 +10,20 @@ import { musicalProductService } from "../api";
 // Query keys for better organization
 export const profileKeys = {
 	all: ["profile"] as const,
+	// Without searchRequest the key ends at userId, so invalidating
+	// musicalProducts(userId) also refreshes the paginated queries (Header)
 	musicalProducts: (
 		userId?: number,
 		searchRequest?: Partial<MusicalProductSearchRequest>
-	) => [...profileKeys.all, "musicalProducts", userId, searchRequest] as const,
+	) =>
+		searchRequest
+			? ([
+					...profileKeys.all,
+					"musicalProducts",
+					userId,
+					searchRequest,
+				] as const)
+			: ([...profileKeys.all, "musicalProducts", userId] as const),
 };
 
 export type ProfileStatus = "COMPLETE" | "INCOMPLETE";
@@ -80,7 +90,7 @@ export const isMusicianProfileComplete = (
 export const useProfileStatus = (
 	searchRequest?: Partial<MusicalProductSearchRequest>
 ) => {
-	const { user } = useAuthStore();
+	const { user, isAuthenticated } = useAuthStore();
 
 	// Fetch user's musical products directly from the API
 	const {
@@ -92,7 +102,10 @@ export const useProfileStatus = (
 		queryFn: async () => {
 			return musicalProductService.getMyProducts(searchRequest);
 		},
-
+		// "My products" requires login: without a user the API answers 401,
+		// and the API client treats 401 as an expired session (clears auth)
+		enabled: isAuthenticated,
+		staleTime: 5 * 60 * 1000, // 5 minutes
 		retry: 2,
 	});
 
