@@ -4,15 +4,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { addressService } from "@/api/services/addressService";
 import type { UserApiResponse } from "@/api/types";
 import {
+	getDocumentType,
+	profileSettingsSchema,
+	type ProfileSettingsFormData,
+} from "../schemas/settingsSchemas";
+import {
 	formatCep,
 	formatCpf,
 	formatDocument,
 	formatPhone,
-	getDocumentType,
 	onlyDigits,
-	profileSettingsSchema,
-	type ProfileSettingsFormData,
-} from "../schemas/settingsSchemas";
+} from "@/utils/validation";
 
 const defaultValues: ProfileSettingsFormData = {
 	nome: "",
@@ -33,7 +35,7 @@ const defaultValues: ProfileSettingsFormData = {
 const toFormValues = (user: UserApiResponse): ProfileSettingsFormData => ({
 	nome: user.nome ?? "",
 	// GET usuario returns the phone as "telefone"; PUT expects "celular"
-	celular: formatPhone(user.celular ?? user.telefone),
+	celular: formatPhone(user.celular ?? user.celular),
 	tipoDocumento: getDocumentType(user.cpfOuCnpj),
 	cpfOuCnpj: formatDocument(user.cpfOuCnpj),
 	nomeResponsavelLegal: user.nomeResponsavelLegal ?? "",

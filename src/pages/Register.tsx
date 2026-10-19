@@ -15,6 +15,10 @@ import {
 } from "@/components/ui/Select/Select";
 import { useRegisterForm } from "@/features/Register/hooks/useRegisterForm";
 import { useRegisterSubmit } from "@/features/Register/hooks/useRegisterSubmit";
+import { CNPJ_MASK, CPF_MASK } from "@/utils/validation";
+import { FieldError } from "@/components/forms/FieldError";
+
+type DocumentType = "cpf" | "cnpj";
 
 export const Register = () => {
 	const registerMutation = useRegisterUser();
@@ -27,20 +31,20 @@ export const Register = () => {
 		setShowConfirmPassword,
 		showAddressFields,
 		isLoadingAddress,
-		tipoDocumento,
-		setTipoDocumento,
 	} = useRegisterForm();
 
 	const {
 		register,
 		handleSubmit,
+		setValue,
+		watch,
 		formState: { errors, isSubmitting },
 		control,
 	} = form;
 
 	const { onSubmit } = useRegisterSubmit();
 
-	const isCPF = tipoDocumento === "cpf";
+	const isCnpj = watch("tipoDocumento") === "cnpj";
 
 	return (
 		<div className="flex flex-col lg:flex-row h-screen w-screen justify-center items-center">
@@ -85,46 +89,51 @@ export const Register = () => {
 									type="email"
 									required
 								/>
-								{errors.email && (
-									<p className="text-red-600 text-sm mt-1">
-										{errors.email.message}
-									</p>
-								)}
+								<FieldError message={errors.email?.message} />
 							</div>
 							<div>
 								<InputField
 									{...register("nome")}
-									label="Nome"
+									label={isCnpj ? "Razão Social" : "Nome Completo"}
 									placeholder="João da Silva"
 									type="text"
 									required
 								/>
-								{errors.nome && (
-									<p className="text-red-600 text-sm mt-1">
-										{errors.nome.message}
-									</p>
-								)}
+								<FieldError message={errors.nome?.message} />
 							</div>
 							<div className="flex flex-col gap-2">
-								<label className="block text-sm font-medium text-gray-700 mb-1">
-									Documento de identificação
+								<label className="block text-sm font-medium text-gray-700">
+									Documento de identificação{" "}
+									<span className="text-red-500">*</span>
 								</label>
-								<div className="grid grid-cols-4 gap-1 w-full">
+								<span className="text-gray-400 text-xs">
+									{isCnpj ? "O CNPJ pode conter letras e números." : undefined}
+								</span>
+
+								<div className="grid grid-cols-4 gap-1 w-full mt-1">
 									<div className="col-span-1">
-										<Select
-											value={tipoDocumento}
-											onValueChange={(value) => {
-												setTipoDocumento((value as "cpf" | "cnpj") ?? "cpf");
-											}}
-										>
-											<SelectTrigger className="w-full">
-												<SelectValue placeholder="Selecione..." />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="cpf">CPF</SelectItem>
-												<SelectItem value="cnpj">CNPJ</SelectItem>
-											</SelectContent>
-										</Select>
+										<Controller
+											name="tipoDocumento"
+											control={control}
+											render={({ field }) => (
+												<Select
+													value={field.value}
+													onValueChange={(value) => {
+														field.onChange(value as DocumentType);
+														setValue("cpfOuCnpj", "", { shouldDirty: true });
+													}}
+												>
+													<SelectTrigger className="w-full">
+														<SelectValue placeholder="Selecione..." />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="cpf">CPF</SelectItem>
+														<SelectItem value="cnpj">CNPJ</SelectItem>
+													</SelectContent>
+												</Select>
+											)}
+										/>
+
 										{/* Documento */}
 									</div>
 									<div className="col-span-3">
@@ -134,59 +143,53 @@ export const Register = () => {
 											render={({ field }) => (
 												<InputField
 													{...field}
+													key={isCnpj ? "cnpj" : "cpf"}
+													mask={isCnpj ? CNPJ_MASK : CPF_MASK}
 													placeholder={
-														isCPF ? "XXX.XXX.XXX-00" : "XX.XXX.XXX/XXXX-00"
+														isCnpj ? "XX.XXX.XXX/XXXX-00" : "000.000.000-00"
 													}
-													mask={isCPF ? "000.000.000-00" : "00.000.000/0000-00"}
-													type="text"
 													required
 												/>
 											)}
 										/>
-										{errors.cpfOuCnpj && (
-											<p className="text-red-600 text-sm mt-1">
-												{errors.cpfOuCnpj.message}
-											</p>
-										)}
+										<FieldError message={errors.cpfOuCnpj?.message} />
 									</div>
 								</div>
 							</div>
-							<div className="col-span-3">
-								<Controller
-									name="cpfResponsavelLegal"
-									control={control}
-									render={({ field }) => (
-										<InputField
-											{...field}
-											value={field.value ?? ""}
-											required={!isCPF}
-											icon={<Briefcase size={20} />}
-											label="CPF do Responsável Legal"
-											mask="000.000.000-00"
-											placeholder="XXX.XXX.XXX-00"
+							{isCnpj && (
+								<>
+									<div className="col-span-3">
+										<Controller
+											name="cpfResponsavelLegal"
+											control={control}
+											render={({ field }) => (
+												<InputField
+													{...field}
+													value={field.value ?? ""}
+													required={isCnpj}
+													icon={<Briefcase size={20} />}
+													label="CPF do Responsável Legal"
+													mask={CPF_MASK}
+													placeholder="000.000.000-00"
+												/>
+											)}
 										/>
-									)}
-								/>
-								{errors.cpfResponsavelLegal?.message && (
-									<div className="text-red-500 text-sm">
-										{errors.cpfResponsavelLegal.message}
+										<FieldError message={errors.cpfResponsavelLegal?.message} />
 									</div>
-								)}
-							</div>
-							<div className="col-span-3">
-								<InputField
-									required={!isCPF}
-									icon={<User size={20} />}
-									label="Nome do Responsável Legal"
-									placeholder="Ex: Banda LTDA"
-									{...register("nomeResponsavelLegal")}
-								/>
-								{errors.nomeResponsavelLegal?.message && (
-									<div className="text-red-500 text-sm">
-										{errors.nomeResponsavelLegal.message}
+									<div className="col-span-3">
+										<InputField
+											required={isCnpj}
+											icon={<User size={20} />}
+											label="Nome do Responsável Legal"
+											placeholder="Ex: Banda LTDA"
+											{...register("nomeResponsavelLegal")}
+										/>
+										<FieldError
+											message={errors.nomeResponsavelLegal?.message}
+										/>
 									</div>
-								)}
-							</div>
+								</>
+							)}
 							<div className="col-span-3">
 								<Controller
 									name="celular"
@@ -202,11 +205,7 @@ export const Register = () => {
 										/>
 									)}
 								/>
-								{errors.celular && (
-									<p className="text-red-600 text-sm mt-1">
-										{errors.celular.message}
-									</p>
-								)}
+								<FieldError message={errors.celular?.message} />
 							</div>
 							{/* CEP Field */}
 							<div>
@@ -218,11 +217,8 @@ export const Register = () => {
 									maxLength={9}
 									required
 								/>
-								{errors.cep && (
-									<p className="text-red-600 text-sm mt-1">
-										{errors.cep.message}
-									</p>
-								)}
+								<FieldError message={errors.cep?.message} />
+
 								{isLoadingAddress && (
 									<p className="text-primary-600 text-sm mt-1">
 										Buscando endereço...
@@ -240,11 +236,7 @@ export const Register = () => {
 											type="text"
 											required
 										/>
-										{errors.logradouro && (
-											<p className="text-red-600 text-sm mt-1">
-												{errors.logradouro.message}
-											</p>
-										)}
+										<FieldError message={errors.logradouro?.message} />
 									</div>
 
 									<div>
@@ -255,11 +247,7 @@ export const Register = () => {
 											type="text"
 											required
 										/>
-										{errors.numero && (
-											<p className="text-red-600 text-sm mt-1">
-												{errors.numero.message}
-											</p>
-										)}
+										<FieldError message={errors.numero?.message} />
 									</div>
 
 									<div>
@@ -269,11 +257,7 @@ export const Register = () => {
 											placeholder="Apto 123, Bloco B"
 											type="text"
 										/>
-										{errors.complemento && (
-											<p className="text-red-600 text-sm mt-1">
-												{errors.complemento.message}
-											</p>
-										)}
+										<FieldError message={errors.complemento?.message} />
 									</div>
 
 									<div>
@@ -284,11 +268,7 @@ export const Register = () => {
 											type="text"
 											required
 										/>
-										{errors.bairro && (
-											<p className="text-red-600 text-sm mt-1">
-												{errors.bairro.message}
-											</p>
-										)}
+										<FieldError message={errors.bairro?.message} />
 									</div>
 
 									<div>
@@ -299,11 +279,7 @@ export const Register = () => {
 											type="text"
 											required
 										/>
-										{errors.cidade && (
-											<p className="text-red-600 text-sm mt-1">
-												{errors.cidade.message}
-											</p>
-										)}
+										<FieldError message={errors.cidade?.message} />
 									</div>
 
 									<div>
@@ -314,71 +290,64 @@ export const Register = () => {
 											type="text"
 											required
 										/>
-										{errors.estado && (
-											<p className="text-red-600 text-sm mt-1">
-												{errors.estado.message}
-											</p>
-										)}
+										<FieldError message={errors.estado?.message} />
 									</div>
 								</>
 							)}
-							<div className="relative">
-								<InputField
-									{...register("senha")}
-									label="Senha"
-									type={showPassword ? "text" : "password"}
-									required
-								/>{" "}
-								<button
-									className="absolute inset-y-0 right-0 pr-3 flex items-center top-6"
-									type="button"
-									onClick={() => {
-										setShowPassword(!showPassword);
-									}}
-								>
-									{showPassword ? (
-										<EyeOff className="h-5 w-5 text-gray-400" />
-									) : (
-										<Eye className="h-5 w-5 text-gray-400" />
-									)}
-								</button>
-								{errors.senha && (
-									<p className="text-red-600 text-sm mt-1">
-										{errors.senha.message}
-									</p>
-								)}
+							<div>
+								<div className="relative">
+									<InputField
+										{...register("senha")}
+										label="Senha"
+										type={showPassword ? "text" : "password"}
+										required
+									/>{" "}
+									<button
+										className="absolute inset-y-0 right-0 pr-3 flex items-center top-7"
+										type="button"
+										onClick={() => {
+											setShowPassword(!showPassword);
+										}}
+									>
+										{showPassword ? (
+											<EyeOff className="h-5 w-5 text-gray-400" />
+										) : (
+											<Eye className="h-5 w-5 text-gray-400" />
+										)}
+									</button>
+								</div>
+								<FieldError message={errors.senha?.message} />
 							</div>
-							<div className="relative">
-								<InputField
-									{...register("confirmarSenha")}
-									label="Repita sua Senha"
-									type={showConfirmPassword ? "text" : "password"}
-									required
-								/>{" "}
-								<button
-									className="absolute inset-y-0 right-0 pr-3 flex items-center top-6"
-									type="button"
-									onClick={() => {
-										setShowConfirmPassword(!showConfirmPassword);
-									}}
-								>
-									{showConfirmPassword ? (
-										<EyeOff className="h-5 w-5 text-gray-400" />
-									) : (
-										<Eye className="h-5 w-5 text-gray-400" />
-									)}
-								</button>
-								{errors.confirmarSenha && (
-									<p className="text-red-600 text-sm mt-1">
-										{errors.confirmarSenha.message}
-									</p>
-								)}
+							<div>
+								<div className="relative">
+									<InputField
+										{...register("confirmarSenha")}
+										label="Repita sua Senha"
+										type={showConfirmPassword ? "text" : "password"}
+										required
+									/>{" "}
+									<button
+										className="absolute inset-y-0 right-0 pr-3 flex items-center top-7"
+										type="button"
+										onClick={() => {
+											setShowConfirmPassword(!showConfirmPassword);
+										}}
+									>
+										{showConfirmPassword ? (
+											<EyeOff className="h-5 w-5 text-gray-400" />
+										) : (
+											<Eye className="h-5 w-5 text-gray-400" />
+										)}
+									</button>
+								</div>
+								<FieldError message={errors.confirmarSenha?.message} />
 							</div>
 							{errors.root && (
 								<div className="text-red-600 text-sm text-center">
 									{errors.root.message}
 								</div>
-							)}{" "}
+							)}
+
 							<Button
 								className="w-full font-semibold"
 								disabled={isSubmitting || registerMutation.isPending}

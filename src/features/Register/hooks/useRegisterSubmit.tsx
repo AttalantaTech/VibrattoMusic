@@ -2,9 +2,9 @@ import { useLogin, useRegisterUser } from "@/hooks/useUser";
 import type { RegisterFormData } from "../schemas/registerSchema";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "@tanstack/react-router";
-import { VibrattoApiError } from "@/api";
-import { toast } from "sonner";
 import { getStoredUserType, setStoredUserType } from "@/utils/userType";
+import { onlyAlphanumeric, onlyDigits } from "@/utils/validation";
+import { showApiError } from "@/utils/showApiError";
 
 export function useRegisterSubmit() {
 	const router = useRouter();
@@ -14,19 +14,25 @@ export function useRegisterSubmit() {
 
 	const onSubmit = async (data: RegisterFormData) => {
 		try {
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			const { confirmarSenha, cpfOuCnpj, ...registerData } = data;
+			const isCnpj = data.tipoDocumento === "cnpj";
 
 			const finalRegisterData = {
-				...registerData,
-
-				cpfResponsavelLegal:
-					registerData.cpfResponsavelLegal?.replace(/\D/g, "") || null,
-				nomeResponsavelLegal: registerData.nomeResponsavelLegal || null,
-
-				cep: registerData.cep?.replace(/\D/g, "") || "", // Remove non-numeric characters from CEP
-				cpfOuCnpj: cpfOuCnpj.replace(/\D/g, "") || "",
-				celular: registerData.celular.replace(/\D/g, ""),
+				email: data.email,
+				senha: data.senha,
+				nome: data.nome,
+				cpfOuCnpj: onlyAlphanumeric(data.cpfOuCnpj),
+				cpfResponsavelLegal: isCnpj
+					? onlyDigits(data.cpfResponsavelLegal)
+					: null,
+				nomeResponsavelLegal: isCnpj ? data.nomeResponsavelLegal : null,
+				celular: onlyDigits(data.celular),
+				cep: onlyDigits(data.cep),
+				logradouro: data.logradouro,
+				numero: data.numero,
+				bairro: data.bairro,
+				cidade: data.cidade,
+				estado: data.estado.toUpperCase(),
+				complemento: data.complemento,
 			};
 
 			const registeredUser =
@@ -80,24 +86,10 @@ export function useRegisterSubmit() {
 				await router.navigate({ to: "/band/profile-type" });
 			}
 		} catch (error: unknown) {
-			if (error instanceof VibrattoApiError) {
-				const errorMessage = error.data?.erros.find((error_) => error_);
-
-				if (error.statusCode === 500) {
-					toast.error(
-						"Erro interno do servidor. Por favor, verifique os dados e tente novamente."
-					);
-					return;
-				} else if (errorMessage) {
-					toast.error(errorMessage);
-					return;
-				}
-
-				toast.error(
-					"Erro ao criar conta. Preencha os campos obrigatórios e tente novamente."
-				);
-				return;
-			}
+			showApiError(
+				error,
+				"Erro ao criar conta. Preencha os campos obrigatórios e tente novamente."
+			);
 		}
 	};
 

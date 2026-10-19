@@ -9,7 +9,7 @@ import {
 	changePasswordSchema,
 	type ChangePasswordFormData,
 } from "./schemas/settingsSchemas";
-import { showApiError } from "./utils/showApiError";
+import { showApiError } from "@/utils/showApiError";
 
 interface PasswordInputProps {
 	label: string;

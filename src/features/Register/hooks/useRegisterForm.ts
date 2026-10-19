@@ -1,13 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { RegisterFormData } from "../schemas/registerSchema";
 import { registerSchema } from "../schemas/registerSchema";
 import { addressService } from "@/api/services/addressService";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const defaultValues = {
+const defaultValues: RegisterFormData = {
 	email: "",
 	nome: "",
+	tipoDocumento: "cpf",
+	cpfResponsavelLegal: "",
+	nomeResponsavelLegal: "",
 	cpfOuCnpj: "",
 	celular: "",
 	cep: "",
@@ -26,13 +29,10 @@ export function useRegisterForm() {
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 	const [showAddressFields, setShowAddressFields] = useState(false);
 	const [isLoadingAddress, setIsLoadingAddress] = useState(false);
-	const [tipoDocumento, setTipoDocumento] = useState<"cpf" | "cnpj">("cpf");
-
-	const schema = useMemo(() => registerSchema(tipoDocumento), [tipoDocumento]);
 
 	const form = useForm<RegisterFormData>({
 		defaultValues,
-		resolver: zodResolver(schema),
+		resolver: zodResolver(registerSchema),
 	});
 
 	const cepValue = form.watch("cep");
@@ -79,7 +79,5 @@ export function useRegisterForm() {
 		setShowAddressFields,
 		isLoadingAddress,
 		setIsLoadingAddress,
-		tipoDocumento,
-		setTipoDocumento,
 	};
 }
