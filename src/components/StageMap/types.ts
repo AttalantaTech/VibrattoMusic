@@ -22,6 +22,8 @@ export interface StageMapData {
 	idInstrumento: number;
 	posicaoX: number;
 	posicaoY: number;
+	// Side of the (square) element in px; null for maps saved before resizing existed
+	tamanho?: number | null;
 }
 
 // History state for undo/redo functionality
@@ -89,6 +91,13 @@ export const STAGE_CONFIG = {
 	STAGE_WIDTH: 800,
 	STAGE_HEIGHT: 500,
 	HISTORY_LIMIT: 50,
+} as const;
+
+// Element size limits in px (elements keep a square proportion)
+export const STAGE_ELEMENT_SIZE = {
+	DEFAULT: 80,
+	MIN: 50,
+	MAX: 200,
 } as const;
 
 // Type for stage colors

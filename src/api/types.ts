@@ -377,6 +377,7 @@ export interface IStageMap {
 	idInstrumento: number;
 	posicaoX: number;
 	posicaoY: number;
+	tamanho?: number | null;
 	nomeInstrumento: string;
 }
 
@@ -543,6 +544,7 @@ export interface MusicalProductTechnicalConfig {
 		idInstrumento: number;
 		posicaoX: number;
 		posicaoY: number;
+		tamanho?: number | null;
 	}>;
 }
 
