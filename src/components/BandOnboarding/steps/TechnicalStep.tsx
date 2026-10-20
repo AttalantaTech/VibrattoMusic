@@ -21,22 +21,18 @@ import { Button } from "../../ui/Button/Button";
 import { IconTabNavigation } from "../../ui/IconTabNavigation/IconTabNavigation";
 import { FileUploadBox } from "../../forms/FileUploadBox/FileUploadBox";
 import { StageMapBuilder } from "@/components/StageMap/StageMapBuilder";
-import { StepLayout } from "../layout/StepLayout/StepLayout";
 import {
-	type StageMapData,
-	type StageElement,
-	STAGE_COLORS,
-} from "@/components/StageMap/types";
+	convertStageMapDataToElements,
+	stageMapItemSchema,
+} from "@/components/StageMap/stageMapHelpers";
+import { StepLayout } from "../layout/StepLayout/StepLayout";
+import type { StageMapData } from "@/components/StageMap/types";
 import { TooltipCustom } from "@/components/ui/TooltipCustom/TooltipCustom";
 import { useOnboardingData } from "@/hooks/useOnboarding";
 import { SimpleEditor } from "@/components/forms/SimpleEditor/SimpleEditor";
 import { FileCard } from "@/components/cards/FileCard/FileCard";
 import { ToggleSwitch } from "@/components/forms/ToggleSwitch/ToggleSwitch";
-import type {
-	FileEventType,
-	FilterOptionInstrument,
-	OnboardingApiResponse,
-} from "@/api/types";
+import type { FileEventType, OnboardingApiResponse } from "@/api/types";
 import { useInstrumentos } from "@/hooks/useFilters";
 import { toast } from "sonner";
 import { decryptValue, encryptValue } from "@/utils/encryptValue";
@@ -50,42 +46,6 @@ const styles = {
 	sectionTitle: "flex items-center gap-2 mb-3 sm:mb-4",
 	sectionIcon: "text-primary-600 flex-shrink-0",
 };
-
-// Helper function to convert saved StageMapData back to StageElement format
-function convertStageMapDataToElements(
-	stageMapData: Array<StageMapData>,
-	instrumentsData: Array<FilterOptionInstrument>
-): Array<StageElement> {
-	return stageMapData
-		.map((item, index) => {
-			const instrument = instrumentsData.find(
-				(inst) => inst.Id === item.idInstrumento
-			);
-			if (!instrument) {
-				return null;
-			}
-
-			return {
-				id: `saved-element-${item.idInstrumento}-${index}`,
-				name: instrument.Nome,
-				x: item.posicaoX,
-				y: item.posicaoY,
-				icon: instrument.Icone,
-				category:
-					instrument.IdTipoEquipamento === 1
-						? ("instrument" as const)
-						: ("infrastructure" as const),
-				color:
-					instrument.IdTipoEquipamento === 1
-						? STAGE_COLORS.instrument
-						: STAGE_COLORS.infrastructure,
-				instrumentId: item.idInstrumento,
-				width: 80,
-				height: 80,
-			};
-		})
-		.filter(Boolean) as Array<StageElement>;
-}
 
 const technicalSchema = z.object({
 	rider: z
@@ -109,13 +69,7 @@ const technicalSchema = z.object({
 		.optional()
 		.transform((value) => (value && value.trim() !== "" ? value : null))
 		.nullable(),
-	mapaPalco: z.array(
-		z.object({
-			idInstrumento: z.number(),
-			posicaoX: z.number(),
-			posicaoY: z.number(),
-		})
-	),
+	mapaPalco: z.array(stageMapItemSchema),
 	mapaPalcoLink: z
 		.string()
 		.optional()

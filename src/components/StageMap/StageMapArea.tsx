@@ -1,48 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import type { StageElement, StageMapData } from "./types";
-import { STAGE_COLORS, STAGE_CONFIG } from "./types";
+import { STAGE_CONFIG } from "./types";
+import { convertStageMapDataToElements } from "./stageMapHelpers";
+import { StageElementContent } from "./StageElementContent";
 
 import type { FilterOptionInstrument } from "@/api/types";
 
 interface StageMapAreaProps {
 	stageMapList: Array<StageMapData>;
 	instrumentsData: Array<FilterOptionInstrument> | undefined;
-}
-
-function convertStageMapDataToElements(
-	stageMapData: Array<StageMapData>,
-	instrumentsData: Array<FilterOptionInstrument>
-): Array<StageElement> {
-	return stageMapData
-		.map((item, index) => {
-			const instrument = instrumentsData.find(
-				(inst) => inst.Id === item.idInstrumento
-			);
-			if (!instrument) {
-				return null;
-			}
-
-			return {
-				id: `saved-element-${item.idInstrumento}-${index}`,
-				name: instrument.Nome,
-				x: item.posicaoX,
-				y: item.posicaoY,
-				icon: instrument.Icone,
-				category:
-					instrument.IdTipoEquipamento === 1
-						? ("instrument" as const)
-						: ("infrastructure" as const),
-				color:
-					instrument.IdTipoEquipamento === 1
-						? STAGE_COLORS.instrument
-						: STAGE_COLORS.infrastructure,
-				instrumentId: item.idInstrumento,
-				idTipoEquipamento: instrument.IdTipoEquipamento,
-				width: 80,
-				height: 80,
-			};
-		})
-		.filter(Boolean) as Array<StageElement>;
 }
 
 export const StageMapArea = ({
@@ -115,16 +81,7 @@ export const StageMapArea = ({
 									height: element.height,
 								}}
 							>
-								<div>
-									<img
-										className="w-10 h-10"
-										src={element.icon}
-										alt={element.name}
-									/>
-								</div>
-								<span className="text-xs text-center font-medium text-gray-700 mt-1">
-									{element.name}
-								</span>
+								<StageElementContent element={element} />
 							</div>
 						);
 					})}
