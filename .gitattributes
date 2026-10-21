@@ -1,0 +1,19 @@
+# Use LF line endings in the working copy on every OS.
+# The repository is stored in LF, Prettier writes LF (endOfLine: "lf") and so
+# does the route generator (routeTree.gen.ts). With core.autocrlf on Windows,
+# Git checked files out as CRLF, so every formatted or regenerated file showed
+# up as modified without any real change.
+* text=auto eol=lf
+
+# Binary files are never converted
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.mp4 binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
