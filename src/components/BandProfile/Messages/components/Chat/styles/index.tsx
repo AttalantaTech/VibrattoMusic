@@ -7,6 +7,7 @@ import {
 } from "../../../utils/Message";
 import { useAuthStore } from "@/store/authStore";
 import type { Message } from "@/api/services/messages/types";
+import { MessageHtml } from "@/features/message/component/MessageHtml";
 
 export const ChatContainer = ({
 	children,
@@ -74,11 +75,11 @@ export const OwnMessageElement = ({
 		);
 
 	return (
-		<div className="flex items-end space-x-2">
+		<div className="flex items-end space-x-2 max-w-[80%]">
 			<div className="flex flex-col items-end">
-				<div className="bg-primary-600 max-w-[80%] text-white px-4 py-3 rounded-l-2xl rounded-tr-2xl rounded-br-md shadow-lg">
+				<div className="bg-primary-600 text-white px-4 py-3 rounded-l-2xl rounded-tr-2xl rounded-br-md shadow-lg">
 					<div className="text-sm leading-relaxed">
-						<div dangerouslySetInnerHTML={{ __html: message.conteudo }}></div>
+						<MessageHtml html={message.conteudo} />
 					</div>
 				</div>
 				<div className="flex items-center justify-end space-x-1 mt-1 px-1">
@@ -122,7 +123,7 @@ export const MessageElement = ({
 				</p>
 				<div className="bg-white max-w-[80%] border border-gray-200 px-4 py-3 rounded-r-2xl rounded-tl-2xl rounded-bl-md shadow-lg">
 					<div className="text-sm text-gray-800 leading-relaxed">
-						<div dangerouslySetInnerHTML={{ __html: message.conteudo }}></div>
+						<MessageHtml html={message.conteudo} />
 					</div>
 				</div>
 				<div className="flex items-center space-x-1 mt-1 px-1">
