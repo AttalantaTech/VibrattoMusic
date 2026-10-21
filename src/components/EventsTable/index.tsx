@@ -27,6 +27,7 @@ const columnHelperHires = createColumnHelper<EventsTableHiresRow>();
 const columnsHires = [
 	columnHelperHires.accessor("event", {
 		header: "Evento",
+		size: 300,
 		cell: (info) => {
 			const event = info.getValue<EventsTableHiresRow["event"]>();
 			return (
@@ -46,6 +47,7 @@ const columnsHires = [
 	}),
 	columnHelperHires.accessor("productName", {
 		header: "Artista/Banda",
+		cell: ({ row }) => row.original.productName || "-",
 	}),
 	columnHelperHires.accessor("value", {
 		header: "Valor",
@@ -57,7 +59,6 @@ const columnsHires = [
 		cell: ({ row }) => {
 			const onSeeProposal = row.original.onSeeProposal;
 			const onSeeContract = row.original.onSeeContract;
-			const canSign = row.original.canSign;
 
 			return (
 				<div className="flex gap-2 text-gray-500">
@@ -78,16 +79,14 @@ const columnsHires = [
 							<p>Detalhes da Proposta </p>
 						</MoreOptionsDropdownItem>
 
-						{canSign && (
-							<MoreOptionsDropdownItem
-								onClick={() => {
-									onSeeContract(row.original.event.id);
-								}}
-							>
-								<File color="gray" size={16} />
-								<p>Visualizar do Contrato </p>
-							</MoreOptionsDropdownItem>
-						)}
+						<MoreOptionsDropdownItem
+							onClick={() => {
+								onSeeContract(row.original.event.id);
+							}}
+						>
+							<File color="gray" size={16} />
+							<p>Visualizar do Contrato </p>
+						</MoreOptionsDropdownItem>
 					</Dropdown>
 				</div>
 			);
@@ -99,12 +98,18 @@ const columnHelperSale = createColumnHelper<EventsTableSaleRow>();
 const columnsSale = [
 	columnHelperSale.accessor("event", {
 		header: "Evento",
+		size: 300,
 		cell: (info) => {
 			const event = info.getValue<EventsTableSaleRow["event"]>();
 			return (
-				<div className="flex flex-col">
-					<div className="font-medium text-gray-900">{event.title}</div>
-					<div className="text-gray-500">{formatDate(event.date)}</div>
+				<div className="flex flex-col min-w-0 w-full">
+					<div
+						className="font-medium text-gray-900 truncate"
+						title={event.title}
+					>
+						{event.title}
+					</div>
+					<div className="text-gray-500 truncate">{formatDate(event.date)}</div>
 				</div>
 			);
 		},
@@ -118,6 +123,7 @@ const columnsSale = [
 	}),
 	columnHelperSale.accessor("clientName", {
 		header: "Cliente",
+		cell: ({ row }) => row.original.clientName,
 	}),
 	columnHelperSale.accessor("value", {
 		header: "Valor",
@@ -125,11 +131,13 @@ const columnsSale = [
 	}),
 	columnHelperSale.display({
 		id: "quickActions",
+		size: 0,
+		minSize: 0,
 		cell: ({ row }) => {
 			const acceptsCounterProposal = row.original.aceitaContraProposta;
 
 			return (
-				<div className="min-w-[100px]">
+				<div style={{ display: acceptsCounterProposal ? "block" : "none" }}>
 					{acceptsCounterProposal && (
 						<Button
 							variant="outline"
@@ -154,7 +162,6 @@ const columnsSale = [
 			const onSeeProposal = row.original.onSeeProposal;
 			const onSeeContract = row.original.onSeeContract;
 			const onEditContract = row.original.onEditContract;
-			const canSign = row.original.canSign;
 
 			return (
 				<div className="flex gap-2 text-gray-500">
@@ -185,16 +192,14 @@ const columnsSale = [
 							<p>Detalhes da Proposta </p>
 						</MoreOptionsDropdownItem>
 
-						{canSign && (
-							<MoreOptionsDropdownItem
-								onClick={() => {
-									onSeeContract(row.original.event.id);
-								}}
-							>
-								<File color="gray" size={16} />
-								<p>Visualizar do Contrato </p>
-							</MoreOptionsDropdownItem>
-						)}
+						<MoreOptionsDropdownItem
+							onClick={() => {
+								onSeeContract(row.original.event.id);
+							}}
+						>
+							<File color="gray" size={16} />
+							<p>Visualizar do Contrato </p>
+						</MoreOptionsDropdownItem>
 					</Dropdown>
 				</div>
 			);
@@ -218,6 +223,7 @@ const columnBudget = [
 	}),
 	columnHelperBudget.accessor("budget.contratante.nome", {
 		header: "Cliente",
+		cell: ({ row }) => row.original.budget.contratante.nome || "-",
 	}),
 	columnHelperBudget.display({
 		header: "Ações",
