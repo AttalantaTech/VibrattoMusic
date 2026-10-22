@@ -29,11 +29,17 @@ const columnsHires = [
 		header: "Evento",
 		size: 300,
 		cell: (info) => {
-			const event = info.getValue<EventsTableHiresRow["event"]>();
+			const event = info.getValue<EventsTableSaleRow["event"]>();
 			return (
-				<div className="flex flex-col">
-					<div className="font-medium text-gray-900">{event.title}</div>
-					<div className="text-gray-500">{formatDate(event.date)}</div>
+				<div className="flex flex-col min-w-0 w-full">
+					<div
+						className="font-medium text-gray-900 truncate"
+						title={event.title}
+					>
+						{event.title.substring(0, 50) +
+							(event.title.length > 50 ? "..." : "")}
+					</div>
+					<div className="text-gray-500 truncate">{formatDate(event.date)}</div>
 				</div>
 			);
 		},
@@ -107,7 +113,8 @@ const columnsSale = [
 						className="font-medium text-gray-900 truncate"
 						title={event.title}
 					>
-						{event.title}
+						{event.title.substring(0, 50) +
+							(event.title.length > 50 ? "..." : "")}
 					</div>
 					<div className="text-gray-500 truncate">{formatDate(event.date)}</div>
 				</div>
@@ -116,9 +123,10 @@ const columnsSale = [
 	}),
 	columnHelperSale.accessor("statusComponent", {
 		header: "status",
+		minSize: 200,
 		cell: (info) => {
 			const StatusComponent = info.getValue();
-			return StatusComponent;
+			return <div className="flex justify-center">{StatusComponent}</div>;
 		},
 	}),
 	columnHelperSale.accessor("clientName", {
@@ -131,13 +139,11 @@ const columnsSale = [
 	}),
 	columnHelperSale.display({
 		id: "quickActions",
-		size: 0,
-		minSize: 0,
 		cell: ({ row }) => {
 			const acceptsCounterProposal = row.original.aceitaContraProposta;
 
 			return (
-				<div style={{ display: acceptsCounterProposal ? "block" : "none" }}>
+				<div>
 					{acceptsCounterProposal && (
 						<Button
 							variant="outline"
