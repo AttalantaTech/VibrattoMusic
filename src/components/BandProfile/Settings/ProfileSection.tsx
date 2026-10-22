@@ -14,10 +14,8 @@ import { useUpdateUser, useUser } from "@/hooks/useUser";
 import { useAuthStore } from "@/store/authStore";
 import { SettingsSection } from "./SettingsSection";
 import { useProfileSettingsForm } from "./hooks/useProfileSettingsForm";
-import type {
-	DocumentType,
-	ProfileSettingsFormData,
-} from "./schemas/settingsSchemas";
+import type { ProfileSettingsFormData } from "./schemas/settingsSchemas";
+import type { DocumentType } from "@/utils/validation";
 import {
 	CEP_MASK,
 	CNPJ_MASK,
