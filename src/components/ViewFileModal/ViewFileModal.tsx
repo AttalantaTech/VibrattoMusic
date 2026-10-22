@@ -9,7 +9,8 @@ import { Button } from "../ui/Button/Button";
 import type { Dispatch, SetStateAction } from "react";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import type { FileProps } from "@/api/types";
-import { isMP4File, isPdfFile } from "@/utils/validation";
+import { isEpsFile, isMP4File, isPdfFile } from "@/utils/validation";
+import { EpsFilePreview } from "../cards/EpsFilePreview/EpsFilePreview";
 import { LazyImage } from "../ui/LazyImage/LazyImage";
 
 interface ViewFileModalProps {
@@ -49,7 +50,11 @@ export const ViewFileModal = ({
 				)}
 
 				<div className="flex flex-col w-full items-center">
-					{isPdfFile(file.link) ? (
+					{isEpsFile(file.link) ? (
+						<div className="w-full h-[60vh] max-h-[520px] rounded-md border border-gray-300 overflow-hidden">
+							<EpsFilePreview link={file.link} showDownload />
+						</div>
+					) : isPdfFile(file.link) ? (
 						<div className="max-w-[100vw] h-[75vh]">
 							<embed
 								key={file.id}

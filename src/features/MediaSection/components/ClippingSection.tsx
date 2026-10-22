@@ -2,9 +2,15 @@ import { FileUploadBox } from "@/components/forms/FileUploadBox/FileUploadBox";
 import { X, Loader2, HelpCircle } from "lucide-react";
 import { SectionHeader } from "./shared/SectionHeader";
 import { TooltipCustom } from "@/components/ui/TooltipCustom/TooltipCustom";
-import { isMP4File, isPdfFile, isPngImage } from "@/utils/validation";
+import {
+	isEpsFile,
+	isMP4File,
+	isPdfFile,
+	isPngImage,
+} from "@/utils/validation";
 import type { FilePropsLocal } from "@/api/types";
 import { TextAreaField } from "@/components/forms/TextAreaField/TextAreaField";
+import { EpsFilePreview } from "@/components/cards/EpsFilePreview/EpsFilePreview";
 
 type ClippingSectionProps = {
 	clipping: Array<FilePropsLocal>;
@@ -31,8 +37,9 @@ export function ClippingSection({
 					<TooltipCustom
 						trigger={<HelpCircle className="w-4 h-4 cursor-pointer" />}
 						content="Faça upload de materiais de divulgação, como PDFs de artigos,
-                         reportagens, críticas ou qualquer outra publicação que destaque sua banda.
-                          Isso ajuda a construir sua reputação e a mostrar seu impacto na mídia."
+                         reportagens, críticas, logos e artes em EPS ou qualquer outra publicação
+                          que destaque sua banda. Isso ajuda a construir sua reputação e a mostrar
+                          seu impacto na mídia."
 					/>
 				}
 			/>
@@ -46,6 +53,7 @@ export function ClippingSection({
 					"application/pdf",
 					"video/mp4",
 				]}
+				acceptedExtensions={[".eps"]}
 				maxSizeMB={100}
 				onFileSelected={onUpload}
 			/>
@@ -54,13 +62,15 @@ export function ClippingSection({
 				{clipping.map((file, index) => (
 					<div key={file.link} className="px-1">
 						<div className="relative aspect-square rounded-lg overflow-hidden border border-white-200 bg-white">
-							{!loadingMap[file.link] && (
+							{!loadingMap[file.link] && !isEpsFile(file.link) && (
 								<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
 									<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
 								</div>
 							)}
 
-							{isPdfFile(file.link) ? (
+							{isEpsFile(file.link) ? (
+								<EpsFilePreview link={file.link} showDownload />
+							) : isPdfFile(file.link) ? (
 								<div className="w-full">
 									<embed
 										src={`${file.link}#toolbar=0`}

@@ -7,7 +7,13 @@ import { LazyImage } from "@/components/ui/LazyImage/LazyImage";
 import { TabNavigation } from "@/components/ui/TabNavigation/TabNavigation";
 import { ViewFileModal } from "@/components/ViewFileModal/ViewFileModal";
 import { useInstrumentos } from "@/hooks/useFilters";
-import { isMP4File, isPdfFile, isPngImage } from "@/utils/validation";
+import {
+	isEpsFile,
+	isMP4File,
+	isPdfFile,
+	isPngImage,
+} from "@/utils/validation";
+import { EpsFilePreview } from "@/components/cards/EpsFilePreview/EpsFilePreview";
 import { Disc, Loader2, MapPin, Verified } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
@@ -94,13 +100,19 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 													className="relative aspect-square rounded-lg overflow-hidden border border-white-200 bg-white"
 												>
 													<div className="relative w-full h-full">
-														{!loadedFiles[file.link] && (
-															<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-																<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-															</div>
-														)}
+														{!loadedFiles[file.link] &&
+															!isEpsFile(file.link) && (
+																<div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+																	<Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+																</div>
+															)}
 
-														{isPdfFile(file.link) ? (
+														{isEpsFile(file.link) ? (
+															<div className="relative group w-full h-48 sm:h-64 lg:h-[280px] rounded-lg border border-gray-200 overflow-hidden">
+																<EpsFilePreview link={file.link} />
+																<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
+															</div>
+														) : isPdfFile(file.link) ? (
 															<div className="relative group">
 																<iframe
 																	key={freshLink}
