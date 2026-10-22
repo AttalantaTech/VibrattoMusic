@@ -140,7 +140,7 @@ export const BudgetListModal = ({
 				if (!open) onClose(false);
 			}}
 		>
-			<DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Solicitação de Orçamentos</DialogTitle>
 					<DialogDescription>
@@ -148,7 +148,7 @@ export const BudgetListModal = ({
 						recebeu e transforme em propostas.
 					</DialogDescription>
 				</DialogHeader>
-				<div className="w-full h-full flex flex-col gap-4">
+				<div className="w-full h-full flex flex-col gap-4 overflow-auto">
 					<hr className="w-full" />
 
 					<div className="flex justify-between">
