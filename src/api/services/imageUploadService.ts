@@ -51,8 +51,13 @@ export class ImageUploadService {
 		// Extract the blob URL without the SAS token (everything before the '?')
 		const blobUrl = sasUrl.split("?")[0] || sasUrl;
 
-		// Determine content type based on file type
-		const contentType = file.type || "image/jpeg";
+		// Determine content type based on file type. EPS is set by extension:
+		// browsers report it inconsistently ("image/x-eps", "application/eps")
+		// or not at all on Windows, and the old fallback stored it as JPEG
+		const isEps = file.name.toLowerCase().endsWith(".eps");
+		const contentType = isEps
+			? "application/postscript"
+			: file.type || "image/jpeg";
 
 		// Upload the file directly to Azure Blob Storage
 		// We use fetch instead of the ApiClient because this is a direct upload to Azure
