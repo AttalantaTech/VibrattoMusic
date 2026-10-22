@@ -16,11 +16,13 @@ export interface UseProductProposalsParameters {
 	IdContratante: number | null;
 }
 
-const PROPOSAL_QUERY_KEYS = {
+export const PROPOSAL_QUERY_KEYS = {
 	all: ["proposals"] as const,
 	mine: () => [...PROPOSAL_QUERY_KEYS.all, "mine"] as const,
 	byProduct: (id: number | null) =>
 		[...PROPOSAL_QUERY_KEYS.all, "product", id] as const,
+	byId: (identificadorUnico: string) =>
+		[...PROPOSAL_QUERY_KEYS.all, identificadorUnico] as const,
 };
 
 /**
@@ -184,10 +186,9 @@ export const useUpdateProposalStatus = () => {
 
 export const useProposalById = (identificadorUnico: string) => {
 	return useQuery({
-		queryKey: ["proposal", identificadorUnico],
+		queryKey: PROPOSAL_QUERY_KEYS.byId(identificadorUnico),
 		queryFn: () => proposalService.getProposalById(identificadorUnico),
 		enabled: !!identificadorUnico,
-		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 };
 

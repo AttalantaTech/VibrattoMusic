@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { addressService } from "@/api/services/addressService";
 import type { UserApiResponse } from "@/api/types";
 import {
-	getDocumentType,
 	profileSettingsSchema,
 	type ProfileSettingsFormData,
 } from "../schemas/settingsSchemas";
@@ -12,6 +11,7 @@ import {
 	formatCep,
 	formatCpf,
 	formatDocument,
+	getDocumentType,
 	formatPhone,
 	onlyDigits,
 } from "@/utils/validation";

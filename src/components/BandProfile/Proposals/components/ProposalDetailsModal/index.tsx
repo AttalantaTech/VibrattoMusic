@@ -2,6 +2,7 @@ import {
 	AlertCircle,
 	CheckCircle,
 	DollarSign,
+	File,
 	FileText,
 	Loader2,
 	PenLine,
@@ -15,6 +16,9 @@ import { useAuthStore } from "@/store/authStore";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
 import { useProposalPDF } from "@/hooks/useProposals";
+import { Accordion } from "@/components/ui/Accordion";
+import { useState } from "react";
+import { useContractPDF } from "@/hooks/useContracts";
 
 interface ProposalDetailsModalProps {
 	mode: "Contracted" | "Contractor";
@@ -45,12 +49,26 @@ export const ProposalDetailsModal = ({
 	isLoadingPaidSign = false,
 	mode,
 }: ProposalDetailsModalProps) => {
-	const { data: proposalPdfUrl, isLoading: pdfLoading } = useProposalPDF(
-		proposal?.identificadorUnico || ""
-	);
+	const { data: proposalPdfUrl, isLoading: proposalPdfLoading } =
+		useProposalPDF(proposal?.identificadorUnico || "");
+	const { data: contractPdfUrl, isLoading: contractPdfLoading } =
+		useContractPDF(proposal?.identificadorUnico || "");
 
 	const { user } = useAuthStore();
 	const { activeProduct } = useMusicalProductStore();
+
+	// Accordion sections state
+	const [expandedSections, setExpandedSections] = useState({
+		proposalFile: true,
+		contractFile: false,
+	});
+
+	const toggleSection = (section: keyof typeof expandedSections) => {
+		setExpandedSections((previous) => ({
+			...previous,
+			[section]: !previous[section],
+		}));
+	};
 
 	if (!proposal) {
 		onClose();
@@ -112,27 +130,77 @@ export const ProposalDetailsModal = ({
 					</div>
 
 					<div className="mt-6">
-						{proposalPdfUrl ? (
-							<div className="border-y-2 border-gray-100">
-								<iframe
-									src={`${proposalPdfUrl}`}
-									className="w-full h-[700px] border-0"
-									title="PDF da Proposta"
-								/>
-							</div>
-						) : pdfLoading ? (
-							<div className="flex items-center justify-center h-[400px]">
-								<div className="text-center">
-									<FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-									<h4 className="text-lg font-semibold text-gray-900 mb-2">
-										Carregando proposta...
-									</h4>
-									<p className="text-gray-600">
-										O PDF da proposta está sendo carregado.
-									</p>
-								</div>
-							</div>
-						) : null}
+						<Accordion
+							title="Proposta"
+							description=""
+							icon={<File className="h-5 w-5 text-gray-600" />}
+							isComplete={false}
+							isExpanded={expandedSections.proposalFile}
+							onToggle={() => {
+								toggleSection("proposalFile");
+							}}
+						>
+							<>
+								{proposalPdfUrl ? (
+									<div className="border-y-2 border-gray-100">
+										<iframe
+											src={`${proposalPdfUrl}`}
+											className="w-full h-[700px] border-0"
+											title="PDF da Proposta"
+										/>
+									</div>
+								) : proposalPdfLoading ? (
+									<div className="flex items-center justify-center h-[400px]">
+										<div className="text-center">
+											<FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+											<h4 className="text-lg font-semibold text-gray-900 mb-2">
+												Carregando proposta...
+											</h4>
+											<p className="text-gray-600">
+												O PDF da proposta está sendo carregado.
+											</p>
+										</div>
+									</div>
+								) : null}
+							</>
+						</Accordion>
+					</div>
+
+					<div className="mt-6">
+						<Accordion
+							title="Contrato"
+							description=""
+							icon={<File className="h-5 w-5 text-gray-600" />}
+							isComplete={false}
+							isExpanded={expandedSections.contractFile}
+							onToggle={() => {
+								toggleSection("contractFile");
+							}}
+						>
+							<>
+								{contractPdfUrl ? (
+									<div className="border-y-2 border-gray-100">
+										<iframe
+											src={`${contractPdfUrl}`}
+											className="w-full h-[700px] border-0"
+											title="PDF da Proposta"
+										/>
+									</div>
+								) : contractPdfLoading ? (
+									<div className="flex items-center justify-center h-[400px]">
+										<div className="text-center">
+											<FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+											<h4 className="text-lg font-semibold text-gray-900 mb-2">
+												Carregando proposta...
+											</h4>
+											<p className="text-gray-600">
+												O PDF da proposta está sendo carregado.
+											</p>
+										</div>
+									</div>
+								) : null}
+							</>
+						</Accordion>
 					</div>
 
 					{/* Creation Date */}

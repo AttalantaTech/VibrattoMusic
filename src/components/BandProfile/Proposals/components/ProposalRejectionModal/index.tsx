@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
 	XCircle,
 	AlertCircle,
@@ -23,13 +23,19 @@ import {
 	SelectValue,
 } from "@/components/ui/Select/Select";
 import { Textarea } from "@/components/ui/Textarea/Textarea";
-import { useUpdateProposalStatus } from "@/hooks/useProposals";
+import {
+	PROPOSAL_QUERY_KEYS,
+	useUpdateProposalStatus,
+} from "@/hooks/useProposals";
 import { useMotivosRejeicaoProposta } from "@/hooks/useFilters";
 import type { ProposalResponse, FilterOption } from "@/api/types";
 import { proposalRejectionSchema } from "@/schemas/contractSchemas";
 import { Label } from "@/components/ui/Label/Label";
 import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
 import { Button } from "@/components/ui/Button/Button";
+import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
+import { entityLinks } from "@/features/message/utils/messageTemplates";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ProposalRejectionModalProps {
 	isOpen: boolean;
@@ -44,6 +50,8 @@ export const ProposalRejectionModal = ({
 	onClose,
 	proposal,
 }: ProposalRejectionModalProps) => {
+	const queryClient = useQueryClient();
+
 	const [step, setStep] = useState<"reason" | "confirm" | "success" | "error">(
 		"reason"
 	);
@@ -61,6 +69,11 @@ export const ProposalRejectionModal = ({
 	} = useMotivosRejeicaoProposta(isOpen);
 
 	const rejectMutation = useUpdateProposalStatus();
+	const { sendStatusMessage } = useSendStatusMessage();
+
+	const selectedReason = rejectionReasons?.find(
+		(r) => r.Id === selectedReasonId
+	);
 
 	const handleNext = () => {
 		if (!selectedReasonId) {
@@ -71,6 +84,12 @@ export const ProposalRejectionModal = ({
 		setValidationError(null);
 		setStep("confirm");
 	};
+
+	const handleInvalidateProposalQuery = useCallback(() => {
+		void queryClient.invalidateQueries({
+			queryKey: PROPOSAL_QUERY_KEYS.byId(proposal?.identificadorUnico || ""),
+		});
+	}, [proposal?.identificadorUnico, queryClient]);
 
 	const handleReject = async () => {
 		if (!proposal || !selectedReasonId) return;
@@ -95,6 +114,20 @@ export const ProposalRejectionModal = ({
 				reasonId: selectedReasonId,
 				acceptsCounterProposal,
 			});
+
+			sendStatusMessage({
+				type: "proposalRejected",
+				recipientId: proposal?.produtoMusical.id || 0,
+				recipientName: proposal?.produtoMusical.nome,
+				link: entityLinks.proposalTab(proposal?.id || 0),
+
+				errorMessage: "Erro ao enviar solicitação orçamento",
+				payload: { reason: selectedReason?.Nome || "-" },
+				onSuccess() {
+					handleInvalidateProposalQuery();
+				},
+			});
+
 			setStep("success");
 		} catch (error) {
 			console.error("Error rejecting proposal:", error);
@@ -118,10 +151,6 @@ export const ProposalRejectionModal = ({
 		setValidationError(null);
 		onClose();
 	};
-
-	const selectedReason = rejectionReasons?.find(
-		(r) => r.Id === selectedReasonId
-	);
 
 	if (!proposal) return null;
 

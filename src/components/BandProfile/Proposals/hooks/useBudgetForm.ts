@@ -7,6 +7,9 @@ import { createProposalSchema } from "../schemas/proposal.schema";
 import { format } from "date-fns";
 import { useAuthStore } from "@/store/authStore";
 import { secondsToTime, toBR } from "@/utils";
+import { useUser } from "@/hooks/useUser";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { handleStandardProposalDescription } from "../utils/handleStandardProposalDescription";
 
 interface BudgetFormProps {
 	budget?: CreateProposalForm | null;
@@ -22,6 +25,8 @@ export const useBudgetForm = ({
 	setHasDefineEventTime,
 }: BudgetFormProps) => {
 	const { user } = useAuthStore();
+	const { data: userData } = useUser();
+	const { activeProduct } = useMusicalProductStore();
 
 	// Helper function to get contractor ID
 	const getContractorId = useCallback(() => {
@@ -78,12 +83,31 @@ export const useBudgetForm = ({
 		[budget?.dataEvento]
 	);
 
+	const descricao = useMemo(() => {
+		if (!activeProduct) return "";
+
+		return handleStandardProposalDescription({
+			category: String(activeProduct.categoria.nome),
+			document: String(
+				activeProduct.usaCnpj
+					? activeProduct.cnpj || "-"
+					: userData?.cpfResponsavelLegal || "-"
+			),
+			legalName: String(
+				activeProduct.usaCnpj
+					? activeProduct.razaoSocial || "-"
+					: userData?.nomeResponsavelLegal || "-"
+			),
+			artisticName: activeProduct.nome,
+		});
+	}, [activeProduct, userData]);
+
 	const initialValues: CreateProposalForm = useMemo<CreateProposalForm>(() => {
 		return {
 			idContratante: getContractorId(),
 			nomeContratante: budget?.nomeContratante || contractorName || "",
 			idTipoEvento: budget?.idTipoEvento || 0,
-			descricao: budget?.descricao || "",
+			descricao,
 			valor: 0,
 			local: budget?.local || "",
 			dataEvento,
@@ -100,7 +124,7 @@ export const useBudgetForm = ({
 			estruturaPalcoSomIluminacaoInclusa: false,
 			// geradorIncluso: false
 		};
-	}, [budget, contractorName, getContractorId, dataEvento]);
+	}, [budget, contractorName, getContractorId, dataEvento, descricao]);
 
 	const form = useForm<CreateProposalForm>({
 		resolver: zodResolver(createProposalSchema),
