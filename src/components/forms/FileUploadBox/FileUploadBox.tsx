@@ -14,6 +14,10 @@ type FileType =
 
 interface SingleFileInputProps {
 	acceptedTypes?: Array<FileType>;
+	// Extensions such as ".eps", for formats whose MIME type browsers report
+	// inconsistently (EPS may come as "application/postscript", "image/x-eps"
+	// or even empty on Windows)
+	acceptedExtensions?: Array<`.${string}`>;
 	onFileSelected?: (file: File | null) => void;
 	maxSizeMB?: number;
 	className?: string;
@@ -21,6 +25,7 @@ interface SingleFileInputProps {
 
 export const FileUploadBox = ({
 	acceptedTypes = ["image/png", "image/jpeg"],
+	acceptedExtensions = [],
 	onFileSelected,
 	maxSizeMB = 5,
 	className = "",
@@ -35,8 +40,16 @@ export const FileUploadBox = ({
 	};
 
 	const validateFile = (file: File): boolean => {
-		// Check file type
-		if (acceptedTypes.length > 0 && !acceptedTypes.includes(file.type)) {
+		// Check file type: by MIME type or, for the listed formats, by extension
+		const extension = `.${file.name.split(".").pop()?.toLowerCase() ?? ""}`;
+		const isAcceptedType =
+			acceptedTypes.includes(file.type as FileType) ||
+			acceptedExtensions.includes(extension as `.${string}`);
+
+		if (
+			acceptedTypes.length + acceptedExtensions.length > 0 &&
+			!isAcceptedType
+		) {
 			setError(`Tipo de arquivo não permitido.`);
 			return false;
 		}
@@ -97,7 +110,11 @@ export const FileUploadBox = ({
 		}
 	};
 
-	const acceptString = acceptedTypes.join(",");
+	const acceptString = [...acceptedTypes, ...acceptedExtensions].join(",");
+	const acceptedLabel = [
+		...acceptedTypes.map((type) => type.split("/")[1]),
+		...acceptedExtensions.map((extension) => extension.slice(1)),
+	].join(", ");
 
 	return (
 		<div
@@ -129,8 +146,7 @@ export const FileUploadBox = ({
 						ou arraste e solte
 					</p>
 					<p className="text-xs text-gray-400">
-						{acceptedTypes.map((t) => t.split("/")[1]).join(", ")} (max.{" "}
-						{maxSizeMB}MB)
+						{acceptedLabel} (max. {maxSizeMB}MB)
 					</p>
 					{currentFile && (
 						<p>

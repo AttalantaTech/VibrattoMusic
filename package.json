@@ -86,6 +86,7 @@
 		"soundcloud-widget": "^0.2.1",
 		"tailwind-merge": "^3.4.0",
 		"tailwindcss-animate": "^1.0.7",
+		"utif": "3.1.0",
 		"zod": "^3.25.51",
 		"zustand": "^4.5.5"
 	},
@@ -119,6 +120,7 @@
 		"@types/node": "^22.5.1",
 		"@types/react": "^18.3.5",
 		"@types/react-dom": "^18.3.0",
+		"@types/utif": "3.0.6",
 		"@vitejs/plugin-react-swc": "^3.7.0",
 		"@vitest/coverage-v8": "^3.2.1",
 		"autoprefixer": "^10.4.20",

@@ -443,6 +443,13 @@ export const isMP4File = (link: string): boolean => {
 	return regex.test(link);
 };
 
+// EPS (vector/PostScript): browsers cannot preview it, only download
+export const isEpsFile = (link: string): boolean => {
+	const regex = /\.eps$/i;
+
+	return regex.test(link);
+};
+
 export const isPngImage = (link: string): boolean => {
 	const regex = /\.png$/i;
 
