@@ -1,37 +1,9 @@
-import { useCallback, useMemo, useState } from "react";
 // import { FilterSelector } from "../../ui/FilterSelector/FilterSelector";
 // import { UpdateButton } from "../../ui/UpdateButton/UpdateButton";
 // import type { Report } from "../../../common/types";
-import {
-	// ChartLineIcon,
-	// DollarSignIcon,
-	// BriefcaseIcon,
-	// TrendingUpIcon,
-	// AlertCircleIcon,
-	ChevronDown,
-	Check,
-} from "lucide-react";
 // import { ReportsCard } from "../../cards/ReportsCard/ReportsCard";
 // import { LineChartComponent } from "../../charts/line/LineChart";
 // import { dates, values } from "./data";
-import { useAuthStore } from "@/store/authStore";
-import {
-	useFilteredProposals,
-	useUpdateProposalStatus,
-} from "@/hooks/useProposals";
-import type { EventsTableHiresData } from "../../EventsTable/types";
-import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
-import { Button } from "@/components/ui/Button/Button";
-import { splitOnUppercase } from "@/utils/labels";
-import { EventsTable } from "../../EventsTable";
-import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { ProposalDetailsModal } from "../Proposals/components/ProposalDetailsModal";
-import type { ProposalResponse } from "@/api/types";
-import { toast } from "sonner";
-import { useNavigate } from "@tanstack/react-router";
-import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
-import { ProposalRejectionModal } from "../Proposals/components/ProposalRejectionModal";
-
 // const reports: Array<Report> = [
 // 	{
 // 		icon: <BriefcaseIcon size={20} />,
@@ -63,10 +35,95 @@ import { ProposalRejectionModal } from "../Proposals/components/ProposalRejectio
 // 	},
 // ];
 
+// const [selectedFilters, setSelectedFilters] = useState<Array<string>>([]);
+// const availableFilters = [
+// 	{ id: "all", label: "Todas" },
+// 	{ id: "active", label: "Ativas" },
+// 	{ id: "pending", label: "Pendentes" },
+// 	{ id: "completed", label: "Concluídas" },
+// 	{ id: "cancelled", label: "Canceladas" },
+// ];
+
+// const [selectedChartFilters, setSelectedChartFilters] = useState<
+// 	Array<string>
+// >([]);
+
+// const chartFilters = [{ id: "spending", label: "Gastos" }];
+
+{
+	/* Filters */
+}
+{
+	/* <div className="flex w-full justify-between items-center">
+				<FilterSelector
+					filters={availableFilters}
+					selectedFilters={selectedFilters}
+					onFilterChange={setSelectedFilters}
+				/>
+				<UpdateButton onClick={() => {}} />
+			</div> */
+}
+
+{
+	/* Statistics Cards */
+}
+{
+	/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+				{reports.map((report, index) => (
+					<ReportsCard key={index} report={report} />
+				))}
+			</div>
+			<hr className="w-full border-gray-200" /> */
+}
+{
+	/* Spending Chart */
+}
+{
+	/* <div className="flex flex-col w-full bg-gray-50 border border-gray-200 gap-6 p-6 rounded-lg">
+				<div className="w-full flex items-center justify-between">
+					<div className="flex gap-3 items-center">
+						<div className="bg-white border border-gray-300 rounded-lg p-2 text-gray-600">
+							<ChartLineIcon size={14} />
+						</div>
+						<h3 className="font-medium text-gray-900">Evolução de Gastos</h3>
+						<FilterSelector
+							filters={chartFilters}
+							selectedFilters={selectedChartFilters}
+							onFilterChange={setSelectedChartFilters}
+						/>
+					</div>
+					<UpdateButton onClick={() => {}} />
+				</div>
+				<LineChartComponent dates={dates} values={values} />
+			</div> */
+}
+
+import { useCallback, useMemo, useState } from "react";
+import { ChevronDown, Check } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
+import {
+	useFilteredProposals,
+	useUpdateProposalStatus,
+} from "@/hooks/useProposals";
+import type { EventsTableHiresData } from "../../EventsTable/types";
+import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
+import { Button } from "@/components/ui/Button/Button";
+import { splitOnUppercase } from "@/utils/labels";
+import { EventsTable } from "../../EventsTable";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { ProposalDetailsModal } from "../Proposals/components/ProposalDetailsModal";
+import type { ProposalResponse } from "@/api/types";
+import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
+import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
+import { ProposalRejectionModal } from "../Proposals/components/ProposalRejectionModal";
+import { showApiError } from "@/utils/showApiError";
+import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
+import { entityLinks } from "@/features/message/utils/messageTemplates";
+
 export const MyHiresTab = () => {
 	const navigate = useNavigate();
 
-	// const [selectedFilters, setSelectedFilters] = useState<Array<string>>([]);
 	const [statusFilter, setStatusFilter] = useState<string>("Todos os status");
 	const [proposalToReject, setProposalToReject] =
 		useState<ProposalResponse | null>(null);
@@ -76,20 +133,6 @@ export const MyHiresTab = () => {
 	const [proposalDetails, setProposalDetails] =
 		useState<ProposalResponse | null>(null);
 	const [isLoadingAccept, setIsLoadingAccept] = useState(false);
-
-	// const availableFilters = [
-	// 	{ id: "all", label: "Todas" },
-	// 	{ id: "active", label: "Ativas" },
-	// 	{ id: "pending", label: "Pendentes" },
-	// 	{ id: "completed", label: "Concluídas" },
-	// 	{ id: "cancelled", label: "Canceladas" },
-	// ];
-
-	// const [selectedChartFilters, setSelectedChartFilters] = useState<
-	// 	Array<string>
-	// >([]);
-
-	// const chartFilters = [{ id: "spending", label: "Gastos" }];
 
 	const currentUser = useAuthStore((state) => state.user);
 	const { activeProduct } = useMusicalProductStore();
@@ -102,6 +145,7 @@ export const MyHiresTab = () => {
 		});
 
 	const updateStatusMutation = useUpdateProposalStatus();
+	const { sendStatusMessage } = useSendStatusMessage();
 
 	const possibleStatusFilters = [
 		"Todos os status",
@@ -116,18 +160,6 @@ export const MyHiresTab = () => {
 		"ContratoAssinado",
 	];
 
-	const handleSeeContract = useCallback(
-		(proposalId: string) => {
-			setProposalDetails(
-				filteredProposals?.data.find(
-					(p) => p.identificadorUnico === proposalId
-				) || null
-			);
-			setIsProposalDetailsModalOpen(true);
-		},
-		[filteredProposals?.data]
-	);
-
 	const handleAcceptProposal = async (proposalId: number) => {
 		try {
 			setIsLoadingAccept(true);
@@ -135,9 +167,21 @@ export const MyHiresTab = () => {
 				proposalId: proposalId,
 				status: "aceito",
 			});
+
+			sendStatusMessage({
+				type: "proposalAccepted",
+				recipientId: proposalDetails?.produtoMusical.id || 0,
+				recipientName: proposalDetails?.produtoMusical.nome,
+				link: entityLinks.proposalTab(proposalDetails?.id || 0),
+
+				errorMessage: "Erro ao enviar solicitação orçamento",
+				payload: {},
+			});
 		} catch (error) {
-			console.error("Error accepting proposal:", error);
-			toast.error("Erro ao aceitar a proposta. Tente novamente.");
+			showApiError(
+				error,
+				"Erro ao tentar aceitar a proposta. Tente novamente."
+			);
 		} finally {
 			setIsLoadingAccept(false);
 		}
@@ -159,7 +203,7 @@ export const MyHiresTab = () => {
 		[filteredProposals?.data]
 	);
 
-	const handleSignContract = useCallback(
+	const handleSeeContract = useCallback(
 		async (proposalId: string) => {
 			if (proposalId) {
 				await navigate({
@@ -234,42 +278,6 @@ export const MyHiresTab = () => {
 			</div>
 			<hr className="w-full border-gray-200" />
 
-			{/* Filters */}
-			{/* <div className="flex w-full justify-between items-center">
-				<FilterSelector
-					filters={availableFilters}
-					selectedFilters={selectedFilters}
-					onFilterChange={setSelectedFilters}
-				/>
-				<UpdateButton onClick={() => {}} />
-			</div> */}
-
-			{/* Statistics Cards */}
-			{/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-				{reports.map((report, index) => (
-					<ReportsCard key={index} report={report} />
-				))}
-			</div>
-			<hr className="w-full border-gray-200" /> */}
-			{/* Spending Chart */}
-			{/* <div className="flex flex-col w-full bg-gray-50 border border-gray-200 gap-6 p-6 rounded-lg">
-				<div className="w-full flex items-center justify-between">
-					<div className="flex gap-3 items-center">
-						<div className="bg-white border border-gray-300 rounded-lg p-2 text-gray-600">
-							<ChartLineIcon size={14} />
-						</div>
-						<h3 className="font-medium text-gray-900">Evolução de Gastos</h3>
-						<FilterSelector
-							filters={chartFilters}
-							selectedFilters={selectedChartFilters}
-							onFilterChange={setSelectedChartFilters}
-						/>
-					</div>
-					<UpdateButton onClick={() => {}} />
-				</div>
-				<LineChartComponent dates={dates} values={values} />
-			</div> */}
-
 			{/* Hirings Table */}
 			<div className="space-y-4">
 				<div className="flex items-center justify-between">
@@ -338,7 +346,7 @@ export const MyHiresTab = () => {
 				proposal={proposalDetails}
 				onAccept={handleAcceptProposal}
 				onReject={handleRejectProposal}
-				onSeeContract={handleSignContract}
+				onSeeContract={handleSeeContract}
 				isLoadingAccept={isLoadingAccept}
 			/>
 

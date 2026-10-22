@@ -1,15 +1,14 @@
-import { VibrattoApiError } from "@/api";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { useAuthStore } from "@/store/authStore";
-import type { QueryClient } from "@tanstack/react-query";
-import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { messagingKeys } from "@/hooks/useMessaging";
 import type { CreateProposalRequest, FilterOption } from "@/api/types";
 import { useCreateProposal } from "@/hooks/useProposals";
 import { ensureHHMMSS, toBR } from "@/utils";
 import type { CreateProposalForm } from "../schemas/proposal.schema";
 import { addDays, format, isBefore } from "date-fns";
+import { showApiError } from "@/utils/showApiError";
+import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
+import { entityLinks } from "@/features/message/utils/messageTemplates";
 
 interface UseBudgetSubmitProps {
 	setShowProfileIncompleteModal: (value: boolean) => void;
@@ -25,123 +24,10 @@ interface UseBudgetSubmitProps {
 	paymentConditions: Array<FilterOption>;
 }
 
-interface HandleSendMessageProps {
-	onBudgetSent?: (budgetDetails: string) => Promise<void>;
-	budgetData: CreateProposalRequest;
-	eventTypes: Array<FilterOption>;
-	paymentMethods: Array<FilterOption>;
-	paymentConditions: Array<FilterOption>;
-	queryClient: QueryClient;
-}
-
 const formatDate = (dateString: string) => {
 	if (!dateString) return "";
 	const date = new Date(dateString);
 	return date.toLocaleDateString("pt-BR");
-};
-
-const buildProposalMessage = (
-	proposalData: CreateProposalRequest,
-	eventTypes: Array<FilterOption>,
-	paymentMethods: Array<FilterOption>,
-	paymentConditions: Array<FilterOption>
-): string => {
-	const baseURL = import.meta.env["VITE_VIBRATTO_FRONT_BASE_URL"];
-	const propostaURL = `${baseURL}band/me?tab=hires`;
-
-	const eventTypeName =
-		eventTypes.find((type) => type.Id === proposalData.idTipoEvento)?.Nome ||
-		"Evento";
-
-	const selectedPaymentMethods = paymentMethods
-		.filter((method) => proposalData.formaPagamento.includes(method.Id))
-		.map((item) => item.Nome)
-		.join(", ");
-
-	const paymentCondition = paymentConditions.find(
-		(condition) => condition.Id === proposalData.idCondicoesPagamento
-	)?.Nome;
-
-	const timesFormatted = proposalData.horaInicio
-		? `${proposalData.horaInicio}\n`
-		: `Não definido\n`;
-
-	const inclusions = [
-		proposalData.transporteIncluso && "Transporte",
-		proposalData.acomodacaoInclusa && "Acomodação",
-	]
-		.filter(Boolean)
-		.join(", ");
-
-	return [
-		`📋 Proposta enviada!`,
-		`🎵 Tipo de Evento: ${eventTypeName}`,
-		`📝 Descrição: ${proposalData.descricao}`,
-		`📅 Data: ${formatDate(proposalData.dataEvento)}`,
-		`⏰ Horário: ${timesFormatted}`,
-		`📍 Local: ${proposalData.local}`,
-		`💰 Valor: R$ ${proposalData.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-		selectedPaymentMethods
-			? `💳 Forma de Pagamento: ${selectedPaymentMethods}`
-			: null,
-		paymentCondition ? `📜 Condições de Pagamento: ${paymentCondition}` : null,
-		inclusions ? `\n✅ Inclui: ${inclusions}` : null,
-		`\n🔗 Link da proposta: <a 
-								href=${propostaURL} 
-								target="_blank" 
-								rel="noopener noreferrer"
-								className="text-blue-600 underline hover:text-blue-800 font-medium transition-colors"
-							>
-								Clique aqui para acessar
-							</a>`,
-	]
-		.filter(Boolean)
-		.join("\n");
-};
-
-const handleSendMessage = async ({
-	onBudgetSent,
-	budgetData,
-	eventTypes,
-	paymentMethods,
-	paymentConditions,
-	queryClient,
-}: HandleSendMessageProps) => {
-	// Send automatic message to chat if callback is provided
-	if (onBudgetSent) {
-		try {
-			const proposalMessage = buildProposalMessage(
-				budgetData,
-				eventTypes,
-				paymentMethods,
-				paymentConditions
-			);
-			await onBudgetSent(proposalMessage);
-		} catch (error) {
-			if (error instanceof VibrattoApiError) {
-				const errorMessage = error.data?.erros.find((error_) => error_);
-
-				if (error.statusCode === 500) {
-					toast.error(
-						"Erro interno do servidor. Por favor, verifique os dados e tente novamente."
-					);
-					return;
-				} else if (errorMessage) {
-					toast.error(errorMessage);
-					return;
-				}
-				toast.error(
-					"Aconteceu um erro ao enviar a mensagem de notificação da proposta."
-				);
-				return;
-			}
-		}
-	}
-
-	// Invalidate conversations to update sidebar with new proposal message
-	void queryClient.invalidateQueries({
-		queryKey: messagingKeys.conversations(),
-	});
 };
 
 // Helper function to extract user ID from JWT token
@@ -189,20 +75,16 @@ const getUserIdFromToken = (): number | null => {
 
 export const useBudgetSubmit = ({
 	setShowProfileIncompleteModal,
-	onBudgetSent,
 	contractorId,
 	userProductId,
-	eventTypes,
-	paymentMethods,
-	paymentConditions,
 	handleClose,
 	hasDefineEventTime,
 	conversationId,
 }: UseBudgetSubmitProps) => {
 	const { user } = useAuthStore();
 	const { isProfileComplete, refetch: refetchProfile } = useProfileStatus();
-	const queryClient = useQueryClient();
 	const createProposalMutation = useCreateProposal();
+	const { sendStatusMessage } = useSendStatusMessage();
 
 	const onSubmit = async (budgetFormData: CreateProposalForm) => {
 		// Refresh profile data to ensure we have the latest information
@@ -299,38 +181,39 @@ export const useBudgetSubmit = ({
 		};
 
 		try {
-			await createProposalMutation.mutateAsync({
+			const proposalResponse = await createProposalMutation.mutateAsync({
 				productId: userProductId,
 				data: budgetData,
 			});
+
+			sendStatusMessage({
+				type: "proposalRequested",
+				recipientId: userProductId,
+				recipientName: finalFormData.nomeContratante,
+				link: proposalResponse.proposta
+					? entityLinks.proposalTab(proposalResponse.proposta)
+					: undefined,
+				payload: {
+					eventTypeLabel: budgetData.dataEvento || "-",
+					description: budgetData.descricao,
+					date: formatDate(budgetData.dataEvento),
+					startTime: hasDefineEventTime ? budgetData.horaInicio : null,
+					duration:
+						hasDefineEventTime && budgetData.duracao
+							? budgetData.duracao
+							: null,
+					location: budgetData.local,
+				},
+
+				errorMessage: "Erro ao enviar solicitação orçamento",
+				onSuccess: () => {
+					handleClose();
+				},
+			});
 		} catch (error) {
-			if (error instanceof VibrattoApiError) {
-				const errorMessage = error.data?.erros.find((error_) => error_);
-
-				if (error.statusCode === 500) {
-					toast.error(
-						"Erro interno do servidor. Por favor, verifique os dados e tente novamente."
-					);
-					return;
-				} else if (errorMessage) {
-					toast.error(errorMessage);
-					return;
-				}
-				toast.error("Erro ao enviar proposta. Tente novamente.");
-				return;
-			}
+			showApiError(error, "Erro ao enviar proposta. Tente novamente.");
 		}
-
-		await handleSendMessage({
-			onBudgetSent,
-			budgetData,
-			eventTypes,
-			paymentMethods,
-			paymentConditions,
-			queryClient,
-		});
-
-		handleClose();
 	};
+
 	return { onSubmit };
 };
