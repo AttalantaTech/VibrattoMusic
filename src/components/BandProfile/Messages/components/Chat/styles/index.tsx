@@ -77,7 +77,7 @@ export const OwnMessageElement = ({
 	return (
 		<div className="flex items-end space-x-2 max-w-[80%]">
 			<div className="flex flex-col items-end">
-				<div className="bg-primary-600 text-white px-4 py-3 rounded-l-2xl rounded-tr-2xl rounded-br-md shadow-lg">
+				<div className="bg-primary-400 text-white px-4 py-3 rounded-l-2xl rounded-tr-2xl rounded-br-md shadow-lg">
 					<div className="text-sm leading-relaxed">
 						<MessageHtml html={message.conteudo} />
 					</div>
