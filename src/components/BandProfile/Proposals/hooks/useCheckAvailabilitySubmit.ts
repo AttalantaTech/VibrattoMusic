@@ -5,13 +5,11 @@ import type {
 	MusicalProductApiResponse,
 } from "@/api/types";
 import type { Option } from "@/components/forms/Select/Select";
-import { messagingKeys, useStartConversation } from "@/hooks/useMessaging";
-import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { useNavigate } from "@tanstack/react-router";
 import { combineDateTime, ensureHHMMSS } from "@/utils";
 import { useCreateBudget } from "@/hooks/useProposals";
-import { useQueryClient } from "@tanstack/react-query";
-import { VibrattoApiError } from "@/api";
+import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
+import { entityLinks } from "@/features/message/utils/messageTemplates";
+import { showApiError } from "@/utils/showApiError";
 
 interface CheckAvailabilitySubmit {
 	musicalProduct: MusicalProductApiResponse | null;
@@ -32,48 +30,13 @@ const formatTime = (timeString: string) => {
 	return timeString.substring(0, 5);
 };
 
-const buildMessage = (
-	formData: CheckAvailabilityForm,
-	musicalProduct: MusicalProductApiResponse | null,
-	tipoEventoOptions: Array<Option>
-): string => {
-	const selectedEventType = formData.idTipoEvento;
-
-	const eventType = tipoEventoOptions.find(
-		(event) => Number(event.value) === selectedEventType
-	);
-
-	const timesFormatted = formData.horaInicio
-		? `${formatTime(formData.horaInicio)}\n`
-		: `Não definido`;
-
-	const durationFormatted = formData.horaInicio
-		? `${formData.horaInicio + ":00"}\n`
-		: `Não definido`;
-
-	return [
-		`Olá ${musicalProduct?.nome ?? ""}, que boa notícia! Você recebeu uma solicitação de orçamento :`,
-		`🎵 Tipo de Evento: ${eventType?.label ?? "-"}`,
-		`📝 Descrição: ${formData.descricao}`,
-		`📅 Data: ${formatDate(formData.dataEvento)}`,
-		`⏰ Horário de início: ${timesFormatted}`,
-		`⏰ Duração: ${durationFormatted}`,
-		`📍 Local: ${formData.local}`,
-	]
-		.filter(Boolean)
-		.join("\n");
-};
-
 export const useCheckAvailabilitySubmit = ({
 	musicalProduct,
 	tipoEventoOptions,
 	hasDefineEventTime,
 	handleClose,
 }: CheckAvailabilitySubmit) => {
-	const navigate = useNavigate();
-	const queryClient = useQueryClient();
-	const { activeProduct } = useMusicalProductStore();
-	const { mutate: startConversation } = useStartConversation();
+	const { sendStatusMessage } = useSendStatusMessage();
 	const createBudgetMutation = useCreateBudget();
 
 	const onSubmit = async (formData: CheckAvailabilityForm) => {
@@ -83,8 +46,6 @@ export const useCheckAvailabilitySubmit = ({
 			);
 			return;
 		}
-
-		const content = buildMessage(formData, musicalProduct, tipoEventoOptions);
 
 		const budgetData: CreateBudgetRequest = {
 			idProdutoMusicalContratante: musicalProduct.id,
@@ -102,52 +63,42 @@ export const useCheckAvailabilitySubmit = ({
 		};
 
 		try {
-			await createBudgetMutation.mutateAsync({
+			const budget = await createBudgetMutation.mutateAsync({
 				productId: musicalProduct.id,
 				data: budgetData,
 			});
 
-			startConversation(
-				{
-					participanteId: musicalProduct.id,
-					conteudo: content,
-					senderType: activeProduct?.id ? 2 : 1,
-					produtoMusicalContratanteId: activeProduct?.id || null,
-				},
-				{
-					onSuccess: () => {
-						toast.success("Orçamento Solicitado.");
-
-						void navigate({ to: "/band/me", search: { tab: "messages" } });
-						handleClose();
-					},
-					onError: () => {
-						toast.error("Erro ao enviar solicitação orçamento");
-					},
-				}
+			const eventType = tipoEventoOptions.find(
+				(event) => Number(event.value) === formData.idTipoEvento
 			);
 
-			// Invalidate conversations to update sidebar with new proposal message
-			void queryClient.invalidateQueries({
-				queryKey: messagingKeys.conversations(),
+			sendStatusMessage({
+				type: "budgetRequested",
+				recipientId: musicalProduct.id,
+				recipientName: musicalProduct.nome,
+				link: budget?.id ? entityLinks.proposalTab(budget.id) : undefined,
+				payload: {
+					eventTypeLabel: eventType?.label ?? "-",
+					description: formData.descricao,
+					date: formatDate(formData.dataEvento),
+
+					startTime: hasDefineEventTime
+						? formatTime(formData.horaInicio)
+						: null,
+					duration:
+						hasDefineEventTime && formData.duracao
+							? String(formData.duracao)
+							: null,
+					location: formData.local,
+				},
+				errorMessage: "Erro ao enviar solicitação orçamento",
+				redirectToMessages: true,
+				onSuccess: () => {
+					handleClose();
+				},
 			});
-
-			handleClose();
-		} catch (error) {
-			if (error instanceof VibrattoApiError) {
-				const errorMessage = error.data?.erros.find((error_) => error_);
-
-				if (error.statusCode === 500) {
-					toast.error(
-						"Erro interno do servidor. Por favor, verifique os dados e tente novamente."
-					);
-					return;
-				} else if (errorMessage) {
-					toast.error(errorMessage);
-					return;
-				}
-				toast.error("Erro ao enviar dados. Tente novamente.");
-			}
+		} catch (error: unknown) {
+			showApiError(error, "Erro ao enviar dados. Tente novamente.");
 		}
 	};
 

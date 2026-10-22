@@ -1,6 +1,5 @@
 import z from "zod";
 import {
-	onlyAlphanumeric,
 	onlyDigits,
 	validateAlphanumericCNPJ,
 	validateCPF,
@@ -10,11 +9,6 @@ import {
 	containsPersonalData,
 	passwordSchema,
 } from "@/utils/password";
-
-export type DocumentType = "cpf" | "cnpj";
-
-export const getDocumentType = (value?: string | null): DocumentType =>
-	onlyAlphanumeric(value ?? "").length === 14 ? "cnpj" : "cpf";
 
 const requiredText = (message: string) => z.string().trim().min(1, message);
 

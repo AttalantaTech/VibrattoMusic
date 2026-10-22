@@ -19,7 +19,6 @@ import { useCheckAvailabilityState } from "@/components/BandProfile/Proposals/ho
 import { useCheckAvailabilityForm } from "@/components/BandProfile/Proposals/hooks/useCheckAvailabilityForm";
 import { useCheckAvailabilitySubmit } from "@/components/BandProfile/Proposals/hooks/useCheckAvailabilitySubmit";
 import { useStartConversation } from "@/hooks/useMessaging";
-import { Textarea } from "@/components/ui/Textarea/Textarea";
 import { Controller } from "react-hook-form";
 import { SingleSelect } from "@/components/forms/SingleSelect/SingleSelect";
 import { format } from "date-fns";
@@ -213,25 +212,6 @@ export const CheckAvailabilityModal = ({
 										)}
 									/>
 								</div>
-							</div>
-
-							{/* Description */}
-							<div className="space-y-2">
-								<Controller
-									control={control}
-									name="descricao"
-									render={({ field }) => (
-										<>
-											<Label htmlFor="description">Descrição da Proposta</Label>
-											<Textarea
-												id="description"
-												{...field}
-												placeholder="Descreva detalhes da apresentação, repertório, equipamentos..."
-												rows={3}
-											/>
-										</>
-									)}
-								/>
 							</div>
 
 							<div className="grid grid-cols-1 gap-4">

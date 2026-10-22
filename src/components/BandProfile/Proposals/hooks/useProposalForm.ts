@@ -8,6 +8,9 @@ import { differenceInDays, format } from "date-fns";
 import type { ProposalResponse } from "@/api/types";
 import { useAuthStore } from "@/store/authStore";
 import { calculateDuration, secondsToTime, toBR } from "@/utils";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { useUser } from "@/hooks/useUser";
+import { handleStandardProposalDescription } from "../utils/handleStandardProposalDescription";
 
 interface ProposalFormProps {
 	proposal?: ProposalResponse | null;
@@ -23,6 +26,8 @@ export const useProposalForm = ({
 	setHasDefineEventTime,
 }: ProposalFormProps) => {
 	const { user } = useAuthStore();
+	const { data: userData } = useUser();
+	const { activeProduct } = useMusicalProductStore();
 
 	// Helper function to get contractor ID
 	const getContractorId = useCallback(() => {
@@ -104,12 +109,31 @@ export const useProposalForm = ({
 		[proposal]
 	);
 
+	const descricao = useMemo(() => {
+		if (!activeProduct) return "";
+
+		return handleStandardProposalDescription({
+			category: String(activeProduct.categoria.nome),
+			document: String(
+				activeProduct.usaCnpj
+					? activeProduct.cnpj || "-"
+					: userData?.cpfResponsavelLegal || "-"
+			),
+			legalName: String(
+				activeProduct.usaCnpj
+					? activeProduct.razaoSocial || "-"
+					: userData?.nomeResponsavelLegal || "-"
+			),
+			artisticName: activeProduct.nome,
+		});
+	}, [activeProduct, userData]);
+
 	const initialValues: CreateProposalForm = useMemo<CreateProposalForm>(() => {
 		return {
 			idContratante: proposal?.idContratante || getContractorId(),
 			nomeContratante: proposal?.contratante.nome || contractorName || "",
 			idTipoEvento: proposal?.tipoEvento.id || 0,
-			descricao: proposal?.descricao || "",
+			descricao,
 			valor: proposal?.valor || 0,
 			local: proposal?.local || "",
 			dataEvento,
@@ -133,6 +157,7 @@ export const useProposalForm = ({
 		dataVencimentoAceite,
 		dataVencimentoSinalPagamento,
 		duration,
+		descricao,
 	]);
 
 	const form = useForm<CreateProposalForm>({

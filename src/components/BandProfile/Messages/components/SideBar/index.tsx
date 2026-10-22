@@ -12,6 +12,7 @@ import {
 } from "./styles";
 import { formatMessageTime, getParticipantInitials } from "../../utils/Message";
 import { useChat } from "@/hooks/useChat";
+import { stripHtml } from "@/utils/stripHtml";
 
 export const SideBar = () => {
 	const {
@@ -107,7 +108,7 @@ export const SideBar = () => {
 								<p className="text-sm text-gray-500 truncate">
 									{conversation.ultimaMensagem
 										? conversation.ultimaMensagem.conteudo.length > 50
-											? `${conversation.ultimaMensagem.conteudo.substring(0, 50)}...`
+											? stripHtml(conversation.ultimaMensagem.conteudo)
 											: conversation.ultimaMensagem.conteudo
 										: "Nenhuma mensagem ainda"}
 								</p>

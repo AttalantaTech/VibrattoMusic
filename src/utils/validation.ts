@@ -2,6 +2,8 @@ import { z } from "zod";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+export type DocumentType = "cpf" | "cnpj";
+
 // Utility functions for CPF/CNPJ validation
 export const validateCPF = (cpf: string): boolean => {
 	const cleaned = cpf.replace(/\D/g, "");
@@ -62,6 +64,9 @@ export const onlyDigits = (value: string) => value.replace(/\D/g, "");
 // Keeps letters: an alphanumeric CNPJ must not lose them
 export const onlyAlphanumeric = (value: string) =>
 	value.replace(/[^0-9A-Za-z]/g, "").toUpperCase();
+
+export const getDocumentType = (value?: string | null): DocumentType =>
+	onlyAlphanumeric(value ?? "").length === 14 ? "cnpj" : "cpf";
 
 // Formats raw API values ("11987456622") the same way the input masks display
 // them, so the form does not look "changed" right after loading

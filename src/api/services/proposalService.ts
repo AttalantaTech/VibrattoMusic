@@ -21,7 +21,7 @@ export const proposalService = {
 	async createProposal(
 		productId: number,
 		data: CreateProposalRequest
-	): Promise<ProposalResponse> {
+	): Promise<{ proposta: number }> {
 		// Ensure the payload strictly follows the API contract (camelCase)
 		const payload: CreateProposalRequest = {
 			...data,
@@ -35,7 +35,7 @@ export const proposalService = {
 			camarimIncluso: data.camarimIncluso ?? false,
 		};
 
-		const response = await apiClient.post<ProposalResponse>(
+		const response = await apiClient.post<{ proposta: number }>(
 			`produtomusical/${productId}/proposta`,
 			payload
 		);

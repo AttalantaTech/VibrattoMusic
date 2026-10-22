@@ -36,71 +36,87 @@ export const GenericTable = <T,>({
 	});
 
 	return (
-		<div className="py-4">
-			<div className="overflow-auto shadow ring-1 ring-black ring-opacity-5 rounded-lg">
-				<table className="min-w-full divide-y divide-gray-300">
-					<thead className="bg-gray-50">
-						{table.getHeaderGroups().map((headerGroup) => (
-							<tr key={headerGroup.id}>
-								{headerGroup.headers.map((header) => (
-									<th
-										key={header.id}
-										className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-										scope="col"
-									>
-										{flexRender(
-											header.column.columnDef.header,
-											header.getContext()
-										)}
-									</th>
+		<>
+			<div className="w-full min-w-0 max-w-full py-4">
+				<div className="overflow-hidden rounded-lg shadow ring-1 ring-black ring-opacity-5">
+					<div className="overflow-x-auto">
+						<table className="w-full min-w-[800px] table-auto divide-y divide-gray-300">
+							<thead className="bg-gray-50">
+								{table.getHeaderGroups().map((headerGroup) => (
+									<tr key={headerGroup.id}>
+										{headerGroup.headers.map((header) => (
+											<th
+												key={header.id}
+												className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+												scope="col"
+												style={{
+													width:
+														header.column.columnDef.size !== undefined
+															? header.getSize()
+															: undefined,
+												}}
+											>
+												{flexRender(
+													header.column.columnDef.header,
+													header.getContext()
+												)}
+											</th>
+										))}
+									</tr>
 								))}
-							</tr>
-						))}
-					</thead>
-					<tbody className="divide-y divide-gray-200 bg-white">
-						{table.getRowModel().rows.map((row) => (
-							<tr key={row.id} className="hover:bg-gray-50 transition-colors">
-								{row.getVisibleCells().map((cell) => (
-									<td
-										key={cell.id}
-										className="whitespace-nowrap px-3 py-4 text-sm text-black"
+							</thead>
+							<tbody className="divide-y divide-gray-200 bg-white">
+								{table.getRowModel().rows.map((row) => (
+									<tr
+										key={row.id}
+										className="hover:bg-gray-50 transition-colors"
 									>
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</td>
+										{row.getVisibleCells().map((cell) => (
+											<td
+												key={cell.id}
+												className="whitespace-nowrap px-3 py-4 text-sm text-black"
+											>
+												{flexRender(
+													cell.column.columnDef.cell,
+													cell.getContext()
+												)}
+											</td>
+										))}
+									</tr>
 								))}
-							</tr>
-						))}
-					</tbody>
-				</table>
-				{/* Pagination */}
-				<div className="flex px-4 flex-col w-full">
-					<hr className="w-full" />
-					<div className="w-full flex justify-between items-center py-4">
-						<button
-							className="bg-white px-3 py-2 border border-gray-300 text-gray-700 rounded-lg"
-							disabled={!table.getCanPreviousPage()}
-							onClick={() => {
-								table.previousPage();
-							}}
-						>
-							<ArrowLeftIcon size={20} />
-						</button>
-						<span className="text-sm text-gray-600">
-							Página {pagination.pageIndex + 1} de {table.getPageCount()}
-						</span>
+							</tbody>
+						</table>
+					</div>
 
-						<button
-							className="bg-white px-3 py-2 border border-gray-300 text-gray-700 rounded-lg"
-							disabled={!table.getCanNextPage()}
-							onClick={() => {
-								table.nextPage();
-							}}
-						>
-							<ArrowRightIcon size={20} />
-						</button>
+					<div className="flex w-full flex-col px-4">
+						<hr className="w-full" />
+						<div className="flex w-full items-center justify-between py-4">
+							<button
+								className="bg-white px-3 py-2 border border-gray-300 text-gray-700 rounded-lg"
+								disabled={!table.getCanPreviousPage()}
+								onClick={() => {
+									table.previousPage();
+								}}
+							>
+								<ArrowLeftIcon size={20} />
+							</button>
+							<span className="text-sm text-gray-600">
+								Página {pagination.pageIndex + 1} de {table.getPageCount()}
+							</span>
+
+							<button
+								className="bg-white px-3 py-2 border border-gray-300 text-gray-700 rounded-lg"
+								disabled={!table.getCanNextPage()}
+								onClick={() => {
+									table.nextPage();
+								}}
+							>
+								<ArrowRightIcon size={20} />
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		</>
 	);
 };

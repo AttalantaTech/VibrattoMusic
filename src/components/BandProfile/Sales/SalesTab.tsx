@@ -1,15 +1,53 @@
-import {
-	// ChartLineIcon,
-	Check,
-	ChevronDown,
-	FileText,
-	Plus,
-} from "lucide-react";
-import { Button } from "../../ui/Button/Button";
 // import { FilterSelector } from "../../ui/FilterSelector/FilterSelector";
-import { useCallback, useMemo, useState } from "react";
 // import { UpdateButton } from "../../ui/UpdateButton/UpdateButton";
 // import { Reports } from "./Reports";
+// import { LineChartComponent } from "../../charts/line/LineChart";
+
+// const [selectedChartFilters, setSelectedChartFilters] = useState<
+// 	Array<string>
+// >([]);
+// const chartFilters = [{ id: "sales", label: "Vendas" }];
+
+{
+	/* <h1 className="font-bold text-2xl">Relatórios</h1>
+			<hr className="w-full" />
+
+			<Reports />
+
+			<div className="flex flex-col w-full bg-gray-50 border border-gray-200 gap-6 p-6 rounded-lg">
+				<div className="w-full flex items-center justify-between">
+					<div className="flex gap-3 items-center">
+						<div className="bg-white border border-gay-300 rounded-lg p-2 text-gray-600">
+							<ChartLineIcon size={14} />
+						</div>
+						<FilterSelector
+							filters={chartFilters}
+							selectedFilters={selectedChartFilters}
+							onFilterChange={setSelectedChartFilters}
+						/>
+					</div>
+					<UpdateButton
+						onClick={() => {
+							// Handle update
+						}}
+					/>
+				</div>
+				<LineChartComponent
+					dates={
+						filteredProposals?.data.map((event) =>
+							new Date(event.dataCriacao).toLocaleDateString("pt-BR")
+						) || []
+					}
+					values={filteredProposals?.data.map((event) => event.valor) || []}
+				/>
+			</div> */
+}
+
+import { Check, ChevronDown, FileText, Plus } from "lucide-react";
+import { Button } from "../../ui/Button/Button";
+
+import { useCallback, useMemo, useState } from "react";
+
 import { EventsTable } from "../../EventsTable";
 import type { EventsTableSaleData } from "../../EventsTable/types";
 import { Dropdown } from "../../ui/Dropdown/Dropdown";
@@ -18,7 +56,7 @@ import {
 	useUpdateProposalStatus,
 } from "../../../hooks/useProposals";
 import { EmptyState, ErrorState, TableSkeleton } from "../../ui/LoadingStates";
-// import { LineChartComponent } from "../../charts/line/LineChart";
+
 import { useAuthStore } from "../../../store/authStore";
 import { splitOnUppercase } from "../../../utils/labels";
 import { useNavigate } from "@tanstack/react-router";
@@ -28,6 +66,9 @@ import { ProposalDetailsModal } from "../Proposals/components/ProposalDetailsMod
 import { SendProposalModal } from "../Proposals/components/SendProposalModal";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
+import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
+import { entityLinks } from "@/features/message/utils/messageTemplates";
+import { showApiError } from "@/utils/showApiError";
 
 interface AbaVendasProps {
 	productId?: number;
@@ -35,28 +76,23 @@ interface AbaVendasProps {
 
 export const SalesTab = ({ productId }: AbaVendasProps) => {
 	const navigate = useNavigate();
-	// const [selectedChartFilters, setSelectedChartFilters] = useState<
-	// 	Array<string>
-	// >([]);
+
+	const { activeProduct } = useMusicalProductStore();
+	const currentUser = useAuthStore((state) => state.user);
+	const updateStatusMutation = useUpdateProposalStatus();
+	const { sendStatusMessage } = useSendStatusMessage();
+
 	const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
 	const [isProposalDetailsModalOpen, setIsProposalDetailsModalOpen] =
 		useState(false);
 	const [proposalDetails, setProposalDetails] =
 		useState<ProposalResponse | null>(null);
-
 	const [isLoadingPaidSign, setIsLoadingPaidSign] = useState(false);
 	const [isLoadingCancel, setIsLoadingCancel] = useState(false);
-
-	// const chartFilters = [{ id: "sales", label: "Vendas" }];
-
-	const { activeProduct } = useMusicalProductStore();
-
-	const currentUser = useAuthStore((state) => state.user);
+	const [statusFilter, setStatusFilter] = useState<string>("Todos os status");
 
 	const currentProductId =
 		productId || (activeProduct?.id ? Number(activeProduct.id) : undefined);
-
-	const [statusFilter, setStatusFilter] = useState<string>("Todos os status");
 
 	const {
 		data: filteredProposals,
@@ -66,8 +102,6 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 		status: statusFilter === "Todos os status" ? undefined : [statusFilter],
 		IdProdutoMusical: activeProduct?.id,
 	});
-
-	const updateStatusMutation = useUpdateProposalStatus();
 
 	const possibleStatusFilters = [
 		"Todos os status",
@@ -129,10 +163,17 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 				proposalId: proposalId,
 				status: "sinalPago",
 			});
-			toast.success("Sinal pago! O contrato agora precisa ser assinado.");
+
+			sendStatusMessage({
+				type: "proposalPaidSign",
+				recipientId: proposalDetails?.produtoMusical.id || 0,
+				recipientName: proposalDetails?.produtoMusical.nome,
+				link: entityLinks.proposalTab(proposalDetails?.id || 0),
+				errorMessage: "Erro ao enviar sua requisição",
+				payload: {},
+			});
 		} catch (error) {
-			console.error("Error paiding sign:", error);
-			toast.error("Erro ao pagar o sinal. Tente novamente.");
+			showApiError(error, "Erro ao pagar o sinal. Tente novamente.");
 		} finally {
 			setIsLoadingPaidSign(false);
 		}
@@ -155,13 +196,23 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 					proposalId,
 					status: "cancelado",
 				});
+
+				sendStatusMessage({
+					type: "proposalCanceled",
+					recipientId: proposalDetails?.produtoMusical.id || 0,
+					recipientName: proposalDetails?.produtoMusical.nome,
+					link: entityLinks.proposalTab(proposalDetails?.id || 0),
+
+					errorMessage: "Erro ao enviar requisição",
+					payload: {},
+				});
 			} catch (error) {
-				console.error("Error updating proposal status:", error);
+				showApiError(error, "Error updating proposal status:");
 			} finally {
 				setIsLoadingCancel(false);
 			}
 		},
-		[updateStatusMutation]
+		[proposalDetails, sendStatusMessage, updateStatusMutation]
 	);
 
 	const tableData: EventsTableSaleData =
@@ -296,39 +347,6 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 			{tableData.length > 0 && (
 				<EventsTable dataSales={tableData} mode="sale" />
 			)}
-
-			{/* <h1 className="font-bold text-2xl">Relatórios</h1>
-			<hr className="w-full" />
-
-			<Reports />
-
-			<div className="flex flex-col w-full bg-gray-50 border border-gray-200 gap-6 p-6 rounded-lg">
-				<div className="w-full flex items-center justify-between">
-					<div className="flex gap-3 items-center">
-						<div className="bg-white border border-gay-300 rounded-lg p-2 text-gray-600">
-							<ChartLineIcon size={14} />
-						</div>
-						<FilterSelector
-							filters={chartFilters}
-							selectedFilters={selectedChartFilters}
-							onFilterChange={setSelectedChartFilters}
-						/>
-					</div>
-					<UpdateButton
-						onClick={() => {
-							// Handle update
-						}}
-					/>
-				</div>
-				<LineChartComponent
-					dates={
-						filteredProposals?.data.map((event) =>
-							new Date(event.dataCriacao).toLocaleDateString("pt-BR")
-						) || []
-					}
-					values={filteredProposals?.data.map((event) => event.valor) || []}
-				/>
-			</div> */}
 
 			<SendProposalModal
 				isOpen={isProposalModalOpen}
