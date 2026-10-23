@@ -1,5 +1,12 @@
 import type { ChatUser } from "@/contexts/MessagesContext/types";
 
+export interface StartConversation {
+	conteudo: string;
+	senderType: number;
+	contratanteId: number;
+	produtoMusicalId: number | null;
+	produtoMusicalContratanteId: number | null;
+}
 export interface Message {
 	id: number;
 	idConversa: number;
@@ -20,8 +27,8 @@ export interface Conversation {
 	contratanteId: number;
 	produtoMusicalContratanteNome: string | null;
 	produtoMusicalContratanteId: number | null;
-	participanteNome: string;
-	participanteId: number;
+	produtoMusicalNome: string;
+	produtoMusicalId: number | null;
 	pair: ChatUser;
 	ultimaMensagem?: Message;
 	mensagens?: Array<Message>;

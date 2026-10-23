@@ -12,7 +12,11 @@ import type {
 	PaginationParameters,
 	PaginatedResponse,
 } from "../api/types";
-import type { Conversation, Message } from "@/api/services/messages/types";
+import type {
+	Conversation,
+	Message,
+	StartConversation,
+} from "@/api/services/messages/types";
 
 // Query Keys
 export const messagingKeys = {
@@ -135,23 +139,8 @@ export const useSendMessage = () => {
 export const useStartConversation = () => {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: ({
-			participanteId,
-			conteudo,
-			senderType,
-			produtoMusicalContratanteId,
-		}: {
-			participanteId: number;
-			conteudo: string;
-			senderType: number;
-			produtoMusicalContratanteId: number | null;
-		}) =>
-			messagingService.startConversation(
-				participanteId,
-				conteudo,
-				senderType,
-				produtoMusicalContratanteId
-			),
+		mutationFn: (params: StartConversation) =>
+			messagingService.startConversation(params),
 		onSuccess: () => {
 			// Invalidate conversations list
 			void queryClient.invalidateQueries({

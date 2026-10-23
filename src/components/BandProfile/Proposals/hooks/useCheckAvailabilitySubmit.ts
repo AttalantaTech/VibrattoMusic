@@ -13,6 +13,8 @@ import { showApiError } from "@/utils/showApiError";
 
 interface CheckAvailabilitySubmit {
 	musicalProduct: MusicalProductApiResponse | null;
+	contratanteId: number;
+	produtoMusicalContratanteId: number | null;
 	tipoEventoOptions: Array<Option>;
 	hasDefineEventTime: boolean;
 	handleClose: () => void;
@@ -35,6 +37,8 @@ export const useCheckAvailabilitySubmit = ({
 	tipoEventoOptions,
 	hasDefineEventTime,
 	handleClose,
+	contratanteId,
+	produtoMusicalContratanteId,
 }: CheckAvailabilitySubmit) => {
 	const { sendStatusMessage } = useSendStatusMessage();
 	const createBudgetMutation = useCreateBudget();
@@ -48,7 +52,8 @@ export const useCheckAvailabilitySubmit = ({
 		}
 
 		const budgetData: CreateBudgetRequest = {
-			idProdutoMusicalContratante: musicalProduct.id,
+			idProdutoMusicalContratante: produtoMusicalContratanteId,
+			idContratante: contratanteId,
 			idTipoEvento: formData.idTipoEvento,
 			descricao: formData.descricao || "",
 			local: formData.local,
@@ -74,8 +79,11 @@ export const useCheckAvailabilitySubmit = ({
 
 			sendStatusMessage({
 				type: "budgetRequested",
-				recipientId: musicalProduct.id,
-				recipientName: musicalProduct.nome,
+				produtoMusicalId: musicalProduct.id,
+				produtoMusicalName: musicalProduct.nome,
+				produtoMusicalContratanteId,
+				senderType: produtoMusicalContratanteId ? 2 : 1,
+				contratanteId: contratanteId,
 				link: budget?.id ? entityLinks.proposalTab(budget.id) : undefined,
 				payload: {
 					eventTypeLabel: eventType?.label ?? "-",

@@ -850,7 +850,7 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 				onClose={() => {
 					setIsCreateModalOpen(false);
 				}}
-				recipientId={productId || undefined}
+				contractorId={productId || 0}
 			/>
 
 			{/* Proposal Details Modal */}

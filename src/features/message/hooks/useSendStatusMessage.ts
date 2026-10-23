@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { messagingKeys, useStartConversation } from "@/hooks/useMessaging";
-import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import {
 	buildStatusMessage,
 	type MessageLink,
@@ -13,8 +12,11 @@ import {
 
 type SendStatusMessageParameters<K extends StatusMessageType> = {
 	type: K;
-	recipientId: number;
-	recipientName?: string;
+	produtoMusicalId: number;
+	produtoMusicalName: string;
+	contratanteId: number;
+	produtoMusicalContratanteId: number | null;
+	senderType: 1 | 2;
 	link?: MessageLink;
 	payload: StatusPayloads[K];
 	successMessage?: string;
@@ -26,13 +28,15 @@ type SendStatusMessageParameters<K extends StatusMessageType> = {
 export const useSendStatusMessage = () => {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	const { activeProduct } = useMusicalProductStore();
 	const { mutate: startConversation, isPending } = useStartConversation();
 
 	const sendStatusMessage = <K extends StatusMessageType>({
 		type,
-		recipientId,
-		recipientName,
+		produtoMusicalId,
+		produtoMusicalName,
+		contratanteId,
+		produtoMusicalContratanteId,
+		senderType,
 		link,
 		payload,
 		successMessage,
@@ -41,21 +45,30 @@ export const useSendStatusMessage = () => {
 		onSuccess,
 	}: SendStatusMessageParameters<K>) => {
 		const conteudo = buildStatusMessage(type, {
-			recipientName,
+			recipientName: produtoMusicalName,
 			link,
 			...payload,
 		});
 
 		startConversation(
 			{
-				participanteId: recipientId,
+				produtoMusicalId,
+				contratanteId,
 				conteudo,
-				senderType: activeProduct?.id ? 2 : 1,
-				produtoMusicalContratanteId: activeProduct?.id || null,
+				senderType,
+				produtoMusicalContratanteId,
 			},
 			{
 				onSuccess: () => {
 					if (successMessage) toast.success(successMessage);
+
+					console.log("2 - produtoMusicalId:...", produtoMusicalId);
+					console.log("2 - contratanteId:...", contratanteId);
+					console.log("2 - senderType:...", senderType);
+					console.log(
+						"2 - produtoMusicalContratanteId:...",
+						produtoMusicalContratanteId
+					);
 
 					/** Updates the sidebar with the new message */
 					void queryClient.invalidateQueries({

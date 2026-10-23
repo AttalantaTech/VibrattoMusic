@@ -6,7 +6,7 @@ import type {
 	PaginatedResponse,
 } from "../../types";
 import { ConversationStorage } from "../../../utils/conversationStorage";
-import type { Conversation, Message } from "./types";
+import type { Conversation, Message, StartConversation } from "./types";
 import type { ChatUser } from "@/contexts/MessagesContext/types";
 import { musicalProductService } from "@/api";
 
@@ -209,10 +209,10 @@ export class MessagingService {
 					}
 
 					// Build conversation object
-					return {
+					const conversations: Conversation = {
 						id: item.idConversa,
-						participanteId: item.produtoMusical.id,
-						participanteNome: item.produtoMusical.nome,
+						produtoMusicalId: item.produtoMusical.id,
+						produtoMusicalNome: item.produtoMusical.nome,
 						contratanteId: item.contratante.id,
 						contratanteNome: item.contratante.nome,
 						produtoMusicalContratanteId:
@@ -226,6 +226,8 @@ export class MessagingService {
 							: item.numeroMensagensNãoLidasContratado,
 						online: false, // This would need to be determined from online status API
 					};
+
+					return conversations;
 				})
 			);
 
@@ -247,45 +249,51 @@ export class MessagingService {
 	/**
 	 * Start new conversation
 	 */
-	public async startConversation(
-		participanteId: number,
-		conteudo: string,
-		senderType: number,
-		produtoMusicalContratanteId: number | null
-	): Promise<Conversation> {
-		// First, get or create conversation with the product
-		// API returns conversation ID directly as a number
+	public async startConversation({
+		conteudo,
+		senderType,
+		contratanteId,
+		produtoMusicalId,
+		produtoMusicalContratanteId,
+	}: StartConversation): Promise<Conversation> {
+		console.log("3 - produtoMusicalId:...", produtoMusicalId);
+		console.log("3 - contratanteId:...", contratanteId);
+		console.log(
+			"3 - produtoMusicalContratanteId:...",
+			produtoMusicalContratanteId
+		);
+
 		const conversationId = await this.apiClient.post<number>("chat/obter", {
-			IdProdutoMusical: participanteId,
+			IdProdutoMusical: produtoMusicalId,
 			IdProdutoMusicalContratante: produtoMusicalContratanteId,
 		});
 
 		// Save conversation ID to localStorage for future retrieval
-		ConversationStorage.saveConversation(
+		ConversationStorage.saveConversation({
 			conversationId,
-			participanteId,
-			undefined // We don't have participant name here yet
-		);
+			produtoMusicalId,
+			produtoMusicalNome: "",
+		});
 
 		// Then send the initial message
 		await this.apiClient.post<Message>("chat/mensagem", {
 			IdConversa: conversationId,
 			Conteudo: conteudo,
 			TipoRemetente: senderType,
-			IdProdutoMusical: produtoMusicalContratanteId,
+			IdProdutoMusical: produtoMusicalId,
 		});
 
 		// Return a minimal conversation object for compatibility
 		return {
 			id: conversationId,
-			participanteId,
-			participanteNome: "",
-			contratanteId: 0,
+			produtoMusicalId,
+			produtoMusicalNome: "",
+			contratanteId: produtoMusicalId ? 0 : contratanteId,
 			contratanteNome: "",
 			produtoMusicalContratanteId,
 			produtoMusicalContratanteNome: "",
 			pair: {
-				id: participanteId,
+				id: produtoMusicalId || 0,
 				name: "",
 				type: "product",
 			},

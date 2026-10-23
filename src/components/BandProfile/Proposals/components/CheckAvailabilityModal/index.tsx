@@ -28,12 +28,16 @@ export interface CheckAvailabilityModalProps {
 	isOpen: boolean;
 	onClose: (value: boolean) => void;
 	musicalProduct: MusicalProduct | null;
+	contratanteId: number;
+	produtoMusicalContratanteId: number | null;
 }
 
 export const CheckAvailabilityModal = ({
 	isOpen,
 	onClose,
 	musicalProduct,
+	contratanteId,
+	produtoMusicalContratanteId,
 }: CheckAvailabilityModalProps) => {
 	const {
 		eventTypes,
@@ -82,6 +86,8 @@ export const CheckAvailabilityModal = ({
 	};
 
 	const { onSubmit } = useCheckAvailabilitySubmit({
+		contratanteId,
+		produtoMusicalContratanteId,
 		musicalProduct,
 		tipoEventoOptions,
 		hasDefineEventTime,

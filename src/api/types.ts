@@ -842,7 +842,8 @@ export interface CreateProposalRequest {
 
 // Proposal types
 export interface CreateBudgetRequest {
-	idProdutoMusicalContratante: number;
+	idProdutoMusicalContratante: number | null;
+	idContratante: number;
 	idTipoEvento: number;
 	descricao: string;
 	local: string;

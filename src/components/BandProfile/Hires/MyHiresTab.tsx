@@ -168,10 +168,21 @@ export const MyHiresTab = () => {
 				status: "aceito",
 			});
 
+			const produtoMusicalContratanteId = proposalDetails
+				? proposalDetails?.produtoMusicalContratante.id > 0
+					? proposalDetails?.produtoMusicalContratante.id
+					: 0
+				: 0;
+
+			const senderType = produtoMusicalContratanteId ? 2 : 1;
+
 			sendStatusMessage({
 				type: "proposalAccepted",
-				recipientId: proposalDetails?.produtoMusical.id || 0,
-				recipientName: proposalDetails?.produtoMusical.nome,
+				produtoMusicalId: proposalDetails?.produtoMusical.id || 0,
+				produtoMusicalName: proposalDetails?.produtoMusical.nome || "",
+				contratanteId: proposalDetails?.contratante.id || 0,
+				produtoMusicalContratanteId,
+				senderType,
 				link: entityLinks.proposalTab(proposalDetails?.id || 0),
 
 				errorMessage: "Erro ao enviar solicitação orçamento",

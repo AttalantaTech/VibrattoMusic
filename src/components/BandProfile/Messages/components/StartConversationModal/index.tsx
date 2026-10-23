@@ -35,9 +35,13 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 			return;
 		}
 
+		console.log("produtoMusicalId:...", participantId);
+		console.log("activeProduct:...", activeProduct);
+
 		startConversation(
 			{
-				participanteId: participantId,
+				produtoMusicalId: participantId,
+				contratanteId: 0,
 				conteudo: message,
 				senderType: activeProduct?.id ? 2 : 1,
 				produtoMusicalContratanteId: activeProduct?.id || null,

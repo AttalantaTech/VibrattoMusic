@@ -1,7 +1,7 @@
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "sonner";
-import type { CreateProposalRequest, FilterOption } from "@/api/types";
+import type { CreateProposalRequest } from "@/api/types";
 import { useCreateProposal } from "@/hooks/useProposals";
 import { ensureHHMMSS, toBR } from "@/utils";
 import type { CreateProposalForm } from "../schemas/proposal.schema";
@@ -12,16 +12,12 @@ import { entityLinks } from "@/features/message/utils/messageTemplates";
 
 interface UseBudgetSubmitProps {
 	setShowProfileIncompleteModal: (value: boolean) => void;
-	onBudgetSent?: (budgetDetails: string) => Promise<void>;
 	handleClose: () => void;
-	budget?: CreateProposalForm | null;
-	contractorId?: number;
-	userProductId?: number;
+	contractorId: number;
+	musicalProductId: number | null;
+	musicalProductContractorId: number | null;
 	conversationId?: number;
 	hasDefineEventTime: boolean;
-	eventTypes: Array<FilterOption>;
-	paymentMethods: Array<FilterOption>;
-	paymentConditions: Array<FilterOption>;
 }
 
 const formatDate = (dateString: string) => {
@@ -76,10 +72,11 @@ const getUserIdFromToken = (): number | null => {
 export const useBudgetSubmit = ({
 	setShowProfileIncompleteModal,
 	contractorId,
-	userProductId,
+	musicalProductId,
 	handleClose,
 	hasDefineEventTime,
 	conversationId,
+	musicalProductContractorId,
 }: UseBudgetSubmitProps) => {
 	const { user } = useAuthStore();
 	const { isProfileComplete, refetch: refetchProfile } = useProfileStatus();
@@ -97,7 +94,7 @@ export const useBudgetSubmit = ({
 		}
 
 		// Check if user has a musical product
-		if (!userProductId) {
+		if (!musicalProductId) {
 			toast.error(
 				"Você precisa ter um produto musical cadastrado para enviar propostas."
 			);
@@ -156,7 +153,7 @@ export const useBudgetSubmit = ({
 			nomeContratante: String(
 				finalFormData.nomeContratante || user?.nome || ""
 			),
-			idProdutoMusical: Number(userProductId),
+			idProdutoMusical: musicalProductId,
 			idTipoEvento: Number(finalFormData.idTipoEvento),
 			descricao: finalFormData.descricao || "",
 			valor: Number(finalFormData.valor),
@@ -182,14 +179,17 @@ export const useBudgetSubmit = ({
 
 		try {
 			const proposalResponse = await createProposalMutation.mutateAsync({
-				productId: userProductId,
+				productId: musicalProductId,
 				data: budgetData,
 			});
 
 			sendStatusMessage({
 				type: "proposalRequested",
-				recipientId: userProductId,
-				recipientName: finalFormData.nomeContratante,
+				produtoMusicalId: musicalProductId,
+				produtoMusicalName: finalFormData.nomeContratante || "",
+				contratanteId: finalFormData.idContratante,
+				produtoMusicalContratanteId: musicalProductContractorId,
+				senderType: musicalProductContractorId ? 2 : 1,
 				link: proposalResponse.proposta
 					? entityLinks.proposalTab(proposalResponse.proposta)
 					: undefined,

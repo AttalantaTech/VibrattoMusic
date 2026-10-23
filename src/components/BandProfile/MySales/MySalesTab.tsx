@@ -76,7 +76,7 @@ export const MySalesTab = ({ productId }: MySalesTabProps) => {
 				onClose={() => {
 					setIsProposalModalOpen(false);
 				}}
-				recipientId={currentProductId}
+				contractorId={currentProductId || 0}
 			/>
 		</div>
 	);

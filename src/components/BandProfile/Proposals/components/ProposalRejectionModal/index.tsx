@@ -115,10 +115,21 @@ export const ProposalRejectionModal = ({
 				acceptsCounterProposal,
 			});
 
+			const produtoMusicalContratanteId = proposal
+				? proposal?.produtoMusicalContratante.id > 0
+					? proposal?.produtoMusicalContratante.id
+					: 0
+				: 0;
+
+			const senderType = produtoMusicalContratanteId ? 2 : 1;
+
 			sendStatusMessage({
 				type: "proposalRejected",
-				recipientId: proposal?.produtoMusical.id || 0,
-				recipientName: proposal?.produtoMusical.nome,
+				produtoMusicalId: proposal?.produtoMusical.id || 0,
+				produtoMusicalName: proposal?.produtoMusical.nome || "",
+				contratanteId: proposal.contratante.id || 0,
+				produtoMusicalContratanteId,
+				senderType,
 				link: entityLinks.proposalTab(proposal?.id || 0),
 
 				errorMessage: "Erro ao enviar solicitação orçamento",

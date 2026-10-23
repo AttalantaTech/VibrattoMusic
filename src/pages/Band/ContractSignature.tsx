@@ -28,6 +28,11 @@ import type { ProposalResponse } from "@/api/types";
 import { ProposalRejectionModal } from "@/components/BandProfile/Proposals/components/ProposalRejectionModal";
 import { useQueryClient } from "@tanstack/react-query";
 
+interface HandleProdutoMusicalContratante {
+	produtoMusicalContratanteId: number | null;
+	senderType: 2 | 1;
+}
+
 interface ContractSignaturePageProps {
 	identificadorUnico: string;
 }
@@ -51,6 +56,18 @@ export const ContractSignaturePage = ({
 		isLoading,
 		error,
 	} = useProposalById(identificadorUnico || "");
+
+	console.log("1 - proposal...:", proposal);
+	console.log("1 - produtoMusicalId:...", proposal?.produtoMusical.id);
+	console.log("1 - contratanteId:...", proposal?.contratante.id || 0);
+	console.log(
+		"1 - produtoMusicalContratanteId:...",
+		proposal
+			? proposal?.produtoMusicalContratante.id > 0
+				? proposal?.produtoMusicalContratante.id
+				: null
+			: null
+	);
 
 	const { user } = useAuthStore();
 	const { data: pdfUrl } = useContractPDF(identificadorUnico || "");
@@ -106,6 +123,19 @@ export const ContractSignaturePage = ({
 		}
 	};
 
+	const handleProdutoMusicalContratante =
+		useCallback((): HandleProdutoMusicalContratante => {
+			const produtoMusicalContratanteId = proposal
+				? proposal?.produtoMusicalContratante.id > 0
+					? proposal?.produtoMusicalContratante.id
+					: null
+				: null;
+
+			const senderType = produtoMusicalContratanteId ? 2 : 1;
+
+			return { produtoMusicalContratanteId, senderType };
+		}, [proposal]);
+
 	const handlePaidSign = async (proposalId: number) => {
 		try {
 			setIsLoadingPaidSign(true);
@@ -114,10 +144,16 @@ export const ContractSignaturePage = ({
 				status: "sinalPago",
 			});
 
+			const { produtoMusicalContratanteId, senderType } =
+				handleProdutoMusicalContratante();
+
 			sendStatusMessage({
 				type: "proposalPaidSign",
-				recipientId: proposal?.produtoMusical.id || 0,
-				recipientName: proposal?.produtoMusical.nome,
+				produtoMusicalId: proposal?.produtoMusical.id || 0,
+				produtoMusicalName: proposal?.produtoMusical.nome || "",
+				produtoMusicalContratanteId,
+				senderType,
+				contratanteId: proposal?.contratante.id || 0,
 				link: entityLinks.proposalTab(proposal?.id || 0),
 				errorMessage: "Erro ao enviar sua requisição",
 				payload: {},
@@ -146,10 +182,16 @@ export const ContractSignaturePage = ({
 					status: "cancelado",
 				});
 
+				const { produtoMusicalContratanteId, senderType } =
+					handleProdutoMusicalContratante();
+
 				sendStatusMessage({
 					type: "proposalCanceled",
-					recipientId: proposal?.produtoMusical.id || 0,
-					recipientName: proposal?.produtoMusical.nome,
+					produtoMusicalId: proposal?.produtoMusical.id || 0,
+					produtoMusicalName: proposal?.produtoMusical.nome || "",
+					contratanteId: proposal?.contratante.id || 0,
+					produtoMusicalContratanteId,
+					senderType,
 					link: entityLinks.proposalTab(proposal?.id || 0),
 
 					errorMessage: "Erro ao enviar requisição",
@@ -169,6 +211,7 @@ export const ContractSignaturePage = ({
 			sendStatusMessage,
 			proposal,
 			handleInvalidateProposalQuery,
+			handleProdutoMusicalContratante,
 		]
 	);
 
@@ -180,10 +223,16 @@ export const ContractSignaturePage = ({
 				status: "aceito",
 			});
 
+			const { produtoMusicalContratanteId, senderType } =
+				handleProdutoMusicalContratante();
+
 			sendStatusMessage({
 				type: "proposalAccepted",
-				recipientId: proposal?.produtoMusical.id || 0,
-				recipientName: proposal?.produtoMusical.nome,
+				produtoMusicalId: proposal?.produtoMusical.id || 0,
+				produtoMusicalName: proposal?.produtoMusical.nome || "",
+				contratanteId: proposal?.contratante.id || 0,
+				produtoMusicalContratanteId,
+				senderType,
 				link: entityLinks.proposalTab(proposal?.id || 0),
 
 				errorMessage: "Erro ao enviar solicitação orçamento",

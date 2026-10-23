@@ -13,7 +13,7 @@ export const useMessagesUI = ({
 				const searchLower = searchQuery.toLowerCase();
 
 				return (
-					conversation.participanteNome.toLowerCase().includes(searchLower) ||
+					conversation.produtoMusicalNome.toLowerCase().includes(searchLower) ||
 					conversation.ultimaMensagem?.conteudo
 						.toLowerCase()
 						.includes(searchLower)

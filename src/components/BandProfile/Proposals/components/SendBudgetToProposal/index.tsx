@@ -9,7 +9,6 @@ import {
 } from "../../../../ui/dialog";
 import { useCreateProposal } from "../../../../../hooks/useProposals";
 import { ProfileIncompleteModal } from "../../../../ui/ProfileIncompleteModal/ProfileIncompleteModal";
-import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useBudgetState } from "../../hooks/useBudgetState";
 import { useBudgetForm } from "../../hooks/useBudgetForm";
 import { useBudgetSubmit } from "../../hooks/useBudgetSubmit";
@@ -19,11 +18,10 @@ import { ProposalFormFields } from "../ProposalFormFields";
 interface SendBudgetToProposalProps {
 	isOpen: boolean;
 	onClose: () => void;
-	recipientId?: number; // Proposal recipient ID (optional for context)
-	contractorId?: number;
-	contractorName?: string;
-	conversationId?: number; // Conversation ID for sending a message
-	onBudgetSent?: (budgetDetails: string) => Promise<void>; // Callback to send a message after the proposal
+	contractorId: number;
+	musicalProductId: number | null;
+	musicalProductContractorId: number | null;
+	conversationId?: number;
 	budget?: CreateProposalForm;
 }
 
@@ -31,17 +29,11 @@ export const SendBudgetToProposal = ({
 	isOpen,
 	onClose,
 	contractorId,
-	contractorName,
 	conversationId,
-	onBudgetSent,
+	musicalProductContractorId,
+	musicalProductId,
 	budget,
 }: SendBudgetToProposalProps) => {
-	// Use the currently active musical product
-	const { activeProduct } = useMusicalProductStore();
-	const userProductId = activeProduct?.id
-		? Number(activeProduct.id)
-		: undefined;
-
 	const createProposalMutation = useCreateProposal();
 
 	const {
@@ -66,7 +58,6 @@ export const SendBudgetToProposal = ({
 	} = useBudgetForm({
 		budget,
 		contractorId,
-		contractorName,
 		setHasDefineEventTime,
 	});
 	const { handleSubmit } = form;
@@ -78,17 +69,13 @@ export const SendBudgetToProposal = ({
 	};
 
 	const { onSubmit } = useBudgetSubmit({
-		eventTypes,
 		handleClose,
-		paymentConditions,
-		paymentMethods,
-		budget,
-		setShowProfileIncompleteModal,
 		contractorId,
 		conversationId,
-		onBudgetSent,
-		userProductId,
+		musicalProductId,
 		hasDefineEventTime,
+		musicalProductContractorId,
+		setShowProfileIncompleteModal,
 	});
 
 	const toggleSection = (section: keyof typeof expandedSections) => {
@@ -131,16 +118,16 @@ export const SendBudgetToProposal = ({
 
 					<DialogFooter className="gap-2">
 						<Button type="button" variant="secondary" onClick={handleClose}>
-							Cancelar
+							Cancela
 						</Button>
 						<Button
 							type="submit"
-							disabled={createProposalMutation.isPending || !userProductId}
+							disabled={createProposalMutation.isPending || !musicalProductId}
 							className="bg-primary-600 hover:bg-primary-700"
 						>
 							{createProposalMutation.isPending
 								? "Enviando..."
-								: !userProductId
+								: !musicalProductId
 									? "Sem produto musical"
 									: "Enviar Proposta"}
 						</Button>

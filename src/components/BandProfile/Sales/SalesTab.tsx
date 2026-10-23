@@ -70,6 +70,11 @@ import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMess
 import { entityLinks } from "@/features/message/utils/messageTemplates";
 import { showApiError } from "@/utils/showApiError";
 
+interface HandleProdutoMusicalContratante {
+	produtoMusicalContratanteId: number;
+	senderType: 2 | 1;
+}
+
 interface AbaVendasProps {
 	productId?: number;
 }
@@ -156,6 +161,23 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 		[filteredProposals?.data]
 	);
 
+	const handleCounterProposal = () => {
+		setIsProposalModalOpen(true);
+	};
+
+	const handleProdutoMusicalContratante =
+		useCallback((): HandleProdutoMusicalContratante => {
+			const produtoMusicalContratanteId = proposalDetails
+				? proposalDetails?.produtoMusicalContratante.id > 0
+					? proposalDetails?.produtoMusicalContratante.id
+					: 0
+				: 0;
+
+			const senderType = produtoMusicalContratanteId ? 2 : 1;
+
+			return { produtoMusicalContratanteId, senderType };
+		}, [proposalDetails]);
+
 	const handlePaidSign = async (proposalId: number) => {
 		try {
 			setIsLoadingPaidSign(true);
@@ -164,10 +186,16 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 				status: "sinalPago",
 			});
 
+			const { produtoMusicalContratanteId, senderType } =
+				handleProdutoMusicalContratante();
+
 			sendStatusMessage({
 				type: "proposalPaidSign",
-				recipientId: proposalDetails?.produtoMusical.id || 0,
-				recipientName: proposalDetails?.produtoMusical.nome,
+				produtoMusicalId: proposalDetails?.produtoMusical.id || 0,
+				produtoMusicalName: proposalDetails?.produtoMusical.nome || "",
+				produtoMusicalContratanteId,
+				senderType,
+				contratanteId: proposalDetails?.contratante.id || 0,
 				link: entityLinks.proposalTab(proposalDetails?.id || 0),
 				errorMessage: "Erro ao enviar sua requisição",
 				payload: {},
@@ -177,10 +205,6 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 		} finally {
 			setIsLoadingPaidSign(false);
 		}
-	};
-
-	const handleCounterProposal = () => {
-		setIsProposalModalOpen(true);
 	};
 
 	const handleCancelProposal = useCallback(
@@ -197,10 +221,16 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 					status: "cancelado",
 				});
 
+				const { produtoMusicalContratanteId, senderType } =
+					handleProdutoMusicalContratante();
+
 				sendStatusMessage({
 					type: "proposalCanceled",
-					recipientId: proposalDetails?.produtoMusical.id || 0,
-					recipientName: proposalDetails?.produtoMusical.nome,
+					produtoMusicalId: proposalDetails?.produtoMusical.id || 0,
+					produtoMusicalName: proposalDetails?.produtoMusical.nome || "",
+					contratanteId: proposalDetails?.contratante.id || 0,
+					produtoMusicalContratanteId,
+					senderType,
 					link: entityLinks.proposalTab(proposalDetails?.id || 0),
 
 					errorMessage: "Erro ao enviar requisição",
@@ -212,7 +242,12 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 				setIsLoadingCancel(false);
 			}
 		},
-		[proposalDetails, sendStatusMessage, updateStatusMutation]
+		[
+			proposalDetails,
+			sendStatusMessage,
+			updateStatusMutation,
+			handleProdutoMusicalContratante,
+		]
 	);
 
 	const tableData: EventsTableSaleData =
@@ -355,7 +390,7 @@ export const SalesTab = ({ productId }: AbaVendasProps) => {
 					setIsProposalModalOpen(false);
 					setProposalDetails(null);
 				}}
-				recipientId={currentProductId}
+				contractorId={currentProductId || 0}
 			/>
 
 			<ProposalDetailsModal
