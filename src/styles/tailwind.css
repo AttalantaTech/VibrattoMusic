@@ -15,6 +15,22 @@
 	}
 }
 
+/* iOS Safari zooms into any text field under 16px when it gets focus, and the
+   user has to pinch back out. Touch screens get 16px in every field (including
+   the rich text editor); !important beats text-sm/text-xs utilities. Desktop
+   keeps the original sizes. Don't fix this with maximum-scale=1 in the
+   viewport: it blocks pinch zoom, which people with low vision rely on */
+@media (pointer: coarse) {
+	input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(
+			[type="file"]
+		):not([type="color"]),
+	textarea,
+	select,
+	.ql-editor {
+		font-size: 16px !important;
+	}
+}
+
 /* controls the RichTextEditorProps component */
 .rte-wrapper .ql-container {
 	@apply h-full max-h-full;
