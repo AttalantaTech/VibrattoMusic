@@ -38,7 +38,7 @@ export const GenericTable = <T,>({
 	return (
 		<>
 			<div className="w-full min-w-0 max-w-full py-4">
-				<div className="overflow-hidden rounded-lg shadow ring-1 ring-black ring-opacity-5">
+				<div className="overflow-hidden rounded-lg shadow ring-1 ring-black ring-opacity-5 border-2 border-gray-100">
 					<div className="overflow-x-auto">
 						<table className="w-full min-w-[800px] table-auto divide-y divide-gray-300">
 							<thead className="bg-gray-50">

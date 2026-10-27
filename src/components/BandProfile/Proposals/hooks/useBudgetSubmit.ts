@@ -1,7 +1,7 @@
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { useAuthStore } from "@/store/authStore";
 import { toast } from "sonner";
-import type { CreateProposalRequest } from "@/api/types";
+import type { CreateProposalRequest, FilterOption } from "@/api/types";
 import { useCreateProposal } from "@/hooks/useProposals";
 import { ensureHHMMSS, toBR } from "@/utils";
 import type { CreateProposalForm } from "../schemas/proposal.schema";
@@ -9,6 +9,7 @@ import { addDays, format, isBefore } from "date-fns";
 import { showApiError } from "@/utils/showApiError";
 import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
+import { resolveStatusSender } from "@/features/message/utils/resolveStatusSender";
 
 interface UseBudgetSubmitProps {
 	setShowProfileIncompleteModal: (value: boolean) => void;
@@ -18,6 +19,7 @@ interface UseBudgetSubmitProps {
 	musicalProductContractorId: number | null;
 	conversationId?: number;
 	hasDefineEventTime: boolean;
+	eventTypes: Array<FilterOption>;
 }
 
 const formatDate = (dateString: string) => {
@@ -77,6 +79,7 @@ export const useBudgetSubmit = ({
 	hasDefineEventTime,
 	conversationId,
 	musicalProductContractorId,
+	eventTypes,
 }: UseBudgetSubmitProps) => {
 	const { user } = useAuthStore();
 	const { isProfileComplete, refetch: refetchProfile } = useProfileStatus();
@@ -183,18 +186,28 @@ export const useBudgetSubmit = ({
 				data: budgetData,
 			});
 
+			const eventTypeLabel =
+				eventTypes.find((event) => event.Id === finalFormData.idTipoEvento)
+					?.Nome || "";
+
 			sendStatusMessage({
 				type: "proposalRequested",
+				...resolveStatusSender(
+					{
+						produtoMusicalId: musicalProductId,
+						contratanteId: finalFormData.idContratante,
+						produtoMusicalContratanteId: musicalProductContractorId,
+					},
+					"contratado"
+				),
+				conversationId,
 				produtoMusicalId: musicalProductId,
 				produtoMusicalName: finalFormData.nomeContratante || "",
-				contratanteId: finalFormData.idContratante,
-				produtoMusicalContratanteId: musicalProductContractorId,
-				senderType: musicalProductContractorId ? 2 : 1,
 				link: proposalResponse.proposta
 					? entityLinks.proposalTab(proposalResponse.proposta)
 					: undefined,
 				payload: {
-					eventTypeLabel: budgetData.dataEvento || "-",
+					eventTypeLabel,
 					description: budgetData.descricao,
 					date: formatDate(budgetData.dataEvento),
 					startTime: hasDefineEventTime ? budgetData.horaInicio : null,

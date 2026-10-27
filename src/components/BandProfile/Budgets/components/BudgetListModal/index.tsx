@@ -145,7 +145,7 @@ export const BudgetListModal = ({
 				if (!open) onClose(false);
 			}}
 		>
-			<DialogContent>
+			<DialogContent className="max-w-[900px] max-h-[85vh] overflow-auto">
 				<DialogHeader>
 					<DialogTitle>Solicitação de Orçamentos</DialogTitle>
 					<DialogDescription>

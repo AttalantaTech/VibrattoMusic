@@ -41,10 +41,8 @@ const MessagesTab = () => {
 						setIsProposalModalOpen?.(false);
 					}}
 					conversationId={selectedConversation.id}
-					contractorId={
-						selectedConversation.produtoMusicalContratanteId ??
-						selectedConversation.contratanteId
-					}
+					contractorId={selectedConversation.contratanteId ?? undefined}
+					contractorProductId={selectedConversation.produtoMusicalContratanteId}
 					contractorName={
 						selectedConversation.produtoMusicalContratanteNome ??
 						selectedConversation.contratanteNome

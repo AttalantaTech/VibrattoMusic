@@ -22,7 +22,8 @@ import { ProposalFormFields } from "../ProposalFormFields";
 interface SendProposalModalProps {
 	isOpen: boolean;
 	onClose: () => void;
-	contractorId: number;
+	contractorId?: number;
+	contractorProductId?: number | null;
 	contractorName?: string;
 	conversationId?: number; // Conversation ID for sending a message
 	proposal?: ProposalResponse | null;
@@ -32,6 +33,7 @@ export const SendProposalModal = ({
 	isOpen,
 	onClose,
 	contractorId,
+	contractorProductId,
 	contractorName,
 	conversationId,
 	proposal,
@@ -85,6 +87,7 @@ export const SendProposalModal = ({
 		proposal,
 		setShowProfileIncompleteModal,
 		contractorId,
+		contractorProductId,
 		conversationId,
 		userProductId,
 		hasDefineEventTime,

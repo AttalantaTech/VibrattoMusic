@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
 	FileText,
@@ -22,63 +22,30 @@ import { ProposalStatusCard } from "@/components/BandProfile/Proposals/component
 import type { unifiedStatusConfig } from "@/components/BandProfile/Sales/types/SalesTypes";
 import { useAuthStore } from "@/store/authStore";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
+import {
+	proposalParties,
+	resolveStatusSender,
+} from "@/features/message/utils/resolveStatusSender";
 import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
 import { showApiError } from "@/utils/showApiError";
-import type { ProposalResponse } from "@/api/types";
+import type { ProposalResponse, User } from "@/api/types";
 import { ProposalRejectionModal } from "@/components/BandProfile/Proposals/components/ProposalRejectionModal";
 import { useQueryClient } from "@tanstack/react-query";
-
-interface HandleProdutoMusicalContratante {
-	produtoMusicalContratanteId: number | null;
-	senderType: 2 | 1;
-}
+import type { Conversation } from "@/api/services/messages/types";
+import { useConversations } from "@/hooks/useMessaging";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 interface ContractSignaturePageProps {
 	identificadorUnico: string;
 }
 
-export const ContractSignaturePage = ({
-	identificadorUnico,
-}: ContractSignaturePageProps) => {
-	const navigate = useNavigate();
-	const queryClient = useQueryClient();
-
-	const [downloading, setDownloading] = useState(false);
-	const [isLoadingPaidSign, setIsLoadingPaidSign] = useState(false);
-	const [isLoadingCancel, setIsLoadingCancel] = useState(false);
-	const [proposalToReject, setProposalToReject] =
-		useState<ProposalResponse | null>(null);
-	const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
-	const [isLoadingAccept, setIsLoadingAccept] = useState(false);
-
-	const {
-		data: proposal,
-		isLoading,
-		error,
-	} = useProposalById(identificadorUnico || "");
-
-	console.log("1 - proposal...:", proposal);
-	console.log("1 - produtoMusicalId:...", proposal?.produtoMusical.id);
-	console.log("1 - contratanteId:...", proposal?.contratante.id || 0);
-	console.log(
-		"1 - produtoMusicalContratanteId:...",
-		proposal
-			? proposal?.produtoMusicalContratante.id > 0
-				? proposal?.produtoMusicalContratante.id
-				: null
-			: null
-	);
-
-	const { user } = useAuthStore();
-	const { data: pdfUrl } = useContractPDF(identificadorUnico || "");
-	const { data: contractSections } = useContractSections(proposal?.id || 0);
-	const { data: contractPdfUrl, isLoading: pdfLoading } = useContractPDF(
-		proposal?.identificadorUnico || ""
-	);
-
-	const updateStatusMutation = useUpdateProposalStatus();
-	const { sendStatusMessage } = useSendStatusMessage();
-
+const handleStatus = ({
+	proposal,
+	user,
+}: {
+	proposal: ProposalResponse | undefined;
+	user: User | null;
+}) => {
 	const statusKey = (
 		typeof proposal?.status === "object"
 			? proposal.status.nome
@@ -89,13 +56,83 @@ export const ContractSignaturePage = ({
 	const isContractor = user?.id === proposal?.contratante.id;
 	const isAcceptedStatus = statusKey === "Aceita";
 	const needsContractorPaidSign =
-		!isContractor && statusKey === "Aceita" && !proposal?.assinaturaContratado;
+		!isContractor && isAcceptedStatus && !proposal?.assinaturaContratado;
 
 	const signedContract =
 		proposal?.status.nome === "EnvioAssinatura" ||
 		proposal?.status.nome === "EnvioDocumento" ||
 		proposal?.status.nome === "EnvioSignatarios" ||
 		proposal?.status.nome === "ContratoAssinado";
+
+	return {
+		isWaitingForResponse,
+		isContractor,
+		isAcceptedStatus,
+		needsContractorPaidSign,
+		signedContract,
+	};
+};
+
+export const ContractSignaturePage = ({
+	identificadorUnico,
+}: ContractSignaturePageProps) => {
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
+
+	const { activeProduct } = useMusicalProductStore();
+	const { user } = useAuthStore();
+
+	const {
+		data: proposal,
+		isLoading,
+		error,
+	} = useProposalById(identificadorUnico || "");
+
+	const { data: conversationsData } = useConversations({
+		IdContratante: activeProduct?.id ? null : user?.id,
+		IdProdutoMusical: activeProduct?.id || null,
+	});
+	const updateStatusMutation = useUpdateProposalStatus();
+	const { sendStatusMessage } = useSendStatusMessage();
+
+	const { data: pdfUrl } = useContractPDF(identificadorUnico || "");
+	const { data: contractSections } = useContractSections(proposal?.id || 0);
+	const { data: contractPdfUrl, isLoading: pdfLoading } = useContractPDF(
+		proposal?.identificadorUnico || ""
+	);
+
+	const [downloading, setDownloading] = useState(false);
+	const [isLoadingPaidSign, setIsLoadingPaidSign] = useState(false);
+	const [isLoadingCancel, setIsLoadingCancel] = useState(false);
+	const [proposalToReject, setProposalToReject] =
+		useState<ProposalResponse | null>(null);
+	const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
+	const [isLoadingAccept, setIsLoadingAccept] = useState(false);
+
+	const {
+		isWaitingForResponse,
+		isContractor,
+		isAcceptedStatus,
+		needsContractorPaidSign,
+		signedContract,
+	} = handleStatus({ proposal, user });
+
+	const conversation = useMemo<Conversation | null>(() => {
+		if (!proposal || !conversationsData) return null;
+
+		const { produtoMusicalContratanteId, contratanteId } =
+			proposalParties(proposal);
+
+		return (
+			conversationsData.find((c) => {
+				if (c.produtoMusicalId !== proposal.produtoMusical.id) return false;
+
+				return produtoMusicalContratanteId
+					? c.produtoMusicalContratanteId === produtoMusicalContratanteId
+					: !c.produtoMusicalContratanteId && c.contratanteId === contratanteId;
+			}) ?? null
+		);
+	}, [conversationsData, proposal]);
 
 	const handleInvalidateProposalQuery = useCallback(() => {
 		void queryClient.invalidateQueries({
@@ -123,18 +160,37 @@ export const ContractSignaturePage = ({
 		}
 	};
 
-	const handleProdutoMusicalContratante =
-		useCallback((): HandleProdutoMusicalContratante => {
-			const produtoMusicalContratanteId = proposal
-				? proposal?.produtoMusicalContratante.id > 0
-					? proposal?.produtoMusicalContratante.id
-					: null
-				: null;
+	const handleAcceptProposal = async (proposalId: number) => {
+		try {
+			setIsLoadingAccept(true);
+			await updateStatusMutation.mutateAsync({
+				proposalId: proposalId,
+				status: "aceito",
+			});
 
-			const senderType = produtoMusicalContratanteId ? 2 : 1;
-
-			return { produtoMusicalContratanteId, senderType };
-		}, [proposal]);
+			if (proposal) {
+				sendStatusMessage({
+					type: "proposalAccepted",
+					...resolveStatusSender(proposalParties(proposal), "contratante"),
+					conversationId: conversation?.id,
+					produtoMusicalName: proposal.produtoMusical.nome,
+					link: entityLinks.proposalTab(proposal.id),
+					errorMessage: "Erro ao enviar solicitação orçamento",
+					payload: {},
+					onSuccess() {
+						handleInvalidateProposalQuery();
+					},
+				});
+			}
+		} catch (error) {
+			showApiError(
+				error,
+				"Erro ao tentar aceitar a proposta. Tente novamente."
+			);
+		} finally {
+			setIsLoadingAccept(false);
+		}
+	};
 
 	const handlePaidSign = async (proposalId: number) => {
 		try {
@@ -144,23 +200,20 @@ export const ContractSignaturePage = ({
 				status: "sinalPago",
 			});
 
-			const { produtoMusicalContratanteId, senderType } =
-				handleProdutoMusicalContratante();
-
-			sendStatusMessage({
-				type: "proposalPaidSign",
-				produtoMusicalId: proposal?.produtoMusical.id || 0,
-				produtoMusicalName: proposal?.produtoMusical.nome || "",
-				produtoMusicalContratanteId,
-				senderType,
-				contratanteId: proposal?.contratante.id || 0,
-				link: entityLinks.proposalTab(proposal?.id || 0),
-				errorMessage: "Erro ao enviar sua requisição",
-				payload: {},
-				onSuccess() {
-					handleInvalidateProposalQuery();
-				},
-			});
+			if (proposal) {
+				sendStatusMessage({
+					type: "proposalPaidSign",
+					...resolveStatusSender(proposalParties(proposal), "contratado"),
+					conversationId: conversation?.id,
+					produtoMusicalName: proposal.produtoMusical.nome,
+					link: entityLinks.proposalTab(proposal.id),
+					errorMessage: "Erro ao enviar sua requisição",
+					payload: {},
+					onSuccess() {
+						handleInvalidateProposalQuery();
+					},
+				});
+			}
 		} catch (error) {
 			showApiError(error, "Erro ao pagar o sinal. Tente novamente.");
 		} finally {
@@ -182,24 +235,20 @@ export const ContractSignaturePage = ({
 					status: "cancelado",
 				});
 
-				const { produtoMusicalContratanteId, senderType } =
-					handleProdutoMusicalContratante();
-
-				sendStatusMessage({
-					type: "proposalCanceled",
-					produtoMusicalId: proposal?.produtoMusical.id || 0,
-					produtoMusicalName: proposal?.produtoMusical.nome || "",
-					contratanteId: proposal?.contratante.id || 0,
-					produtoMusicalContratanteId,
-					senderType,
-					link: entityLinks.proposalTab(proposal?.id || 0),
-
-					errorMessage: "Erro ao enviar requisição",
-					payload: {},
-					onSuccess() {
-						handleInvalidateProposalQuery();
-					},
-				});
+				if (proposal) {
+					sendStatusMessage({
+						type: "proposalCanceled",
+						...resolveStatusSender(proposalParties(proposal), "contratado"),
+						conversationId: conversation?.id,
+						produtoMusicalName: proposal.produtoMusical.nome,
+						link: entityLinks.proposalTab(proposal.id),
+						errorMessage: "Erro ao enviar requisição",
+						payload: {},
+						onSuccess() {
+							handleInvalidateProposalQuery();
+						},
+					});
+				}
 			} catch (error) {
 				showApiError(error, "Error updating proposal status:");
 			} finally {
@@ -211,45 +260,9 @@ export const ContractSignaturePage = ({
 			sendStatusMessage,
 			proposal,
 			handleInvalidateProposalQuery,
-			handleProdutoMusicalContratante,
+			conversation,
 		]
 	);
-
-	const handleAcceptProposal = async (proposalId: number) => {
-		try {
-			setIsLoadingAccept(true);
-			await updateStatusMutation.mutateAsync({
-				proposalId: proposalId,
-				status: "aceito",
-			});
-
-			const { produtoMusicalContratanteId, senderType } =
-				handleProdutoMusicalContratante();
-
-			sendStatusMessage({
-				type: "proposalAccepted",
-				produtoMusicalId: proposal?.produtoMusical.id || 0,
-				produtoMusicalName: proposal?.produtoMusical.nome || "",
-				contratanteId: proposal?.contratante.id || 0,
-				produtoMusicalContratanteId,
-				senderType,
-				link: entityLinks.proposalTab(proposal?.id || 0),
-
-				errorMessage: "Erro ao enviar solicitação orçamento",
-				payload: {},
-				onSuccess() {
-					handleInvalidateProposalQuery();
-				},
-			});
-		} catch (error) {
-			showApiError(
-				error,
-				"Erro ao tentar aceitar a proposta. Tente novamente."
-			);
-		} finally {
-			setIsLoadingAccept(false);
-		}
-	};
 
 	const handleRejectProposal = useCallback((proposal: ProposalResponse) => {
 		if (!proposal) return;
@@ -412,7 +425,7 @@ export const ContractSignaturePage = ({
 				</div>
 
 				{isContractor && proposal.status.nome === "Aceita" && (
-					<div className="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
+					<div className="my-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
 						<div className="flex gap-3">
 							<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
 							<div className="text-sm text-primary-800">
@@ -431,7 +444,8 @@ export const ContractSignaturePage = ({
 					</div>
 				)}
 
-				{proposal.status.nome === "AguardandoAssinatura" && (
+				{proposal.status.nome === "AguardandoAssinatura" ||
+				proposal.status.nome === "SinalPago" ? (
 					<div className="my-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
 						<div className="flex gap-3">
 							<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
@@ -456,7 +470,7 @@ export const ContractSignaturePage = ({
 							</div>
 						</div>
 					</div>
-				)}
+				) : null}
 
 				{/* Action Buttons */}
 				<div className="bg-white rounded-lg shadow-sm p-6">

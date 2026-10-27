@@ -35,15 +35,17 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 			return;
 		}
 
-		console.log("produtoMusicalId:...", participantId);
-		console.log("activeProduct:...", activeProduct);
+		// Whoever starts the conversation is the contratante side (an active
+		// musical product or the logged-in user) and talks to the hired product.
+		const isProductContractor = Boolean(activeProduct?.id);
 
 		startConversation(
 			{
 				produtoMusicalId: participantId,
-				contratanteId: 0,
+				contratanteId: null,
 				conteudo: message,
-				senderType: activeProduct?.id ? 2 : 1,
+				senderType: isProductContractor ? 2 : 1,
+				recipient: "produtoMusical",
 				produtoMusicalContratanteId: activeProduct?.id || null,
 			},
 			{

@@ -6,9 +6,54 @@ import type {
 	PaginatedResponse,
 } from "../../types";
 import { ConversationStorage } from "../../../utils/conversationStorage";
-import type { Conversation, Message, StartConversation } from "./types";
+import type {
+	ChatRecipient,
+	Conversation,
+	Message,
+	StartConversation,
+} from "./types";
 import type { ChatUser } from "@/contexts/MessagesContext/types";
 import { musicalProductService } from "@/api";
+
+type RecipientIds = Pick<
+	StartConversation,
+	"contratanteId" | "produtoMusicalId" | "produtoMusicalContratanteId"
+>;
+
+type RecipientPayload = {
+	IdProdutoMusical: number | null;
+	IdProdutoMusicalContratante: number | null;
+};
+
+/**
+ * chat/obter and chat/mensagem always carry the three id fields, but only
+ * the one of who we are talking to (the recipient) is filled; the other two
+ * go as null. The sender is identified by the token.
+ */
+const buildRecipientPayload = (
+	recipient: ChatRecipient,
+	ids: RecipientIds
+): RecipientPayload => {
+	const idByRecipient = {
+		contratante: ids.contratanteId,
+		produtoMusical: ids.produtoMusicalId,
+		produtoContratante: ids.produtoMusicalContratanteId,
+	} as const;
+
+	const id = idByRecipient[recipient];
+
+	if (!id) {
+		throw new Error(
+			`startConversation: missing id for recipient "${recipient}"`
+		);
+	}
+
+	return {
+		IdProdutoMusical: idByRecipient.produtoMusical,
+		IdProdutoMusicalContratante:
+			recipient === "produtoMusical" ? idByRecipient.produtoContratante : null,
+	};
+};
 
 export class MessagingService {
 	public constructor(private readonly apiClient: ApiClient) {}
@@ -116,13 +161,32 @@ export class MessagingService {
 	 * Get all conversations for the current user
 	 * Uses the direct API endpoint chat/listaConversas
 	 */
-	public async getConversations(
-		IdProdutoMusical?: number | null,
-		parameters?: PaginationParameters
-	): Promise<Array<Conversation>> {
+	public async getConversations({
+		parameters,
+		IdContratante,
+		IdProdutoMusical,
+		IdProdutoMusicalContratante,
+	}: {
+		IdProdutoMusical?: number | null;
+		IdContratante?: number | null;
+		IdProdutoMusicalContratante?: number | null;
+		parameters?: PaginationParameters;
+	}): Promise<Array<Conversation>> {
 		try {
 			const limit = parameters?.limit || 20;
 			const cursorQuery = parameters?.page ? `&_t=${parameters.page}` : "";
+
+			const queryParameters = new URLSearchParams({
+				limit: limit.toString(),
+				...(cursorQuery ? { cursor: cursorQuery } : {}), // ajuste como seu cursorQuery funciona
+				...(IdContratante && { IdContratante: IdContratante.toString() }),
+				...(IdProdutoMusical && {
+					IdProdutoMusical: IdProdutoMusical.toString(),
+				}),
+				...(IdProdutoMusicalContratante && {
+					IdProdutoMusicalContratante: IdProdutoMusicalContratante.toString(),
+				}),
+			});
 
 			const response = await this.apiClient.get<
 				Array<{
@@ -143,11 +207,8 @@ export class MessagingService {
 					numeroMensagensNãoLidasContratado: number;
 					numeroMensagensNãoLidasContratante: number;
 				}>
-			>(`chat/listaConversas?limit=${limit}${cursorQuery}`, {
-				params: {
-					IdProdutoMusical,
-				},
-			});
+			>(`chat/listaConversas?${queryParameters.toString()}`);
+
 			// Ensure response is an array
 			const conversationsData = Array.isArray(response) ? response : [];
 
@@ -251,22 +312,22 @@ export class MessagingService {
 	 */
 	public async startConversation({
 		conteudo,
-		senderType,
+		recipient,
+		conversationId: knownConversationId,
 		contratanteId,
 		produtoMusicalId,
 		produtoMusicalContratanteId,
 	}: StartConversation): Promise<Conversation> {
-		console.log("3 - produtoMusicalId:...", produtoMusicalId);
-		console.log("3 - contratanteId:...", contratanteId);
-		console.log(
-			"3 - produtoMusicalContratanteId:...",
-			produtoMusicalContratanteId
-		);
-
-		const conversationId = await this.apiClient.post<number>("chat/obter", {
-			IdProdutoMusical: produtoMusicalId,
-			IdProdutoMusicalContratante: produtoMusicalContratanteId,
+		const recipientPayload = buildRecipientPayload(recipient, {
+			contratanteId,
+			produtoMusicalId,
+			produtoMusicalContratanteId,
 		});
+
+		// Only resolve the conversation when we don't already have its id
+		const conversationId =
+			knownConversationId ||
+			(await this.apiClient.post<number>("chat/obter", recipientPayload));
 
 		// Save conversation ID to localStorage for future retrieval
 		ConversationStorage.saveConversation({
@@ -279,8 +340,14 @@ export class MessagingService {
 		await this.apiClient.post<Message>("chat/mensagem", {
 			IdConversa: conversationId,
 			Conteudo: conteudo,
-			TipoRemetente: senderType,
-			IdProdutoMusical: produtoMusicalId,
+			IdProdutoMusical:
+				recipient === "contratante" || recipient === "produtoContratante"
+					? produtoMusicalId
+					: null,
+			TipoRemetente:
+				recipient === "contratante" || recipient === "produtoContratante"
+					? 2
+					: 1,
 		});
 
 		// Return a minimal conversation object for compatibility

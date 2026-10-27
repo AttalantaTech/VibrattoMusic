@@ -76,6 +76,7 @@ export const SendBudgetToProposal = ({
 		hasDefineEventTime,
 		musicalProductContractorId,
 		setShowProfileIncompleteModal,
+		eventTypes,
 	});
 
 	const toggleSection = (section: keyof typeof expandedSections) => {

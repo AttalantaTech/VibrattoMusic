@@ -35,6 +35,10 @@ import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
 import { Button } from "@/components/ui/Button/Button";
 import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
+import {
+	proposalParties,
+	resolveStatusSender,
+} from "@/features/message/utils/resolveStatusSender";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface ProposalRejectionModalProps {
@@ -85,6 +89,14 @@ export const ProposalRejectionModal = ({
 		setStep("confirm");
 	};
 
+	const handleClose = () => {
+		setStep("reason");
+		setSelectedReasonId(null);
+		setAdditionalComments("");
+		setValidationError(null);
+		onClose();
+	};
+
 	const handleInvalidateProposalQuery = useCallback(() => {
 		void queryClient.invalidateQueries({
 			queryKey: PROPOSAL_QUERY_KEYS.byId(proposal?.identificadorUnico || ""),
@@ -115,23 +127,12 @@ export const ProposalRejectionModal = ({
 				acceptsCounterProposal,
 			});
 
-			const produtoMusicalContratanteId = proposal
-				? proposal?.produtoMusicalContratante.id > 0
-					? proposal?.produtoMusicalContratante.id
-					: 0
-				: 0;
-
-			const senderType = produtoMusicalContratanteId ? 2 : 1;
-
 			sendStatusMessage({
 				type: "proposalRejected",
-				produtoMusicalId: proposal?.produtoMusical.id || 0,
-				produtoMusicalName: proposal?.produtoMusical.nome || "",
-				contratanteId: proposal.contratante.id || 0,
-				produtoMusicalContratanteId,
-				senderType,
-				link: entityLinks.proposalTab(proposal?.id || 0),
-
+				...resolveStatusSender(proposalParties(proposal), "contratante"),
+				produtoMusicalId: proposal.produtoMusical.id,
+				produtoMusicalName: proposal.produtoMusical.nome,
+				link: entityLinks.proposalTab(proposal.id),
 				errorMessage: "Erro ao enviar solicitação orçamento",
 				payload: { reason: selectedReason?.Nome || "-" },
 				onSuccess() {
@@ -144,14 +145,6 @@ export const ProposalRejectionModal = ({
 			console.error("Error rejecting proposal:", error);
 			setStep("error");
 		}
-	};
-
-	const handleClose = () => {
-		setStep("reason");
-		setSelectedReasonId(null);
-		setAdditionalComments("");
-		setValidationError(null);
-		onClose();
 	};
 
 	const handleSuccessClose = () => {

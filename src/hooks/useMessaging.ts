@@ -33,18 +33,31 @@ export const messagingKeys = {
 /**
  * Hook to get conversations
  */
-export const useConversations = (
-	IdProdutoMusical: number | null | undefined,
-	parameters?: PaginationParameters,
-	enabled: boolean = true
-) => {
+export const useConversations = ({
+	parameters,
+	IdContratante,
+	IdProdutoMusical,
+	IdProdutoMusicalContratante,
+	enabled = true,
+}: {
+	IdProdutoMusical?: number | null;
+	IdContratante?: number | null;
+	IdProdutoMusicalContratante?: number | null;
+	parameters?: PaginationParameters;
+	enabled?: boolean;
+}) => {
 	return useQuery<Array<Conversation>>({
 		queryKey: [...messagingKeys.conversations(), IdProdutoMusical],
 		queryFn: async () => {
 			if (!IdProdutoMusical) {
-				return messagingService.getConversations(undefined, parameters);
+				return messagingService.getConversations({ parameters });
 			}
-			return messagingService.getConversations(IdProdutoMusical, parameters);
+			return messagingService.getConversations({
+				IdContratante,
+				IdProdutoMusical,
+				IdProdutoMusicalContratante,
+				parameters,
+			});
 		},
 		enabled,
 		staleTime: 30 * 1000, // 30 seconds

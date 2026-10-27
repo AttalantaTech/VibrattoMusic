@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { messagingKeys, useStartConversation } from "@/hooks/useMessaging";
+import type { ChatRecipient } from "@/api/services/messages/types";
 import {
 	buildStatusMessage,
 	type MessageLink,
@@ -12,11 +13,14 @@ import {
 
 type SendStatusMessageParameters<K extends StatusMessageType> = {
 	type: K;
-	produtoMusicalId: number;
+	produtoMusicalId: number | null;
 	produtoMusicalName: string;
-	contratanteId: number;
+	contratanteId: number | null;
 	produtoMusicalContratanteId: number | null;
 	senderType: 1 | 2;
+	/** Who we are talking to (decides which single id is sent to the API) */
+	recipient: ChatRecipient;
+	conversationId?: number | null;
 	link?: MessageLink;
 	payload: StatusPayloads[K];
 	successMessage?: string;
@@ -32,11 +36,13 @@ export const useSendStatusMessage = () => {
 
 	const sendStatusMessage = <K extends StatusMessageType>({
 		type,
-		produtoMusicalId,
-		produtoMusicalName,
 		contratanteId,
+		produtoMusicalId,
 		produtoMusicalContratanteId,
+		produtoMusicalName,
 		senderType,
+		recipient,
+		conversationId,
 		link,
 		payload,
 		successMessage,
@@ -56,19 +62,13 @@ export const useSendStatusMessage = () => {
 				contratanteId,
 				conteudo,
 				senderType,
+				recipient,
+				conversationId,
 				produtoMusicalContratanteId,
 			},
 			{
 				onSuccess: () => {
 					if (successMessage) toast.success(successMessage);
-
-					console.log("2 - produtoMusicalId:...", produtoMusicalId);
-					console.log("2 - contratanteId:...", contratanteId);
-					console.log("2 - senderType:...", senderType);
-					console.log(
-						"2 - produtoMusicalContratanteId:...",
-						produtoMusicalContratanteId
-					);
 
 					/** Updates the sidebar with the new message */
 					void queryClient.invalidateQueries({

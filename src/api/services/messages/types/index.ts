@@ -1,9 +1,23 @@
 import type { ChatUser } from "@/contexts/MessagesContext/types";
 
+/**
+ * Who we are talking to. chat/obter and chat/mensagem receive only the id
+ * of the recipient (the sender is identified by the token):
+ * - "contratante": IdContratante
+ * - "produtoMusical": IdProdutoMusical
+ * - "produtoContratante": IdProdutoMusicalContratante
+ */
+export type ChatRecipient =
+	| "contratante"
+	| "produtoMusical"
+	| "produtoContratante";
+
 export interface StartConversation {
 	conteudo: string;
 	senderType: number;
-	contratanteId: number;
+	recipient: ChatRecipient;
+	conversationId?: number | null;
+	contratanteId: number | null;
 	produtoMusicalId: number | null;
 	produtoMusicalContratanteId: number | null;
 }
@@ -24,7 +38,7 @@ export interface Message {
 export interface Conversation {
 	id: number;
 	contratanteNome: string;
-	contratanteId: number;
+	contratanteId: number | null;
 	produtoMusicalContratanteNome: string | null;
 	produtoMusicalContratanteId: number | null;
 	produtoMusicalNome: string;

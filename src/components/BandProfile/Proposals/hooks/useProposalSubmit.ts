@@ -15,13 +15,19 @@ import { addDays, format, isBefore } from "date-fns";
 import { showApiError } from "@/utils/showApiError";
 import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
+import {
+	proposalParties,
+	resolveStatusSender,
+	type ProposalParties,
+} from "@/features/message/utils/resolveStatusSender";
 import { formatDate } from "@/utils/validation";
 
 interface UseProposalSubmitProps {
 	setShowProfileIncompleteModal: (value: boolean) => void;
 	handleClose: () => void;
 	proposal?: ProposalResponse | null;
-	contractorId: number;
+	contractorId?: number;
+	contractorProductId?: number | null;
 	userProductId?: number;
 	conversationId?: number;
 	hasDefineEventTime: boolean;
@@ -77,10 +83,12 @@ export const useProposalSubmit = ({
 	setShowProfileIncompleteModal,
 	proposal,
 	contractorId,
+	contractorProductId,
 	userProductId,
 	conversationId,
 	handleClose,
 	hasDefineEventTime,
+	eventTypes,
 }: UseProposalSubmitProps) => {
 	const { user } = useAuthStore();
 	const { isProfileComplete, refetch: refetchProfile } = useProfileStatus();
@@ -108,6 +116,7 @@ export const useProposalSubmit = ({
 		// Try multiple sources for contractor ID
 		const contractorIdToUse =
 			contractorId ||
+			proposal?.contratante.id ||
 			proposalFormData.idContratante ||
 			user?.id ||
 			getUserIdFromToken();
@@ -131,21 +140,29 @@ export const useProposalSubmit = ({
 			return;
 		}
 
+		const parties: ProposalParties = proposal
+			? proposalParties(proposal)
+			: {
+					produtoMusicalId: userProductId,
+					contratanteId: finalFormData.idContratante,
+					produtoMusicalContratanteId: contractorProductId ?? null,
+				};
+
 		let conversation: Conversation | undefined | null = null;
 
 		if (proposal) {
-			const conversations = await messagingService.getConversations(
-				proposal.produtoMusical.id
-			);
+			const conversations = await messagingService.getConversations({
+				IdProdutoMusical: proposal.produtoMusical.id,
+			});
 
-			conversation = conversations
-				? conversations.find(
-						(c) =>
-							c.produtoMusicalContratanteId ===
-								proposal.produtoMusicalContratante.id ||
-							c.contratanteId === proposal.contratante.id
-					)
-				: null;
+			conversation =
+				conversations.find((c) =>
+					parties.produtoMusicalContratanteId
+						? c.produtoMusicalContratanteId ===
+							parties.produtoMusicalContratanteId
+						: !c.produtoMusicalContratanteId &&
+							c.contratanteId === parties.contratanteId
+				) ?? null;
 		}
 
 		const eventDate = toBR(finalFormData.dataEvento) || "";
@@ -215,29 +232,26 @@ export const useProposalSubmit = ({
 				data,
 			});
 
-			const produtoMusicalContratanteId = proposal
-				? proposal?.produtoMusicalContratante.id > 0
-					? proposal?.produtoMusicalContratante.id
-					: 0
-				: 0;
+			const newValueConversationId = conversation?.id || conversationId;
 
-			const senderType = produtoMusicalContratanteId ? 2 : 1;
+			if (!newValueConversationId) {
+				handleClose();
+				return;
+			}
 
-			console.log("userProductId", userProductId);
-			console.log("produtoMusicalContratanteId", produtoMusicalContratanteId);
+			const eventTypeLabel =
+				eventTypes.find((event) => event.Id === data.idTipoEvento)?.Nome || "";
 
 			sendStatusMessage({
 				type: "proposalRequested",
-				produtoMusicalId: userProductId,
+				...resolveStatusSender(parties, "contratado"),
+				conversationId: newValueConversationId,
 				produtoMusicalName: finalFormData.nomeContratante || "",
-				contratanteId: finalFormData.idContratante,
-				produtoMusicalContratanteId,
-				senderType,
 				link: proposalResponse.proposta
 					? entityLinks.proposalTab(proposalResponse.proposta)
 					: undefined,
 				payload: {
-					eventTypeLabel: data.dataEvento || "-",
+					eventTypeLabel,
 					description: data.descricao,
 					date: formatDate(data.dataEvento),
 					startTime: hasDefineEventTime ? data.horaInicio : null,
@@ -253,8 +267,6 @@ export const useProposalSubmit = ({
 		} catch (error) {
 			showApiError(error, "Erro ao enviar proposta. Tente novamente.");
 		}
-
-		handleClose();
 	};
 
 	return { onSubmit };
