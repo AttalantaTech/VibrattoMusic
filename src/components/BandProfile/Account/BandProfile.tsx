@@ -365,6 +365,7 @@ export const BandProfile = ({
 															) ?? false
 														}
 														isFavoriteLoading={toggleFavoriteMutation.isPending}
+														listOnMobile
 														onProfileClick={() =>
 															navigate({
 																to: "/band/profile/$id",
