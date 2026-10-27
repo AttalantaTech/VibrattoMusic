@@ -52,6 +52,10 @@ export const StepLayout = ({
 		"Agenda",
 	];
 
+	// The 5 steps + "Finalização"
+	const totalSteps = steps.length + 1;
+	const currentStepName = steps[currentStep - 1] ?? "Finalização";
+
 	const [isFinishStepOpen, setIsFinishStepOpen] = useState(false);
 
 	const handleSkipOnboarding = async () => {
@@ -69,18 +73,45 @@ export const StepLayout = ({
 			<main className="flex flex-col items-center justify-center w-full">
 				<div className="flex flex-col w-full items-center justify-start px-4 sm:px-6 md:px-12 lg:px-20 xl:px-28 gap-5 pb-8">
 					{/* Header */}
-					<div className="flex flex-col items-center justify-center w-full gap-3 my-4 md:my-8">
-						<AudioLines className="text-primary-500" size={40} />
+					<div className="flex flex-col items-center justify-center w-full gap-2 sm:gap-3 my-3 md:my-8">
+						<AudioLines
+							className="hidden sm:block text-primary-500"
+							size={40}
+						/>
 						<h1 className="text-gray-900 font-bold text-xl md:text-2xl">
 							Perfil Profissional
 						</h1>
 
 						<div className="max-w-screen-md">
-							<h4 className="text-sm font-normal text-center text-gray-600 sm:text-xl">
+							<h4 className="text-xs font-normal text-center text-gray-600 sm:text-xl">
 								Preencher todos os campos de contrato é obrigatório para
 								realizar o cadastro. Já os dados artísticos da banda podem ser
 								editados posteriormente.
 							</h4>
+						</div>
+					</div>
+
+					<div className="w-full lg:hidden">
+						<div className="flex items-baseline justify-between gap-3 text-sm">
+							<span className="font-semibold text-gray-900">
+								Passo {Math.min(currentStep, totalSteps)} de {totalSteps}
+							</span>
+							<span className="truncate text-gray-600">{currentStepName}</span>
+						</div>
+						<div
+							className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-200"
+							role="progressbar"
+							aria-valuemin={1}
+							aria-valuemax={totalSteps}
+							aria-valuenow={Math.min(currentStep, totalSteps)}
+							aria-label="Progresso do cadastro"
+						>
+							<div
+								className="h-full rounded-full bg-primary-600 transition-all"
+								style={{
+									width: `${(Math.min(currentStep, totalSteps) / totalSteps) * 100}%`,
+								}}
+							/>
 						</div>
 					</div>
 

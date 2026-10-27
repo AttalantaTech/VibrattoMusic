@@ -63,9 +63,9 @@ export default function PublishStep() {
 			headerIcon={<PenSquareIcon className="text-primary-700" size={24} />}
 			headerTitle="Publicar"
 		>
-			<div className="container mx-auto px-4 py-8 max-w-2xl">
+			<div className="container mx-auto px-0 sm:px-4 py-2 sm:py-8 max-w-2xl">
 				<div className="text-center space-y-2 mb-8">
-					<h2 className="text-3xl font-bold text-gray-800">
+					<h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
 						Revisão e Publicação
 					</h2>
 					<p className="text-gray-600">
@@ -82,7 +82,7 @@ export default function PublishStep() {
 					</div>
 				) : (
 					<>
-						<div className="bg-white rounded-lg shadow-md p-6 mb-8">
+						<div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-8">
 							<h3 className="font-semibold text-xl text-gray-700 mb-4">
 								Status dos Passos
 							</h3>
@@ -95,9 +95,9 @@ export default function PublishStep() {
 									return (
 										<div
 											key={step}
-											className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+											className="flex items-center justify-between gap-2 p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
 										>
-											<div className="flex items-center gap-3">
+											<div className="flex min-w-0 items-center gap-3">
 												{isCompleted ? (
 													<CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
 												) : (
@@ -138,7 +138,7 @@ export default function PublishStep() {
 											)}
 
 											{isCompleted && (
-												<span className="text-green-600 text-sm font-medium bg-green-50 px-3 py-1 rounded-full">
+												<span className="shrink-0 text-green-600 text-xs sm:text-sm font-medium bg-green-50 px-2 sm:px-3 py-1 rounded-full">
 													Concluído
 												</span>
 											)}
@@ -149,7 +149,7 @@ export default function PublishStep() {
 						</div>
 
 						{onboardingData && (
-							<div className="border border-gray-200 rounded-lg p-6 mb-8 bg-white shadow-md">
+							<div className="border border-gray-200 rounded-lg p-4 sm:p-6 mb-8 bg-white shadow-md">
 								<h3 className="font-semibold text-xl text-gray-700 mb-4">
 									Resumo
 								</h3>
