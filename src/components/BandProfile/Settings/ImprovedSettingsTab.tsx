@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
 	User,
 	Lock,
@@ -24,6 +24,25 @@ export const ImprovedSettingsTab = () => {
 	const router = useRouter();
 	const { logout } = useAuthStore();
 	const [activeSection, setActiveSection] = useState("profile");
+	const contentRef = useRef<HTMLDivElement>(null);
+
+	// Below lg the content is under the menu, off screen: picking an option
+	// seemed to do nothing, so bring the content into view
+	const selectSection = (id: string) => {
+		setActiveSection(id);
+
+		if (window.innerWidth >= 1024) return;
+		requestAnimationFrame(() => {
+			const top = contentRef.current?.getBoundingClientRect().top;
+			// 80px: fixed header (64px) + a little room
+			if (top !== undefined) {
+				window.scrollTo({
+					top: window.scrollY + top - 80,
+					behavior: "smooth",
+				});
+			}
+		});
+	};
 	// Notification preferences
 	const [notifications, setNotifications] = useState({
 		email: true,
@@ -326,7 +345,7 @@ export const ImprovedSettingsTab = () => {
 							<button
 								key={item.id}
 								onClick={() => {
-									setActiveSection(item.id);
+									selectSection(item.id);
 								}}
 								className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
 									activeSection === item.id
@@ -351,7 +370,9 @@ export const ImprovedSettingsTab = () => {
 			</div>
 
 			{/* Content */}
-			<div className="flex-1">{renderContent()}</div>
+			<div ref={contentRef} className="flex-1">
+				{renderContent()}
+			</div>
 		</div>
 	);
 };
