@@ -14,7 +14,7 @@ import {
 	OwnMessageElement,
 } from "./styles";
 import { useChat } from "@/hooks/useChat";
-import { getParticipantInitials } from "../../utils/Message";
+import { getParticipantInitials, isOwnMessage } from "../../utils/Message";
 import type { Message } from "@/api/services/messages/types";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
@@ -129,9 +129,10 @@ export const Chat = () => {
 						{!isMessagesLoading && !messagesError && (
 							<>
 								{messages?.map((message: Message) => {
-									const isOwn =
-										message.idRemetente === activeProduct?.id ||
-										(!activeProduct?.id && message.idRemetente === user?.id);
+									const isOwn = isOwnMessage(message, {
+										userId: user?.id,
+										productId: activeProduct?.id,
+									});
 
 									return (
 										<MessageLine

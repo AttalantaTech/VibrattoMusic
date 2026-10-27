@@ -6,6 +6,7 @@ import {
 	isMessageRead,
 } from "../../../utils/Message";
 import { useAuthStore } from "@/store/authStore";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import type { Message } from "@/api/services/messages/types";
 import { MessageHtml } from "@/features/message/component/MessageHtml";
 
@@ -66,7 +67,11 @@ export const OwnMessageElement = ({
 	message,
 }: PropsWithChildren & { message: Message }) => {
 	const { user } = useAuthStore();
-	const isRead = isMessageRead(message, user?.id);
+	const { activeProduct } = useMusicalProductStore();
+	const isRead = isMessageRead(message, {
+		userId: user?.id,
+		productId: activeProduct?.id,
+	});
 	const messageReadElement =
 		isRead === null ? null : isRead ? (
 			<CheckCheck className="w-4 h-4 text-primary-500" />

@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import type { Message } from "@/api/services/messages/types";
+import { isOwnMessage } from "@/components/BandProfile/Messages/utils/Message";
 import type { UseMessagesObserverProps } from "../types";
 
 export const useMessagesObserver = ({
 	messages,
 	user,
 	currentUserId,
+	currentProductId,
 	messagesContainerRef,
 	handleMarkMessageAsRead,
 	messagesEndRef,
@@ -24,10 +26,15 @@ export const useMessagesObserver = ({
 						);
 						const message = messages.find((m: Message) => m.id === messageId);
 
+						// Only the recipient marks a message as read: comparing with the
+						// user id alone made professionals mark their own messages
 						if (
 							message &&
 							currentUserId &&
-							message.idRemetente !== currentUserId &&
+							!isOwnMessage(message, {
+								userId: currentUserId,
+								productId: currentProductId,
+							}) &&
 							!message.lida
 						) {
 							handleMarkMessageAsRead(messageId).catch((error) => {
@@ -55,6 +62,7 @@ export const useMessagesObserver = ({
 		user,
 		handleMarkMessageAsRead,
 		currentUserId,
+		currentProductId,
 		messagesContainerRef,
 	]);
 

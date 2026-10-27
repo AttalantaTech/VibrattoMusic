@@ -140,6 +140,7 @@ export type UseMessagesObserverProps = {
 	messages: Array<Message>;
 	user: unknown;
 	currentUserId?: number;
+	currentProductId?: number;
 	messagesContainerRef: RefObject<HTMLDivElement | null>;
 	handleMarkMessageAsRead: (messageId: number) => Promise<void>;
 	messagesEndRef: RefObject<HTMLDivElement>;
