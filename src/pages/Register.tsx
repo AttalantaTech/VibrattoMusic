@@ -49,9 +49,9 @@ export const Register = () => {
 	const password = watch("senha");
 
 	return (
-		<div className="flex flex-col lg:flex-row h-screen w-screen justify-center items-center">
+		<div className="flex flex-col lg:flex-row min-h-[100dvh] lg:h-screen w-full justify-center items-center">
 			{/* Content */}
-			<div className="flex flex-col w-full lg:w-1/2 h-full justify-start items-center gap-6 px-4 lg:px-0 overflow-y-auto py-6">
+			<div className="flex flex-col w-full lg:w-1/2 lg:h-full justify-start items-center gap-6 px-4 lg:px-0 lg:overflow-y-auto py-6">
 				<div className="w-full max-w-md lg:w-[50%] flex flex-col my-auto">
 					{/* Header */}
 					<div className="flex flex-col justify-center items-center gap-2 lg:gap-6 text-center">
