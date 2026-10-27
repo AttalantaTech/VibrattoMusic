@@ -15,6 +15,6 @@ export function handleStandardProposalDescription({
 }: StandardProposalDescription) {
 	const formattedDocument = formatDocument(document);
 
-	return `Conforme solicitação, segue proposta orçamentária para contratação da apresentação artística da(o) ${category} - ${artisticName}, neste ato representada por ${legalName}, inscrita no CPF/CNPJ ${formattedDocument}
-    `;
+	// The field is editable now: no trailing line break/spaces after the text
+	return `Conforme solicitação, segue proposta orçamentária para contratação da apresentação artística da(o) ${category} - ${artisticName}, neste ato representada por ${legalName}, inscrita no CPF/CNPJ ${formattedDocument}`;
 }

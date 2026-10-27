@@ -156,8 +156,7 @@ export function ProposalFormFields({
 									id="description"
 									{...field}
 									placeholder="Descreva detalhes da apresentação, repertório, equipamentos..."
-									rows={3}
-									disabled
+									rows={4}
 								/>
 							</>
 						)}
