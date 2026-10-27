@@ -22,9 +22,11 @@ import { MoreOptionsDropdownItem } from "@/components/ui/MoreOptionsDropdownItem
 import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
 import { BudgetListModal } from "@/components/BandProfile/Budgets/components/BudgetListModal";
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 
 export const Chat = () => {
 	const { user } = useAuthStore();
+	const navigate = useNavigate();
 
 	const { activeProduct } = useMusicalProductStore();
 	const currentProductId = activeProduct?.id;
@@ -45,6 +47,32 @@ export const Chat = () => {
 		messagesContainerRef,
 		messagesEndRef,
 	} = useChat() || {};
+
+	// The same "Ver proposta" link is shown to both sides of the conversation:
+	// the seller (the conversation's musical product) goes to "Minhas Vendas",
+	// the buyer (contractor, or a product hiring another one) to "Contratações"
+	const isSeller =
+		!!currentProductId &&
+		currentProductId === selectedConversation?.produtoMusicalId;
+
+	const handleMessageLinkClick = (event: React.MouseEvent<HTMLDivElement>) => {
+		if (event.ctrlKey || event.metaKey || event.shiftKey) return;
+
+		const anchor = (event.target as HTMLElement).closest("a");
+		if (!anchor) return;
+
+		const url = new URL(anchor.href, window.location.origin);
+		const isProposalLink =
+			url.pathname.replace(/\/$/, "").endsWith("/band/me") &&
+			url.searchParams.get("tab") === "hires";
+		if (!isProposalLink) return;
+
+		event.preventDefault();
+		void navigate({
+			to: "/band/me",
+			search: { tab: isSeller ? "sales" : "hires" },
+		});
+	};
 
 	return (
 		<ChatContainer isInsideConversation={!!selectedConversation}>
@@ -99,7 +127,10 @@ export const Chat = () => {
 						</div>
 					</ChatHeaderContainer>
 
-					<ChatMessagesContainer messagesContainerRef={messagesContainerRef}>
+					<ChatMessagesContainer
+						messagesContainerRef={messagesContainerRef}
+						onClick={handleMessageLinkClick}
+					>
 						{isMessagesLoading && <Loading />}
 						{messagesError && (
 							<div className="flex flex-col items-center justify-center h-full text-center">
