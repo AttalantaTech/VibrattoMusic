@@ -142,6 +142,16 @@ export default function DetailsSection({
 						{formState.errors.codigoMunicipio.message}
 					</div>
 				)}
+				<hr className="w-full" />
+				<ToggleSwitch
+					checked={watch("podeDeslocamento") || false}
+					label="Disponível para deslocamentos a outras regiões."
+					name="avaliable_for_moving"
+					setChecked={(checked) => {
+						setValue("podeDeslocamento", checked);
+					}}
+				/>
+				<hr className="w-full" />
 				<Select
 					label="Gênero Musical"
 					name="genres"
@@ -184,16 +194,6 @@ export default function DetailsSection({
 						{formState.errors.tipoEvento.message}
 					</div>
 				)}
-				<hr className="w-full" />
-				<ToggleSwitch
-					checked={watch("podeDeslocamento") || false}
-					label="Disponível para deslocamentos a outras regiões."
-					name="avaliable_for_moving"
-					setChecked={(checked) => {
-						setValue("podeDeslocamento", checked);
-					}}
-				/>
-				<hr className="w-full" />
 				<InputField
 					icon={<User size={20} />}
 					label="Número de integrantes da banda"
