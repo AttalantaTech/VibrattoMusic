@@ -74,6 +74,7 @@ import {
 } from "@/features/message/utils/resolveStatusSender";
 import { showApiError } from "@/utils/showApiError";
 import { useConversations } from "@/hooks/useMessaging";
+import { ShareLink } from "@/components/ui/ShareLink/ShareLink";
 import type { Conversation } from "@/api/services/messages/types";
 
 const possibleStatusFilters = [
@@ -105,6 +106,8 @@ export const SalesTab = () => {
 	const [isLoadingPaidSign, setIsLoadingPaidSign] = useState(false);
 	const [isLoadingCancel, setIsLoadingCancel] = useState(false);
 	const [statusFilter, setStatusFilter] = useState<string>("Todos os status");
+	// identificadorUnico of the proposal being shared (null = modal closed)
+	const [shareProposalId, setShareProposalId] = useState<string | null>(null);
 
 	const {
 		data: filteredProposals,
@@ -271,6 +274,7 @@ export const SalesTab = () => {
 						onSeeProposal: handleSeeProposal,
 						onSeeContract: handleSeeContract,
 						onEditContract: handleEditContract,
+						onShareProposal: setShareProposalId,
 					};
 				}),
 			[
@@ -400,6 +404,17 @@ export const SalesTab = () => {
 				onSeeContract={handleSeeContract}
 				isLoadingPaidSign={isLoadingPaidSign}
 				isLoadingCancel={isLoadingCancel}
+			/>
+
+			{/* The link opens the proposal PDF without login */}
+			<ShareLink
+				open={!!shareProposalId}
+				onOpenChange={(open) => {
+					if (!open) setShareProposalId(null);
+				}}
+				url={
+					shareProposalId ? entityLinks.proposalPublic(shareProposalId).url : ""
+				}
 			/>
 		</div>
 	);

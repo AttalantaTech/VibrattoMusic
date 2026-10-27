@@ -17,6 +17,7 @@ import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RegisterIndexRouteImport } from './routes/register/index'
+import { Route as PropostaIdRouteImport } from './routes/proposta/$id'
 import { Route as BandRegisterRouteImport } from './routes/band/register'
 import { Route as BandProfileTypeRouteImport } from './routes/band/profile-type'
 import { Route as BandMeRouteImport } from './routes/band/me'
@@ -71,6 +72,11 @@ const IndexRoute = IndexRouteImport.update({
 const RegisterIndexRoute = RegisterIndexRouteImport.update({
   id: '/register/',
   path: '/register/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PropostaIdRoute = PropostaIdRouteImport.update({
+  id: '/proposta/$id',
+  path: '/proposta/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BandRegisterRoute = BandRegisterRouteImport.update({
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/band/me': typeof BandMeRoute
   '/band/profile-type': typeof BandProfileTypeRoute
   '/band/register': typeof BandRegisterRouteWithChildren
+  '/proposta/$id': typeof PropostaIdRoute
   '/register': typeof RegisterIndexRoute
   '/band/contract/$id': typeof BandContractIdRoute
   '/band/contract/create': typeof BandContractCreateRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/band/me': typeof BandMeRoute
   '/band/profile-type': typeof BandProfileTypeRoute
   '/band/register': typeof BandRegisterRouteWithChildren
+  '/proposta/$id': typeof PropostaIdRoute
   '/register': typeof RegisterIndexRoute
   '/band/contract/$id': typeof BandContractIdRoute
   '/band/contract/create': typeof BandContractCreateRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/band/me': typeof BandMeRoute
   '/band/profile-type': typeof BandProfileTypeRoute
   '/band/register': typeof BandRegisterRouteWithChildren
+  '/proposta/$id': typeof PropostaIdRoute
   '/register/': typeof RegisterIndexRoute
   '/band/contract/$id': typeof BandContractIdRoute
   '/band/contract/create': typeof BandContractCreateRoute
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/band/me'
     | '/band/profile-type'
     | '/band/register'
+    | '/proposta/$id'
     | '/register'
     | '/band/contract/$id'
     | '/band/contract/create'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/band/me'
     | '/band/profile-type'
     | '/band/register'
+    | '/proposta/$id'
     | '/register'
     | '/band/contract/$id'
     | '/band/contract/create'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/band/me'
     | '/band/profile-type'
     | '/band/register'
+    | '/proposta/$id'
     | '/register/'
     | '/band/contract/$id'
     | '/band/contract/create'
@@ -316,6 +328,7 @@ export interface RootRouteChildren {
   BandMeRoute: typeof BandMeRoute
   BandProfileTypeRoute: typeof BandProfileTypeRoute
   BandRegisterRoute: typeof BandRegisterRouteWithChildren
+  PropostaIdRoute: typeof PropostaIdRoute
   RegisterIndexRoute: typeof RegisterIndexRoute
   BandContractIdRoute: typeof BandContractIdRoute
   BandContractCreateRoute: typeof BandContractCreateRoute
@@ -379,6 +392,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/proposta/$id': {
+      id: '/proposta/$id'
+      path: '/proposta/$id'
+      fullPath: '/proposta/$id'
+      preLoaderRoute: typeof PropostaIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/band/register': {
@@ -524,6 +544,7 @@ const rootRouteChildren: RootRouteChildren = {
   BandMeRoute: BandMeRoute,
   BandProfileTypeRoute: BandProfileTypeRoute,
   BandRegisterRoute: BandRegisterRouteWithChildren,
+  PropostaIdRoute: PropostaIdRoute,
   RegisterIndexRoute: RegisterIndexRoute,
   BandContractIdRoute: BandContractIdRoute,
   BandContractCreateRoute: BandContractCreateRoute,
