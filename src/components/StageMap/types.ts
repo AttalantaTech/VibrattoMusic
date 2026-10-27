@@ -46,13 +46,6 @@ export interface StageMapBuilderProps {
 	initialElements?: Array<StageElement>;
 }
 
-// Stage Map Viewer component props
-export interface StageMapViewerProps {
-	stageData?: Array<StageMapData>;
-	onSave?: (elements: Array<StageMapData>) => void;
-	editable?: boolean;
-}
-
 // Infrastructure elements structure
 export interface InfrastructureElements {
 	vias: Array<StageElement>;

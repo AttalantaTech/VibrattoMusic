@@ -270,33 +270,6 @@ export const ImagesValidationSchema = z.object({
 		.optional(),
 });
 
-export const TechnicalValidationSchema = z.object({
-	rider: z.string().max(500, "URL do rider muito longa").optional(),
-	infraCamarim: z
-		.string()
-		.max(500, "URL da infraestrutura muito longa")
-		.optional(),
-	camarimIncluso: z.boolean().default(false),
-	mapaPalco: z
-		.array(
-			z.object({
-				idInstrumento: z
-					.number()
-					.int("ID do instrumento deve ser um número inteiro"),
-				posicaoX: z
-					.number()
-					.min(0)
-					.max(100, "Posição X deve estar entre 0 e 100"),
-				posicaoY: z
-					.number()
-					.min(0)
-					.max(100, "Posição Y deve estar entre 0 e 100"),
-			})
-		)
-		.max(20, "Máximo 20 instrumentos no mapa")
-		.optional(),
-});
-
 export const ScheduleValidationSchema = z
 	.object({
 		compromissos: z
