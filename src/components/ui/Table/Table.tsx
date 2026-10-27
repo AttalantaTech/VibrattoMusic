@@ -3,6 +3,7 @@ import {
 	getCoreRowModel,
 	getPaginationRowModel,
 	useReactTable,
+	type Column,
 	type ColumnDef,
 } from "@tanstack/react-table";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
@@ -13,6 +14,12 @@ interface TableProps<T> {
 	columns: Array<ColumnDef<T, any>>;
 	pageSize?: number;
 }
+
+// Button columns: the "actions"/"quickActions" ids, or no header at all
+const isActionColumn = <T,>(column: Column<T, unknown>) =>
+	column.id === "actions" ||
+	column.id === "quickActions" ||
+	!column.columnDef.header;
 
 export const GenericTable = <T,>({
 	data,
@@ -35,11 +42,89 @@ export const GenericTable = <T,>({
 		onPaginationChange: setPagination,
 	});
 
+	// Header of each column, used as the field label on the phone cards
+	const headersById = new Map(
+		table.getFlatHeaders().map((header) => [header.column.id, header])
+	);
+
 	return (
 		<>
 			<div className="w-full min-w-0 max-w-full py-4">
-				<div className="overflow-hidden rounded-lg shadow ring-1 ring-black ring-opacity-5 border-2 border-gray-100">
-					<div className="overflow-x-auto">
+				{/* Phones: one card per row instead of a table with sideways
+				    scroll. First column = card title, columns with a header =
+				    label/value fields, action columns = card footer */}
+				<ul className="flex flex-col gap-3 md:hidden">
+					{table.getRowModel().rows.map((row) => {
+						const [titleCell, ...otherCells] = row.getVisibleCells();
+						const fieldCells = otherCells.filter(
+							(cell) => !isActionColumn(cell.column)
+						);
+						const actionCells = otherCells.filter((cell) =>
+							isActionColumn(cell.column)
+						);
+
+						return (
+							<li
+								key={row.id}
+								className="flex flex-col gap-3 rounded-lg border-2 border-gray-100 bg-white p-4 shadow-sm"
+							>
+								{titleCell && (
+									<div className="min-w-0 text-sm text-black">
+										{flexRender(
+											titleCell.column.columnDef.cell,
+											titleCell.getContext()
+										)}
+									</div>
+								)}
+
+								{fieldCells.length > 0 && (
+									<dl className="flex flex-col gap-2 text-sm">
+										{fieldCells.map((cell) => {
+											const header = headersById.get(cell.column.id);
+
+											return (
+												<div
+													key={cell.id}
+													className="flex items-center justify-between gap-3"
+												>
+													<dt className="shrink-0 text-gray-500">
+														{header &&
+															flexRender(
+																cell.column.columnDef.header,
+																header.getContext()
+															)}
+													</dt>
+													<dd className="min-w-0 text-right text-black">
+														{flexRender(
+															cell.column.columnDef.cell,
+															cell.getContext()
+														)}
+													</dd>
+												</div>
+											);
+										})}
+									</dl>
+								)}
+
+								{actionCells.length > 0 && (
+									<div className="flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 pt-3">
+										{actionCells.map((cell) => (
+											<div key={cell.id}>
+												{flexRender(
+													cell.column.columnDef.cell,
+													cell.getContext()
+												)}
+											</div>
+										))}
+									</div>
+								)}
+							</li>
+						);
+					})}
+				</ul>
+
+				<div className="overflow-hidden rounded-lg shadow ring-1 ring-black ring-opacity-5 border-2 border-gray-100 max-md:rounded-none max-md:shadow-none max-md:ring-0 max-md:border-0">
+					<div className="overflow-x-auto max-md:hidden">
 						<table className="w-full min-w-[800px] table-auto divide-y divide-gray-300">
 							<thead className="bg-gray-50">
 								{table.getHeaderGroups().map((headerGroup) => (
