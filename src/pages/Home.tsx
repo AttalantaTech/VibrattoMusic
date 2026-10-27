@@ -201,7 +201,9 @@ export const Home = (): FunctionComponent => {
 		]
 	);
 
+	// Not on touch screens: it would pop the keyboard over the page right away
 	useEffect(() => {
+		if (window.matchMedia("(pointer: coarse)").matches) return;
 		if (searchInputRef.current) {
 			searchInputRef.current.focus();
 		}
@@ -250,8 +252,9 @@ export const Home = (): FunctionComponent => {
 					</Button>
 				</div>
 
-				{/* Filters*/}
-				<div className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:flex sm:flex-row min-h-14 justify-center items-center gap-3 sm:gap-4 lg:gap-6 font-normal text-base px-4 max-w-9xl mx-auto">
+				{/* Filters (from sm up). On phones they took the whole first screen;
+				    "Avançados" opens the Search page, which has them in a sheet */}
+				<div className="hidden sm:flex sm:flex-row min-h-14 justify-center items-center gap-3 sm:gap-4 lg:gap-6 font-normal text-base px-4 max-w-9xl mx-auto">
 					<div className="m-auto">
 						<DropdownSelect
 							icon={<MapPin size={18} />}
@@ -407,9 +410,12 @@ export const Home = (): FunctionComponent => {
 								// Real API data
 								<>
 									{/* Mobile to Large: Horizontal scroll */}
-									<div className="flex gap-4 overflow-x-auto pb-4 xl:hidden">
+									<div className="flex gap-4 overflow-x-auto pb-4 xl:hidden snap-x snap-mandatory">
 										{(featuredBands?.dados ?? []).map((band) => (
-											<div key={`mobile-${band.id}`} className="flex-none w-64">
+											<div
+												key={`mobile-${band.id}`}
+												className="flex-none w-64 snap-start"
+											>
 												<ArtistCardWithFavorites
 													product={band}
 													onProfileClick={() =>
@@ -473,10 +479,14 @@ export const Home = (): FunctionComponent => {
 							</h1>
 						</div>
 
-						{/* Mobile to Large: Responsive flex layout */}
-						<div className="flex flex-wrap justify-center gap-4 sm:gap-6 w-full xl:hidden">
+						{/* Phones: sideways carousel (stacked, the 5 cards took ~2000px).
+						    From sm to lg: wrapped grid */}
+						<div className="flex max-sm:overflow-x-auto max-sm:snap-x max-sm:snap-mandatory max-sm:pb-4 sm:flex-wrap sm:justify-center gap-4 sm:gap-6 w-full xl:hidden">
 							{promos.map((promo, index) => (
-								<div key={index} className="w-full sm:w-80 lg:w-72">
+								<div
+									key={index}
+									className="max-sm:flex-none max-sm:w-64 max-sm:snap-start sm:w-80 lg:w-72"
+								>
 									<PromoCard
 										description={promo.description}
 										title={promo.title}
