@@ -33,12 +33,15 @@ export const ChatHeaderContainer = ({ children }: PropsWithChildren) => {
 export const ChatMessagesContainer = ({
 	children,
 	messagesContainerRef,
+	onClick,
 }: PropsWithChildren & {
 	messagesContainerRef?: React.ForwardedRef<HTMLDivElement>;
+	onClick?: React.MouseEventHandler<HTMLDivElement>;
 }) => {
 	return (
 		<div
 			ref={messagesContainerRef}
+			onClick={onClick}
 			className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
 		>
 			{children}
