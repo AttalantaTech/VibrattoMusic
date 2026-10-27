@@ -19,6 +19,7 @@ import { useProposalPDF } from "@/hooks/useProposals";
 import { Accordion } from "@/components/ui/Accordion";
 import { useState } from "react";
 import { useContractPDF } from "@/hooks/useContracts";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface ProposalDetailsModalProps {
 	mode: "Contracted" | "Contractor";
@@ -97,22 +98,24 @@ export const ProposalDetailsModal = ({
 	if (!isOpen) return null;
 
 	return (
-		<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-			<div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+		// Shared dialog: bottom sheet on phones, Esc/outside click close it and
+		// the page behind doesn't scroll
+		<Dialog
+			open={isOpen}
+			onOpenChange={(open) => {
+				if (!open) onClose();
+			}}
+		>
+			<DialogContent
+				aria-describedby={undefined}
+				className="block max-w-2xl gap-0 p-0"
+			>
 				<div className="p-6">
-					{/* Header */}
-					<div className="flex justify-between items-start mb-6">
-						<div>
-							<h2 className="text-2xl font-bold text-gray-900">
-								Detalhes da Proposta
-							</h2>
-						</div>
-						<button
-							onClick={onClose}
-							className="text-gray-400 hover:text-gray-600"
-						>
-							<XCircle className="h-6 w-6" />
-						</button>
+					{/* Header (the dialog's own X closes it) */}
+					<div className="mb-6 pr-8">
+						<DialogTitle className="text-2xl font-bold text-gray-900">
+							Detalhes da Proposta
+						</DialogTitle>
 					</div>
 
 					{/* Status Badge */}
@@ -145,7 +148,7 @@ export const ProposalDetailsModal = ({
 									<div className="border-y-2 border-gray-100">
 										<iframe
 											src={`${proposalPdfUrl}`}
-											className="w-full h-[700px] border-0"
+											className="w-full h-[60dvh] sm:h-[700px] border-0"
 											title="PDF da Proposta"
 										/>
 									</div>
@@ -182,7 +185,7 @@ export const ProposalDetailsModal = ({
 									<div className="border-y-2 border-gray-100">
 										<iframe
 											src={`${contractPdfUrl}`}
-											className="w-full h-[700px] border-0"
+											className="w-full h-[60dvh] sm:h-[700px] border-0"
 											title="PDF da Proposta"
 										/>
 									</div>
@@ -370,7 +373,7 @@ export const ProposalDetailsModal = ({
 						</Button>
 					</div>
 				</div>
-			</div>
-		</div>
+			</DialogContent>
+		</Dialog>
 	);
 };
