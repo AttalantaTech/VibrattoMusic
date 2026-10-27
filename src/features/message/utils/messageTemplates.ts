@@ -211,15 +211,16 @@ export const buildStatusMessage = <K extends StatusMessageType>(
 	context: BaseContext & StatusPayloads[K]
 ): string => statusTemplates[type](context);
 
-const appUrl = (path: string) => `${window.location.origin}${path}`;
+const appUrl = (path: string) =>
+	`${import.meta.env["VITE_VIBRATTO_FRONT_BASE_URL"]}${path}`;
 
 export const entityLinks = {
 	proposalTab: (id: number | string): MessageLink => ({
 		label: "Ver proposta",
-		url: appUrl(`/band/me?tab=hires&id=${id}`),
+		url: appUrl(`band/me?tab=hires&id=${id}`),
 	}),
 	contractTab: (id: number | string): MessageLink => ({
 		label: "Ver contrato",
-		url: appUrl(`/band/me?tab=contracts&id=${id}`),
+		url: appUrl(`band/me?tab=contracts&id=${id}`),
 	}),
 };
