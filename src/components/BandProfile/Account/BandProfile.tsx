@@ -217,12 +217,15 @@ export const BandProfile = ({
 		<>
 			<main className="flex flex-col w-full min-h-screen items-start justify-start">
 				<div className="flex flex-col lg:flex-row w-full items-start gap-4 lg:gap-8 justify-start lg:justify-center max-w-7xl mx-auto">
-					{/* Main Content */}
-					<div className="flex flex-col w-full lg:flex-1 h-full items-center justify-start gap-4 lg:gap-8 order-2 lg:order-1">
+					{/* Main Content. On mobile it becomes "contents": its sections join
+					    the page column so the side card can sit between them (order-1
+					    up to the gallery, side card order-2, tabs/reviews/similar order-3).
+					    On desktop it is the left column again */}
+					<div className="contents lg:flex lg:flex-col lg:w-full lg:flex-1 lg:h-full lg:items-center lg:justify-start lg:gap-8 lg:order-1">
 						<ProfileDetails musicalProduct={musicalProduct} />
 
 						{/* Customer Reviews */}
-						<section className={styles.section}>
+						<section className={`${styles.section} order-3 lg:order-none`}>
 							<div className="flex flex-col items-center lg:items-start gap-6 w-full">
 								<h2 className="text-gray-500 text-xs uppercase tracking-wide font-medium">
 									Avaliações dos Clientes
@@ -310,7 +313,7 @@ export const BandProfile = ({
 						</section>
 
 						{/* Similar Artists */}
-						<section className={styles.section}>
+						<section className={`${styles.section} order-3 lg:order-none`}>
 							<div className="flex flex-col items-center lg:items-start gap-6 w-full">
 								<h2 className="text-gray-500 text-xs uppercase tracking-wide font-medium">
 									Você também pode gostar
@@ -384,7 +387,7 @@ export const BandProfile = ({
 
 					{/* Side Card */}
 					{musicalProduct?.id !== activeProduct?.id ? (
-						<div className="w-full lg:w-80 xl:w-96 border border-gray-200 rounded-lg flex flex-col gap-4 lg:gap-6 pb-4 px-4 lg:pb-4 lg:px-4 shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08)] order-1 lg:order-2 lg:sticky lg:top-4 lg:self-start">
+						<div className="w-full lg:w-80 xl:w-96 border border-gray-200 rounded-lg flex flex-col gap-4 lg:gap-6 pb-4 px-4 lg:pb-4 lg:px-4 shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08)] order-2 lg:sticky lg:top-4 lg:self-start">
 							{/* Media content (YouTube or Spotify) */}
 							{musicalProduct.videosYouTube.length > 0 &&
 							musicalProduct.spotifyPlaylistId ? (
@@ -491,7 +494,7 @@ export const BandProfile = ({
 							) : null}
 						</div>
 					) : (
-						<div className="w-full lg:w-80 xl:w-96 border border-gray-200 rounded-lg flex flex-col gap-4 lg:gap-6 pb-4 px-4 lg:pb-4 lg:px-4 shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08)] order-1 lg:order-2 lg:sticky lg:top-4 lg:self-start">
+						<div className="w-full lg:w-80 xl:w-96 border border-gray-200 rounded-lg flex flex-col gap-4 lg:gap-6 pb-4 px-4 lg:pb-4 lg:px-4 shadow-[0px_12px_16px_-4px_rgba(16,24,40,0.08)] order-2 lg:sticky lg:top-4 lg:self-start">
 							{/* Media content (YouTube or Spotify) */}
 							{musicalProduct.videosYouTube.length > 0 &&
 							musicalProduct.spotifyPlaylistId ? (
