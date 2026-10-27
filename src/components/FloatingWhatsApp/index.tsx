@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
+import { useRouterState, type AnyRouter } from "@tanstack/react-router";
 import { openSupportWhatsapp } from "@/utils/support";
 
 type Position = {
@@ -9,14 +10,27 @@ type Position = {
 
 const WHATSAPP_STORAGE = "whatsapp-button-position";
 
-export function FloatingWhatsApp() {
+// Rendered outside RouterProvider (App.tsx), so it gets the router as a prop
+export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
 	const [position, setPosition] = useState<Position | null>(null);
 
-	const mediaQuery = window.matchMedia("(pointer: coarse)");
+	// The chat already is a contact channel, and on phones the button sat
+	// right over its send button. "messages" is also the default tab
+	const isOnMessages = useRouterState({
+		router,
+		select: (state) =>
+			state.location.pathname === "/band/me" &&
+			((state.location.search as { tab?: string }).tab ?? "messages") ===
+				"messages",
+	});
+
+	// Touch screens get a 48px round icon-only button: the "Fale conosco"
+	// pill shrank its text to 8px there and covered page content
+	const isTouch = window.matchMedia("(pointer: coarse)").matches;
 
 	const DRAG_THRESHOLD = 5;
-	const BUTTON_HEIGHT = mediaQuery.matches ? 32 : 48;
-	const BUTTON_WIDTH = mediaQuery.matches ? 115 : 161;
+	const BUTTON_HEIGHT = 48;
+	const BUTTON_WIDTH = isTouch ? 48 : 161;
 	const MARGIN = 16;
 
 	const isPointerDown = useRef(false);
@@ -165,7 +179,7 @@ export function FloatingWhatsApp() {
 		openSupportWhatsapp();
 	};
 
-	if (!position) {
+	if (!position || (isTouch && isOnMessages)) {
 		return null;
 	}
 
@@ -200,26 +214,21 @@ export function FloatingWhatsApp() {
 				top: `${position.top}px`,
 				right: `${position.right}px`,
 				height: `${BUTTON_HEIGHT}px`,
+				width: isTouch ? `${BUTTON_WIDTH}px` : undefined,
 			}}
 		>
-			<div
-				className="flex items-center justify-center rounded-full bg-white shadow-md flex-shrink-0"
-				style={{
-					height: mediaQuery.matches ? "1.5rem" : "2.5rem",
-					width: mediaQuery.matches ? "1.5rem" : "2.5rem",
-				}}
-			>
-				<FaWhatsapp
-					style={{ fontSize: mediaQuery.matches ? "1.5rem" : "2.5rem" }}
-					className="text-[#25D366]"
-				/>
-			</div>
-			<div
-				className="ml-2.5 flex flex-col items-start leading-tight pr-3 font-bold text-xs tracking-tight uppercase whitespace-nowrap"
-				style={{ fontSize: mediaQuery.matches ? "0.5rem" : "0.75rem" }}
-			>
-				<span>Fale Conosco</span>
-			</div>
+			{isTouch ? (
+				<FaWhatsapp className="text-[1.75rem]" aria-hidden="true" />
+			) : (
+				<>
+					<div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md flex-shrink-0">
+						<FaWhatsapp className="text-[2.5rem] text-[#25D366]" />
+					</div>
+					<div className="ml-2.5 flex flex-col items-start leading-tight pr-3 font-bold text-xs tracking-tight uppercase whitespace-nowrap">
+						<span>Fale Conosco</span>
+					</div>
+				</>
+			)}
 		</button>
 	);
 }

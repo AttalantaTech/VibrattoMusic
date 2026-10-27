@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from "react";
-import { Search, X, ArrowLeft, MapPin } from "lucide-react";
+import { Search, X, ArrowLeft, MapPin, SlidersHorizontal } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { Button } from "../components/ui/Button/Button";
 import { InputField } from "../components/forms/InputField/InputField";
@@ -71,8 +72,10 @@ export const SearchPage = () => {
 		searchCityByName: searchCity,
 	});
 
-	// Focus on the search input when the component mounts.
+	// Focus on the search input when the component mounts. Not on touch
+	// screens: it would pop the keyboard over half the page right away
 	useEffect(() => {
+		if (window.matchMedia("(pointer: coarse)").matches) return;
 		if (searchInputRef.current) {
 			searchInputRef.current.focus();
 		}
@@ -150,6 +153,122 @@ export const SearchPage = () => {
 		}
 	};
 
+	const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+	const activeFilterCount = [
+		selectedCities,
+		selectedCategories,
+		selectedEventTypes,
+		selectedGenres,
+	].filter((selected) => selected.length > 0).length;
+
+	// Same fields in the desktop layout and in the phones' filters sheet
+	const locationFilter = (
+		<Select
+			icon={<MapPin size={18} />}
+			label="Localização"
+			name="Localizacao"
+			options={cityOptions}
+			placeholder={
+				isLoadingCities ? "Carregando..." : "Filtrar pela localização"
+			}
+			selectedOptions={selectedCities}
+			setSelectedOptions={(options) => {
+				setSelectedCities(options);
+				const option = options.find((item) => item);
+
+				updateFilters({
+					codigoMunicipio: option,
+					pagina: 1,
+				});
+			}}
+			searchTerm={searchCity}
+			setSearchTerm={setSearchCity}
+			onReachEnd={() => {
+				if (!hasMoreCities || isFetchingCities) {
+					return;
+				}
+
+				setCityPage((previous) => previous + 1);
+			}}
+			isLoading={isFetchingCities}
+		/>
+	);
+
+	const advancedFilterFields = (
+		<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+			{/* Category Filter - Multiple Selection */}
+			<div className="space-y-2">
+				<Select
+					label="Categoria"
+					name="categorias"
+					placeholder={
+						isLoadingCategories ? "Carregando..." : "Filtrar por categoria"
+					}
+					options={categoryOptions}
+					selectedOptions={selectedCategories}
+					setSelectedOptions={(options) => {
+						setSelectedCategories(options);
+
+						const option = options.find((item) => item);
+
+						updateFilters({
+							categorias: option,
+							pagina: 1,
+						});
+					}}
+				/>
+			</div>
+
+			{/* Event Type Filter - Multiple Selection */}
+			<div className="space-y-2">
+				<Select
+					label="Tipo de Evento"
+					name="tipos-evento"
+					placeholder={
+						isLoadingEventTypes ? "Carregando..." : "Filtrar por tipo de evento"
+					}
+					options={eventTypeOptions}
+					selectedOptions={selectedEventTypes}
+					setSelectedOptions={(options) => {
+						setSelectedEventTypes(options);
+
+						const option = options.find((item) => item);
+
+						updateFilters({
+							tiposEvento: option,
+							pagina: 1,
+						});
+					}}
+				/>
+			</div>
+
+			{/* Genre Filter - Multiple Selection */}
+			<div className="space-y-2 sm:col-span-2 lg:col-span-1">
+				<Select
+					label="Gênero Musical"
+					name="generos"
+					placeholder={
+						isLoadingGenresMusical
+							? "Carregando..."
+							: "Filtrar por gênero musical"
+					}
+					options={musicalGenreOptions}
+					selectedOptions={selectedGenres}
+					setSelectedOptions={(options) => {
+						setSelectedGenres(options);
+
+						const option = options.find((item) => item);
+
+						updateFilters({
+							generosMusicais: option,
+							pagina: 1,
+						});
+					}}
+				/>
+			</div>
+		</div>
+	);
+
 	return (
 		<MainLayout>
 			<div className="min-h-screen bg-primary-50/30">
@@ -172,7 +291,7 @@ export const SearchPage = () => {
 							<h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
 								Encontre o profissional da música ideal para você
 							</h1>
-							<p className="text-gray-600 text-base sm:text-lg px-2">
+							<p className="hidden sm:block text-gray-600 text-base sm:text-lg px-2">
 								Utilize filtros para que se enquadre perfeitamente no seu evento
 								ou na sua banda
 							</p>
@@ -194,129 +313,50 @@ export const SearchPage = () => {
 								/>
 							</div>
 
-							{/* Location and Filters row - stacked on mobile, side by side on tablet+ */}
-							<div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-								{/* Location Filter */}
-								<div className="flex-1">
-									<Select
-										icon={<MapPin size={18} />}
-										label="Localização"
-										name="Localizacao"
-										options={cityOptions}
-										placeholder={
-											isLoadingCities
-												? "Carregando..."
-												: "Filtrar pela localização"
-										}
-										selectedOptions={selectedCities}
-										setSelectedOptions={(options) => {
-											setSelectedCities(options);
-											const option = options.find((item) => item);
+							{/* Location: from md up; on phones it lives in the filters sheet */}
+							<div className="hidden md:flex flex-col sm:flex-row gap-3 sm:gap-4">
+								<div className="flex-1">{locationFilter}</div>
+							</div>
 
-											updateFilters({
-												codigoMunicipio: option,
-												pagina: 1,
-											});
-										}}
-										searchTerm={searchCity}
-										setSearchTerm={setSearchCity}
-										onReachEnd={() => {
-											if (!hasMoreCities || isFetchingCities) {
-												return;
-											}
-
-											setCityPage((previous) => previous + 1);
-										}}
-										isLoading={isFetchingCities}
-									/>
-								</div>
+							{/* Phones: filters in a bottom sheet, so results show on the
+							    first screen instead of after ~900px of fields */}
+							<div className="flex gap-2 md:hidden">
+								<Button
+									variant="outline"
+									className="flex flex-1 items-center justify-center gap-2"
+									onClick={() => {
+										setIsFiltersOpen(true);
+									}}
+								>
+									<SlidersHorizontal size={16} />
+									Filtros
+									{activeFilterCount > 0 && (
+										<span className="rounded-full bg-primary-600 px-2 py-0.5 text-xs font-semibold text-white">
+											{activeFilterCount}
+										</span>
+									)}
+								</Button>
+								{hasActiveFilters && (
+									<Button
+										variant="outline"
+										aria-label="Limpar filtros"
+										onClick={handleClearFilters}
+									>
+										<X size={16} />
+									</Button>
+								)}
 							</div>
 						</div>
 
 						{/* Advanced Filters - Responsive Layout */}
-						<div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-primary-50/20 rounded-lg border border-primary-50">
+						<div className="hidden md:block mt-4 sm:mt-6 p-3 sm:p-4 bg-primary-50/20 rounded-lg border border-primary-50">
 							<div className="space-y-4">
 								<h3 className="text-lg font-semibold text-gray-900 mb-3">
 									Filtros Avançados
 								</h3>
 
 								{/* Mobile: Stack filters vertically, Desktop: 3 columns */}
-								<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-									{/* Category Filter - Multiple Selection */}
-									<div className="space-y-2">
-										<Select
-											label="Categoria"
-											name="categorias"
-											placeholder={
-												isLoadingCategories
-													? "Carregando..."
-													: "Filtrar por categoria"
-											}
-											options={categoryOptions}
-											selectedOptions={selectedCategories}
-											setSelectedOptions={(options) => {
-												setSelectedCategories(options);
-
-												const option = options.find((item) => item);
-
-												updateFilters({
-													categorias: option,
-													pagina: 1,
-												});
-											}}
-										/>
-									</div>
-
-									{/* Event Type Filter - Multiple Selection */}
-									<div className="space-y-2">
-										<Select
-											label="Tipo de Evento"
-											name="tipos-evento"
-											placeholder={
-												isLoadingEventTypes
-													? "Carregando..."
-													: "Filtrar por tipo de evento"
-											}
-											options={eventTypeOptions}
-											selectedOptions={selectedEventTypes}
-											setSelectedOptions={(options) => {
-												setSelectedEventTypes(options);
-
-												const option = options.find((item) => item);
-
-												updateFilters({
-													tiposEvento: option,
-													pagina: 1,
-												});
-											}}
-										/>
-									</div>
-
-									{/* Genre Filter - Multiple Selection */}
-									<div className="space-y-2 sm:col-span-2 lg:col-span-1">
-										<Select
-											label="Gênero Musical"
-											name="generos"
-											placeholder={
-												isLoadingGenresMusical
-													? "Carregando..."
-													: "Filtrar por gênero musical"
-											}
-											options={musicalGenreOptions}
-											selectedOptions={selectedGenres}
-											setSelectedOptions={(options) => {
-												setSelectedGenres(options);
-
-												const option = options.find((item) => item);
-
-												updateFilters({
-													generosMusicais: option,
-													pagina: 1,
-												});
-											}}
-										/>
-									</div>
-								</div>
+								{advancedFilterFields}
 
 								{/* Filter Actions */}
 								<div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-4">
@@ -336,6 +376,34 @@ export const SearchPage = () => {
 						</div>
 					</div>
 				</div>
+
+				<Dialog open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+					<DialogContent aria-describedby={undefined} className="md:hidden">
+						<DialogTitle className="pr-8 text-lg font-semibold text-gray-900">
+							Filtros
+						</DialogTitle>
+						{locationFilter}
+						{advancedFilterFields}
+						{/* Filters apply as they change; this only closes the sheet */}
+						<div className="flex gap-3 pt-2">
+							{hasActiveFilters && (
+								<Button variant="outline" onClick={handleClearFilters}>
+									Limpar
+								</Button>
+							)}
+							<Button
+								className="flex-1"
+								onClick={() => {
+									setIsFiltersOpen(false);
+								}}
+							>
+								{searchResults?.paginacao?.totalItens
+									? `Ver ${searchResults.paginacao.totalItens} resultados`
+									: "Ver resultados"}
+							</Button>
+						</div>
+					</DialogContent>
+				</Dialog>
 
 				{/* Results */}
 				<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
@@ -367,7 +435,7 @@ export const SearchPage = () => {
 					</div>
 					{/* Loading State */}
 					{isLoading && (
-						<div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
+						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
 							{Array.from({ length: 10 }, (_, index) => (
 								<div
 									key={`loading-skeleton-${index}`}
@@ -392,12 +460,13 @@ export const SearchPage = () => {
 						searchResults?.dados &&
 						searchResults.dados.length > 0 && (
 							<>
-								<div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+								<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
 									{searchResults.dados.map(
 										(product: MusicalProductApiResponse) => (
 											<div key={product.id} className="relative">
 												<ArtistCardWithFavorites
 													product={product}
+													listOnMobile
 													onProfileClick={() =>
 														navigate({
 															to: "/band/profile/$id",
