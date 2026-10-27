@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { messagingKeys, useStartConversation } from "@/hooks/useMessaging";
-import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import type { ChatRecipient } from "@/api/services/messages/types";
 import {
 	buildStatusMessage,
 	type MessageLink,
@@ -13,8 +13,14 @@ import {
 
 type SendStatusMessageParameters<K extends StatusMessageType> = {
 	type: K;
-	recipientId: number;
-	recipientName?: string;
+	produtoMusicalId: number | null;
+	produtoMusicalName: string;
+	contratanteId: number | null;
+	produtoMusicalContratanteId: number | null;
+	senderType: 1 | 2;
+	/** Who we are talking to (decides which single id is sent to the API) */
+	recipient: ChatRecipient;
+	conversationId?: number | null;
 	link?: MessageLink;
 	payload: StatusPayloads[K];
 	successMessage?: string;
@@ -26,13 +32,17 @@ type SendStatusMessageParameters<K extends StatusMessageType> = {
 export const useSendStatusMessage = () => {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	const { activeProduct } = useMusicalProductStore();
 	const { mutate: startConversation, isPending } = useStartConversation();
 
 	const sendStatusMessage = <K extends StatusMessageType>({
 		type,
-		recipientId,
-		recipientName,
+		contratanteId,
+		produtoMusicalId,
+		produtoMusicalContratanteId,
+		produtoMusicalName,
+		senderType,
+		recipient,
+		conversationId,
 		link,
 		payload,
 		successMessage,
@@ -41,17 +51,20 @@ export const useSendStatusMessage = () => {
 		onSuccess,
 	}: SendStatusMessageParameters<K>) => {
 		const conteudo = buildStatusMessage(type, {
-			recipientName,
+			recipientName: produtoMusicalName,
 			link,
 			...payload,
 		});
 
 		startConversation(
 			{
-				participanteId: recipientId,
+				produtoMusicalId,
+				contratanteId,
 				conteudo,
-				senderType: activeProduct?.id ? 2 : 1,
-				produtoMusicalContratanteId: activeProduct?.id || null,
+				senderType,
+				recipient,
+				conversationId,
+				produtoMusicalContratanteId,
 			},
 			{
 				onSuccess: () => {

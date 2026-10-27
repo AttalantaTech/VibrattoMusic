@@ -61,7 +61,7 @@ export const BandProfile = ({
 	const [loadingSpotify, setLoadingSpotify] = useState(true);
 
 	// Auth and favorites
-	const { isAuthenticated } = useAuthStore();
+	const { isAuthenticated, user } = useAuthStore();
 	const { data: favorites } = useFavorites(isAuthenticated);
 	const toggleFavoriteMutation = useToggleFavorite();
 
@@ -523,6 +523,8 @@ export const BandProfile = ({
 				isOpen={isCheckAvailabilityOpen}
 				onClose={setIsCheckAvailabilityOpen}
 				musicalProduct={musicalProduct}
+				contratanteId={user?.id || 0}
+				produtoMusicalContratanteId={activeProduct ? activeProduct.id : null}
 			/>
 
 			{/* Start Conversation Modal */}
@@ -535,8 +537,7 @@ export const BandProfile = ({
 				participantName={musicalProduct.nome}
 				onConversationStarted={() => {
 					setIsConversationModalOpen(false);
-					toast.success("Conversa iniciada com sucesso!");
-					// Navigate to band me messages tab
+
 					void navigate({ to: "/band/me", search: { tab: "messages" } });
 				}}
 			/>

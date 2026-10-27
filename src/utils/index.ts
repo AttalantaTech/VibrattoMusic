@@ -1,7 +1,7 @@
 import { addDays, format, parseISO } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
-const TIME_ZONE = "America/Sao_Paulo";
+const TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 const toBR = (date: Date | string) => toZonedTime(date, TIME_ZONE);
 

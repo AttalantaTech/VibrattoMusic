@@ -6,9 +6,54 @@ import type {
 	PaginatedResponse,
 } from "../../types";
 import { ConversationStorage } from "../../../utils/conversationStorage";
-import type { Conversation, Message } from "./types";
+import type {
+	ChatRecipient,
+	Conversation,
+	Message,
+	StartConversation,
+} from "./types";
 import type { ChatUser } from "@/contexts/MessagesContext/types";
 import { musicalProductService } from "@/api";
+
+type RecipientIds = Pick<
+	StartConversation,
+	"contratanteId" | "produtoMusicalId" | "produtoMusicalContratanteId"
+>;
+
+type RecipientPayload = {
+	IdProdutoMusical: number | null;
+	IdProdutoMusicalContratante: number | null;
+};
+
+/**
+ * chat/obter and chat/mensagem always carry the three id fields, but only
+ * the one of who we are talking to (the recipient) is filled; the other two
+ * go as null. The sender is identified by the token.
+ */
+const buildRecipientPayload = (
+	recipient: ChatRecipient,
+	ids: RecipientIds
+): RecipientPayload => {
+	const idByRecipient = {
+		contratante: ids.contratanteId,
+		produtoMusical: ids.produtoMusicalId,
+		produtoContratante: ids.produtoMusicalContratanteId,
+	} as const;
+
+	const id = idByRecipient[recipient];
+
+	if (!id) {
+		throw new Error(
+			`startConversation: missing id for recipient "${recipient}"`
+		);
+	}
+
+	return {
+		IdProdutoMusical: idByRecipient.produtoMusical,
+		IdProdutoMusicalContratante:
+			recipient === "produtoMusical" ? idByRecipient.produtoContratante : null,
+	};
+};
 
 export class MessagingService {
 	public constructor(private readonly apiClient: ApiClient) {}
@@ -116,13 +161,32 @@ export class MessagingService {
 	 * Get all conversations for the current user
 	 * Uses the direct API endpoint chat/listaConversas
 	 */
-	public async getConversations(
-		IdProdutoMusical?: number | null,
-		parameters?: PaginationParameters
-	): Promise<Array<Conversation>> {
+	public async getConversations({
+		parameters,
+		IdContratante,
+		IdProdutoMusical,
+		IdProdutoMusicalContratante,
+	}: {
+		IdProdutoMusical?: number | null;
+		IdContratante?: number | null;
+		IdProdutoMusicalContratante?: number | null;
+		parameters?: PaginationParameters;
+	}): Promise<Array<Conversation>> {
 		try {
 			const limit = parameters?.limit || 20;
 			const cursorQuery = parameters?.page ? `&_t=${parameters.page}` : "";
+
+			const queryParameters = new URLSearchParams({
+				limit: limit.toString(),
+				...(cursorQuery ? { cursor: cursorQuery } : {}), // ajuste como seu cursorQuery funciona
+				...(IdContratante && { IdContratante: IdContratante.toString() }),
+				...(IdProdutoMusical && {
+					IdProdutoMusical: IdProdutoMusical.toString(),
+				}),
+				...(IdProdutoMusicalContratante && {
+					IdProdutoMusicalContratante: IdProdutoMusicalContratante.toString(),
+				}),
+			});
 
 			const response = await this.apiClient.get<
 				Array<{
@@ -143,11 +207,8 @@ export class MessagingService {
 					numeroMensagensNãoLidasContratado: number;
 					numeroMensagensNãoLidasContratante: number;
 				}>
-			>(`chat/listaConversas?limit=${limit}${cursorQuery}`, {
-				params: {
-					IdProdutoMusical,
-				},
-			});
+			>(`chat/listaConversas?${queryParameters.toString()}`);
+
 			// Ensure response is an array
 			const conversationsData = Array.isArray(response) ? response : [];
 
@@ -209,10 +270,10 @@ export class MessagingService {
 					}
 
 					// Build conversation object
-					return {
+					const conversations: Conversation = {
 						id: item.idConversa,
-						participanteId: item.produtoMusical.id,
-						participanteNome: item.produtoMusical.nome,
+						produtoMusicalId: item.produtoMusical.id,
+						produtoMusicalNome: item.produtoMusical.nome,
 						contratanteId: item.contratante.id,
 						contratanteNome: item.contratante.nome,
 						produtoMusicalContratanteId:
@@ -226,6 +287,8 @@ export class MessagingService {
 							: item.numeroMensagensNãoLidasContratado,
 						online: false, // This would need to be determined from online status API
 					};
+
+					return conversations;
 				})
 			);
 
@@ -247,45 +310,57 @@ export class MessagingService {
 	/**
 	 * Start new conversation
 	 */
-	public async startConversation(
-		participanteId: number,
-		conteudo: string,
-		senderType: number,
-		produtoMusicalContratanteId: number | null
-	): Promise<Conversation> {
-		// First, get or create conversation with the product
-		// API returns conversation ID directly as a number
-		const conversationId = await this.apiClient.post<number>("chat/obter", {
-			IdProdutoMusical: participanteId,
-			IdProdutoMusicalContratante: produtoMusicalContratanteId,
+	public async startConversation({
+		conteudo,
+		recipient,
+		conversationId: knownConversationId,
+		contratanteId,
+		produtoMusicalId,
+		produtoMusicalContratanteId,
+	}: StartConversation): Promise<Conversation> {
+		const recipientPayload = buildRecipientPayload(recipient, {
+			contratanteId,
+			produtoMusicalId,
+			produtoMusicalContratanteId,
 		});
 
+		// Only resolve the conversation when we don't already have its id
+		const conversationId =
+			knownConversationId ||
+			(await this.apiClient.post<number>("chat/obter", recipientPayload));
+
 		// Save conversation ID to localStorage for future retrieval
-		ConversationStorage.saveConversation(
+		ConversationStorage.saveConversation({
 			conversationId,
-			participanteId,
-			undefined // We don't have participant name here yet
-		);
+			produtoMusicalId,
+			produtoMusicalNome: "",
+		});
 
 		// Then send the initial message
 		await this.apiClient.post<Message>("chat/mensagem", {
 			IdConversa: conversationId,
 			Conteudo: conteudo,
-			TipoRemetente: senderType,
-			IdProdutoMusical: produtoMusicalContratanteId,
+			IdProdutoMusical:
+				recipient === "contratante" || recipient === "produtoContratante"
+					? produtoMusicalId
+					: null,
+			TipoRemetente:
+				recipient === "contratante" || recipient === "produtoContratante"
+					? 2
+					: 1,
 		});
 
 		// Return a minimal conversation object for compatibility
 		return {
 			id: conversationId,
-			participanteId,
-			participanteNome: "",
-			contratanteId: 0,
+			produtoMusicalId,
+			produtoMusicalNome: "",
+			contratanteId: produtoMusicalId ? 0 : contratanteId,
 			contratanteNome: "",
 			produtoMusicalContratanteId,
 			produtoMusicalContratanteNome: "",
 			pair: {
-				id: participanteId,
+				id: produtoMusicalId || 0,
 				name: "",
 				type: "product",
 			},

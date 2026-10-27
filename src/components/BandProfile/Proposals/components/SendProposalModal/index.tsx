@@ -22,11 +22,10 @@ import { ProposalFormFields } from "../ProposalFormFields";
 interface SendProposalModalProps {
 	isOpen: boolean;
 	onClose: () => void;
-	recipientId?: number; // Proposal recipient ID (optional for context)
 	contractorId?: number;
+	contractorProductId?: number | null;
 	contractorName?: string;
 	conversationId?: number; // Conversation ID for sending a message
-	onProposalSent?: (proposalDetails: string) => Promise<void>; // Callback to send a message after the proposal
 	proposal?: ProposalResponse | null;
 }
 
@@ -34,9 +33,9 @@ export const SendProposalModal = ({
 	isOpen,
 	onClose,
 	contractorId,
+	contractorProductId,
 	contractorName,
 	conversationId,
-	onProposalSent,
 	proposal,
 }: SendProposalModalProps) => {
 	// Use the currently active musical product
@@ -88,8 +87,8 @@ export const SendProposalModal = ({
 		proposal,
 		setShowProfileIncompleteModal,
 		contractorId,
+		contractorProductId,
 		conversationId,
-		onProposalSent,
 		userProductId,
 		hasDefineEventTime,
 	});
@@ -120,7 +119,6 @@ export const SendProposalModal = ({
 								: "Configure todos os campos necessários para criar a proposta"}
 						</DialogDescription>
 					</DialogHeader>
-
 					<ProposalFormFields
 						form={form}
 						handleHasDefineEventTime={handleHasDefineEventTime}
@@ -135,7 +133,6 @@ export const SendProposalModal = ({
 						setSelectedPaymentMethods={setSelectedPaymentMethods}
 						eventTypes={eventTypes}
 					/>
-
 					<DialogFooter className="gap-2">
 						<Button type="button" variant="secondary" onClick={handleClose}>
 							Cancelar
