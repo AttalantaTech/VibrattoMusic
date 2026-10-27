@@ -67,10 +67,10 @@ export const UserTypeSelection = () => {
 	};
 
 	return (
-		<div className="flex flex-col min-h-screen w-screen justify-center items-center bg-gradient-to-br from-blue-50 to-white px-4">
+		<div className="flex flex-col min-h-[100dvh] w-full justify-center items-center bg-gradient-to-br from-blue-50 to-white px-4 py-8 sm:py-12">
 			<div className="w-full max-w-4xl">
 				{/* Header */}
-				<div className="flex flex-col justify-center items-center gap-6 mb-12">
+				<div className="flex flex-col justify-center items-center gap-6 mb-8 sm:mb-12">
 					<div className="flex items-center justify-around">
 						<img
 							alt="Vibratto logo"
@@ -180,9 +180,9 @@ export const UserTypeSelection = () => {
 
 				{/* Info Text */}
 				<div className="flex items-center justify-center mb-8">
-					<div className="flex items-center text-gray-600 text-sm">
+					<div className="flex items-start sm:items-center text-gray-600 text-sm">
 						<svg
-							className="w-4 h-4 mr-2"
+							className="w-4 h-4 mr-2 mt-0.5 sm:mt-0 shrink-0"
 							fill="currentColor"
 							viewBox="0 0 20 20"
 						>
@@ -202,7 +202,7 @@ export const UserTypeSelection = () => {
 					<Button
 						onClick={handleContinue}
 						disabled={selectedRoles.size === 0}
-						className="px-8 py-3 text-lg font-semibold min-w-[200px]"
+						className="w-full sm:w-auto px-8 py-3 text-lg font-semibold min-w-[200px]"
 					>
 						Continuar
 					</Button>

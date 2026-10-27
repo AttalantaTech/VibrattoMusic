@@ -199,9 +199,11 @@ export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
 			onPointerMove={handlePointerMove}
 			onPointerUp={handlePointerUp}
 			onClick={handleClick}
+			// z-40: modals and full-screen editors (z-50) cover it instead of it
+			// sitting on their buttons; same layer as the profile action bar
 			className={`
         fixed
-        z-50
+        z-40
         flex
         w-auto
         select-none
