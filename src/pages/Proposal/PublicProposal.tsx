@@ -3,6 +3,7 @@ import { Download, FileText } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/Button/Button";
 import { useProposalPDF } from "@/hooks/useProposals";
+import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
 
 export const PublicProposal = () => {
 	const { id } = useParams({ from: "/proposta/$id" });
@@ -73,11 +74,13 @@ export const PublicProposal = () => {
 					</Button>
 				</div>
 
-				<iframe
-					src={pdfUrl}
-					className="w-full h-[75vh] rounded-lg border border-gray-200"
-					title="PDF da Proposta"
-				/>
+				<div className="overflow-hidden rounded-lg border border-gray-200">
+					<PdfViewer
+						src={pdfUrl}
+						className="w-full h-[75vh]"
+						title="PDF da Proposta"
+					/>
+				</div>
 			</div>
 		</MainLayout>
 	);

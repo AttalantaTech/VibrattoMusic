@@ -20,6 +20,7 @@ import { Accordion } from "@/components/ui/Accordion";
 import { useState } from "react";
 import { useContractPDF } from "@/hooks/useContracts";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
 
 interface ProposalDetailsModalProps {
 	mode: "Contracted" | "Contractor";
@@ -146,8 +147,8 @@ export const ProposalDetailsModal = ({
 							<>
 								{proposalPdfUrl ? (
 									<div className="border-y-2 border-gray-100">
-										<iframe
-											src={`${proposalPdfUrl}`}
+										<PdfViewer
+											src={proposalPdfUrl}
 											className="w-full h-[60dvh] sm:h-[700px] border-0"
 											title="PDF da Proposta"
 										/>
@@ -183,10 +184,10 @@ export const ProposalDetailsModal = ({
 							<>
 								{contractPdfUrl ? (
 									<div className="border-y-2 border-gray-100">
-										<iframe
-											src={`${contractPdfUrl}`}
+										<PdfViewer
+											src={contractPdfUrl}
 											className="w-full h-[60dvh] sm:h-[700px] border-0"
-											title="PDF da Proposta"
+											title="PDF do Contrato"
 										/>
 									</div>
 								) : contractPdfLoading ? (
