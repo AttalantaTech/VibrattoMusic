@@ -143,10 +143,21 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 	return (
 		<div ref={dropdownRef} className={cn("relative inline-block", className)}>
 			<div
+				role="button"
+				tabIndex={0}
+				aria-haspopup="menu"
+				aria-expanded={isOpen}
+				aria-label={`Trocar de perfil (atual: ${activeMusicalProduct?.nome ?? userData?.nome ?? ""})`}
 				onClick={handleTriggerClick}
-				className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+				onKeyDown={(event) => {
+					if (event.key === "Enter" || event.key === " ") {
+						event.preventDefault();
+						handleTriggerClick();
+					}
+				}}
+				className="flex items-center gap-1 sm:gap-3 p-1 sm:p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
 			>
-				<div className="flex flex-col">
+				<div className="hidden sm:flex flex-col">
 					<span className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
 						{activeMusicalProduct?.nome ?? userData?.nome ?? ""}
 					</span>
@@ -166,8 +177,8 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 			</div>
 
 			{isOpen && (
-				<div className="absolute z-50 left-0 mt-1 w-64 overflow-hidden rounded-md border bg-white shadow-md">
-					<div className="w-64">
+				<div className="absolute z-50 right-0 mt-1 w-64 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border bg-white shadow-md">
+					<div className="w-full">
 						<div className="px-3 py-2">
 							<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
 								Perfil de Contratante
