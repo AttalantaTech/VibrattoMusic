@@ -96,7 +96,7 @@ export const CreateEventForm = ({
 
 	return (
 		<>
-			<div className="px-6 py-5 border-b border-gray-200">
+			<div className="shrink-0 px-6 py-5 border-b border-gray-200">
 				<DialogHeader>
 					<DialogTitle className="text-xl font-semibold text-gray-900">
 						{currentEvent ? "Edição de Evento" : "Novo Evento"}
@@ -106,8 +106,11 @@ export const CreateEventForm = ({
 				</DialogHeader>
 			</div>
 
-			<form onSubmit={handleSubmit(onSubmit)}>
-				<div className="px-6 py-5 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+			<form
+				onSubmit={handleSubmit(onSubmit)}
+				className="flex min-h-0 flex-1 flex-col"
+			>
+				<div className="min-h-0 flex-1 px-6 py-5 space-y-6 overflow-y-auto">
 					{/* TITLE */}
 					<div>
 						<Label
@@ -349,8 +352,9 @@ export const CreateEventForm = ({
 					</div>
 				</div>
 
-				{/* Footer */}
-				<div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+				{/* Footer. Phones: date on its own line and full-width buttons; in one
+				    row the buttons wrapped their text and got cut at the screen bottom */}
+				<div className="shrink-0 px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 					<div className="text-sm text-gray-500">
 						{form.getValues().date && (
 							<span>
@@ -360,7 +364,7 @@ export const CreateEventForm = ({
 							</span>
 						)}
 					</div>
-					<div className="flex gap-3">
+					<div className="grid grid-cols-2 gap-3 sm:flex">
 						<Button
 							type="button"
 							variant="secondary"
@@ -371,11 +375,15 @@ export const CreateEventForm = ({
 									onClose();
 								}
 							}}
-							className="px-4 py-2"
+							className="px-4 py-2 whitespace-nowrap"
 						>
 							Cancelar
 						</Button>
-						<Button type="submit" variant="primary" className="px-4 py-2">
+						<Button
+							type="submit"
+							variant="primary"
+							className="px-4 py-2 whitespace-nowrap"
+						>
 							{currentEvent ? "Salvar" : "Criar Evento"}
 						</Button>
 					</div>
