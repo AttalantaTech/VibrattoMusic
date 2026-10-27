@@ -262,7 +262,9 @@ export const SalesTab = () => {
 						},
 						status: event.status.nome,
 						statusComponent: <ProposalStatusCard name={event.status.nome} />,
-						clientName: event.contratante.nome,
+						// Standalone proposals have no registered contractor: the API sends
+						// an empty contratante.nome and the typed name in nomeContratante
+						clientName: event.contratante.nome || event.nomeContratante || "-",
 						value: event.valor,
 						aceitaContraProposta: event.aceitaContraProposta,
 						canSign:
