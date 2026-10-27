@@ -122,7 +122,7 @@ const columnsSale = [
 		},
 	}),
 	columnHelperSale.accessor("statusComponent", {
-		header: "status",
+		header: "Status",
 		minSize: 200,
 		cell: (info) => {
 			const StatusComponent = info.getValue();

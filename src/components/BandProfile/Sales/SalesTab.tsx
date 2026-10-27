@@ -340,7 +340,8 @@ export const SalesTab = () => {
 				</div>
 				<p className="text-gray-600 text-sm">
 					{filteredProposals?.data.length} de{" "}
-					{filteredProposals?.pagination.total} vendas
+					{filteredProposals?.pagination.total}{" "}
+					{filteredProposals?.pagination.total === 1 ? "venda" : "vendas"}
 				</p>
 			</div>
 
