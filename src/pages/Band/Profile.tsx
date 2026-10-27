@@ -106,10 +106,14 @@ export const BandProfile = () => {
 		<MainLayout>
 			{/** Pending onboardings warning */}
 			{onboardingData && onboardingData?.length > 0 ? (
-				<div className="flex justify-center py-10">
-					<div className="flex flex-col sm:flex-row items-center gap-4 bg-yellow-50 border-2 rounded-md p-4">
-						<TriangleAlert fill="#fde047" className="h-8 w-8" />
-						<span className="block">
+				// Phones: one compact row (it took ~240px on top of every logged page)
+				<div className="flex justify-center px-4 py-3 sm:px-0 sm:py-10">
+					<div className="flex w-full sm:w-auto items-center gap-3 sm:gap-4 bg-yellow-50 border-2 rounded-md p-3 sm:p-4">
+						<TriangleAlert
+							fill="#fde047"
+							className="h-5 w-5 sm:h-8 sm:w-8 shrink-0"
+						/>
+						<span className="block min-w-0 flex-1 text-sm sm:text-base">
 							Você possui{" "}
 							<strong>
 								{onboardingData.length}{" "}
@@ -117,20 +121,25 @@ export const BandProfile = () => {
 									? "perfil pendente"
 									: "perfis pendentes"}
 							</strong>
-							. Clique no botão para visualizar{" "}
-							{onboardingData.length === 1 ? "este perfil" : "estes perfis"} e
-							prosseguir com o cadastro.
+							.
+							<span className="hidden sm:inline">
+								{" "}
+								Clique no botão para visualizar{" "}
+								{onboardingData.length === 1 ? "este perfil" : "estes perfis"} e
+								prosseguir com o cadastro.
+							</span>
 						</span>
 
 						<Button
-							className="w-full sm:w-auto min-w-[140px]"
+							className="shrink-0 sm:min-w-[140px]"
 							size="sm"
 							variant="primary"
 							onClick={() => {
 								setOpenOnboardingsPending(true);
 							}}
 						>
-							Perfis Pendentes
+							<span className="sm:hidden">Ver</span>
+							<span className="hidden sm:inline">Perfis Pendentes</span>
 						</Button>
 					</div>
 				</div>

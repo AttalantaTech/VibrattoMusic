@@ -3,7 +3,7 @@ import { Image as ImageIcon } from "lucide-react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 
 import { FormProvider, useFieldArray } from "react-hook-form";
-import { ChevronLeft, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { extractSpotifyResource } from "@/lib/utils/cn";
 
 import { Button } from "@/components/ui/Button/Button";
@@ -290,7 +290,7 @@ export default function MediaStep() {
 						<div className="flex flex-col sm:flex-row w-full gap-8 items-stretch sm:items-center justify-end mt-4 md:mt-6">
 							<Button
 								type="button"
-								variant="secondary"
+								variant="outline"
 								className="w-full sm:w-auto"
 								onClick={async () => {
 									const search = onboardingData?.id
@@ -319,7 +319,8 @@ export default function MediaStep() {
 								{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 
 								<div className="flex items-center gap-1">
-									{loading ? "Salvando..." : "Salvar"}
+									{loading ? "Salvando..." : "Continuar"}
+									{!loading && <ChevronRight />}
 								</div>
 							</Button>
 						</div>

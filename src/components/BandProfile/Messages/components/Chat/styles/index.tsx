@@ -3,6 +3,7 @@ import { Check, CheckCheck } from "lucide-react";
 import {
 	formatMessageTime,
 	getParticipantInitials,
+	isCardMessage,
 	isMessageRead,
 } from "../../../utils/Message";
 import { useAuthStore } from "@/store/authStore";
@@ -82,10 +83,18 @@ export const OwnMessageElement = ({
 			<Check className="w-4 h-4 text-gray-400" />
 		);
 
+	// Phones: cards take the whole width; at 80% their text wrapped every
+	// two or three words
+	const isCard = isCardMessage(message);
+
 	return (
-		<div className="flex items-end space-x-2 max-w-[80%]">
-			<div className="flex flex-col items-end">
-				<div className="bg-primary-400 text-white px-4 py-3 rounded-l-2xl rounded-tr-2xl rounded-br-md shadow-lg">
+		<div
+			className={`flex items-end space-x-2 ${isCard ? "w-full sm:w-auto sm:max-w-[80%]" : "max-w-[80%]"}`}
+		>
+			<div className={`flex flex-col items-end ${isCard ? "w-full" : ""}`}>
+				<div
+					className={`bg-primary-400 text-white py-3 rounded-l-2xl rounded-tr-2xl rounded-br-md shadow-lg ${isCard ? "w-full px-3 sm:px-4" : "px-4"}`}
+				>
 					<div className="text-sm leading-relaxed">
 						<MessageHtml html={message.conteudo} />
 					</div>
@@ -125,11 +134,19 @@ export const MessageElement = ({
 					)}
 				</span>
 			</div>
-			<div className="flex flex-col">
+			{/* min-w-0 flex-1: the column sized to its content, and the bubble's
+			    80% applied on top of it squeezed cards to ~190px on phones */}
+			<div className="flex min-w-0 flex-1 flex-col items-start">
 				<p className="text-xs font-medium text-gray-700 mb-1 px-1">
 					{userName}
 				</p>
-				<div className="bg-white max-w-[80%] border border-gray-200 px-4 py-3 rounded-r-2xl rounded-tl-2xl rounded-bl-md shadow-lg">
+				<div
+					className={`bg-white border border-gray-200 py-3 rounded-r-2xl rounded-tl-2xl rounded-bl-md shadow-lg ${
+						isCardMessage(message)
+							? "w-full px-3 sm:w-auto sm:max-w-[80%] sm:px-4"
+							: "max-w-[80%] px-4"
+					}`}
+				>
 					<div className="text-sm text-gray-800 leading-relaxed">
 						<MessageHtml html={message.conteudo} />
 					</div>
