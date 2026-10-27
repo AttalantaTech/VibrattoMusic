@@ -222,7 +222,7 @@ export default function ScheduleStep() {
 					{/* Seção da Agenda */}
 					<div className={styles.sectionContainer}>
 						<div className={styles.sectionTitle}></div>
-						<p className="text-gray-600 text-justify text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
+						<p className="text-gray-600 lg:text-justify text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
 							Adicione eventos à sua agenda. Os contratantes só poderão
 							visualizar a disponibilidade da agenda clicando em uma data por
 							vez.
