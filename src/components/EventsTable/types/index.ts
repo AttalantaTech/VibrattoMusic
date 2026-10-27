@@ -32,6 +32,7 @@ export type EventsTableSaleRow = {
 	onSeeProposal: (proposalId: string) => void;
 	onSeeContract: (proposalId: string) => void;
 	onEditContract: (proposalId: string) => void;
+	onShareProposal: (proposalId: string) => void;
 };
 
 export type EventsTableBudgetsRow = {

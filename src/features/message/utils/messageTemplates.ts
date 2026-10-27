@@ -219,6 +219,11 @@ export const entityLinks = {
 		label: "Ver proposta",
 		url: appUrl(`band/me?tab=hires&id=${id}`),
 	}),
+	// Opens without login, for people who don't have an account
+	proposalPublic: (identificadorUnico: string): MessageLink => ({
+		label: "Ver proposta",
+		url: appUrl(`proposta/${identificadorUnico}`),
+	}),
 	contractTab: (id: number | string): MessageLink => ({
 		label: "Ver contrato",
 		url: appUrl(`band/me?tab=contracts&id=${id}`),

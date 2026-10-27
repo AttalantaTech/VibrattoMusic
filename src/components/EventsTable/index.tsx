@@ -1,5 +1,5 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { Eye, File, Pen, SquarePen } from "lucide-react";
+import { Eye, File, Pen, Share, SquarePen } from "lucide-react";
 import type {
 	EventsTableBudgetsData,
 	EventsTableBudgetsRow,
@@ -168,6 +168,7 @@ const columnsSale = [
 			const onSeeProposal = row.original.onSeeProposal;
 			const onSeeContract = row.original.onSeeContract;
 			const onEditContract = row.original.onEditContract;
+			const onShareProposal = row.original.onShareProposal;
 
 			return (
 				<div className="flex gap-2 text-gray-500">
@@ -205,6 +206,15 @@ const columnsSale = [
 						>
 							<File color="gray" size={16} />
 							<p>Visualizar do Contrato </p>
+						</MoreOptionsDropdownItem>
+
+						<MoreOptionsDropdownItem
+							onClick={() => {
+								onShareProposal(row.original.event.id);
+							}}
+						>
+							<Share color="gray" size={16} />
+							<p>Compartilhar Proposta</p>
 						</MoreOptionsDropdownItem>
 					</Dropdown>
 				</div>
