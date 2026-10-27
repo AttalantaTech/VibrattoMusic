@@ -44,7 +44,7 @@ export const RatingComment = ({ comment }: RatingCommentProps) => {
 					</div>
 				</div>
 			</div>
-			<p className="text-gray-600 text-justify">{comment.comment}</p>
+			<p className="text-gray-600 lg:text-justify">{comment.comment}</p>
 		</div>
 	);
 };

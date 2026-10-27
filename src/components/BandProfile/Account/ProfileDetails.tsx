@@ -70,7 +70,7 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 			case "clipping":
 				if (musicalProduct?.clipagem.length === 0) {
 					return (
-						<div className="flex items-center justify-center w-full min-h-[380px] bg-gray-100">
+						<div className="flex items-center justify-center w-full min-h-[120px] lg:min-h-[380px] rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-6 lg:rounded-none lg:border-0 lg:bg-gray-100">
 							<span className="block text-center text-sm text-gray-600">
 								Nenhum arquivo foi adicionado
 							</span>
@@ -176,7 +176,7 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 					);
 				} else {
 					return (
-						<div className="flex items-center justify-center w-full min-h-[380px] bg-gray-100">
+						<div className="flex items-center justify-center w-full min-h-[120px] lg:min-h-[380px] rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-6 lg:rounded-none lg:border-0 lg:bg-gray-100">
 							<span className="block text-center text-sm text-gray-600">
 								Nenhum mapa de palco foi adicionado
 							</span>
@@ -202,7 +202,7 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 					);
 				} else {
 					return (
-						<div className="flex items-center justify-center w-full min-h-[380px] bg-gray-100">
+						<div className="flex items-center justify-center w-full min-h-[120px] lg:min-h-[380px] rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-6 lg:rounded-none lg:border-0 lg:bg-gray-100">
 							<span className="block text-center text-sm text-gray-600">
 								Nenhum texto ou arquivo de rider técnico foi adicionado
 							</span>
@@ -230,7 +230,7 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 					);
 				} else {
 					return (
-						<div className="flex items-center justify-center w-full min-h-[380px] bg-gray-100">
+						<div className="flex items-center justify-center w-full min-h-[120px] lg:min-h-[380px] rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-6 lg:rounded-none lg:border-0 lg:bg-gray-100">
 							<span className="block text-center text-sm text-gray-600">
 								Nenhum texto ou arquivo de infraestrutura de camarim foi
 								adicionado
@@ -365,7 +365,7 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 			{musicalProduct.descricao && (
 				<section className={`${styles.section} order-1 lg:order-none`}>
 					<h2 className={styles.subtitle}>BIO</h2>
-					<p className="text-sm lg:text-lg text-gray-800 text-justify">
+					<p className="text-sm lg:text-lg text-gray-800 lg:text-justify">
 						{musicalProduct.descricao}
 					</p>
 				</section>

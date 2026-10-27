@@ -156,7 +156,7 @@ export const BandProfile = ({
 		);
 
 		return (
-			<div className="relative aspect-video h-full w-full rounded-lg">
+			<div className="relative h-[152px] w-full rounded-lg overflow-hidden">
 				{loadingSpotify && (
 					<div className="absolute inset-0 bg-gray-200 animate-pulse z-10" />
 				)}
@@ -521,6 +521,47 @@ export const BandProfile = ({
 					)}
 				</div>
 			</main>
+
+			{/* Phones and tablets: the actions sit far down the page (~1500px on a
+			    phone), so a fixed bar keeps price + main actions in reach. The
+			    spacer stops it from covering the end of the page */}
+			{musicalProduct.id !== activeProduct?.id && (
+				<>
+					<div aria-hidden="true" className="h-24 lg:hidden" />
+					<div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(16,24,40,0.08)] backdrop-blur lg:hidden">
+						<div className="mx-auto flex max-w-3xl items-center gap-3">
+							{musicalProduct.valorServico ? (
+								<div className="flex min-w-0 flex-col leading-tight">
+									<span className="text-xs text-gray-500">A partir de</span>
+									<span className="truncate text-lg font-bold text-primary-900">
+										R$ {musicalProduct.valorServico.toLocaleString("pt-BR")}
+									</span>
+								</div>
+							) : null}
+							<div className="ml-auto flex shrink-0 items-center gap-2">
+								<Button
+									className="h-12 gap-2 px-3 min-[360px]:px-4"
+									onClick={handleRequestCheckAvailability}
+									disabled={startConversationMutation.isPending}
+								>
+									{/* Under 360px the label only fits without the icon */}
+									<BookCheck size={18} className="max-[359px]:hidden" />
+									Disponibilidade
+								</Button>
+								<button
+									type="button"
+									aria-label="Chat"
+									onClick={handleRequestQuote}
+									disabled={startConversationMutation.isPending}
+									className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-700 text-white hover:bg-green-700/90 disabled:opacity-50"
+								>
+									<MessageCircle size={20} />
+								</button>
+							</div>
+						</div>
+					</div>
+				</>
+			)}
 
 			<CheckAvailabilityModal
 				isOpen={isCheckAvailabilityOpen}
