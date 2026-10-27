@@ -15,11 +15,13 @@ export const registerSchema = z
 		nomeResponsavelLegal: z.string().trim(),
 		cpfResponsavelLegal: z.string(),
 
-		celular: z.string().min(13, "celular é obrigatório"),
+		celular: z.string().min(13, "Celular é obrigatório"),
 		cep: z
 			.string()
-			.min(8, "CEP deve ter no mínimo 6 dígitos")
-			.max(9, "CEP deve ter no máximo 9 dígitos"),
+			.refine(
+				(value) => value.replace(/\D/g, "").length === 8,
+				"CEP deve ter 8 dígitos"
+			),
 		logradouro: z.string().min(1, "Logradouro é obrigatório"),
 		bairro: z.string().min(1, "Bairro é obrigatório"),
 		cidade: z.string().min(1, "Cidade é obrigatória"),
