@@ -1,7 +1,7 @@
 import type React from "react";
 import { useState } from "react";
-import { X } from "lucide-react";
 import { useStartConversation } from "../../../../../hooks/useMessaging";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import type { Conversation } from "@/api/services/messages/types";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
@@ -24,8 +24,6 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 	const { activeProduct } = useMusicalProductStore();
 	const [message, setMessage] = useState("");
 	const { mutate: startConversation, isPending } = useStartConversation();
-
-	if (!isOpen) return null;
 
 	const handleSubmit = (event: React.FormEvent) => {
 		event.preventDefault();
@@ -63,19 +61,17 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 	};
 
 	return (
-		<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-			<div className="bg-white rounded-lg p-6 w-full max-w-md">
-				<div className="flex justify-between items-center mb-4">
-					<h2 className="text-xl font-semibold">
-						Iniciar conversa com {participantName}
-					</h2>
-					<button
-						onClick={onClose}
-						className="text-gray-400 hover:text-gray-600"
-					>
-						<X className="w-5 h-5" />
-					</button>
-				</div>
+		<Dialog
+			open={isOpen}
+			onOpenChange={(open) => {
+				// Stays open while the message is being sent
+				if (!open && !isPending) onClose();
+			}}
+		>
+			<DialogContent aria-describedby={undefined} className="block max-w-md">
+				<DialogTitle className="mb-4 pr-8 text-xl font-semibold leading-snug">
+					Iniciar conversa com {participantName}
+				</DialogTitle>
 
 				<form onSubmit={handleSubmit}>
 					<div className="mb-4">
@@ -115,7 +111,7 @@ export const StartConversationModal: React.FC<StartConversationModalProps> = ({
 						</button>
 					</div>
 				</form>
-			</div>
-		</div>
+			</DialogContent>
+		</Dialog>
 	);
 };
