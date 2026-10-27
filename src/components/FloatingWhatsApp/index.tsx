@@ -24,6 +24,14 @@ export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
 				"messages",
 	});
 
+	// Public profile below lg has a fixed action bar at the bottom (80px with
+	// the iPhone home indicator): the button stays above it instead of on it
+	const isOnPublicProfile = useRouterState({
+		router,
+		select: (state) => state.location.pathname.startsWith("/band/profile/"),
+	});
+	const reservedBottom = isOnPublicProfile && window.innerWidth < 1024 ? 80 : 0;
+
 	// Touch screens get a 48px round icon-only button: the "Fale conosco"
 	// pill shrank its text to 8px there and covered page content
 	const isTouch = window.matchMedia("(pointer: coarse)").matches;
@@ -211,7 +219,13 @@ export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
         transition-transform
 			`}
 			style={{
-				top: `${position.top}px`,
+				top: `${Math.max(
+					0,
+					Math.min(
+						position.top,
+						window.innerHeight - BUTTON_HEIGHT - MARGIN - reservedBottom
+					)
+				)}px`,
 				right: `${position.right}px`,
 				height: `${BUTTON_HEIGHT}px`,
 				width: isTouch ? `${BUTTON_WIDTH}px` : undefined,
