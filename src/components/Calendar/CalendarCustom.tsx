@@ -95,8 +95,8 @@ export const CalendarCustom = ({
 
 	// Renders the Top (Month, Year, and Navigation)
 	const renderHeader = () => (
-		<div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between px-6 py-4 border-b bg-white">
-			<div className="ml-6" />
+		<div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2 px-4 sm:px-6 py-3 sm:py-4 border-b bg-white">
+			<div className="hidden sm:block ml-6" />
 			<div className="flex gap-2">
 				<button
 					onClick={previousMonth}
@@ -123,7 +123,7 @@ export const CalendarCustom = ({
 				</button>
 			</div>
 
-			<div className="grid grid-cols-2 min-[420px]:grid-cols-3 items-end gap-6 sm:gap-1 text-xs text-gray-500 sm:flex sm:flex-col">
+			<div className="flex flex-wrap justify-center gap-x-4 gap-y-1 sm:flex-col sm:items-end sm:gap-1 text-xs text-gray-500">
 				<div className="flex items-center gap-1">
 					<span className="block">Disponível</span>
 					<span className="block h-3 w-3 rounded-full bg-[#039855] border border-[#039855]" />
@@ -196,7 +196,7 @@ export const CalendarCustom = ({
 								handleSelectedDate(cloneDay);
 							}
 						}}
-						className={`min-h-[120px] border-r border-b p-2 transition-colors  flex flex-col
+						className={`min-h-[52px] sm:min-h-[120px] border-r border-b p-1 sm:p-2 transition-colors flex flex-col items-center sm:items-stretch
               ${
 								!isCurrentMonth
 									? "bg-gray-50/50 text-gray-400 cursor-not-allowed"
@@ -233,8 +233,15 @@ export const CalendarCustom = ({
 							/>
 						)}
 
+						{eventsForDay.length > 0 && (
+							<span
+								aria-hidden="true"
+								className="mt-1 h-1.5 w-1.5 rounded-full bg-primary-500 sm:hidden"
+							/>
+						)}
+
 						{/* Event Space */}
-						<div className="mt-1 flex-1 overflow-y-auto">
+						<div className="mt-1 hidden sm:block flex-1 overflow-y-auto">
 							{eventsForDay.length > 0 &&
 								eventsForDay
 									.sort((a, b) => {
