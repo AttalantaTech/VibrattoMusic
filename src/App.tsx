@@ -21,7 +21,7 @@ const App = ({ router }: AppProps): FunctionComponent => {
 						<RouterProvider router={router} />
 						<Toaster position="top-right" richColors />
 						<NotificationContainer />
-						<FloatingWhatsApp />
+						<FloatingWhatsApp router={router} />
 					</MessagesProvider>
 				</AuthProvider>
 			</QueryClientProvider>
