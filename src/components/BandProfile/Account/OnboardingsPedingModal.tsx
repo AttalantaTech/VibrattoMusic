@@ -77,7 +77,7 @@ export const OnboardingsPedingModal = ({
 							</div>
 						) : (
 							<div className="font-light italic text-gray-600">
-								Desconhecido
+								Perfil sem nome
 							</div>
 						)}
 					</div>
