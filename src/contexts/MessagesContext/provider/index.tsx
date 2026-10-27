@@ -133,6 +133,7 @@ export const MessagesProvider = ({ children }: PropsWithChildren) => {
 		messagesContainerRef,
 		user,
 		currentUserId,
+		currentProductId,
 		messagesEndRef,
 	});
 
