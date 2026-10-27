@@ -1,5 +1,6 @@
 import type React from "react";
-import { useState, useRef, useEffect, Children } from "react";
+import { useState, Children } from "react";
+import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { cn } from "../../../lib/utils/cn";
 
 interface DropdownProps {
@@ -10,6 +11,15 @@ interface DropdownProps {
 	side?: "top" | "bottom";
 }
 
+const alignments = {
+	left: "start",
+	right: "end",
+	center: "center",
+} as const;
+
+// The menu is rendered in a portal (outside the page flow), so containers with
+// overflow, like the tables, no longer cut it off; it also flips to the other
+// side or shifts sideways when there is no room on screen
 export const Dropdown: React.FC<DropdownProps> = ({
 	trigger,
 	children,
@@ -18,61 +28,40 @@ export const Dropdown: React.FC<DropdownProps> = ({
 	side = "bottom",
 }) => {
 	const [isOpen, setIsOpen] = useState(false);
-	const dropdownRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				dropdownRef.current &&
-				!dropdownRef.current.contains(event.target as Node)
-			) {
-				setIsOpen(false);
-			}
-		};
-
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, []);
-
-	const alignmentClasses = {
-		left: "left-0",
-		right: "right-0",
-		center: "left-1/2 transform -translate-x-1/2",
-	};
-
-	const sideClasses = {
-		bottom: "top-full mt-1",
-		top: "bottom-full mb-1",
-	};
+	const hasItems = Children.count(children) > 0;
 
 	return (
-		<div ref={dropdownRef} className="relative inline-block">
-			<div
-				onClick={() => {
-					if (Children.count(children) > 0) setIsOpen(!isOpen);
-				}}
-				className="cursor-pointer"
-			>
-				{trigger}
+		<PopoverPrimitive.Root
+			open={isOpen && hasItems}
+			onOpenChange={(open) => {
+				setIsOpen(open && hasItems);
+			}}
+		>
+			{/* Wrapper kept as the positioning context: the tab underline in
+			    TabNavigation is absolute to it */}
+			<div className="relative inline-block">
+				<PopoverPrimitive.Trigger asChild>
+					<div className="cursor-pointer">{trigger}</div>
+				</PopoverPrimitive.Trigger>
 			</div>
 
-			{isOpen && (
-				<div
+			<PopoverPrimitive.Portal>
+				<PopoverPrimitive.Content
+					side={side}
+					align={alignments[align]}
+					sideOffset={4}
+					collisionPadding={8}
 					onClick={() => {
-						if (Children.count(children) > 0) setIsOpen(!isOpen);
+						setIsOpen(false);
 					}}
 					className={cn(
-						"absolute z-50 mt-1 min-w-[8rem] rounded-md border bg-white flex flex-col shadow-md w-max",
-						sideClasses[side],
-						alignmentClasses[align],
+						"z-50 min-w-[8rem] rounded-md border bg-white flex flex-col shadow-md w-max outline-none",
 						className
 					)}
 				>
 					{children}
-				</div>
-			)}
-		</div>
+				</PopoverPrimitive.Content>
+			</PopoverPrimitive.Portal>
+		</PopoverPrimitive.Root>
 	);
 };
