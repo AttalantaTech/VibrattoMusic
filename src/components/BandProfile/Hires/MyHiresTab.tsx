@@ -212,22 +212,16 @@ export const MyHiresTab = () => {
 
 			{/* Hirings Table */}
 			<div className="space-y-4">
-				<div className="flex items-center justify-between">
-					<h2 className="font-bold text-xl text-gray-900">Contratações</h2>
-					<span className="text-sm text-gray-500">
-						{filteredProposals?.data.length} contratações encontradas
-					</span>
-				</div>
-				<div className="flex justify-between">
-					<div className="text-black mt-1 flex items-center gap-4">
-						<p className="font-bold">Filtrar por status:</p>
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+					<div className="text-black mt-1 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-4">
+						<p className="font-bold whitespace-nowrap">Filtrar por status:</p>
 						<Dropdown
 							align="left"
 							className="p-0.5"
 							trigger={
 								<Button
 									variant="outline"
-									className="min-w-[180px] justify-between"
+									className="w-full sm:w-auto min-w-[180px] justify-between whitespace-nowrap"
 								>
 									{splitOnUppercase(statusFilter)}
 									<ChevronDown className="h-4 w-4 ml-2" />
@@ -251,7 +245,10 @@ export const MyHiresTab = () => {
 					</div>
 					<p className="text-gray-600 text-sm">
 						{filteredProposals?.data.length} de{" "}
-						{filteredProposals?.pagination.total} vendas
+						{filteredProposals?.pagination.total}{" "}
+						{filteredProposals?.pagination.total === 1
+							? "contratação"
+							: "contratações"}
 					</p>
 				</div>
 
