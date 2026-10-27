@@ -156,7 +156,7 @@ export const BandProfile = ({
 		);
 
 		return (
-			<div className="relative aspect-video h-full w-full rounded-lg">
+			<div className="relative h-[152px] w-full rounded-lg overflow-hidden">
 				{loadingSpotify && (
 					<div className="absolute inset-0 bg-gray-200 animate-pulse z-10" />
 				)}
