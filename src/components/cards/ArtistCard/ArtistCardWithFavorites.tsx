@@ -8,11 +8,12 @@ import type { MusicalProductApiResponse } from "../../../api/types";
 interface ArtistCardWithFavoritesProps {
 	product: MusicalProductApiResponse;
 	onProfileClick?: () => void;
+	listOnMobile?: boolean;
 }
 
 export const ArtistCardWithFavorites: React.FC<
 	ArtistCardWithFavoritesProps
-> = ({ product, onProfileClick }) => {
+> = ({ product, onProfileClick, listOnMobile }) => {
 	const { isAuthenticated } = useAuthStore();
 	const { data: favorites } = useFavorites();
 	const toggleFavoriteMutation = useToggleFavorite();
@@ -59,6 +60,7 @@ export const ArtistCardWithFavorites: React.FC<
 			isFavorite={isFavorite}
 			isFavoriteLoading={toggleFavoriteMutation.isPending}
 			onProfileClick={onProfileClick}
+			listOnMobile={listOnMobile}
 		/>
 	);
 };
