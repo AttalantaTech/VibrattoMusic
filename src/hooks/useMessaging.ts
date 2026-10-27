@@ -12,7 +12,11 @@ import type {
 	PaginationParameters,
 	PaginatedResponse,
 } from "../api/types";
-import type { Conversation, Message } from "@/api/services/messages/types";
+import type {
+	Conversation,
+	Message,
+	StartConversation,
+} from "@/api/services/messages/types";
 
 // Query Keys
 export const messagingKeys = {
@@ -29,18 +33,31 @@ export const messagingKeys = {
 /**
  * Hook to get conversations
  */
-export const useConversations = (
-	IdProdutoMusical: number | null | undefined,
-	parameters?: PaginationParameters,
-	enabled: boolean = true
-) => {
+export const useConversations = ({
+	parameters,
+	IdContratante,
+	IdProdutoMusical,
+	IdProdutoMusicalContratante,
+	enabled = true,
+}: {
+	IdProdutoMusical?: number | null;
+	IdContratante?: number | null;
+	IdProdutoMusicalContratante?: number | null;
+	parameters?: PaginationParameters;
+	enabled?: boolean;
+}) => {
 	return useQuery<Array<Conversation>>({
 		queryKey: [...messagingKeys.conversations(), IdProdutoMusical],
 		queryFn: async () => {
 			if (!IdProdutoMusical) {
-				return messagingService.getConversations(undefined, parameters);
+				return messagingService.getConversations({ parameters });
 			}
-			return messagingService.getConversations(IdProdutoMusical, parameters);
+			return messagingService.getConversations({
+				IdContratante,
+				IdProdutoMusical,
+				IdProdutoMusicalContratante,
+				parameters,
+			});
 		},
 		enabled,
 		staleTime: 30 * 1000, // 30 seconds
@@ -135,23 +152,8 @@ export const useSendMessage = () => {
 export const useStartConversation = () => {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: ({
-			participanteId,
-			conteudo,
-			senderType,
-			produtoMusicalContratanteId,
-		}: {
-			participanteId: number;
-			conteudo: string;
-			senderType: number;
-			produtoMusicalContratanteId: number | null;
-		}) =>
-			messagingService.startConversation(
-				participanteId,
-				conteudo,
-				senderType,
-				produtoMusicalContratanteId
-			),
+		mutationFn: (params: StartConversation) =>
+			messagingService.startConversation(params),
 		onSuccess: () => {
 			// Invalidate conversations list
 			void queryClient.invalidateQueries({

@@ -19,11 +19,10 @@ export const useMessagesQueries = ({
 		data: conversationsData,
 		isLoading: isConversationsLoading,
 		refetch: refetchConversations,
-	} = useConversations(
-		currentProductId,
-		undefined,
-		shouldLoadConversations && !!token
-	);
+	} = useConversations({
+		IdProdutoMusical: currentProductId,
+		enabled: shouldLoadConversations && !!token,
+	});
 
 	const {
 		data: historyMessages,

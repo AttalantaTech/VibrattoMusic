@@ -1014,7 +1014,7 @@ export const ConsolidadoVendasTab = ({
 				onClose={() => {
 					setIsProposalModalOpen(false);
 				}}
-				recipientId={currentProductId}
+				contractorId={currentProductId || 0}
 			/>
 
 			{/* Proposal Details Modal */}

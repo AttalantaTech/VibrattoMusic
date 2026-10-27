@@ -1,4 +1,5 @@
 import type { Message } from "@/api/services/messages/types";
+import { toBR } from "@/utils";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -18,8 +19,7 @@ export const formatMessageTime = (
 ): string => {
 	try {
 		const messageDate = parseISO(date);
-		// Convert to Brazil timezone (UTC-3)
-		const brazilDate = new Date(messageDate.getTime() - 3 * 60 * 60 * 1000);
+		const brazilDate = toBR(messageDate);
 
 		if (isToday(brazilDate)) {
 			return format(brazilDate, "HH:mm");

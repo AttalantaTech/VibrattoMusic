@@ -1,103 +1,3 @@
-// import { FilterSelector } from "../../ui/FilterSelector/FilterSelector";
-// import { UpdateButton } from "../../ui/UpdateButton/UpdateButton";
-// import type { Report } from "../../../common/types";
-// import { ReportsCard } from "../../cards/ReportsCard/ReportsCard";
-// import { LineChartComponent } from "../../charts/line/LineChart";
-// import { dates, values } from "./data";
-// const reports: Array<Report> = [
-// 	{
-// 		icon: <BriefcaseIcon size={20} />,
-// 		value: 8,
-// 		label: "Contratações",
-// 		isUp: true,
-// 		percentage: 14.3,
-// 	},
-// 	{
-// 		icon: <DollarSignIcon size={20} />,
-// 		value: 28500,
-// 		label: "Valor Total Gasto",
-// 		isUp: true,
-// 		percentage: 8.7,
-// 	},
-// 	{
-// 		icon: <TrendingUpIcon size={20} />,
-// 		value: 6,
-// 		label: "Contratos Ativos",
-// 		percentage: 20,
-// 		isUp: true,
-// 	},
-// 	{
-// 		icon: <AlertCircleIcon size={20} />,
-// 		value: 2,
-// 		label: "Aguardando Pagamento",
-// 		percentage: -5.2,
-// 		isUp: false,
-// 	},
-// ];
-
-// const [selectedFilters, setSelectedFilters] = useState<Array<string>>([]);
-// const availableFilters = [
-// 	{ id: "all", label: "Todas" },
-// 	{ id: "active", label: "Ativas" },
-// 	{ id: "pending", label: "Pendentes" },
-// 	{ id: "completed", label: "Concluídas" },
-// 	{ id: "cancelled", label: "Canceladas" },
-// ];
-
-// const [selectedChartFilters, setSelectedChartFilters] = useState<
-// 	Array<string>
-// >([]);
-
-// const chartFilters = [{ id: "spending", label: "Gastos" }];
-
-{
-	/* Filters */
-}
-{
-	/* <div className="flex w-full justify-between items-center">
-				<FilterSelector
-					filters={availableFilters}
-					selectedFilters={selectedFilters}
-					onFilterChange={setSelectedFilters}
-				/>
-				<UpdateButton onClick={() => {}} />
-			</div> */
-}
-
-{
-	/* Statistics Cards */
-}
-{
-	/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-				{reports.map((report, index) => (
-					<ReportsCard key={index} report={report} />
-				))}
-			</div>
-			<hr className="w-full border-gray-200" /> */
-}
-{
-	/* Spending Chart */
-}
-{
-	/* <div className="flex flex-col w-full bg-gray-50 border border-gray-200 gap-6 p-6 rounded-lg">
-				<div className="w-full flex items-center justify-between">
-					<div className="flex gap-3 items-center">
-						<div className="bg-white border border-gray-300 rounded-lg p-2 text-gray-600">
-							<ChartLineIcon size={14} />
-						</div>
-						<h3 className="font-medium text-gray-900">Evolução de Gastos</h3>
-						<FilterSelector
-							filters={chartFilters}
-							selectedFilters={selectedChartFilters}
-							onFilterChange={setSelectedChartFilters}
-						/>
-					</div>
-					<UpdateButton onClick={() => {}} />
-				</div>
-				<LineChartComponent dates={dates} values={values} />
-			</div> */
-}
-
 import { useCallback, useMemo, useState } from "react";
 import { ChevronDown, Check } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
@@ -120,6 +20,25 @@ import { ProposalRejectionModal } from "../Proposals/components/ProposalRejectio
 import { showApiError } from "@/utils/showApiError";
 import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
+import {
+	proposalParties,
+	resolveStatusSender,
+} from "@/features/message/utils/resolveStatusSender";
+import { useConversations } from "@/hooks/useMessaging";
+import type { Conversation } from "@/api/services/messages/types";
+
+const possibleStatusFilters = [
+	"Todos os status",
+	"Pendente",
+	"Aceita",
+	"Rejeitada",
+	"SinalPago",
+	"EnvioDocumento",
+	"EnvioSignatarios",
+	"EnvioAssinatura",
+	"AguardandoAssinatura",
+	"ContratoAssinado",
+];
 
 export const MyHiresTab = () => {
 	const navigate = useNavigate();
@@ -144,21 +63,32 @@ export const MyHiresTab = () => {
 			IdProdutoMusicalContratante: activeProduct ? activeProduct.id : null,
 		});
 
+	const { data: conversationsData } = useConversations({
+		IdContratante: !activeProduct ? currentUser?.id : activeProduct.id,
+		IdProdutoMusical: activeProduct?.id || null,
+		enabled: false,
+	});
+
 	const updateStatusMutation = useUpdateProposalStatus();
 	const { sendStatusMessage } = useSendStatusMessage();
 
-	const possibleStatusFilters = [
-		"Todos os status",
-		"Pendente",
-		"Aceita",
-		"Rejeitada",
-		"SinalPago",
-		"EnvioDocumento",
-		"EnvioSignatarios",
-		"EnvioAssinatura",
-		"AguardandoAssinatura",
-		"ContratoAssinado",
-	];
+	const conversation = useMemo<Conversation | null>(() => {
+		if (!proposalDetails || !conversationsData) return null;
+
+		const { produtoMusicalContratanteId, contratanteId } =
+			proposalParties(proposalDetails);
+
+		return (
+			conversationsData.find((c) => {
+				if (c.produtoMusicalId !== proposalDetails.produtoMusical.id)
+					return false;
+
+				return produtoMusicalContratanteId
+					? c.produtoMusicalContratanteId === produtoMusicalContratanteId
+					: !c.produtoMusicalContratanteId && c.contratanteId === contratanteId;
+			}) ?? null
+		);
+	}, [conversationsData, proposalDetails]);
 
 	const handleAcceptProposal = async (proposalId: number) => {
 		try {
@@ -168,12 +98,14 @@ export const MyHiresTab = () => {
 				status: "aceito",
 			});
 
+			if (!proposalDetails || !conversation?.id) return;
+
 			sendStatusMessage({
 				type: "proposalAccepted",
-				recipientId: proposalDetails?.produtoMusical.id || 0,
-				recipientName: proposalDetails?.produtoMusical.nome,
-				link: entityLinks.proposalTab(proposalDetails?.id || 0),
-
+				...resolveStatusSender(proposalParties(proposalDetails), "contratante"),
+				conversationId: conversation.id,
+				produtoMusicalName: proposalDetails.produtoMusical.nome,
+				link: entityLinks.proposalTab(proposalDetails.id),
 				errorMessage: "Erro ao enviar solicitação orçamento",
 				payload: {},
 			});

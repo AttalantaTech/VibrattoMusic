@@ -5,17 +5,13 @@ import { SideBar } from "./components/SideBar";
 import { Chat } from "./components/Chat";
 import { SendProposalModal } from "../Proposals/components/SendProposalModal";
 import { StartConversationModal } from "./components/StartConversationModal";
-import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 const MessagesTab = () => {
-	const { activeProduct } = useMusicalProductStore();
-
 	const {
 		selectedConversation,
 		setSelectedConversation,
 		newConversationParticipant,
 		setNewConversationParticipant,
-		handleSendMessage,
 		isProposalModalOpen,
 		setIsProposalModalOpen,
 		isNewConversationModalOpen,
@@ -44,26 +40,13 @@ const MessagesTab = () => {
 					onClose={() => {
 						setIsProposalModalOpen?.(false);
 					}}
-					recipientId={selectedConversation.participanteId}
 					conversationId={selectedConversation.id}
-					contractorId={
-						selectedConversation.produtoMusicalContratanteId ??
-						selectedConversation.contratanteId
-					}
+					contractorId={selectedConversation.contratanteId ?? undefined}
+					contractorProductId={selectedConversation.produtoMusicalContratanteId}
 					contractorName={
 						selectedConversation.produtoMusicalContratanteNome ??
 						selectedConversation.contratanteNome
 					}
-					onProposalSent={async (proposalDetails: string) => {
-						// Send the proposal notification message to the chat
-						if (handleSendMessage) {
-							await handleSendMessage(
-								proposalDetails,
-								activeProduct?.id ? 2 : 1,
-								activeProduct?.id ? activeProduct.id : null
-							);
-						}
-					}}
 				/>
 			)}
 

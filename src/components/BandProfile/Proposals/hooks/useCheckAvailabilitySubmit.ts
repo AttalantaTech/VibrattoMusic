@@ -9,10 +9,13 @@ import { combineDateTime, ensureHHMMSS } from "@/utils";
 import { useCreateBudget } from "@/hooks/useProposals";
 import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
+import { resolveStatusSender } from "@/features/message/utils/resolveStatusSender";
 import { showApiError } from "@/utils/showApiError";
 
 interface CheckAvailabilitySubmit {
 	musicalProduct: MusicalProductApiResponse | null;
+	contratanteId: number;
+	produtoMusicalContratanteId: number | null;
 	tipoEventoOptions: Array<Option>;
 	hasDefineEventTime: boolean;
 	handleClose: () => void;
@@ -35,6 +38,8 @@ export const useCheckAvailabilitySubmit = ({
 	tipoEventoOptions,
 	hasDefineEventTime,
 	handleClose,
+	contratanteId,
+	produtoMusicalContratanteId,
 }: CheckAvailabilitySubmit) => {
 	const { sendStatusMessage } = useSendStatusMessage();
 	const createBudgetMutation = useCreateBudget();
@@ -48,7 +53,8 @@ export const useCheckAvailabilitySubmit = ({
 		}
 
 		const budgetData: CreateBudgetRequest = {
-			idProdutoMusicalContratante: musicalProduct.id,
+			idProdutoMusicalContratante: produtoMusicalContratanteId,
+			idContratante: produtoMusicalContratanteId ? 0 : contratanteId,
 			idTipoEvento: formData.idTipoEvento,
 			descricao: formData.descricao || "",
 			local: formData.local,
@@ -74,8 +80,16 @@ export const useCheckAvailabilitySubmit = ({
 
 			sendStatusMessage({
 				type: "budgetRequested",
-				recipientId: musicalProduct.id,
-				recipientName: musicalProduct.nome,
+				// Whoever requests the budget is the contratante side
+				...resolveStatusSender(
+					{
+						produtoMusicalId: musicalProduct.id,
+						contratanteId,
+						produtoMusicalContratanteId,
+					},
+					"contratante"
+				),
+				produtoMusicalName: musicalProduct.nome,
 				link: budget?.id ? entityLinks.proposalTab(budget.id) : undefined,
 				payload: {
 					eventTypeLabel: eventType?.label ?? "-",

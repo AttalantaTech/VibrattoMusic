@@ -22,10 +22,10 @@ import { useCallback, useMemo, useState } from "react";
 interface BudgetListModalProps {
 	isOpen: boolean;
 	onClose: (value: boolean) => void;
-	idProdutoMusicalConversa?: number | null;
-	idContratanteConversa?: number;
+	contratanteId: number;
+	produtoMusicalId: number | null;
+	produtoMusicalContratanteId: number | null;
 	conversationId?: number;
-	idDestinatario?: number;
 }
 
 const getInitialFormValues = (
@@ -94,10 +94,10 @@ const getInitialFormValues = (
 export const BudgetListModal = ({
 	isOpen,
 	onClose,
-	idProdutoMusicalConversa,
-	idContratanteConversa,
+	produtoMusicalId,
+	produtoMusicalContratanteId,
+	contratanteId,
 	conversationId,
-	idDestinatario,
 }: BudgetListModalProps) => {
 	const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
 	const [budget, setBudget] = useState<BudgetResponse | null>(null);
@@ -107,8 +107,13 @@ export const BudgetListModal = ({
 		isLoading,
 		error,
 	} = useFilteredBudgets({
-		IdProdutoMusical: idProdutoMusicalConversa,
-		IdContratante: idProdutoMusicalConversa ? null : idContratanteConversa,
+		IdContratante: produtoMusicalContratanteId
+			? null
+			: produtoMusicalId
+				? null
+				: contratanteId,
+		IdProdutoMusicalContratante: produtoMusicalContratanteId,
+		IdProdutoMusical: produtoMusicalId,
 	});
 
 	const budgetDetails = useMemo<CreateProposalForm>(
@@ -140,7 +145,7 @@ export const BudgetListModal = ({
 				if (!open) onClose(false);
 			}}
 		>
-			<DialogContent>
+			<DialogContent className="max-w-[900px] max-h-[85vh] overflow-auto">
 				<DialogHeader>
 					<DialogTitle>Solicitação de Orçamentos</DialogTitle>
 					<DialogDescription>
@@ -186,12 +191,14 @@ export const BudgetListModal = ({
 				<SendBudgetToProposal
 					isOpen={isProposalModalOpen}
 					budget={budgetDetails}
+					conversationId={conversationId}
+					musicalProductId={produtoMusicalId}
+					musicalProductContractorId={produtoMusicalContratanteId}
+					contractorId={contratanteId}
 					onClose={() => {
 						setIsProposalModalOpen(false);
 						setBudget(null);
 					}}
-					conversationId={conversationId}
-					recipientId={idDestinatario}
 				/>
 			</DialogContent>
 		</Dialog>

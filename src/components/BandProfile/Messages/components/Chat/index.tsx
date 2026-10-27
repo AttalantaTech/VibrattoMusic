@@ -161,7 +161,7 @@ export const Chat = () => {
 
 					<ChatInputContainer>
 						<div className="flex items-center gap-2">
-							{currentProductId === selectedConversation?.participanteId &&
+							{currentProductId === selectedConversation?.produtoMusicalId &&
 								isProfileComplete && (
 									<Dropdown
 										align="center"
@@ -223,13 +223,10 @@ export const Chat = () => {
 				<BudgetListModal
 					isOpen={openBudgetListModal}
 					onClose={setOpenBudgetListModal}
-					idProdutoMusicalConversa={
+					contratanteId={selectedConversation.contratanteId || 0}
+					produtoMusicalId={selectedConversation.produtoMusicalId}
+					produtoMusicalContratanteId={
 						selectedConversation.produtoMusicalContratanteId
-					}
-					idContratanteConversa={selectedConversation.contratanteId}
-					idDestinatario={
-						selectedConversation.produtoMusicalContratanteId ||
-						selectedConversation.contratanteId
 					}
 					conversationId={selectedConversation.id}
 				/>
