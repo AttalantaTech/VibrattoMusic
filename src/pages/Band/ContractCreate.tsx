@@ -210,9 +210,9 @@ export const ContractCreate = () => {
 						Voltar para Contratos
 					</Button>
 
-					<div className="flex justify-between items-start">
+					<div className="flex justify-between items-start gap-4">
 						<div>
-							<h1 className="text-3xl font-bold text-gray-900 mb-2">
+							<h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
 								Criar Modelo de Contrato
 							</h1>
 							<p className="text-gray-600">
@@ -221,7 +221,7 @@ export const ContractCreate = () => {
 							</p>
 						</div>
 
-						<div className="flex gap-3">
+						<div className="hidden sm:flex gap-3 shrink-0">
 							<Button variant="outline" onClick={handleCancel}>
 								Cancelar
 							</Button>

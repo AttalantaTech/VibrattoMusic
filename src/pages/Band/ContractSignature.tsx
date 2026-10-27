@@ -311,8 +311,8 @@ export const ContractSignaturePage = ({
 			{/* Header */}
 			<div className="bg-white border-b border-gray-200 shadow-sm">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-4">
+					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+						<div className="flex items-center gap-3 sm:gap-4">
 							<Button
 								variant="outline"
 								size="sm"
@@ -336,7 +336,9 @@ export const ContractSignaturePage = ({
 							</div>
 						</div>
 
-						<ProposalStatusCard name={proposal.status?.nome || ""} />
+						<div className="self-start sm:self-auto">
+							<ProposalStatusCard name={proposal.status?.nome || ""} />
+						</div>
 					</div>
 				</div>
 			</div>
