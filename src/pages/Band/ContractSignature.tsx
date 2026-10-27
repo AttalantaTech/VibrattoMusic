@@ -34,6 +34,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { Conversation } from "@/api/services/messages/types";
 import { useConversations } from "@/hooks/useMessaging";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
 
 interface ContractSignaturePageProps {
 	identificadorUnico: string;
@@ -397,9 +398,9 @@ export const ContractSignaturePage = ({
 							</div>
 						) : contractPdfUrl ? (
 							<div className="border-y-2 border-gray-100">
-								<iframe
+								<PdfViewer
 									src={`${contractPdfUrl}#toolbar=0`}
-									className="w-full h-[800px] border-0"
+									className="w-full h-[70dvh] sm:h-[800px] border-0"
 									title="Contrato PDF"
 								/>
 							</div>
