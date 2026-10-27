@@ -365,7 +365,7 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 			{musicalProduct.descricao && (
 				<section className={`${styles.section} order-1 lg:order-none`}>
 					<h2 className={styles.subtitle}>BIO</h2>
-					<p className="text-sm lg:text-lg text-gray-800 text-justify">
+					<p className="text-sm lg:text-lg text-gray-800 lg:text-justify">
 						{musicalProduct.descricao}
 					</p>
 				</section>
