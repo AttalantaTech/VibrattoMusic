@@ -33,10 +33,10 @@ const BandRegisterInner = () => {
 	};
 
 	return (
-		<div className="flex flex-col w-screen h-screen justify-start items-center">
+		<div className="flex flex-col w-full min-h-[100dvh] justify-start items-center">
 			<OnboardingHeader />
 
-			<main className="flex flex-col items-center justify-center w-full h-full px-4 sm:px-0">
+			<main className="flex flex-1 flex-col items-center justify-center w-full px-4 py-6 sm:px-0">
 				{renderStep()}
 			</main>
 		</div>
