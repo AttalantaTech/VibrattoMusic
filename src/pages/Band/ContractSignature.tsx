@@ -34,6 +34,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { Conversation } from "@/api/services/messages/types";
 import { useConversations } from "@/hooks/useMessaging";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
 
 interface ContractSignaturePageProps {
 	identificadorUnico: string;
@@ -311,8 +312,8 @@ export const ContractSignaturePage = ({
 			{/* Header */}
 			<div className="bg-white border-b border-gray-200 shadow-sm">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-4">
+					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+						<div className="flex items-center gap-3 sm:gap-4">
 							<Button
 								variant="outline"
 								size="sm"
@@ -336,7 +337,9 @@ export const ContractSignaturePage = ({
 							</div>
 						</div>
 
-						<ProposalStatusCard name={proposal.status?.nome || ""} />
+						<div className="self-start sm:self-auto">
+							<ProposalStatusCard name={proposal.status?.nome || ""} />
+						</div>
 					</div>
 				</div>
 			</div>
@@ -397,9 +400,9 @@ export const ContractSignaturePage = ({
 							</div>
 						) : contractPdfUrl ? (
 							<div className="border-y-2 border-gray-100">
-								<iframe
+								<PdfViewer
 									src={`${contractPdfUrl}#toolbar=0`}
-									className="w-full h-[800px] border-0"
+									className="w-full h-[70dvh] sm:h-[800px] border-0"
 									title="Contrato PDF"
 								/>
 							</div>

@@ -140,13 +140,17 @@ export const CheckAvailabilityModal = ({
 										name="dataEvento"
 										render={({ field }) => (
 											<>
-												<Label htmlFor="dataEvento">Data</Label>
-												<Input
-													id="dataEvento"
-													type="date"
-													{...field}
-													placeholder="dd/mm/aaaa"
-												/>
+												{/* Phones: the calendar above already picks the date and
+												    this field doubled it; the error still shows */}
+												<div className="hidden sm:block space-y-2">
+													<Label htmlFor="dataEvento">Data</Label>
+													<Input
+														id="dataEvento"
+														type="date"
+														{...field}
+														placeholder="dd/mm/aaaa"
+													/>
+												</div>
 
 												{errors.dataEvento?.message && (
 													<div className="text-red-500 text-sm">

@@ -10,6 +10,7 @@ import { formatCurrency, formatDate } from "../../../utils/validation";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useAuthStore } from "@/store/authStore";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
+import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
 
 export const ContractsTab = () => {
 	const [isViewerOpen, setIsViewerOpen] = useState(false);
@@ -161,9 +162,9 @@ export const ContractsTab = () => {
 
 					<div className="bg-gray-50">
 						{contractPdfUrl ? (
-							<iframe
+							<PdfViewer
 								src={contractPdfUrl}
-								className="w-full h-[800px] border-0"
+								className="w-full h-[70dvh] sm:h-[800px] border-0"
 								title="Contrato PDF"
 							/>
 						) : (
