@@ -1,4 +1,4 @@
-import { ArrowLeft, Circle, MessageSquare, PlusCircle } from "lucide-react";
+import { ArrowLeft, Circle, FileText, MessageSquare } from "lucide-react";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { Loading } from "@/shared/components/Loading";
 import { useAuthStore } from "@/store/authStore";
@@ -19,7 +19,6 @@ import type { Message } from "@/api/services/messages/types";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 
 import { MoreOptionsDropdownItem } from "@/components/ui/MoreOptionsDropdownItem";
-import { IconButton } from "@/components/ui/IconButton/IconButton";
 import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
 import { BudgetListModal } from "@/components/BandProfile/Budgets/components/BudgetListModal";
 import { useState } from "react";
@@ -160,17 +159,25 @@ export const Chat = () => {
 					</ChatMessagesContainer>
 
 					<ChatInputContainer>
-						<div className="flex items-center gap-2">
+						{/* Phones: "Propostas" on its own row so the message field gets
+						    the full width; from sm up, side by side */}
+						<div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
 							{currentProductId === selectedConversation?.produtoMusicalId &&
 								isProfileComplete && (
+									// Menu opens from the button's left edge: centered, it went
+									// past the left side of the screen on phones
 									<Dropdown
-										align="center"
+										align="left"
 										side="top"
 										trigger={
-											<IconButton
-												variant="none"
-												icon={<PlusCircle size={24} />}
-											/>
+											<button
+												type="button"
+												aria-haspopup="menu"
+												className="inline-flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-primary-300 bg-primary-100/50 px-3 text-sm font-medium text-primary-900 transition-colors hover:bg-primary-100/75"
+											>
+												<FileText size={16} />
+												Propostas
+											</button>
 										}
 									>
 										<MoreOptionsDropdownItem
