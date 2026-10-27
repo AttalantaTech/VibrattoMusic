@@ -46,11 +46,31 @@ export const getParticipantInitials = (name: string): string => {
 	return name.substring(0, Math.min(name.length, 2)).toUpperCase();
 };
 
+export type MessageSender = {
+	userId?: number | null;
+	productId?: number | null;
+};
+
+// Professionals send as their musical product (type 2), contractors as the
+// user (type 1), so "my message" depends on which profile is active
+export const isOwnMessage = (
+	message: Message,
+	{ userId, productId }: MessageSender
+): boolean => {
+	const ownId = productId || userId;
+	if (!ownId || message.idRemetente !== ownId) return false;
+
+	// User and product ids come from different tables and can coincide;
+	// realtime messages may arrive without the sender type
+	const ownType = productId ? 2 : 1;
+	return !message.tipoRemetente || message.tipoRemetente === ownType;
+};
+
 export const isMessageRead = (
 	message: Message,
-	currentUserId?: number | null
+	sender: MessageSender
 ): boolean | null => {
-	if (!currentUserId || message.idRemetente !== currentUserId) return null;
+	if (!isOwnMessage(message, sender)) return null;
 
 	return message.lida;
 };

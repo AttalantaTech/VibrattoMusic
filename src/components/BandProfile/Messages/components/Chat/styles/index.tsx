@@ -6,6 +6,7 @@ import {
 	isMessageRead,
 } from "../../../utils/Message";
 import { useAuthStore } from "@/store/authStore";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import type { Message } from "@/api/services/messages/types";
 import { MessageHtml } from "@/features/message/component/MessageHtml";
 
@@ -33,12 +34,15 @@ export const ChatHeaderContainer = ({ children }: PropsWithChildren) => {
 export const ChatMessagesContainer = ({
 	children,
 	messagesContainerRef,
+	onClick,
 }: PropsWithChildren & {
 	messagesContainerRef?: React.ForwardedRef<HTMLDivElement>;
+	onClick?: React.MouseEventHandler<HTMLDivElement>;
 }) => {
 	return (
 		<div
 			ref={messagesContainerRef}
+			onClick={onClick}
 			className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
 		>
 			{children}
@@ -66,7 +70,11 @@ export const OwnMessageElement = ({
 	message,
 }: PropsWithChildren & { message: Message }) => {
 	const { user } = useAuthStore();
-	const isRead = isMessageRead(message, user?.id);
+	const { activeProduct } = useMusicalProductStore();
+	const isRead = isMessageRead(message, {
+		userId: user?.id,
+		productId: activeProduct?.id,
+	});
 	const messageReadElement =
 		isRead === null ? null : isRead ? (
 			<CheckCheck className="w-4 h-4 text-primary-500" />
