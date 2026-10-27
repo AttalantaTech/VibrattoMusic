@@ -244,7 +244,7 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 	return (
 		<>
 			{/* Picture and info */}
-			<section className="flex flex-col lg:flex-row pt-0 lg:pt-6 w-full items-center lg:items-start justify-start gap-4 lg:gap-6">
+			<section className="order-1 lg:order-none flex flex-col lg:flex-row pt-0 lg:pt-6 w-full items-center lg:items-start justify-start gap-4 lg:gap-6">
 				<LazyImage
 					alt="Band cover"
 					className={`rounded-lg w-40 h-40 lg:w-72 sm:h-48 lg:h-52 object-contain border border-gray-200
@@ -341,7 +341,7 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 
 			{/* Event Types */}
 			{musicalProduct.tipoEvento && musicalProduct.tipoEvento.length > 0 && (
-				<section className={styles.section}>
+				<section className={`${styles.section} order-1 lg:order-none`}>
 					<div className="flex flex-col items-center lg:items-start gap-4 w-full">
 						<h2 className="text-gray-500 text-xs uppercase tracking-wide font-medium">
 							Tipos de Eventos
@@ -363,7 +363,7 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 
 			{/* Band Description */}
 			{musicalProduct.descricao && (
-				<section className={styles.section}>
+				<section className={`${styles.section} order-1 lg:order-none`}>
 					<h2 className={styles.subtitle}>BIO</h2>
 					<p className="text-sm lg:text-lg text-gray-800 text-justify">
 						{musicalProduct.descricao}
@@ -372,7 +372,7 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 			)}
 
 			{/* Gallery */}
-			<section className={styles.section}>
+			<section className={`${styles.section} order-1 lg:order-none`}>
 				<div className="w-full flex items-center justify-center">
 					{musicalProduct && musicalProduct?.imagens.length > 0 && (
 						<Carousel>
@@ -405,7 +405,9 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 				</div>
 			</section>
 
-			<section className={styles.section.replace("gap-[6px]", "gap-8")}>
+			<section
+				className={`${styles.section.replace("gap-[6px]", "gap-8")} order-3 lg:order-none`}
+			>
 				<TabNavigation
 					currentTab={activeTab ?? "stageMap"}
 					tabs={secondaryTabs}
