@@ -66,6 +66,11 @@ export const isOwnMessage = (
 	return !message.tipoRemetente || message.tipoRemetente === ownType;
 };
 
+// Status cards (proposal created, accepted, contract...) are HTML generated
+// by messageTemplates; what people type in the chat is plain text
+export const isCardMessage = (message: Message): boolean =>
+	/^\s*<div/i.test(message.conteudo);
+
 export const isMessageRead = (
 	message: Message,
 	sender: MessageSender
