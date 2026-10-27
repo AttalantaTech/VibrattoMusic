@@ -1,14 +1,7 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import {
-	Clock4,
-	Heart,
-	MessageCircle,
-	Star,
-	TrendingUp,
-	BookCheck,
-} from "lucide-react";
+import { Heart, MessageCircle, Star, BookCheck } from "lucide-react";
 
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/Button/Button";
@@ -26,8 +19,6 @@ import type {
 import { StartConversationModal } from "@/components/BandProfile/Messages/components/StartConversationModal";
 import { useStartConversation } from "@/hooks/useMessaging";
 import { toast } from "sonner";
-import { RatingBars } from "@/components/RatingBars/RatingBars";
-import { RatingComment } from "@/components/RatingComment/RatingComment";
 import { CheckAvailabilityModal } from "@/components/BandProfile/Proposals/components/CheckAvailabilityModal";
 import { ProfileDetails } from "./ProfileDetails";
 import { MediaPlayer } from "@/components/MediaPlayer/MediaPlayer";
@@ -224,93 +215,48 @@ export const BandProfile = ({
 					<div className="contents lg:flex lg:flex-col lg:w-full lg:flex-1 lg:h-full lg:items-center lg:justify-start lg:gap-8 lg:order-1">
 						<ProfileDetails musicalProduct={musicalProduct} />
 
-						{/* Customer Reviews */}
-						<section className={`${styles.section} order-3 lg:order-none`}>
-							<div className="flex flex-col items-center lg:items-start gap-6 w-full">
-								<h2 className="text-gray-500 text-xs uppercase tracking-wide font-medium">
-									Avaliações dos Clientes
-								</h2>
-								<div className="flex flex-col lg:flex-row w-full items-center lg:items-start gap-8 bg-gray-50 rounded-xl p-6">
-									<div className="flex flex-col gap-3 items-center lg:items-start">
-										<div className="text-center lg:text-left">
-											<h1 className="text-primary-600 font-bold text-4xl">
-												{!musicalProduct ? (
-													<div className="bg-gray-200 animate-pulse h-10 w-16 rounded"></div>
-												) : (
-													musicalProduct?.avaliacao?.toFixed(1) || "4.5"
-												)}
-											</h1>
-											<p className="text-gray-600 text-sm">de 5 estrelas</p>
-										</div>
-										<div className="text-center lg:text-left">
-											<span className="text-gray-700 font-medium text-sm">
-												Baseado em{" "}
-											</span>
-											<span className="text-gray-900 font-semibold text-sm">
-												{!musicalProduct ? (
-													<div className="bg-gray-200 animate-pulse h-4 w-24 rounded inline-block"></div>
-												) : (
-													<>
-														{musicalProduct?.avaliacao ? "Várias" : "845"}{" "}
-														avaliações
-													</>
-												)}
-											</span>
-										</div>
-										<div className="flex items-center justify-center lg:justify-start gap-1">
-											{Array.from({ length: 5 }).map((_, index) => (
-												<Star
-													key={`star-${index}`}
-													fill={index === 4 ? "#D0D5DD" : "currentColor"}
-													size={20}
-													className={
-														index === 4 ? "text-gray-300" : "text-yellow-400"
-													}
-												/>
-											))}
+						{/* Customer Reviews: only the real average from the API. The review
+						    count, rating bars and comments were fixed placeholder text
+						    (same "Marcos" review on every profile), so they are gone until
+						    the API provides reviews */}
+						{musicalProduct.avaliacao ? (
+							<section className={`${styles.section} order-3 lg:order-none`}>
+								<div className="flex flex-col items-center lg:items-start gap-6 w-full">
+									<h2 className="text-gray-500 text-xs uppercase tracking-wide font-medium">
+										Avaliação dos Clientes
+									</h2>
+									<div className="flex flex-col items-center lg:items-start gap-2 w-full bg-gray-50 rounded-xl p-6">
+										<span className="text-primary-600 font-bold text-4xl">
+											{musicalProduct.avaliacao.toFixed(1)}
+										</span>
+										<span className="text-gray-600 text-sm">de 5 estrelas</span>
+										<div
+											className="flex items-center gap-1"
+											aria-label={`Nota ${musicalProduct.avaliacao.toFixed(1)} de 5`}
+										>
+											{Array.from({ length: 5 }).map((_, index) => {
+												const isFilled =
+													index < Math.round(musicalProduct.avaliacao ?? 0);
+
+												return (
+													<Star
+														key={`star-${index}`}
+														aria-hidden="true"
+														size={20}
+														fill={isFilled ? "currentColor" : "#D0D5DD"}
+														className={
+															isFilled ? "text-yellow-400" : "text-gray-300"
+														}
+													/>
+												);
+											})}
 										</div>
 									</div>
-									<div className="w-full lg:w-3/4">
-										<RatingBars
-											totalRatings={122}
-											ratingDistribution={{
-												fiveStars: 60,
-												fourStars: 30,
-												threeStars: 30,
-												twoStars: 2,
-												oneStar: 0,
-											}}
-										/>
-									</div>
-								</div>
-								<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 w-full gap-6">
-									{Array.from({ length: 4 }).map((_, index) => (
-										<div key={`review-${index}`} className="w-full">
-											<RatingComment
-												comment={{
-													author: "Marcos",
-													date: "23/06/2024",
-													numStars: 5,
-													comment:
-														"A banda se mostrou muito flexível e acessível, ajustando o repertório para atender ao nosso público. No dia do evento, chegaram no horário combinado, montaram tudo rapidamente e o show foi um sucesso total",
-												}}
-											/>
-										</div>
-									))}
 								</div>
 
-								<div className="flex w-full items-center justify-center">
-									<Button
-										className="text-gray-700 text-base font-semibold border border-gray-300 rounded-lg"
-										variant="transparent"
-									>
-										Exibir todas as avaliações
-									</Button>
-								</div>
-							</div>
-
-							<hr className="w-full text-gray-200 mt-8" />
-						</section>
+								<hr className="w-full text-gray-200 mt-8" />
+							</section>
+						) : null}
 
 						{/* Similar Artists */}
 						<section className={`${styles.section} order-3 lg:order-none`}>
@@ -450,33 +396,6 @@ export const BandProfile = ({
 											? "Favoritado"
 											: "Salvar"}
 								</IconButton>
-							</div>
-
-							{/* Info cards */}
-							<div className="flex flex-col w-full text-gray-600 gap-4">
-								<div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-									<Clock4
-										size={20}
-										className="flex-shrink-0 text-primary-600"
-									/>
-									<span className="text-sm font-medium">
-										Normalmente responde em 2 horas
-									</span>
-								</div>
-								<div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-									<TrendingUp
-										className="flex-shrink-0 mt-0.5 text-green-600"
-										size={20}
-									/>
-									<div className="flex flex-col">
-										<span className="text-sm font-semibold text-green-700">
-											Popular
-										</span>
-										<span className="text-xs text-green-600 mt-1">
-											Banda em destaque na plataforma
-										</span>
-									</div>
-								</div>
 							</div>
 
 							{/* Price range (if available) */}
