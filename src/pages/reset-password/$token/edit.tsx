@@ -226,28 +226,30 @@ export function ResetPassword() {
 						onSubmit={handleSubmit(onSubmit)}
 					>
 						<div className="flex flex-col gap-4 lg:gap-5 w-full">
-							<div className="relative">
-								<InputField
-									{...register("password")}
-									autoComplete="new-password"
-									icon={<Lock size={20} />}
-									label="Nova Senha"
-									type={showPassword ? "text" : "password"}
-									placeholder="Digite sua nova senha"
-								/>
-								<button
-									className="absolute inset-y-0 right-0 pr-3 flex items-center top-6"
-									type="button"
-									onClick={() => {
-										setShowPassword(!showPassword);
-									}}
-								>
-									{showPassword ? (
-										<EyeOff className="h-5 w-5 text-gray-400" />
-									) : (
-										<Eye className="h-5 w-5 text-gray-400" />
-									)}
-								</button>
+							<div>
+								<div className="relative">
+									<InputField
+										{...register("password")}
+										autoComplete="new-password"
+										icon={<Lock size={20} />}
+										label="Nova Senha"
+										type={showPassword ? "text" : "password"}
+										placeholder="Digite sua nova senha"
+									/>
+									<button
+										className="absolute inset-y-0 right-0 pr-3 flex items-center top-6"
+										type="button"
+										onClick={() => {
+											setShowPassword(!showPassword);
+										}}
+									>
+										{showPassword ? (
+											<EyeOff className="h-5 w-5 text-gray-400" />
+										) : (
+											<Eye className="h-5 w-5 text-gray-400" />
+										)}
+									</button>
+								</div>
 								<PasswordRequirements password={watch("password")} />
 								{errors.password && (
 									<p className="text-red-600 text-sm mt-1">
@@ -255,28 +257,30 @@ export function ResetPassword() {
 									</p>
 								)}
 							</div>
-							<div className="relative">
-								<InputField
-									{...register("confirmPassword")}
-									autoComplete="new-password"
-									icon={<Lock size={20} />}
-									label="Confirmar Nova Senha"
-									type={showConfirmPassword ? "text" : "password"}
-									placeholder="Digite novamente sua nova senha"
-								/>
-								<button
-									className="absolute inset-y-0 right-0 pr-3 flex items-center top-6"
-									type="button"
-									onClick={() => {
-										setShowConfirmPassword(!showConfirmPassword);
-									}}
-								>
-									{showConfirmPassword ? (
-										<EyeOff className="h-5 w-5 text-gray-400" />
-									) : (
-										<Eye className="h-5 w-5 text-gray-400" />
-									)}
-								</button>
+							<div>
+								<div className="relative">
+									<InputField
+										{...register("confirmPassword")}
+										autoComplete="new-password"
+										icon={<Lock size={20} />}
+										label="Confirmar Nova Senha"
+										type={showConfirmPassword ? "text" : "password"}
+										placeholder="Digite novamente sua nova senha"
+									/>
+									<button
+										className="absolute inset-y-0 right-0 pr-3 flex items-center top-6"
+										type="button"
+										onClick={() => {
+											setShowConfirmPassword(!showConfirmPassword);
+										}}
+									>
+										{showConfirmPassword ? (
+											<EyeOff className="h-5 w-5 text-gray-400" />
+										) : (
+											<Eye className="h-5 w-5 text-gray-400" />
+										)}
+									</button>
+								</div>
 								{errors.confirmPassword && (
 									<p className="text-red-600 text-sm mt-1">
 										{errors.confirmPassword.message}
