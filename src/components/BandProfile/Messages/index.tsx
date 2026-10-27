@@ -33,7 +33,16 @@ const MessagesTab = () => {
 	}, [setNewConversationParticipant, setSelectedConversation]);
 
 	return (
-		<div className="flex h-[75vh] w-full border bg-gray-50">
+		// Phones with a conversation open: the chat becomes a fixed layer from
+		// under the header (h-16) to the bottom of the screen, like a chat app,
+		// instead of a 75vh box inside a page that also scrolls
+		<div
+			className={`flex h-[75vh] w-full border bg-gray-50 ${
+				selectedConversation
+					? "max-md:fixed max-md:inset-x-0 max-md:top-16 max-md:bottom-0 max-md:z-30 max-md:h-auto max-md:border-0"
+					: ""
+			}`}
+		>
 			{selectedConversation && (
 				<SendProposalModal
 					isOpen={!!isProposalModalOpen}
