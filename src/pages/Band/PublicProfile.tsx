@@ -99,12 +99,16 @@ export const PublicBandProfile = () => {
 				</Button>
 			</div>
 
-			<BandProfile
-				bandLoading={bandLoading}
-				musicalProduct={band}
-				similarArtists={similarArtists}
-				similarArtistsLoading={similarArtistsLoading}
-			/>
+			{/* Same side margins as the back button: the profile had none here
+			    (inside "Conta" it inherits the logged area's padding) */}
+			<div className="w-full px-4 sm:px-6 lg:px-8 xl:px-14 pt-4">
+				<BandProfile
+					bandLoading={bandLoading}
+					musicalProduct={band}
+					similarArtists={similarArtists}
+					similarArtistsLoading={similarArtistsLoading}
+				/>
+			</div>
 
 			{/* Start Conversation Modal */}
 			<StartConversationModal
