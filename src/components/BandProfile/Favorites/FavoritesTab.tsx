@@ -90,6 +90,7 @@ export const FavoritesTab = () => {
 					<ArtistCardWithFavorites
 						key={favorite.id}
 						product={favorite}
+						listOnMobile
 						onProfileClick={() => {
 							handleProfileClick(favorite.id);
 						}}
