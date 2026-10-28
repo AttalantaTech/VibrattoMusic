@@ -14,7 +14,7 @@ import {
 	isPngImage,
 } from "@/utils/validation";
 import { EpsFilePreview } from "@/components/cards/EpsFilePreview/EpsFilePreview";
-import { Disc, Loader2, MapPin, Verified } from "lucide-react";
+import { CheckCircle2, Disc, Loader2, MapPin, Verified } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 
@@ -210,7 +210,18 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 					);
 				}
 			default:
-				if (musicalProduct?.infraCamarim) {
+				// "Não Necessita de Camarim" is saved as camarimIncluso = true; it
+				// wins over any text/file left from before it was checked
+				if (musicalProduct?.camarimIncluso) {
+					return (
+						<div className="flex flex-col items-center justify-center gap-2 w-full min-h-[120px] lg:min-h-[380px] rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-6 lg:rounded-none lg:border-0 lg:bg-gray-100">
+							<CheckCircle2 className="h-6 w-6 text-green-600" />
+							<span className="block text-center text-sm font-medium text-gray-700">
+								Não necessita de camarim
+							</span>
+						</div>
+					);
+				} else if (musicalProduct?.infraCamarim) {
 					const freshLink = getBustUrl(musicalProduct.infraCamarim);
 
 					return (
