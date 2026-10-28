@@ -135,32 +135,36 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 		await addProfilePhoto(blobUrl);
 	};
 
-	const handleUploadCarouselImage = async (file: File | null) => {
-		if (!file) return;
+	// Each save sends the whole list: uploading several files at once and
+	// saving one by one would keep only the last, so the batch is saved once
+	const uploadFiles = async (
+		files: Array<File>,
+		eventType: Parameters<typeof uploadImage>[1]
+	) => {
+		// In parallel; Promise.all keeps the selection order
+		const uploaded = await Promise.all(
+			files.map((file) => uploadImage(file, eventType))
+		);
+		const links = uploaded.filter((link): link is string => Boolean(link));
 
-		const blobUrl = await uploadImage(file, "ProdutoMusicalCarrossel");
+		return links.map(
+			(link): FilePropsLocal => ({ id: null, link, legenda: "" })
+		);
+	};
 
-		if (blobUrl) {
-			const images: Array<FilePropsLocal> = [
-				...carouselImages,
-				{ id: null, link: blobUrl, legenda: "" },
-			];
+	const handleUploadCarouselImage = async (files: Array<File>) => {
+		const newImages = await uploadFiles(files, "ProdutoMusicalCarrossel");
 
-			await addCarouselImage(images);
+		if (newImages.length > 0) {
+			await addCarouselImage([...carouselImages, ...newImages]);
 		}
 	};
 
-	const handleUploadClipping = async (file: File | null) => {
-		if (!file) return;
-		const blobUrl = await uploadImage(file, "ProdutoMusicalClipagem");
+	const handleUploadClipping = async (files: Array<File>) => {
+		const newClippings = await uploadFiles(files, "ProdutoMusicalClipagem");
 
-		if (blobUrl) {
-			const newClippings: Array<FilePropsLocal> = [
-				...clippings,
-				{ id: null, link: blobUrl, legenda: "" },
-			];
-
-			await addClippingFile(newClippings);
+		if (newClippings.length > 0) {
+			await addClippingFile([...clippings, ...newClippings]);
 		}
 	};
 
@@ -186,7 +190,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 							onLegendCarousel={handleLegendImage}
 							loadingMap={loadedItems}
 							markAsLoaded={markAsLoaded}
-							onUpload={(file) => handleUploadCarouselImage(file)}
+							onUpload={handleUploadCarouselImage}
 							onRemove={(id: number | null, index: number) =>
 								removeImage("ProdutoMusicalCarrossel", id, index)
 							}
@@ -224,7 +228,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 							onLegendClipping={handleLegendClipping}
 							loadingMap={loadedItems}
 							markAsLoaded={markAsLoaded}
-							onUpload={(file) => handleUploadClipping(file)}
+							onUpload={handleUploadClipping}
 							onRemove={(id: number | null, index: number) =>
 								removeImage("ProdutoMusicalClipagem", id, index)
 							}
