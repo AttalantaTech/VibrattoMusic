@@ -25,12 +25,12 @@ export function calculateSignal({
 		case PAYMENT_CONDITION.SIGNAL_50:
 			return {
 				tipoSinalPagamento: "P",
-				valorSinalPagamento: round2(total * 0.5),
+				valorSinalPagamento: 50,
 			} as const;
 		case PAYMENT_CONDITION.SIGNAL_30:
 			return {
 				tipoSinalPagamento: "P",
-				valorSinalPagamento: round2(total * 0.3),
+				valorSinalPagamento: 30,
 			} as const;
 		case PAYMENT_CONDITION.SIGNAL_CUSTOM:
 			return {

@@ -869,13 +869,19 @@ export type ProposalStatusResponse =
 	| "Pendente"
 	| "Aceita"
 	| "Rejeitada"
-	| "Cancelado"
-	| "SinalPago"
-	| "AguardandoAssinatura"
-	| "EnvioAssinatura"
+	| "ContratacaoConcluida"
+	| "Cancelada"
+	| "Vencida"
+	| "Substituida"
+	| "AguardandoPagamento";
+
+export type ProposalD4SignResponse =
+	| "AguardandoEnvio"
 	| "EnvioDocumento"
 	| "EnvioSignatarios"
-	| "ContratoAssinado";
+	| "EnvioAssinatura"
+	| "AguardandoAssinatura"
+	| "Assinado";
 
 export interface ProposalResponse {
 	id: number;
@@ -928,6 +934,10 @@ export interface ProposalResponse {
 	status: {
 		id: number;
 		nome: ProposalStatusResponse;
+	};
+	etapaD4Sign?: {
+		id: number;
+		nome: ProposalD4SignResponse;
 	};
 	motivoRejeicao: {
 		id: number;

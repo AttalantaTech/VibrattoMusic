@@ -8,10 +8,9 @@ import {
 	PenLine,
 	XCircle,
 } from "lucide-react";
-import type { ProposalResponse } from "../../../../../api/types";
+import type { ProposalResponse, User } from "../../../../../api/types";
 import { formatDate } from "../../../../../utils/validation";
 import { Button } from "../../../../ui/Button/Button";
-import type { unifiedStatusConfig } from "@/components/BandProfile/Sales/types/SalesTypes";
 import { useAuthStore } from "@/store/authStore";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
@@ -36,6 +35,40 @@ interface ProposalDetailsModalProps {
 	isLoadingCancel?: boolean;
 	isLoadingPaidSign?: boolean;
 }
+
+const handleStatus = ({
+	productContractorId,
+	proposal,
+	user,
+}: {
+	productContractorId: number | null;
+	proposal: ProposalResponse | undefined;
+	user: User | null;
+}) => {
+	const isWaitingForResponse = proposal?.status.nome === "Pendente";
+
+	const isContractor =
+		proposal?.produtoMusicalContratante.id === productContractorId ||
+		user?.id === proposal?.contratante.id;
+
+	const isAcceptedStatus = proposal?.status.nome === "Aceita";
+	const needsContractorPaidSign =
+		!isContractor && proposal?.status.nome === "AguardandoPagamento";
+
+	const contractedPartyNeedsPaidSign =
+		isContractor && proposal?.status.nome === "AguardandoPagamento";
+
+	const signedContract = proposal?.status.nome === "ContratacaoConcluida";
+
+	return {
+		isWaitingForResponse,
+		isContractor,
+		isAcceptedStatus,
+		needsContractorPaidSign,
+		contractedPartyNeedsPaidSign,
+		signedContract,
+	};
+};
 
 export const ProposalDetailsModal = ({
 	proposal,
@@ -77,24 +110,18 @@ export const ProposalDetailsModal = ({
 		return null;
 	}
 
-	const statusKey = (
-		typeof proposal.status === "object" ? proposal.status.nome : proposal.status
-	) as keyof typeof unifiedStatusConfig;
-
-	const isContractor = user?.id === proposal.contratante.id;
-	const isClient = activeProduct?.id === proposal.produtoMusical.id;
-	const isWaitingForResponse = statusKey === "Pendente";
-	const isAcceptedStatus = statusKey === "Aceita";
-	const isPaidSignStatus = statusKey === "SinalPago";
-
-	const needsContractorSignature =
-		isPaidSignStatus && !proposal.assinaturaContratante;
-
-	const needsContractedSignature =
-		isPaidSignStatus && !proposal.assinaturaContratado;
-
-	const needsContractorPaidSign =
-		!isContractor && isAcceptedStatus && !proposal.assinaturaContratado;
+	const {
+		isWaitingForResponse,
+		isContractor,
+		isAcceptedStatus,
+		needsContractorPaidSign,
+		contractedPartyNeedsPaidSign,
+		signedContract,
+	} = handleStatus({
+		proposal,
+		user,
+		productContractorId: activeProduct ? activeProduct.id : null,
+	});
 
 	if (!isOpen) return null;
 
@@ -214,8 +241,8 @@ export const ProposalDetailsModal = ({
 						Proposta criada em {formatDate(proposal.dataCriacao)}
 					</div>
 
-					{mode === "Contractor" && proposal.status.nome === "Aceita" && (
-						<div className="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
+					{contractedPartyNeedsPaidSign ? (
+						<div className="my-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
 							<div className="flex gap-3">
 								<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
 								<div className="text-sm text-primary-800">
@@ -226,40 +253,41 @@ export const ProposalDetailsModal = ({
 											{proposal.produtoMusical.nome}
 										</span>{" "}
 										confirmar o recebimento na plataforma. Após a confirmação,
-										você receberá um email para prosseguir com a assinatura
-										digital do contrato.
+										você receberá um email confirmando a contratação para o seu
+										evento.
 									</span>
 								</div>
 							</div>
 						</div>
-					)}
+					) : null}
 
-					{proposal.status.nome === "AguardandoAssinatura" && (
-						<div className="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
+					{proposal.status.nome === "Aceita" ? (
+						<div className="my-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
 							<div className="flex gap-3">
 								<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
 								<div className="text-sm text-primary-800">
 									<p className="font-medium mb-2">Importante:</p>
-									<span className="block mb-4">
-										Em instantes, você receberá um e-mail com as instruções para
-										realizar a assinatura eletrônica do contrato.
-									</span>
 
 									<span className="block mb-4">
-										Caso não encontre a mensagem na sua caixa de entrada,
+										O contrato precisa ser assinado eletronicamente pelas duas
+										partes (contratante e contratado). O processo só avança para
+										a próxima etapa depois que ambos assinarem.
+									</span>
+									<span className="block mb-4">
+										Cada parte receberá um e-mail com as instruções para
+										assinar. Caso não encontre a mensagem na caixa de entrada,
 										verifique também as pastas de Spam, Lixo Eletrônico,
-										Promoções ou Atualizações.
+										Promoções ou Atualizações. Se você já assinou, aguarde a
+										assinatura da outra parte.
 									</span>
-
 									<span className="block mb-4">
-										Se mesmo assim o e-mail não for localizado após alguns
-										minutos, entre em contato com nosso suporte para que
-										possamos ajudá-lo.
+										Se o e-mail não chegar após alguns minutos, entre em contato
+										com nosso suporte.
 									</span>
 								</div>
 							</div>
 						</div>
-					)}
+					) : null}
 
 					{/* Actions */}
 					<div className="mt-6 flex justify-end gap-3">
@@ -302,7 +330,7 @@ export const ProposalDetailsModal = ({
 								)}
 
 								{/* Band (contracted) signature button */}
-								{needsContractedSignature && (
+								{isAcceptedStatus && (
 									<Button
 										className="bg-primary-600 hover:bg-primary-700 transition-all"
 										onClick={() => {
@@ -341,10 +369,8 @@ export const ProposalDetailsModal = ({
 										variant="outline"
 										disabled={isLoadingCancel}
 										onClick={async () => {
-											if (isClient) {
-												await onCancel?.(proposal.id);
-												onClose();
-											}
+											await onCancel?.(proposal.id);
+											onClose();
 										}}
 									>
 										{isLoadingCancel ? (
@@ -356,7 +382,7 @@ export const ProposalDetailsModal = ({
 									</Button>
 								)}
 								{/* Contractor signature button */}
-								{needsContractorSignature && (
+								{isAcceptedStatus && (
 									<Button
 										className="bg-primary-600 hover:bg-primary-700"
 										onClick={() => {
@@ -369,6 +395,13 @@ export const ProposalDetailsModal = ({
 									</Button>
 								)}
 							</>
+						)}
+
+						{signedContract && (
+							<div className="flex items-center gap-2 text-green-600">
+								<CheckCircle className="h-5 w-5" />
+								<span className="font-medium">Contratação Concluída</span>
+							</div>
 						)}
 
 						<Button variant="secondary" onClick={onClose}>

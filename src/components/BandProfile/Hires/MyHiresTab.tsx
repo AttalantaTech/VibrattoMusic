@@ -181,7 +181,7 @@ export const MyHiresTab = () => {
 						productName: event.produtoMusical.nome,
 						value: event.valor,
 						canSign:
-							event.status.nome === "AguardandoAssinatura" &&
+							event.status.nome === "Aceita" &&
 							((!event.assinaturaContratante && isContractor) ||
 								(!event.assinaturaContratado && !isContractor)),
 

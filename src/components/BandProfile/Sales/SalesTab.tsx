@@ -268,7 +268,7 @@ export const SalesTab = () => {
 						value: event.valor,
 						aceitaContraProposta: event.aceitaContraProposta,
 						canSign:
-							event.status.nome === "AguardandoAssinatura" &&
+							event.status.nome === "Aceita" &&
 							((!event.assinaturaContratante && isContractor) ||
 								(!event.assinaturaContratado && !isContractor)),
 

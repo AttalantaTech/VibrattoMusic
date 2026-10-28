@@ -227,7 +227,7 @@ export const useContractPermissions = (identificadorUnico: string) => {
 
 			return {
 				canEdit:
-					proposal.status.nome === "ContratoAssinado" ||
+					proposal.status.nome === "ContratacaoConcluida" ||
 					proposal.status.nome === "Aceita",
 				canView: true,
 				isOwner: true, // TODO: Check actual ownership

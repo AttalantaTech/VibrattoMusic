@@ -6,8 +6,6 @@ import {
 	PenTool,
 	XCircle,
 	FileArchive,
-	File,
-	FileSignature,
 	Check,
 } from "lucide-react";
 
@@ -28,7 +26,7 @@ type ProposalStatusCardConfigDictType = {
 	};
 };
 
-export const ProposalStatusCardConfigDict: ProposalStatusCardConfigDictType = {
+export const proposalStatusCardConfigDict: ProposalStatusCardConfigDictType = {
 	Pendente: {
 		label: "Pendente",
 		icon: Clock,
@@ -53,6 +51,14 @@ export const ProposalStatusCardConfigDict: ProposalStatusCardConfigDictType = {
 		bgColor: "bg-red-100",
 		borderColor: "border-red-200",
 	},
+	ContratacaoConcluida: {
+		label: "Contratação Concluída",
+		icon: Check,
+		variant: "secondary" as const,
+		color: "text-green-600",
+		bgColor: "bg-green-100",
+		borderColor: "border-green-200",
+	},
 	Cancelada: {
 		label: "Cancelada",
 		icon: XCircle,
@@ -61,52 +67,28 @@ export const ProposalStatusCardConfigDict: ProposalStatusCardConfigDictType = {
 		bgColor: "bg-gray-100",
 		borderColor: "border-gray-200",
 	},
-	SinalPago: {
-		label: "Sinal Pago",
-		icon: DollarSign,
-		variant: "secondary" as const,
-		color: "text-white",
-		bgColor: "bg-primary-400",
-		borderColor: "border-primary-300",
-	},
-	AguardandoAssinatura: {
-		label: "Aguardando Assinatura",
+	Vencida: {
+		label: "Vencida",
 		icon: FileArchive,
-		variant: "secondary" as const,
-		color: "text-cyan-600",
-		bgColor: "bg-cyan-100",
-		borderColor: "border-cyan-200",
-	},
-	EnvioAssinatura: {
-		label: "Envio de Assinatura",
-		icon: PenTool,
-		variant: "secondary" as const,
-		color: "text-primary-600",
-		bgColor: "bg-primary-100",
-		borderColor: "border-primary-200",
-	},
-	EnvioDocumento: {
-		label: "Envio de Documento",
-		icon: File,
-		variant: "secondary" as const,
-		color: "text-purple-600",
-		bgColor: "bg-purple-100",
-		borderColor: "border-purple-200",
-	},
-	EnvioSignatarios: {
-		label: "Envio de Signatarios",
-		icon: FileSignature,
 		variant: "secondary" as const,
 		color: "text-orange-600",
 		bgColor: "bg-orange-100",
 		borderColor: "border-orange-200",
 	},
-	ContratoAssinado: {
-		label: "Envio de Signatarios",
-		icon: Check,
+	Substituida: {
+		label: "Substituida",
+		icon: PenTool,
 		variant: "secondary" as const,
-		color: "text-green-600",
-		bgColor: "bg-green-100",
-		borderColor: "border-green-200",
+		color: "text-yellow-600",
+		bgColor: "bg-yellow-100",
+		borderColor: "border-yellow-200",
+	},
+	AguardandoPagamento: {
+		label: "Aguardando Pagamento",
+		icon: DollarSign,
+		variant: "secondary" as const,
+		color: "text-white",
+		bgColor: "bg-primary-400",
+		borderColor: "border-primary-300",
 	},
 };

@@ -19,7 +19,6 @@ import {
 	useUpdateProposalStatus,
 } from "../../hooks/useProposals";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
-import type { unifiedStatusConfig } from "@/components/BandProfile/Sales/types/SalesTypes";
 import { useAuthStore } from "@/store/authStore";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
 import {
@@ -41,35 +40,35 @@ interface ContractSignaturePageProps {
 }
 
 const handleStatus = ({
+	productContractorId,
 	proposal,
 	user,
 }: {
+	productContractorId: number | null;
 	proposal: ProposalResponse | undefined;
 	user: User | null;
 }) => {
-	const statusKey = (
-		typeof proposal?.status === "object"
-			? proposal.status.nome
-			: proposal?.status
-	) as keyof typeof unifiedStatusConfig;
+	const isWaitingForResponse = proposal?.status.nome === "Pendente";
 
-	const isWaitingForResponse = statusKey === "Pendente";
-	const isContractor = user?.id === proposal?.contratante.id;
-	const isAcceptedStatus = statusKey === "Aceita";
+	const isContractor =
+		proposal?.produtoMusicalContratante.id === productContractorId ||
+		user?.id === proposal?.contratante.id;
+
+	const isAcceptedStatus = proposal?.status.nome === "Aceita";
 	const needsContractorPaidSign =
-		!isContractor && isAcceptedStatus && !proposal?.assinaturaContratado;
+		!isContractor && proposal?.status.nome === "AguardandoPagamento";
 
-	const signedContract =
-		proposal?.status.nome === "EnvioAssinatura" ||
-		proposal?.status.nome === "EnvioDocumento" ||
-		proposal?.status.nome === "EnvioSignatarios" ||
-		proposal?.status.nome === "ContratoAssinado";
+	const contractedPartyNeedsPaidSign =
+		isContractor && proposal?.status.nome === "AguardandoPagamento";
+
+	const signedContract = proposal?.status.nome === "ContratacaoConcluida";
 
 	return {
 		isWaitingForResponse,
 		isContractor,
 		isAcceptedStatus,
 		needsContractorPaidSign,
+		contractedPartyNeedsPaidSign,
 		signedContract,
 	};
 };
@@ -115,8 +114,13 @@ export const ContractSignaturePage = ({
 		isContractor,
 		isAcceptedStatus,
 		needsContractorPaidSign,
+		contractedPartyNeedsPaidSign,
 		signedContract,
-	} = handleStatus({ proposal, user });
+	} = handleStatus({
+		proposal,
+		user,
+		productContractorId: activeProduct ? activeProduct.id : null,
+	});
 
 	const conversation = useMemo<Conversation | null>(() => {
 		if (!proposal || !conversationsData) return null;
@@ -427,7 +431,7 @@ export const ContractSignaturePage = ({
 					</div>
 				</div>
 
-				{isContractor && proposal.status.nome === "Aceita" && (
+				{contractedPartyNeedsPaidSign ? (
 					<div className="my-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
 						<div className="flex gap-3">
 							<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
@@ -439,36 +443,36 @@ export const ContractSignaturePage = ({
 										{proposal.produtoMusical.nome}
 									</span>{" "}
 									confirmar o recebimento na plataforma. Após a confirmação,
-									você receberá um email para prosseguir com a assinatura
-									digital do contrato.
+									você receberá um email confirmando a contratação para o seu
+									evento.
 								</span>
 							</div>
 						</div>
 					</div>
-				)}
+				) : null}
 
-				{proposal.status.nome === "AguardandoAssinatura" ||
-				proposal.status.nome === "SinalPago" ? (
+				{proposal.status.nome === "Aceita" ? (
 					<div className="my-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
 						<div className="flex gap-3">
 							<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
 							<div className="text-sm text-primary-800">
 								<p className="font-medium mb-2">Importante:</p>
-								<span className="block mb-4">
-									Em instantes, você receberá um e-mail com as instruções para
-									realizar a assinatura eletrônica do contrato.
-								</span>
 
 								<span className="block mb-4">
-									Caso não encontre a mensagem na sua caixa de entrada,
-									verifique também as pastas de Spam, Lixo Eletrônico, Promoções
-									ou Atualizações.
+									O contrato precisa ser assinado eletronicamente pelas duas
+									partes (contratante e contratado). O processo só avança para a
+									próxima etapa depois que ambos assinarem.
 								</span>
-
 								<span className="block mb-4">
-									Se mesmo assim o e-mail não for localizado após alguns
-									minutos, entre em contato com nosso suporte para que possamos
-									ajudá-lo.
+									Cada parte receberá um e-mail com as instruções para assinar.
+									Caso não encontre a mensagem na caixa de entrada, verifique
+									também as pastas de Spam, Lixo Eletrônico, Promoções ou
+									Atualizações. Se você já assinou, aguarde a assinatura da
+									outra parte.
+								</span>
+								<span className="block mb-4">
+									Se o e-mail não chegar após alguns minutos, entre em contato
+									com nosso suporte.
 								</span>
 							</div>
 						</div>
@@ -517,6 +521,7 @@ export const ContractSignaturePage = ({
 											Aceitar
 										</Button>
 									)}
+
 									{/* Reject button - available for both contractor and band */}
 									{isWaitingForResponse && (
 										<Button
@@ -577,7 +582,7 @@ export const ContractSignaturePage = ({
 						{signedContract && (
 							<div className="flex items-center gap-2 text-green-600">
 								<CheckCircle className="h-5 w-5" />
-								<span className="font-medium">Contrato Assinado</span>
+								<span className="font-medium">Contratação Concluída</span>
 							</div>
 						)}
 					</div>

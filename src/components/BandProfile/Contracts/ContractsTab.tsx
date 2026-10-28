@@ -39,8 +39,8 @@ export const ContractsTab = () => {
 		const acceptedProposals = proposals.filter(
 			(p) =>
 				p.status.nome === "Aceita" ||
-				p.status.nome === "SinalPago" ||
-				p.status.nome === "ContratoAssinado"
+				p.status.nome === "AguardandoPagamento" ||
+				p.status.nome === "ContratacaoConcluida"
 		);
 
 		return acceptedProposals[0] || null;
