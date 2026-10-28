@@ -919,7 +919,7 @@ export interface ProposalResponse {
 		id: number;
 		nome: string;
 	} | null;
-	tipoSinalPagamento: string | null;
+	tipoSinalPagamento: "V" | "P" | null;
 	valorSinalPagamento: number | null;
 	dataVencimentoSinalPagamento: string | null;
 	dataVencimentoAceite: string | null;

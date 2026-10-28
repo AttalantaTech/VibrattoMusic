@@ -10,6 +10,7 @@ import { showApiError } from "@/utils/showApiError";
 import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
 import { resolveStatusSender } from "@/features/message/utils/resolveStatusSender";
+import { calculateSignal } from "../utils/calculateSignal";
 
 interface UseBudgetSubmitProps {
 	setShowProfileIncompleteModal: (value: boolean) => void;
@@ -150,6 +151,12 @@ export const useBudgetSubmit = ({
 			"yyyy-MM-dd"
 		);
 
+		const { tipoSinalPagamento, valorSinalPagamento } = calculateSignal({
+			conditionId: finalFormData.idCondicoesPagamento,
+			customValue: finalFormData.valorSinalPagamento,
+			total: finalFormData.valor,
+		});
+
 		// Build payload in camelCase exactly as API expects
 		const budgetData: CreateProposalRequest = {
 			idConversa: conversationId || 0,
@@ -171,8 +178,8 @@ export const useBudgetSubmit = ({
 			formaPagamento: finalFormData.formaPagamento ?? [],
 			idCondicoesPagamento: finalFormData.idCondicoesPagamento,
 			idCondicoesPagamentoRestante: null,
-			tipoSinalPagamento: null,
-			valorSinalPagamento: null,
+			tipoSinalPagamento,
+			valorSinalPagamento,
 			transporteIncluso: Boolean(finalFormData.transporteIncluso),
 			acomodacaoInclusa: Boolean(finalFormData.acomodacaoInclusa),
 			camarimIncluso: false,
