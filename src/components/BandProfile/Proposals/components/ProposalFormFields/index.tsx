@@ -73,6 +73,7 @@ export function ProposalFormFields({
 	} = form;
 
 	const duration = watch("duracao") || "";
+	const paymentConditionId = watch("idCondicoesPagamento");
 
 	return (
 		<div className="space-y-4 py-4">
@@ -485,6 +486,47 @@ export function ProposalFormFields({
 						)}
 					/>
 				</div>
+
+				{paymentConditionId === 4 ? (
+					<div className="space-y-2">
+						<Controller
+							control={control}
+							name="valorSinalPagamento"
+							render={({ field }) => (
+								<>
+									<Label htmlFor="value">Valor do Sinal de Pagamento</Label>
+									<div className="relative">
+										<span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-sm text-gray-500">
+											R$
+										</span>
+										<Input
+											{...field}
+											type="text"
+											inputMode="numeric"
+											className="pl-10"
+											value={
+												field.value ? handleCurrencyFormatting(field.value) : ""
+											}
+											onChange={(event) => {
+												const digits = event.target.value.replace(/\D/g, "");
+												const number = digits ? Number(digits) / 100 : 0;
+
+												field.onChange(number);
+											}}
+											placeholder="0,00"
+										/>
+									</div>
+
+									{errors.valorSinalPagamento?.message && (
+										<div className="text-red-500 text-sm">
+											{errors.valorSinalPagamento.message}
+										</div>
+									)}
+								</>
+							)}
+						/>
+					</div>
+				) : null}
 			</Accordion>
 
 			{/* Included Services Section */}

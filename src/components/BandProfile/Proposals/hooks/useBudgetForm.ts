@@ -107,6 +107,8 @@ export const useBudgetForm = ({
 			idContratante: getContractorId(),
 			nomeContratante: budget?.nomeContratante || contractorName || "",
 			idTipoEvento: budget?.idTipoEvento || 0,
+			tipoSinalPagamento: budget?.tipoSinalPagamento || null,
+			valorSinalPagamento: budget?.valorSinalPagamento || 0,
 			descricao,
 			valor: 0,
 			local: budget?.local || "",

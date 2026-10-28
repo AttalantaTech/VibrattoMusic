@@ -133,8 +133,8 @@ export const useProposalForm = ({
 			idContratante: proposal?.idContratante || getContractorId(),
 			nomeContratante: proposal?.contratante.nome || contractorName || "",
 			idTipoEvento: proposal?.tipoEvento.id || 0,
-			// The description is editable: an existing proposal keeps the saved
-			// text, a new one starts from the standard text
+			tipoSinalPagamento: proposal?.tipoSinalPagamento || null,
+			valorSinalPagamento: proposal?.valorSinalPagamento || 0,
 			descricao: proposal?.descricao || descricao,
 			valor: proposal?.valor || 0,
 			local: proposal?.local || "",

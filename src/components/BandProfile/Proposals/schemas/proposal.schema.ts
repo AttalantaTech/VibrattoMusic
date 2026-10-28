@@ -38,6 +38,8 @@ const createProposalSchema = z
 		duracao: z.string().nullable(),
 		transporteIncluso: z.boolean().optional(),
 		acomodacaoInclusa: z.boolean().optional(),
+		tipoSinalPagamento: z.enum(["V", "P"]).nullable(),
+		valorSinalPagamento: z.number(),
 		camarimIncluso: z.boolean().optional(),
 		estruturaPalcoSomIluminacaoInclusa: z.boolean().optional(),
 		geradorIncluso: z.boolean().optional(),
@@ -52,6 +54,22 @@ const createProposalSchema = z
 	})
 
 	.superRefine((data, context) => {
+		if (data.idCondicoesPagamento === 4) {
+			if (!data.valorSinalPagamento || data.valorSinalPagamento <= 0) {
+				context.addIssue({
+					path: ["valorSinalPagamento"],
+					code: z.ZodIssueCode.custom,
+					message: "Informe o valor do sinal",
+				});
+			} else if (data.valorSinalPagamento > data.valor) {
+				context.addIssue({
+					path: ["valorSinalPagamento"],
+					code: z.ZodIssueCode.custom,
+					message: "O sinal deve ser menor que o valor total",
+				});
+			}
+		}
+
 		if (!data.definirHorarioEvento) return;
 
 		const requiredFields = [

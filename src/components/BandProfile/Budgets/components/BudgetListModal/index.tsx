@@ -48,6 +48,8 @@ const getInitialFormValues = (
 			transporteIncluso: false,
 			acomodacaoInclusa: false,
 			definirHorarioEvento: false,
+			tipoSinalPagamento: null,
+			valorSinalPagamento: 0,
 		};
 	}
 
@@ -69,6 +71,8 @@ const getInitialFormValues = (
 			acomodacaoInclusa: false,
 			definirHorarioEvento: Boolean(proposal.horaInicio),
 			idOrcamento: proposal.id,
+			tipoSinalPagamento: null,
+			valorSinalPagamento: 0,
 		};
 	}
 
@@ -88,6 +92,8 @@ const getInitialFormValues = (
 		transporteIncluso: Boolean(proposal.transporteIncluso),
 		acomodacaoInclusa: Boolean(proposal.acomodacaoInclusa),
 		definirHorarioEvento: Boolean(proposal.horaInicio),
+		tipoSinalPagamento: proposal.tipoSinalPagamento,
+		valorSinalPagamento: proposal.valorSinalPagamento || 0,
 	};
 };
 

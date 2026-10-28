@@ -21,6 +21,7 @@ import {
 	type ProposalParties,
 } from "@/features/message/utils/resolveStatusSender";
 import { formatDate } from "@/utils/validation";
+import { calculateSignal } from "../utils/calculateSignal";
 
 interface UseProposalSubmitProps {
 	setShowProfileIncompleteModal: (value: boolean) => void;
@@ -185,6 +186,12 @@ export const useProposalSubmit = ({
 			"yyyy-MM-dd"
 		);
 
+		const { tipoSinalPagamento, valorSinalPagamento } = calculateSignal({
+			conditionId: finalFormData.idCondicoesPagamento,
+			customValue: finalFormData.valorSinalPagamento,
+			total: finalFormData.valor,
+		});
+
 		// Build payload in camelCase exactly as API expects
 		const proposalData: CreateProposalRequest = {
 			id: proposal?.id,
@@ -207,8 +214,8 @@ export const useProposalSubmit = ({
 			formaPagamento: finalFormData.formaPagamento ?? [],
 			idCondicoesPagamento: finalFormData.idCondicoesPagamento,
 			idCondicoesPagamentoRestante: null,
-			tipoSinalPagamento: null,
-			valorSinalPagamento: null,
+			tipoSinalPagamento,
+			valorSinalPagamento,
 			transporteIncluso: Boolean(finalFormData.transporteIncluso),
 			acomodacaoInclusa: Boolean(finalFormData.acomodacaoInclusa),
 			camarimIncluso: Boolean(finalFormData.camarimIncluso),
