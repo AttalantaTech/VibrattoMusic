@@ -103,6 +103,20 @@ export function useDetailsForm({ musicalProduct }: UseDetailsFormProps) {
 		);
 	}, [musicalProduct]);
 
+	// A new profile has no category yet: show the one chosen at
+	// /band/profile-type. It was already the form value (idCategoria), but the
+	// select displays selectedCategoria, which only came from saved profiles
+	useEffect(() => {
+		if ((musicalProduct?.categoria.id ?? 0) > 0) return;
+
+		const chosenType = state.profileTypes.find((item) => item);
+		if (!chosenType) return;
+
+		setSelectedCategoria((current) =>
+			current.length > 0 ? current : [chosenType]
+		);
+	}, [musicalProduct, state.profileTypes]);
+
 	useEffect(() => {
 		form.reset(defaultValues);
 	}, [form, defaultValues]);

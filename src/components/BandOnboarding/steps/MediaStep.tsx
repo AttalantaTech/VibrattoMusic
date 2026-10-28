@@ -171,35 +171,59 @@ export default function MediaStep() {
 		}
 	};
 
-	const handleUploadClipping = async (file: File | null) => {
-		if (file) {
-			const blobUrl = await uploadImage(
-				file,
-				"ProdutoMusicalOnboardingClipagem"
-			);
+	// Each save sends the whole list: uploading several files at once and
+	// saving one by one would keep only the last, so the batch is saved once
+	const uploadFiles = async (files: Array<File>, eventType: FileEventType) => {
+		// In parallel; Promise.all keeps the selection order
+		const uploaded = await Promise.all(
+			files.map((file) => uploadImage(file, eventType))
+		);
+		const links = uploaded.filter((link): link is string => Boolean(link));
 
-			if (blobUrl) {
-				const exibirValorServico = watch("exibirValorServico");
-				const redeSocial = watch("redeSocial");
-				const videosYouTube = watch("videosYouTube");
-				const valor = watch("valorServico");
+		return links;
+	};
 
-				const valorServico = exibirValorServico
-					? valor
-						? Number(valor)
-						: null
-					: null;
+	const handleUploadCarousel = async (files: Array<File>) => {
+		const links = await uploadFiles(files, "ProdutoMusicalOnboardingCarrossel");
 
-				await addMediaOnboarding({
-					exibirValorServico,
-					redeSocial: redeSocial || [],
-					videosYouTube: videosYouTube || [],
-					spotifyPlaylistId,
-					valorServico,
+		if (links.length > 0) {
+			await addImageOnboarding({
+				FotoPerfil: profilePhoto ?? null,
+				ImagensCarrossel: [
+					...carouselImages,
+					...links.map((link) => ({ link, legenda: "" })),
+				],
+			});
+		}
+	};
 
-					clipagem: [...clippings, { id: null, link: blobUrl, legenda: "" }],
-				});
-			}
+	const handleUploadClipping = async (files: Array<File>) => {
+		const links = await uploadFiles(files, "ProdutoMusicalOnboardingClipagem");
+
+		if (links.length > 0) {
+			const exibirValorServico = watch("exibirValorServico");
+			const redeSocial = watch("redeSocial");
+			const videosYouTube = watch("videosYouTube");
+			const valor = watch("valorServico");
+
+			const valorServico = exibirValorServico
+				? valor
+					? Number(valor)
+					: null
+				: null;
+
+			await addMediaOnboarding({
+				exibirValorServico,
+				redeSocial: redeSocial || [],
+				videosYouTube: videosYouTube || [],
+				spotifyPlaylistId,
+				valorServico,
+
+				clipagem: [
+					...clippings,
+					...links.map((link) => ({ id: null, link, legenda: "" })),
+				],
+			});
 		}
 	};
 
@@ -228,9 +252,7 @@ export default function MediaStep() {
 							onLegendCarousel={handleLegendImage}
 							loadingMap={loadedItems}
 							markAsLoaded={markAsLoaded}
-							onUpload={(file) =>
-								handleUploadImage("ProdutoMusicalOnboardingCarrossel", file)
-							}
+							onUpload={handleUploadCarousel}
 							onRemove={(id: number | null, index: number) =>
 								removeImage("ProdutoMusicalOnboardingCarrossel", id, index)
 							}
@@ -268,7 +290,7 @@ export default function MediaStep() {
 							onLegendClipping={handleLegendClipping}
 							loadingMap={loadedItems}
 							markAsLoaded={markAsLoaded}
-							onUpload={(file) => handleUploadClipping(file)}
+							onUpload={handleUploadClipping}
 							onRemove={(id: number | null, index: number) =>
 								removeImage("ProdutoMusicalOnboardingClipagem", id, index)
 							}
