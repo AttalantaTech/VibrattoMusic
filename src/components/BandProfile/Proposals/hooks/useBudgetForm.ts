@@ -9,7 +9,10 @@ import { useAuthStore } from "@/store/authStore";
 import { secondsToTime, toBR } from "@/utils";
 import { useUser } from "@/hooks/useUser";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { handleStandardProposalDescription } from "../utils/handleStandardProposalDescription";
+import {
+	handleStandardProposalDescription,
+	proposalLegalParty,
+} from "../utils/handleStandardProposalDescription";
 
 interface BudgetFormProps {
 	budget?: CreateProposalForm | null;
@@ -88,16 +91,7 @@ export const useBudgetForm = ({
 
 		return handleStandardProposalDescription({
 			category: String(activeProduct.categoria.nome),
-			document: String(
-				activeProduct.usaCnpj
-					? activeProduct.cnpj || "-"
-					: userData?.cpfResponsavelLegal || "-"
-			),
-			legalName: String(
-				activeProduct.usaCnpj
-					? activeProduct.razaoSocial || "-"
-					: userData?.nomeResponsavelLegal || "-"
-			),
+			...proposalLegalParty({ product: activeProduct, user: userData }),
 			artisticName: activeProduct.nome,
 		});
 	}, [activeProduct, userData]);
