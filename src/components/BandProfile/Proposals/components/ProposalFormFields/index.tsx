@@ -24,6 +24,7 @@ import type { CreateProposalForm } from "../../schemas/proposal.schema";
 import type { FilterOption } from "@/api/types";
 import { PAYMENT_CONDITION } from "../../utils/calculateSignal";
 import { deadlineLabel } from "../../utils/deadlines";
+import { DateInput } from "@/components/forms/DateInput/DateInput";
 
 type SectionProposal =
 	| "eventData"
@@ -199,11 +200,11 @@ export function ProposalFormFields({
 							render={({ field }) => (
 								<>
 									<Label htmlFor="dataEvento">Data do Evento</Label>
-									<Input
+									<DateInput
 										id="dataEvento"
-										type="date"
-										{...field}
-										placeholder="dd/mm/aaaa"
+										value={field.value}
+										onChange={field.onChange}
+										onBlur={field.onBlur}
 									/>
 
 									{errors.dataEvento?.message && (
