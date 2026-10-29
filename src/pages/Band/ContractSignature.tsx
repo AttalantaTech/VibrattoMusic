@@ -19,6 +19,7 @@ import { ProposalStatusCard } from "@/components/BandProfile/Proposals/component
 import { proposalRoles } from "@/components/BandProfile/Proposals/utils/proposalRoles";
 import { useProposalActions } from "@/components/BandProfile/Proposals/hooks/useProposalActions";
 import { descriptionComplement } from "@/components/BandProfile/Proposals/utils/handleStandardProposalDescription";
+import { SignatureProgress } from "@/components/BandProfile/Proposals/components/SignatureProgress";
 import { DownPaymentNotice } from "@/components/BandProfile/Proposals/components/DownPaymentNotice";
 import { ConfirmDownPaymentDialog } from "@/components/BandProfile/Proposals/components/ConfirmDownPaymentDialog";
 import { useAuthStore } from "@/store/authStore";
@@ -331,33 +332,8 @@ export const ContractSignaturePage = ({
 					</div>
 				</div>
 
-				{proposal.status.nome === "Aceita" ? (
-					<div className="my-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
-						<div className="flex gap-3">
-							<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
-							<div className="text-sm text-primary-800">
-								<p className="font-medium mb-2">Importante:</p>
-
-								<span className="block mb-4">
-									O contrato precisa ser assinado eletronicamente pelas duas
-									partes (contratante e contratado). O processo só avança para a
-									próxima etapa depois que ambos assinarem.
-								</span>
-								<span className="block mb-4">
-									Cada parte receberá um e-mail com as instruções para assinar.
-									Caso não encontre a mensagem na caixa de entrada, verifique
-									também as pastas de Spam, Lixo Eletrônico, Promoções ou
-									Atualizações. Se você já assinou, aguarde a assinatura da
-									outra parte.
-								</span>
-								<span className="block mb-4">
-									Se o e-mail não chegar após alguns minutos, entre em contato
-									com nosso suporte.
-								</span>
-							</div>
-						</div>
-					</div>
-				) : null}
+				{/* Who has signed and who is missing, while the contract is signed */}
+				<SignatureProgress proposal={proposal} isContractor={!!isContractor} />
 
 				{/* Contractor only; shown until the down payment is confirmed */}
 				{isContractor ? <DownPaymentNotice proposal={proposal} /> : null}
