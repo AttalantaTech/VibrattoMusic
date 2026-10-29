@@ -1,5 +1,5 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { Eye, File, Pen, Share, SquarePen } from "lucide-react";
+import { DollarSign, Eye, File, Pen, Share, SquarePen } from "lucide-react";
 import type {
 	EventsTableBudgetsData,
 	EventsTableBudgetsRow,
@@ -169,6 +169,7 @@ const columnsSale = [
 			const onSeeContract = row.original.onSeeContract;
 			const onEditContract = row.original.onEditContract;
 			const onShareProposal = row.original.onShareProposal;
+			const onConfirmDownPayment = row.original.onConfirmDownPayment;
 
 			return (
 				<div className="flex gap-2 text-gray-500">
@@ -216,6 +217,17 @@ const columnsSale = [
 							<Share color="gray" size={16} />
 							<p>Compartilhar Proposta</p>
 						</MoreOptionsDropdownItem>
+
+						{onConfirmDownPayment ? (
+							<MoreOptionsDropdownItem
+								onClick={() => {
+									onConfirmDownPayment(row.original.event.id);
+								}}
+							>
+								<DollarSign color="gray" size={16} />
+								<p>Confirmar Recebimento do Sinal</p>
+							</MoreOptionsDropdownItem>
+						) : null}
 					</Dropdown>
 				</div>
 			);
