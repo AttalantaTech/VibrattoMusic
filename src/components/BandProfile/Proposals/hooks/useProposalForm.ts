@@ -4,13 +4,14 @@ import { useForm } from "react-hook-form";
 import type { CreateProposalForm } from "../schemas/proposal.schema";
 import { createProposalSchema } from "../schemas/proposal.schema";
 
-import { differenceInDays, format } from "date-fns";
+import { format } from "date-fns";
 import type { ProposalResponse } from "@/api/types";
 import { useAuthStore } from "@/store/authStore";
 import { calculateDuration, secondsToTime, toBR } from "@/utils";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useUser } from "@/hooks/useUser";
 import { handleStandardProposalDescription } from "../utils/handleStandardProposalDescription";
+import { deadlineDays } from "../utils/deadlines";
 
 interface ProposalFormProps {
 	proposal?: ProposalResponse | null;
@@ -84,20 +85,15 @@ export const useProposalForm = ({
 		[proposal?.dataInicio]
 	);
 
+	// Saved deadlines go back into the form as days from today
 	const dataVencimentoAceite = useMemo(
-		() =>
-			proposal?.dataVencimentoAceite
-				? differenceInDays(proposal.dataVencimentoAceite, dataEvento)
-				: 15,
-		[dataEvento, proposal?.dataVencimentoAceite]
+		() => deadlineDays(proposal?.dataVencimentoAceite, 15),
+		[proposal?.dataVencimentoAceite]
 	);
 
 	const dataVencimentoSinalPagamento = useMemo(
-		() =>
-			proposal?.dataVencimentoSinalPagamento
-				? differenceInDays(proposal.dataVencimentoSinalPagamento, dataEvento)
-				: 30,
-		[dataEvento, proposal?.dataVencimentoSinalPagamento]
+		() => deadlineDays(proposal?.dataVencimentoSinalPagamento, 30),
+		[proposal?.dataVencimentoSinalPagamento]
 	);
 
 	const duration = useMemo(

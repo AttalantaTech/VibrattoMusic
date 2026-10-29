@@ -23,6 +23,7 @@ import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
 import type { CreateProposalForm } from "../../schemas/proposal.schema";
 import type { FilterOption } from "@/api/types";
 import { PAYMENT_CONDITION } from "../../utils/calculateSignal";
+import { deadlineLabel } from "../../utils/deadlines";
 
 type SectionProposal =
 	| "eventData"
@@ -241,6 +242,12 @@ export function ProposalFormFields({
 										}}
 									/>
 
+									{field.value >= 1 && !errors.dataVencimentoAceite ? (
+										<p className="text-xs text-gray-500">
+											Vence em {deadlineLabel(field.value)}
+										</p>
+									) : null}
+
 									{errors.dataVencimentoAceite?.message && (
 										<div className="text-red-500 text-sm">
 											{errors.dataVencimentoAceite.message}
@@ -275,6 +282,13 @@ export function ProposalFormFields({
 												field.onChange(days);
 											}}
 										/>
+
+										{field.value >= 1 &&
+										!errors.dataVencimentoSinalPagamento ? (
+											<p className="text-xs text-gray-500">
+												Vence em {deadlineLabel(field.value)}
+											</p>
+										) : null}
 
 										{errors.dataVencimentoSinalPagamento?.message && (
 											<div className="text-red-500 text-sm">
