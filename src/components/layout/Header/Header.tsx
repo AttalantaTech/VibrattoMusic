@@ -167,6 +167,7 @@ export const Header = () => {
 								setProfilePage((previous) => previous + 1);
 							}}
 							isLoading={isFetchingProfiles}
+							totalProducts={musicalProducts?.paginacao?.totalItens}
 						/>
 					)}
 				</div>

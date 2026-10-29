@@ -29,6 +29,8 @@ export interface BandProfileSwitcherProps {
 	className?: string;
 	onReachEnd?: () => void;
 	isLoading?: boolean;
+	/** All the user's profiles, while the list loads them page by page */
+	totalProducts?: number;
 }
 
 export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
@@ -38,6 +40,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 	className,
 	onReachEnd,
 	isLoading,
+	totalProducts,
 }) => {
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -206,11 +209,19 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 							<p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
 								Perfil Profissional
 							</p>
+							{/* The list loads 10 at a time as it scrolls; without this
+							    nothing told there were more profiles below */}
+							{totalProducts && totalProducts > musicalProducts.length ? (
+								<p className="mt-0.5 text-xs text-gray-400">
+									Mostrando {musicalProducts.length} de {totalProducts}
+								</p>
+							) : null}
 						</div>
 
 						<div
 							ref={containerScrollRef}
-							className="max-h-[150px] overflow-auto"
+							// 5 profiles (44px each) before scrolling; the old 150px showed 3½
+							className="max-h-[220px] overflow-auto"
 						>
 							{musicalProducts.length > 0 ? (
 								musicalProducts.map((product) => (
@@ -234,7 +245,7 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 										)}
 									</button>
 								))
-							) : (
+							) : isLoading ? null : (
 								<div className="flex justify-center my-2">
 									<span className="text-xs text-center font-light text-gray-400">
 										Nenhum cadastrado
@@ -244,10 +255,18 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 
 							<div
 								ref={sentinelRef}
-								className={`${isLoading ? "h-10" : ""} flex justify-center items-center`}
+								className={`${isLoading ? "h-10" : ""} flex justify-center items-center gap-2`}
 							>
 								{isLoading && (
-									<Loader size={16} className="animate-spin text-primary-500" />
+									<>
+										<Loader
+											size={16}
+											className="animate-spin text-primary-500"
+										/>
+										<span className="text-xs text-gray-500">
+											Carregando mais perfis…
+										</span>
+									</>
 								)}
 							</div>
 						</div>
