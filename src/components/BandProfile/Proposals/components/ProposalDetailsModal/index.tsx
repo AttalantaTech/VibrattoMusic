@@ -8,12 +8,13 @@ import {
 	PenLine,
 	XCircle,
 } from "lucide-react";
-import type { ProposalResponse, User } from "../../../../../api/types";
+import type { ProposalResponse } from "../../../../../api/types";
 import { formatDate } from "../../../../../utils/validation";
 import { Button } from "../../../../ui/Button/Button";
 import { useAuthStore } from "@/store/authStore";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
+import { proposalRoles } from "@/components/BandProfile/Proposals/utils/proposalRoles";
 import { DownPaymentNotice } from "@/components/BandProfile/Proposals/components/DownPaymentNotice";
 import { useProposalPDF } from "@/hooks/useProposals";
 import { Accordion } from "@/components/ui/Accordion";
@@ -35,36 +36,6 @@ interface ProposalDetailsModalProps {
 	isLoadingCancel?: boolean;
 	isLoadingPaidSign?: boolean;
 }
-
-const handleStatus = ({
-	productContractorId,
-	proposal,
-	user,
-}: {
-	productContractorId: number | null;
-	proposal: ProposalResponse | undefined;
-	user: User | null;
-}) => {
-	const isWaitingForResponse = proposal?.status.nome === "Pendente";
-
-	const isContractor =
-		proposal?.produtoMusicalContratante.id === productContractorId ||
-		user?.id === proposal?.contratante.id;
-
-	const isAcceptedStatus = proposal?.status.nome === "Aceita";
-	const needsContractorPaidSign =
-		!isContractor && proposal?.status.nome === "AguardandoPagamento";
-
-	const signedContract = proposal?.status.nome === "ContratacaoConcluida";
-
-	return {
-		isWaitingForResponse,
-		isContractor,
-		isAcceptedStatus,
-		needsContractorPaidSign,
-		signedContract,
-	};
-};
 
 export const ProposalDetailsModal = ({
 	proposal,
@@ -109,7 +80,7 @@ export const ProposalDetailsModal = ({
 		isAcceptedStatus,
 		needsContractorPaidSign,
 		signedContract,
-	} = handleStatus({
+	} = proposalRoles({
 		proposal,
 		user,
 		productContractorId: activeProduct ? activeProduct.id : null,
