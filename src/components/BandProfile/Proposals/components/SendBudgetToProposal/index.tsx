@@ -55,6 +55,7 @@ export const SendBudgetToProposal = ({
 		setQuickDuration,
 		handleHasDefineEventTime,
 		isSectionComplete,
+		standardDescription,
 	} = useBudgetForm({
 		budget,
 		contractorId,
@@ -77,6 +78,7 @@ export const SendBudgetToProposal = ({
 		musicalProductContractorId,
 		setShowProfileIncompleteModal,
 		eventTypes,
+		standardDescription,
 	});
 
 	const toggleSection = (section: keyof typeof expandedSections) => {
@@ -104,6 +106,7 @@ export const SendBudgetToProposal = ({
 
 					<ProposalFormFields
 						form={form}
+						standardDescription={standardDescription}
 						handleHasDefineEventTime={handleHasDefineEventTime}
 						isSectionComplete={isSectionComplete}
 						setQuickDuration={setQuickDuration}

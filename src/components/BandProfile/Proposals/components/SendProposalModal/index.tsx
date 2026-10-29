@@ -68,6 +68,7 @@ export const SendProposalModal = ({
 		handleHasDefineEventTime,
 		setQuickDuration,
 		isSectionComplete,
+		standardDescription,
 	} = useProposalForm({
 		proposal,
 		counterProposalOf,
@@ -96,6 +97,7 @@ export const SendProposalModal = ({
 		conversationId,
 		userProductId,
 		hasDefineEventTime,
+		standardDescription,
 	});
 
 	const toggleSection = (section: keyof typeof expandedSections) => {
@@ -138,6 +140,7 @@ export const SendProposalModal = ({
 					) : null}
 					<ProposalFormFields
 						form={form}
+						standardDescription={standardDescription}
 						handleHasDefineEventTime={handleHasDefineEventTime}
 						isSectionComplete={isSectionComplete}
 						setQuickDuration={setQuickDuration}

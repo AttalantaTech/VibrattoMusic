@@ -11,6 +11,7 @@ import { calculateDuration, secondsToTime, toBR } from "@/utils";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useUser } from "@/hooks/useUser";
 import {
+	descriptionComplement,
 	handleStandardProposalDescription,
 	proposalLegalParty,
 } from "../utils/handleStandardProposalDescription";
@@ -115,7 +116,9 @@ export const useProposalForm = ({
 		[proposal]
 	);
 
-	const descricao = useMemo(() => {
+	// Shown fixed above the description field and sent in the chat card; the
+	// PDF prints its own copy, so it isn't saved in descricao
+	const standardDescription = useMemo(() => {
 		if (!activeProduct) return "";
 
 		return handleStandardProposalDescription({
@@ -141,7 +144,9 @@ export const useProposalForm = ({
 				proposal?.tipoSinalPagamento === "V"
 					? proposal.valorSinalPagamento || 0
 					: 0,
-			descricao: proposal?.descricao || descricao,
+			// Only the complement is editable (older proposals saved the
+			// standard text here too)
+			descricao: descriptionComplement(proposal?.descricao),
 			valor: proposal?.valor || 0,
 			local: proposal?.local || "",
 			dataEvento,
@@ -166,7 +171,6 @@ export const useProposalForm = ({
 		dataVencimentoAceite,
 		dataVencimentoSinalPagamento,
 		duration,
-		descricao,
 	]);
 
 	const form = useForm<CreateProposalForm>({
@@ -226,7 +230,6 @@ export const useProposalForm = ({
 					idTipoEvento &&
 					idTipoEvento > 0 &&
 					form.watch("nomeContratante") &&
-					form.watch("descricao") &&
 					form.watch("local") &&
 					form.watch("dataEvento") &&
 					form.watch("horaInicio") &&
@@ -257,6 +260,7 @@ export const useProposalForm = ({
 	return {
 		form,
 		initialValues,
+		standardDescription,
 		setQuickDuration,
 		isSectionComplete,
 		handleHasDefineEventTime,

@@ -18,6 +18,7 @@ import { useProposalById } from "../../hooks/useProposals";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
 import { proposalRoles } from "@/components/BandProfile/Proposals/utils/proposalRoles";
 import { useProposalActions } from "@/components/BandProfile/Proposals/hooks/useProposalActions";
+import { descriptionComplement } from "@/components/BandProfile/Proposals/utils/handleStandardProposalDescription";
 import { DownPaymentNotice } from "@/components/BandProfile/Proposals/components/DownPaymentNotice";
 import { ConfirmDownPaymentDialog } from "@/components/BandProfile/Proposals/components/ConfirmDownPaymentDialog";
 import { useAuthStore } from "@/store/authStore";
@@ -86,6 +87,10 @@ export const ContractSignaturePage = ({
 			observer.disconnect();
 		};
 	}, [proposal?.descricao, isDescriptionOpen]);
+
+	// Only what the professional typed: the parties and their documents (the
+	// standard text) are in the contract itself, right below
+	const descriptionComplementText = descriptionComplement(proposal?.descricao);
 	const [isConfirmPaymentOpen, setIsConfirmPaymentOpen] = useState(false);
 	const [proposalToReject, setProposalToReject] =
 		useState<ProposalResponse | null>(null);
@@ -244,7 +249,7 @@ export const ContractSignaturePage = ({
 						</div>
 					</dl>
 
-					{proposal.descricao ? (
+					{descriptionComplementText ? (
 						<div className="mt-4 border-t border-gray-100 pt-4">
 							<p className="text-xs text-gray-500">Descrição</p>
 							<p
@@ -253,7 +258,7 @@ export const ContractSignaturePage = ({
 									isDescriptionOpen ? "" : "line-clamp-3"
 								}`}
 							>
-								{proposal.descricao}
+								{descriptionComplementText}
 							</p>
 							{isDescriptionClamped || isDescriptionOpen ? (
 								<button

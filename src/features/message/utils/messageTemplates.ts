@@ -26,6 +26,8 @@ export interface StatusPayloads {
 		startTime?: string | null;
 		duration?: string | null;
 		location: string;
+		// What the professional typed below the standard description
+		complement?: string;
 		// Answer to a rejected proposal
 		counterProposal?: boolean;
 	};
@@ -165,6 +167,7 @@ const statusTemplates: { [K in StatusMessageType]: Template<K> } = {
 			rows: [
 				{ icon: "🎤", label: "Tipo de evento", value: c.eventTypeLabel || "-" },
 				{ icon: "📝", label: "Descrição", value: c.description },
+				{ icon: "🗒️", label: "Complemento", value: c.complement },
 				{ icon: "📅", label: "Data", value: c.date },
 				{ icon: "⏰", label: "Início", value: c.startTime || "Não definido" },
 				{ icon: "⏳", label: "Duração", value: c.duration || "Não definido" },

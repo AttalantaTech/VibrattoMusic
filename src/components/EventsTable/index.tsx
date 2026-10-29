@@ -40,7 +40,9 @@ const columnsHires = [
 						{event.title.substring(0, 50) +
 							(event.title.length > 50 ? "..." : "")}
 					</div>
-					<div className="text-gray-500 truncate">{formatDate(event.date)}</div>
+					<div className="text-gray-500 truncate">
+						{event.subtitle ?? `Criada em ${formatDate(event.date)}`}
+					</div>
 				</div>
 			);
 		},
@@ -119,7 +121,9 @@ const columnsSale = [
 						{event.title.substring(0, 50) +
 							(event.title.length > 50 ? "..." : "")}
 					</div>
-					<div className="text-gray-500 truncate">{formatDate(event.date)}</div>
+					<div className="text-gray-500 truncate">
+						{event.subtitle ?? `Criada em ${formatDate(event.date)}`}
+					</div>
 				</div>
 			);
 		},

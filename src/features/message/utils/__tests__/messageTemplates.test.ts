@@ -34,6 +34,27 @@ describe("chat messages", () => {
 		expect(html).toContain("Contraproposta recebida!");
 	});
 
+	it("a proposal card shows the standard text and the complement", () => {
+		const html = buildStatusMessage("proposalRequested", {
+			recipientName: "Maria",
+			...proposalPayload,
+			description: "Conforme solicitação, segue proposta orçamentária…",
+			complement: "Inclui 2h de show",
+		});
+		expect(html).toContain("Conforme solicitação");
+		expect(html).toContain("Complemento:");
+		expect(html).toContain("Inclui 2h de show");
+	});
+
+	it("without a complement the card has no empty row", () => {
+		const html = buildStatusMessage("proposalRequested", {
+			recipientName: "Maria",
+			...proposalPayload,
+			description: "Conforme solicitação…",
+		});
+		expect(html).not.toContain("Complemento");
+	});
+
 	it("a regular proposal keeps its title", () => {
 		const html = buildStatusMessage("proposalRequested", {
 			recipientName: "Maria",
