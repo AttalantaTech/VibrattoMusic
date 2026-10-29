@@ -463,9 +463,10 @@ export const ContractSignaturePage = ({
 
 				{/* Action Buttons */}
 				<div className="bg-white rounded-lg shadow-sm p-6">
-					<div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+					<div className="flex flex-col sm:flex-row gap-3 justify-between items-center">
 						<Button
 							variant="outline"
+							size="sm"
 							onClick={handleDownload}
 							disabled={downloading}
 							className="w-full sm:w-auto flex items-center justify-center gap-2"
@@ -483,7 +484,9 @@ export const ContractSignaturePage = ({
 							)}
 						</Button>
 
-						<div className="mt-6 flex justify-end gap-3">
+						{/* Phones: stacked full width (in one row they ran off the screen);
+						    hidden when there's no action, it left a blank gap */}
+						<div className="flex w-full flex-col gap-3 empty:hidden [&>*]:w-full [&>*]:h-[38px] [&>*]:px-4 [&>*]:text-sm sm:w-auto sm:flex-row sm:justify-end sm:[&>*]:w-auto">
 							{/* Band actions when proposal is pending */}
 							{isContractor ? (
 								<>

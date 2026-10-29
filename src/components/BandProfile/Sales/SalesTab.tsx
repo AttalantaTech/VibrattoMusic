@@ -66,6 +66,7 @@ import { SendProposalModal } from "../Proposals/components/SendProposalModal";
 import { ConfirmDownPaymentDialog } from "../Proposals/components/ConfirmDownPaymentDialog";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
+import { useProposalFromLink } from "@/components/BandProfile/Proposals/hooks/useProposalFromLink";
 import {
 	proposalStatusFilters,
 	proposalStatusLabel,
@@ -115,11 +116,10 @@ export const SalesTab = () => {
 		IdProdutoMusical: activeProduct?.id,
 	});
 
-	const { data: conversationsData, refetch: refetchConversations } =
-		useConversations({
-			IdProdutoMusical: activeProduct?.id || null,
-			enabled: false,
-		});
+	const { data: conversationsData } = useConversations({
+		IdProdutoMusical: activeProduct?.id || null,
+		enabled: false,
+	});
 
 	const conversation = useMemo<Conversation | null>(() => {
 		if (!proposalDetails || !conversationsData) return null;
@@ -150,6 +150,17 @@ export const SalesTab = () => {
 		},
 		[filteredProposals?.data]
 	);
+
+	const handleOpenLinkedProposal = useCallback((proposal: ProposalResponse) => {
+		setProposalDetails(proposal);
+		setIsProposalDetailsModalOpen(true);
+	}, []);
+
+	useProposalFromLink({
+		tab: "sales",
+		proposals: filteredProposals?.data,
+		onOpen: handleOpenLinkedProposal,
+	});
 
 	const handleSeeContract = useCallback(
 		async (proposalId: string) => {
@@ -215,26 +226,10 @@ export const SalesTab = () => {
 			});
 			setProposalToConfirmPayment(null);
 
-			// The conversations query only reads the cache, so it may not have
-			// loaded yet; without it the client's message was silently skipped
-			const conversations =
-				conversationsData ?? (await refetchConversations()).data ?? [];
-			const { produtoMusicalContratanteId, contratanteId } =
-				proposalParties(proposal);
-			const proposalConversation = conversations.find((c) =>
-				c.produtoMusicalId !== proposal.produtoMusical.id
-					? false
-					: produtoMusicalContratanteId
-						? c.produtoMusicalContratanteId === produtoMusicalContratanteId
-						: !c.produtoMusicalContratanteId &&
-							c.contratanteId === contratanteId
-			);
-			if (!proposalConversation) return;
-
 			sendStatusMessage({
 				type: "proposalPaidSign",
 				...resolveStatusSender(proposalParties(proposal), "contratado"),
-				conversationId: proposalConversation.id,
+				// Without the id, chat/obter finds the conversation from the parties
 				produtoMusicalName: proposal.produtoMusical.nome,
 				link: entityLinks.proposalTab(proposal.id),
 				errorMessage: "Erro ao enviar sua requisição",
@@ -261,7 +256,9 @@ export const SalesTab = () => {
 					status: "cancelado",
 				});
 
-				if (!proposalDetails || !conversation?.id) return;
+				// The conversations query only reads the cache: when it's empty the
+				// message used to be skipped; chat/obter finds the conversation
+				if (!proposalDetails) return;
 
 				sendStatusMessage({
 					type: "proposalCanceled",
@@ -269,7 +266,7 @@ export const SalesTab = () => {
 						proposalParties(proposalDetails),
 						"contratado"
 					),
-					conversationId: conversation.id,
+					conversationId: conversation?.id,
 					produtoMusicalName: proposalDetails.produtoMusical.nome,
 					link: entityLinks.proposalTab(proposalDetails.id),
 					errorMessage: "Erro ao enviar requisição",

@@ -98,10 +98,10 @@ export const ProposalDetailsModal = ({
 		}));
 	};
 
-	if (!proposal) {
-		onClose();
-		return null;
-	}
+	// Nothing to show yet. It used to call onClose() here, during render: a
+	// stale render without the proposal then closed a dialog that had just
+	// been opened (the "Ver proposta" link never showed it)
+	if (!proposal) return null;
 
 	const {
 		isWaitingForResponse,
@@ -128,7 +128,8 @@ export const ProposalDetailsModal = ({
 		>
 			<DialogContent
 				aria-describedby={undefined}
-				className="block max-w-2xl gap-0 p-0"
+				// The action bar carries the bottom safe area itself (pinned there)
+				className="block max-w-2xl gap-0 p-0 max-sm:pb-0"
 			>
 				<div className="p-6">
 					{/* Header (the dialog's own X closes it) */}
@@ -226,8 +227,9 @@ export const ProposalDetailsModal = ({
 					{/* Contractor only; shown until the down payment is confirmed */}
 					{isContractor ? <DownPaymentNotice proposal={proposal} /> : null}
 
-					{/* Actions */}
-					<div className="mt-6 flex justify-end gap-3">
+					{/* Actions. Phones: stacked full width in a bar pinned to the bottom;
+					    in one row they ran off the left edge, below a ~1400px PDF */}
+					<div className="sticky bottom-0 -mx-6 -mb-6 mt-6 flex flex-col gap-3 border-t border-gray-200 bg-white px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] [&>*]:w-full [&>*]:h-[38px] [&>*]:px-4 [&>*]:text-sm sm:static sm:mx-0 sm:mb-0 sm:flex-row sm:justify-end sm:border-0 sm:p-0 sm:[&>*]:w-auto">
 						{/* Band actions when proposal is pending */}
 						{mode === "Contractor" ? (
 							<>

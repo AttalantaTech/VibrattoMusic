@@ -863,6 +863,8 @@ export interface ProposalFilterRequest {
 	DataDe?: string | null;
 	DataAte?: string | null;
 	Enviado?: boolean;
+	/** The list leaves "Substituída" proposals out unless this is true */
+	incluirSubstituidas?: boolean;
 }
 
 export type ProposalStatusResponse =

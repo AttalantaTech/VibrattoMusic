@@ -21,8 +21,11 @@ import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProduct
 import { MoreOptionsDropdownItem } from "@/components/ui/MoreOptionsDropdownItem";
 import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
 import { BudgetListModal } from "@/components/BandProfile/Budgets/components/BudgetListModal";
+import { ProposalPreviewDialog } from "@/components/BandProfile/Proposals/components/ProposalPreviewDialog";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { BUDGET_REQUEST_TITLE } from "@/features/message/utils/messageTemplates";
 
 export const Chat = () => {
 	const { user } = useAuthStore();
@@ -33,6 +36,10 @@ export const Chat = () => {
 	const { isProfileComplete } = useProfileStatus();
 
 	const [openBudgetListModal, setOpenBudgetListModal] = useState(false);
+	// Proposal opened from a "Ver proposta" link (null = closed)
+	const [previewProposalId, setPreviewProposalId] = useState<number | null>(
+		null
+	);
 
 	const {
 		messageInput,
@@ -62,12 +69,35 @@ export const Chat = () => {
 		if (!anchor) return;
 
 		const url = new URL(anchor.href, window.location.origin);
-		const isProposalLink =
-			url.pathname.replace(/\/$/, "").endsWith("/band/me") &&
-			url.searchParams.get("tab") === "hires";
-		if (!isProposalLink) return;
+		if (!url.pathname.replace(/\/$/, "").endsWith("/band/me")) return;
+
+		// Budget requests open the conversation's budget list. Older ones were
+		// sent with the proposal link format, so the card title tells them apart
+		const isBudgetLink =
+			url.searchParams.has("orcamento") ||
+			!!anchor.parentElement?.textContent?.includes(BUDGET_REQUEST_TITLE);
+		if (isBudgetLink) {
+			event.preventDefault();
+			if (isSeller) {
+				setOpenBudgetListModal(true);
+			} else {
+				toast.info(
+					"Sua solicitação foi enviada. A proposta aparece aqui quando for criada."
+				);
+			}
+			return;
+		}
+
+		if (url.searchParams.get("tab") !== "hires") return;
 
 		event.preventDefault();
+		const proposalId = Number(url.searchParams.get("id"));
+		if (proposalId) {
+			// Shows the proposal right here, over the conversation
+			setPreviewProposalId(proposalId);
+			return;
+		}
+
 		void navigate({
 			to: "/band/me",
 			search: { tab: isSeller ? "sales" : "hires" },
@@ -270,6 +300,14 @@ export const Chat = () => {
 					conversationId={selectedConversation.id}
 				/>
 			)}
+
+			<ProposalPreviewDialog
+				proposalId={previewProposalId}
+				isSeller={isSeller}
+				onClose={() => {
+					setPreviewProposalId(null);
+				}}
+			/>
 		</ChatContainer>
 	);
 };
