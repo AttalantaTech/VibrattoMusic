@@ -13,6 +13,7 @@ import { Dropdown } from "../ui/Dropdown/Dropdown";
 import { MoreOptionsDropdownItem } from "../ui/MoreOptionsDropdownItem";
 import { formatDate } from "../../utils/validation";
 import { Button } from "@/components/ui/Button/Button";
+import { hasContract } from "@/components/BandProfile/Proposals/components/ProposalStatusCard/types";
 import { handleCurrencyFormatting } from "@/utils";
 
 interface EventsTableProps {
@@ -82,17 +83,19 @@ const columnsHires = [
 							}}
 						>
 							<Eye color="gray" size={16} />
-							<p>Detalhes da Proposta </p>
+							<p>Visualizar Proposta</p>
 						</MoreOptionsDropdownItem>
 
-						<MoreOptionsDropdownItem
-							onClick={() => {
-								onSeeContract(row.original.event.id);
-							}}
-						>
-							<File color="gray" size={16} />
-							<p>Visualizar do Contrato </p>
-						</MoreOptionsDropdownItem>
+						{hasContract(row.original.status) ? (
+							<MoreOptionsDropdownItem
+								onClick={() => {
+									onSeeContract(row.original.event.id);
+								}}
+							>
+								<File color="gray" size={16} />
+								<p>Visualizar Contrato</p>
+							</MoreOptionsDropdownItem>
+						) : null}
 					</Dropdown>
 				</div>
 			);
@@ -197,17 +200,19 @@ const columnsSale = [
 							}}
 						>
 							<Eye color="gray" size={16} />
-							<p>Detalhes da Proposta </p>
+							<p>Visualizar Proposta</p>
 						</MoreOptionsDropdownItem>
 
-						<MoreOptionsDropdownItem
-							onClick={() => {
-								onSeeContract(row.original.event.id);
-							}}
-						>
-							<File color="gray" size={16} />
-							<p>Visualizar do Contrato </p>
-						</MoreOptionsDropdownItem>
+						{hasContract(row.original.status) ? (
+							<MoreOptionsDropdownItem
+								onClick={() => {
+									onSeeContract(row.original.event.id);
+								}}
+							>
+								<File color="gray" size={16} />
+								<p>Visualizar Contrato</p>
+							</MoreOptionsDropdownItem>
+						) : null}
 
 						<MoreOptionsDropdownItem
 							onClick={() => {

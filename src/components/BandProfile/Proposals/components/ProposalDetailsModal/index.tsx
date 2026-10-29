@@ -18,7 +18,6 @@ import { DownPaymentNotice } from "@/components/BandProfile/Proposals/components
 import { useProposalPDF } from "@/hooks/useProposals";
 import { Accordion } from "@/components/ui/Accordion";
 import { useState } from "react";
-import { useContractPDF } from "@/hooks/useContracts";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
 
@@ -83,8 +82,6 @@ export const ProposalDetailsModal = ({
 }: ProposalDetailsModalProps) => {
 	const { data: proposalPdfUrl, isLoading: proposalPdfLoading } =
 		useProposalPDF(proposal?.identificadorUnico || "");
-	const { data: contractPdfUrl, isLoading: contractPdfLoading } =
-		useContractPDF(proposal?.identificadorUnico || "");
 
 	const { user } = useAuthStore();
 	const { activeProduct } = useMusicalProductStore();
@@ -92,7 +89,6 @@ export const ProposalDetailsModal = ({
 	// Accordion sections state
 	const [expandedSections, setExpandedSections] = useState({
 		proposalFile: true,
-		contractFile: true,
 	});
 
 	const toggleSection = (section: keyof typeof expandedSections) => {
@@ -156,86 +152,43 @@ export const ProposalDetailsModal = ({
 						)}
 					</div>
 
-					{proposal.status.nome === "Aceita" ? (
-						<div className="mt-6">
-							<Accordion
-								title="Contrato"
-								description=""
-								icon={<File className="h-5 w-5 text-gray-600" />}
-								isComplete={false}
-								isExpanded={expandedSections.contractFile}
-								onToggle={() => {
-									toggleSection("contractFile");
-								}}
-							>
-								<>
-									{contractPdfUrl ? (
-										<div className="border-y-2 border-gray-100">
-											<PdfViewer
-												src={contractPdfUrl}
-												className="w-full h-[60dvh] sm:h-[700px] border-0"
-												title="PDF do Contrato"
-											/>
+					{/* Only the proposal; the contract opens from the menu (Visualizar Contrato) */}
+					<div className="mt-6">
+						<Accordion
+							title="Proposta"
+							description=""
+							icon={<File className="h-5 w-5 text-gray-600" />}
+							isComplete={false}
+							isExpanded={expandedSections.proposalFile}
+							onToggle={() => {
+								toggleSection("proposalFile");
+							}}
+						>
+							<>
+								{proposalPdfUrl ? (
+									<div className="border-y-2 border-gray-100">
+										<PdfViewer
+											src={proposalPdfUrl}
+											className="w-full h-[60dvh] sm:h-[700px] border-0"
+											title="PDF da Proposta"
+										/>
+									</div>
+								) : proposalPdfLoading ? (
+									<div className="flex items-center justify-center h-[400px]">
+										<div className="text-center">
+											<FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+											<h4 className="text-lg font-semibold text-gray-900 mb-2">
+												Carregando proposta...
+											</h4>
+											<p className="text-gray-600">
+												O PDF da proposta está sendo carregado.
+											</p>
 										</div>
-									) : contractPdfLoading ? (
-										<div className="flex items-center justify-center h-[400px]">
-											<div className="text-center">
-												<FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-												<h4 className="text-lg font-semibold text-gray-900 mb-2">
-													Carregando proposta...
-												</h4>
-												<p className="text-gray-600">
-													O PDF da proposta está sendo carregado.
-												</p>
-											</div>
-										</div>
-									) : null}
-
-									{/* Contractor only; shown until the down payment is confirmed */}
-									{isContractor ? (
-										<DownPaymentNotice proposal={proposal} />
-									) : null}
-								</>
-							</Accordion>
-						</div>
-					) : (
-						<div className="mt-6">
-							<Accordion
-								title="Proposta"
-								description=""
-								icon={<File className="h-5 w-5 text-gray-600" />}
-								isComplete={false}
-								isExpanded={expandedSections.proposalFile}
-								onToggle={() => {
-									toggleSection("proposalFile");
-								}}
-							>
-								<>
-									{proposalPdfUrl ? (
-										<div className="border-y-2 border-gray-100">
-											<PdfViewer
-												src={proposalPdfUrl}
-												className="w-full h-[60dvh] sm:h-[700px] border-0"
-												title="PDF da Proposta"
-											/>
-										</div>
-									) : proposalPdfLoading ? (
-										<div className="flex items-center justify-center h-[400px]">
-											<div className="text-center">
-												<FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-												<h4 className="text-lg font-semibold text-gray-900 mb-2">
-													Carregando proposta...
-												</h4>
-												<p className="text-gray-600">
-													O PDF da proposta está sendo carregado.
-												</p>
-											</div>
-										</div>
-									) : null}
-								</>
-							</Accordion>
-						</div>
-					)}
+									</div>
+								) : null}
+							</>
+						</Accordion>
+					</div>
 
 					{/* Creation Date */}
 					<div className="text-sm text-gray-500 pt-4">
@@ -269,6 +222,9 @@ export const ProposalDetailsModal = ({
 							</div>
 						</div>
 					) : null}
+
+					{/* Contractor only; shown until the down payment is confirmed */}
+					{isContractor ? <DownPaymentNotice proposal={proposal} /> : null}
 
 					{/* Actions */}
 					<div className="mt-6 flex justify-end gap-3">

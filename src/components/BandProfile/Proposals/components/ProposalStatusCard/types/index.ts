@@ -109,3 +109,7 @@ export const proposalStatusFilters = [
 
 export const proposalStatusLabel = (status: string): string =>
 	proposalStatusCardConfigDict[status]?.label ?? splitOnUppercase(status);
+
+// The contract exists from the acceptance on; before that there's only the proposal
+export const hasContract = (status: string) =>
+	["Aceita", "AguardandoPagamento", "ContratacaoConcluida"].includes(status);
