@@ -85,7 +85,7 @@ describe("useMessaging hooks", () => {
 				mockConversations
 			);
 
-			const { result } = renderHook(() => useConversations(), {
+			const { result } = renderHook(() => useConversations({}), {
 				wrapper: createWrapper,
 			});
 
@@ -94,7 +94,10 @@ describe("useMessaging hooks", () => {
 			});
 
 			expect(result.current.data).toEqual(mockConversations);
-			expect(messagingService.getConversations).toHaveBeenCalledWith(undefined);
+			// Without a musical product only the pagination goes to the API
+			expect(messagingService.getConversations).toHaveBeenCalledWith({
+				parameters: undefined,
+			});
 		});
 
 		it("should fetch conversations with pagination parameters", async () => {
@@ -115,19 +118,30 @@ describe("useMessaging hooks", () => {
 				mockConversations
 			);
 
-			const { result } = renderHook(() => useConversations(parameters), {
-				wrapper: createWrapper,
-			});
+			const { result } = renderHook(
+				() =>
+					useConversations({
+						parameters,
+						IdProdutoMusical: 3,
+						IdContratante: 7,
+					}),
+				{ wrapper: createWrapper }
+			);
 
 			await waitFor(() => {
 				expect(result.current.isSuccess).toBe(true);
 			});
 
-			expect(messagingService.getConversations).toHaveBeenCalledWith(parameters);
+			expect(messagingService.getConversations).toHaveBeenCalledWith({
+				IdContratante: 7,
+				IdProdutoMusical: 3,
+				IdProdutoMusicalContratante: undefined,
+				parameters,
+			});
 		});
 
 		it("should not fetch when disabled", () => {
-			const { result } = renderHook(() => useConversations(undefined, false), {
+			const { result } = renderHook(() => useConversations({ enabled: false }), {
 				wrapper: createWrapper,
 			});
 
@@ -217,7 +231,8 @@ describe("useMessaging hooks", () => {
 				expect(result.current.isSuccess).toBe(true);
 			});
 
-			expect(result.current.data).toEqual(mockMessages);
+			// Infinite query: the API response is the first page
+			expect(result.current.data?.pages[0]).toEqual(mockMessages);
 			expect(messagingService.getConversationMessages).toHaveBeenCalledWith(
 				conversationId,
 				undefined
@@ -233,7 +248,9 @@ describe("useMessaging hooks", () => {
 				content: "Test message",
 			};
 
-			const mockResponse: Message = {
+			// The API answers with idConversa, used to refresh that conversation
+			const mockResponse = {
+				idConversa: 1,
 				id: "msg-new",
 				conversationId: "conv-1",
 				senderId: "user-1",
@@ -245,7 +262,9 @@ describe("useMessaging hooks", () => {
 				updatedAt: "2024-01-01T10:00:00Z",
 			};
 
-			vi.mocked(messagingService.sendMessage).mockResolvedValue(mockResponse);
+			vi.mocked(messagingService.sendMessage).mockResolvedValue(
+				mockResponse as never
+			);
 
 			const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
@@ -297,9 +316,7 @@ describe("useMessaging hooks", () => {
 			await result.current.mutateAsync(conversationData);
 
 			expect(messagingService.startConversation).toHaveBeenCalledWith(
-				conversationData.participanteId,
-				conversationData.assunto,
-				conversationData.conteudo
+				conversationData
 			);
 
 			await waitFor(() => {

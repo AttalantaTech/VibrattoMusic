@@ -1,13 +1,14 @@
+import { beforeEach, describe, expect, it, vi, type Mocked } from 'vitest';
 import { contractService } from '../contractService';
 import { apiClient } from '../../core/client';
 
 // Mock the API client
-jest.mock('../../core/client');
-const mockApiClient = apiClient as jest.Mocked<typeof apiClient>;
+vi.mock('../../core/client');
+const mockApiClient = apiClient as Mocked<typeof apiClient>;
 
 describe('contractService', () => {
 	beforeEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	describe('loadContract', () => {
@@ -37,7 +38,7 @@ describe('contractService', () => {
 		});
 	});
 
-	describe('listContractSections', () => {
+	describe('listContractSectionsByMusicalProductId', () => {
 		it('should call API with correct endpoint and return sections array', async () => {
 			const mockSections = [
 				{
@@ -56,7 +57,7 @@ describe('contractService', () => {
 
 			mockApiClient.get.mockResolvedValue(mockSections);
 
-			const result = await contractService.listContractSections(1);
+			const result = await contractService.listContractSectionsByMusicalProductId(1);
 
 			expect(mockApiClient.get).toHaveBeenCalledWith('produtomusical/1/listarSecoesContrato');
 			expect(result).toEqual(mockSections);
@@ -66,7 +67,7 @@ describe('contractService', () => {
 			const error = new Error('API Error');
 			mockApiClient.get.mockRejectedValue(error);
 
-			await expect(contractService.listContractSections(1)).rejects.toThrow('API Error');
+			await expect(contractService.listContractSectionsByMusicalProductId(1)).rejects.toThrow('API Error');
 		});
 	});
 
@@ -141,7 +142,8 @@ describe('contractService', () => {
 			const result = await contractService.searchContracts('test search', 1, 20);
 
 			expect(mockApiClient.get).toHaveBeenCalledWith(
-				'contratos/buscar?termo=test%20search&limite=20&usuarioId=1'
+				// URLSearchParams writes spaces as "+"
+				'contratos/buscar?termo=test+search&limite=20&usuarioId=1'
 			);
 			expect(result).toEqual(mockResults);
 		});
