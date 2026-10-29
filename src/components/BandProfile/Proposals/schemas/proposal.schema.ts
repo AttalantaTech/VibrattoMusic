@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+	PAYMENT_CONDITION,
+	requiresDownPayment,
+} from "../utils/calculateSignal";
 
 const createProposalSchema = z
 	.object({
@@ -9,18 +13,9 @@ const createProposalSchema = z
 		valor: z.number().min(0.01, "Valor deve ser maior que zero"),
 		local: z.string().trim().min(3, "Local é obrigatório"),
 		definirHorarioEvento: z.boolean().optional(),
-		dataVencimentoSinalPagamento: z.coerce
-			.number({
-				errorMap: (issue, context) => {
-					if (issue.code === "invalid_type" || isNaN(Number(context.data))) {
-						return {
-							message: "Data de vencimento do pagamento do Sinal é obrigatória",
-						};
-					}
-					return { message: context.defaultError };
-				},
-			})
-			.min(1, "Data de vencimento do pagamento do Sinal é obrigatória"),
+		// Required only when the condition has a down payment (see superRefine);
+		// a cleared field becomes 0 instead of failing while it's hidden
+		dataVencimentoSinalPagamento: z.coerce.number().catch(0),
 		dataVencimentoAceite: z
 			.number({
 				errorMap: (issue, context) => {
@@ -54,7 +49,18 @@ const createProposalSchema = z
 	})
 
 	.superRefine((data, context) => {
-		if (data.idCondicoesPagamento === 4) {
+		if (
+			requiresDownPayment(data.idCondicoesPagamento) &&
+			!(data.dataVencimentoSinalPagamento >= 1)
+		) {
+			context.addIssue({
+				path: ["dataVencimentoSinalPagamento"],
+				code: z.ZodIssueCode.custom,
+				message: "Data de vencimento do pagamento do Sinal é obrigatória",
+			});
+		}
+
+		if (data.idCondicoesPagamento === PAYMENT_CONDITION.SIGNAL_CUSTOM) {
 			if (!data.valorSinalPagamento || data.valorSinalPagamento <= 0) {
 				context.addIssue({
 					path: ["valorSinalPagamento"],

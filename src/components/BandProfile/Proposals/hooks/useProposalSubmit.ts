@@ -21,7 +21,7 @@ import {
 	type ProposalParties,
 } from "@/features/message/utils/resolveStatusSender";
 import { formatDate } from "@/utils/validation";
-import { calculateSignal } from "../utils/calculateSignal";
+import { calculateSignal, requiresDownPayment } from "../utils/calculateSignal";
 
 interface UseProposalSubmitProps {
 	setShowProfileIncompleteModal: (value: boolean) => void;
@@ -178,18 +178,22 @@ export const useProposalSubmit = ({
 			),
 			"yyyy-MM-dd"
 		);
-		const dataVencimentoSinalPagamento = format(
-			addDays(
-				isBeforeDate ? todayDate : eventDate,
-				finalFormData.dataVencimentoSinalPagamento
-			),
-			"yyyy-MM-dd"
-		);
+		// No down payment ("À vista no dia do evento") means no due date
+		const dataVencimentoSinalPagamento = requiresDownPayment(
+			finalFormData.idCondicoesPagamento
+		)
+			? format(
+					addDays(
+						isBeforeDate ? todayDate : eventDate,
+						finalFormData.dataVencimentoSinalPagamento
+					),
+					"yyyy-MM-dd"
+				)
+			: null;
 
 		const { tipoSinalPagamento, valorSinalPagamento } = calculateSignal({
 			conditionId: finalFormData.idCondicoesPagamento,
 			customValue: finalFormData.valorSinalPagamento,
-			total: finalFormData.valor,
 		});
 
 		// Build payload in camelCase exactly as API expects

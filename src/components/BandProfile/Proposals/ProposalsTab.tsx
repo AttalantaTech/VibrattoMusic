@@ -86,7 +86,7 @@ const statusConfig = {
 		borderColor: "border-orange-200",
 	},
 	Substituida: {
-		label: "Substituida",
+		label: "Substituída",
 		icon: PenTool,
 		variant: "secondary" as const,
 		color: "text-yellow-600",

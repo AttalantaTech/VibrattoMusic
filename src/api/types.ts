@@ -831,7 +831,7 @@ export interface CreateProposalRequest {
 	idCondicoesPagamentoRestante?: number | null;
 	tipoSinalPagamento?: "P" | "V" | null;
 	valorSinalPagamento?: number | null;
-	dataVencimentoSinalPagamento: string;
+	dataVencimentoSinalPagamento: string | null;
 	dataVencimentoAceite: string;
 	transporteIncluso?: boolean;
 	acomodacaoInclusa?: boolean;
