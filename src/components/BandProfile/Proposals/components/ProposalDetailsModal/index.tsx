@@ -14,6 +14,7 @@ import { Button } from "../../../../ui/Button/Button";
 import { useAuthStore } from "@/store/authStore";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
+import { DownPaymentNotice } from "@/components/BandProfile/Proposals/components/DownPaymentNotice";
 import { useProposalPDF } from "@/hooks/useProposals";
 import { Accordion } from "@/components/ui/Accordion";
 import { useState } from "react";
@@ -55,9 +56,6 @@ const handleStatus = ({
 	const needsContractorPaidSign =
 		!isContractor && proposal?.status.nome === "AguardandoPagamento";
 
-	const contractedPartyNeedsPaidSign =
-		isContractor && proposal?.status.nome === "AguardandoPagamento";
-
 	const signedContract = proposal?.status.nome === "ContratacaoConcluida";
 
 	return {
@@ -65,7 +63,6 @@ const handleStatus = ({
 		isContractor,
 		isAcceptedStatus,
 		needsContractorPaidSign,
-		contractedPartyNeedsPaidSign,
 		signedContract,
 	};
 };
@@ -115,7 +112,6 @@ export const ProposalDetailsModal = ({
 		isContractor,
 		isAcceptedStatus,
 		needsContractorPaidSign,
-		contractedPartyNeedsPaidSign,
 		signedContract,
 	} = handleStatus({
 		proposal,
@@ -194,6 +190,11 @@ export const ProposalDetailsModal = ({
 											</div>
 										</div>
 									) : null}
+
+									{/* Contractor only; shown until the down payment is confirmed */}
+									{isContractor ? (
+										<DownPaymentNotice proposal={proposal} />
+									) : null}
 								</>
 							</Accordion>
 						</div>
@@ -240,26 +241,6 @@ export const ProposalDetailsModal = ({
 					<div className="text-sm text-gray-500 pt-4">
 						Proposta criada em {formatDate(proposal.dataCriacao)}
 					</div>
-
-					{contractedPartyNeedsPaidSign ? (
-						<div className="my-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
-							<div className="flex gap-3">
-								<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
-								<div className="text-sm text-primary-800">
-									<p className="font-medium mb-2">Importante:</p>
-									<span className="block mb-4">
-										Efetue o pagamento do sinal e aguarde{" "}
-										<span className="font-semibold">
-											{proposal.produtoMusical.nome}
-										</span>{" "}
-										confirmar o recebimento na plataforma. Após a confirmação,
-										você receberá um email confirmando a contratação para o seu
-										evento.
-									</span>
-								</div>
-							</div>
-						</div>
-					) : null}
 
 					{proposal.status.nome === "Aceita" ? (
 						<div className="my-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
@@ -360,7 +341,7 @@ export const ProposalDetailsModal = ({
 										) : (
 											<DollarSign className="h-4 w-4 mr-2" />
 										)}
-										confirmar pagamento
+										Confirmar Recebimento do Sinal
 									</Button>
 								)}
 								{(isWaitingForResponse || isAcceptedStatus) && (

@@ -173,7 +173,7 @@ export const useUpdateProposalStatus = () => {
 				rejeitado: "Proposta rejeitada.",
 				cancelado: "Proposta cancelada.",
 				sinalPago:
-					"Sinal de proposta marcado como pago. O contrato agora precisa ser assinado.",
+					"Recebimento do sinal confirmado. A contratação foi concluída.",
 			};
 
 			toast.success(statusMessages[variables.status]);
