@@ -13,6 +13,7 @@ import { useSearchFiltersWithURL } from "../hooks/useSearchFiltersWithURL";
 import { useDebounce } from "../hooks/useDebounceSimple";
 import type { MusicalProductApiResponse } from "../api/types";
 import { useFilterLookup } from "@/features/MusicalProfile/hooks/useFilterLookup";
+import { visiblePages } from "@/utils/pagination";
 
 export const SearchPage = () => {
 	const location = useLocation();
@@ -97,23 +98,17 @@ export const SearchPage = () => {
 		true
 	);
 
-	const visiblePagination = useMemo(() => {
-		const totalpages = searchResults?.paginacao.totalPaginas || 0;
-		const currentpage = searchResults?.paginacao.paginaAtual || 1;
-
-		let start = Math.max(1, currentpage - 2);
-		const end = Math.min(totalpages, start + 4);
-
-		if (end - start < 4) {
-			start = Math.min(1, end - 4);
-		}
-
-		const length = Math.max(0, end - start + 1);
-		return Array.from({ length }, (_, index) => start + index);
-	}, [
-		searchResults?.paginacao.totalPaginas,
-		searchResults?.paginacao.paginaAtual,
-	]);
+	const visiblePagination = useMemo(
+		() =>
+			visiblePages(
+				searchResults?.paginacao.paginaAtual || 1,
+				searchResults?.paginacao.totalPaginas || 0
+			),
+		[
+			searchResults?.paginacao.totalPaginas,
+			searchResults?.paginacao.paginaAtual,
+		]
+	);
 
 	// Force initial search for São Paulo when no filters are active
 	useEffect(() => {
