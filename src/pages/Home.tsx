@@ -852,7 +852,7 @@ export const Home = (): FunctionComponent => {
 
 							<div className="flex w-full items-center justify-between flex-col sm:flex-row gap-4">
 								<p className="text-gray-400 text-sm sm:text-base">
-									© 2025 Vibratto - Projeto Atual 20260513
+									© 2025 Vibratto - Projeto Atual Out/2026
 								</p>
 								<div className="flex gap-4 items-center justify-center">
 									<a
