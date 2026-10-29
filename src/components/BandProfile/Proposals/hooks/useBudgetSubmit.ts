@@ -22,6 +22,8 @@ interface UseBudgetSubmitProps {
 	conversationId?: number;
 	hasDefineEventTime: boolean;
 	eventTypes: Array<FilterOption>;
+	/** Fixed text shown above the description; goes in the chat card */
+	standardDescription: string;
 }
 
 const formatDate = (dateString: string) => {
@@ -82,6 +84,7 @@ export const useBudgetSubmit = ({
 	conversationId,
 	musicalProductContractorId,
 	eventTypes,
+	standardDescription,
 }: UseBudgetSubmitProps) => {
 	const { user } = useAuthStore();
 	const { isProfileComplete, refetch: refetchProfile } = useProfileStatus();
@@ -156,7 +159,8 @@ export const useBudgetSubmit = ({
 			),
 			idProdutoMusical: musicalProductId,
 			idTipoEvento: Number(finalFormData.idTipoEvento),
-			descricao: finalFormData.descricao || "",
+			// Only the complement: the PDF prints the standard text on its own
+			descricao: finalFormData.descricao?.trim() || "",
 			valor: Number(finalFormData.valor),
 			local: finalFormData.local,
 			dataEvento: format(eventDate, "yyyy-MM-dd"),
@@ -206,7 +210,8 @@ export const useBudgetSubmit = ({
 					: undefined,
 				payload: {
 					eventTypeLabel,
-					description: budgetData.descricao,
+					description: standardDescription,
+					complement: budgetData.descricao,
 					date: formatDate(budgetData.dataEvento),
 					startTime: hasDefineEventTime ? budgetData.horaInicio : null,
 					duration:

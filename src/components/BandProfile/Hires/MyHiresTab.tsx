@@ -19,6 +19,7 @@ import {
 	proposalStatusLabel,
 } from "@/components/BandProfile/Proposals/components/ProposalStatusCard/types";
 import { ProposalRejectionModal } from "../Proposals/components/ProposalRejectionModal";
+import { proposalTitle } from "@/components/BandProfile/Proposals/utils/proposalTitle";
 
 export const MyHiresTab = () => {
 	const navigate = useNavigate();
@@ -108,7 +109,10 @@ export const MyHiresTab = () => {
 					return {
 						event: {
 							id: event.identificadorUnico,
-							title: event.descricao,
+							// The other party (the artist hired) over "Casamento · 20/12/2026"; it
+							// was the description, the same standard text for every proposal
+							title: event.produtoMusical.nome || proposalTitle(event),
+							subtitle: proposalTitle(event),
 							date: event.dataCriacao,
 						},
 						status: event.status.nome,

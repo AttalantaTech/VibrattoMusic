@@ -4,6 +4,7 @@ import { useRouter } from "@tanstack/react-router";
 import { FinishModal } from "../../FinishModal/FinishModal";
 import { OnboardingHeader } from "../../../BandOnboarding/OnboardingHeader/OnboardingHeader";
 import { Button } from "@/components/ui/button";
+import { useCurrentOnboarding } from "../../hooks/useCurrentOnboarding";
 import { toast } from "sonner";
 
 interface StepLayoutProps {
@@ -57,6 +58,7 @@ export const StepLayout = ({
 	const currentStepName = steps[currentStep - 1] ?? "Finalização";
 
 	const [isFinishStepOpen, setIsFinishStepOpen] = useState(false);
+	const { isStepDone } = useCurrentOnboarding();
 
 	// Each step is its own route and the router doesn't reset the scroll, so
 	// Continuar/Voltar opened the next step at the previous one's position
@@ -124,10 +126,13 @@ export const StepLayout = ({
 					<div className="flex flex-col lg:flex-row w-full gap-4 lg:gap-8">
 						<div className="w-full lg:w-2/5 xl:w-[40%] border border-gray-200 bg-gray-50 rounded-lg p-4 md:p-6 lg:p-7 order-2 lg:order-1 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
 							{steps.map((step, index) => {
+								// ✓ only for a step saved on the server: it used to mark every
+								// step before the open one, so step 6 showed all ✓ next to
+								// "Complete todos os passos obrigatórios"
 								let status: "active" | "inactive" | "completed";
 								if (currentStep === index + 1) {
 									status = "active";
-								} else if (currentStep > index + 1) {
+								} else if (isStepDone(index + 1)) {
 									status = "completed";
 								} else {
 									status = "inactive";

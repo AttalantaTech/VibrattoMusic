@@ -8,6 +8,7 @@ import type {
 import { toast } from "sonner";
 import { useAuthStore } from "../store/authStore";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { retryUnlessNotFound } from "@/api/queryRetry";
 
 const CONTRACT_QUERY_KEYS = {
 	all: ["contracts"] as const,
@@ -27,7 +28,7 @@ export const useContract = (identificadorUnico: string) => {
 		queryFn: () => contractService.loadContract(identificadorUnico),
 		enabled: !!identificadorUnico && identificadorUnico.length > 0,
 		staleTime: 10 * 60 * 1000, // 10 minutes
-		retry: 2,
+		retry: retryUnlessNotFound(2),
 		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
 	});
 };
@@ -41,7 +42,7 @@ export const useContractPDF = (identificadorUnico: string) => {
 		queryFn: () => contractService.loadContractPDF(identificadorUnico),
 		enabled: !!identificadorUnico && identificadorUnico.length > 0,
 		staleTime: 10 * 60 * 1000, // 10 minutes
-		retry: 2,
+		retry: retryUnlessNotFound(2),
 		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
 	});
 };
@@ -56,7 +57,7 @@ export const useContractSections = (proposalId: number) => {
 			contractService.listContractSectionsByMusicalProductId(proposalId),
 		enabled: !!proposalId,
 		staleTime: 5 * 60 * 1000, // 5 minutes
-		retry: 2,
+		retry: retryUnlessNotFound(2),
 		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
 	});
 };

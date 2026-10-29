@@ -9,7 +9,10 @@ import { useAuthStore } from "@/store/authStore";
 import { secondsToTime, toBR } from "@/utils";
 import { useUser } from "@/hooks/useUser";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { handleStandardProposalDescription } from "../utils/handleStandardProposalDescription";
+import {
+	handleStandardProposalDescription,
+	proposalLegalParty,
+} from "../utils/handleStandardProposalDescription";
 
 interface BudgetFormProps {
 	budget?: CreateProposalForm | null;
@@ -83,21 +86,14 @@ export const useBudgetForm = ({
 		[budget?.dataEvento]
 	);
 
-	const descricao = useMemo(() => {
+	// Shown fixed above the description field and sent in the chat card; the
+	// PDF prints its own copy, so it isn't saved in descricao
+	const standardDescription = useMemo(() => {
 		if (!activeProduct) return "";
 
 		return handleStandardProposalDescription({
 			category: String(activeProduct.categoria.nome),
-			document: String(
-				activeProduct.usaCnpj
-					? activeProduct.cnpj || "-"
-					: userData?.cpfResponsavelLegal || "-"
-			),
-			legalName: String(
-				activeProduct.usaCnpj
-					? activeProduct.razaoSocial || "-"
-					: userData?.nomeResponsavelLegal || "-"
-			),
+			...proposalLegalParty({ product: activeProduct, user: userData }),
 			artisticName: activeProduct.nome,
 		});
 	}, [activeProduct, userData]);
@@ -113,7 +109,7 @@ export const useBudgetForm = ({
 				budget?.tipoSinalPagamento === "V"
 					? budget.valorSinalPagamento || 0
 					: 0,
-			descricao,
+			descricao: "",
 			valor: 0,
 			local: budget?.local || "",
 			dataEvento,
@@ -130,7 +126,7 @@ export const useBudgetForm = ({
 			estruturaPalcoSomIluminacaoInclusa: false,
 			// geradorIncluso: false
 		};
-	}, [budget, contractorName, getContractorId, dataEvento, descricao]);
+	}, [budget, contractorName, getContractorId, dataEvento]);
 
 	const form = useForm<CreateProposalForm>({
 		resolver: zodResolver(createProposalSchema),
@@ -189,7 +185,6 @@ export const useBudgetForm = ({
 					idTipoEvento &&
 					idTipoEvento > 0 &&
 					form.watch("nomeContratante") &&
-					form.watch("descricao") &&
 					form.watch("local") &&
 					form.watch("dataEvento") &&
 					form.watch("horaInicio") &&
@@ -220,6 +215,7 @@ export const useBudgetForm = ({
 	return {
 		form,
 		initialValues,
+		standardDescription,
 		setQuickDuration,
 		isSectionComplete,
 		handleHasDefineEventTime,

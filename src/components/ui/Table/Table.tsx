@@ -173,33 +173,36 @@ export const GenericTable = <T,>({
 						</table>
 					</div>
 
-					<div className="flex w-full flex-col px-4">
-						<hr className="w-full" />
-						<div className="flex w-full items-center justify-between py-4">
-							<button
-								className="bg-white px-3 py-2 border border-gray-300 text-gray-700 rounded-lg"
-								disabled={!table.getCanPreviousPage()}
-								onClick={() => {
-									table.previousPage();
-								}}
-							>
-								<ArrowLeftIcon size={20} />
-							</button>
-							<span className="text-sm text-gray-600">
-								Página {pagination.pageIndex + 1} de {table.getPageCount()}
-							</span>
+					{/* An empty list has nothing to page through; it read "Página 1 de 0" */}
+					{table.getPageCount() > 0 ? (
+						<div className="flex w-full flex-col px-4">
+							<hr className="w-full" />
+							<div className="flex w-full items-center justify-between py-4">
+								<button
+									className="bg-white px-3 py-2 border border-gray-300 text-gray-700 rounded-lg"
+									disabled={!table.getCanPreviousPage()}
+									onClick={() => {
+										table.previousPage();
+									}}
+								>
+									<ArrowLeftIcon size={20} />
+								</button>
+								<span className="text-sm text-gray-600">
+									Página {pagination.pageIndex + 1} de {table.getPageCount()}
+								</span>
 
-							<button
-								className="bg-white px-3 py-2 border border-gray-300 text-gray-700 rounded-lg"
-								disabled={!table.getCanNextPage()}
-								onClick={() => {
-									table.nextPage();
-								}}
-							>
-								<ArrowRightIcon size={20} />
-							</button>
+								<button
+									className="bg-white px-3 py-2 border border-gray-300 text-gray-700 rounded-lg"
+									disabled={!table.getCanNextPage()}
+									onClick={() => {
+										table.nextPage();
+									}}
+								>
+									<ArrowRightIcon size={20} />
+								</button>
+							</div>
 						</div>
-					</div>
+					) : null}
 				</div>
 			</div>
 		</>

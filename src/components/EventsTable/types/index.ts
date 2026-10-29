@@ -6,6 +6,8 @@ export type EventsTableHiresRow = {
 		id: string;
 		title: string;
 		date: string;
+		/** Second line; the creation date when absent */
+		subtitle?: string;
 	};
 	status: string;
 	statusComponent: ReactElement;
@@ -21,6 +23,8 @@ export type EventsTableSaleRow = {
 		id: string;
 		title: string;
 		date: string;
+		/** Second line; the creation date when absent */
+		subtitle?: string;
 	};
 	aceitaContraProposta: boolean;
 	status: string;
