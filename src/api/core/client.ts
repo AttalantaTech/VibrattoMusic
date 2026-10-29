@@ -42,6 +42,12 @@ const DEFAULT_BASE_URL =
 	(import.meta.env["VITE_VIBRATTO_API_BASE_URL"] as string | undefined) ??
 	(IS_DEV ? "/api/" : PRODUCTION_URL);
 const DEFAULT_MAX_RETRIES = 3;
+
+/** Methods that only read, so sending them twice changes nothing */
+const SAFE_METHODS = new Set(["get", "head", "options"]);
+// axios sends GET when no method is given
+export const isSafeMethod = (method: string | undefined) =>
+	SAFE_METHODS.has((method ?? "get").toLowerCase());
 const DEFAULT_RETRY_DELAY_MS = 1000;
 
 export class ApiClient {
@@ -208,9 +214,15 @@ export class ApiClient {
 				return Promise.reject(apiError);
 			}
 
+			// Only reads are sent again. A write (POST/PUT/PATCH/DELETE) may have
+			// been applied even though its response failed (e.g. a 500 after the
+			// proposal was saved), and sending it again created duplicates
+			const canResend = isSafeMethod(config?.method);
+
 			// Try localhost fallback for network errors (no response or connection issues)
 			if (
 				ENABLE_LOCALHOST_FALLBACK &&
+				canResend &&
 				!error.response &&
 				!this.fallbackAttempted &&
 				this.api.defaults.baseURL === PRODUCTION_URL
@@ -228,7 +240,7 @@ export class ApiClient {
 			}
 
 			// Retry logic for retryable errors
-			if (config && ErrorHandler.isRetryableError(apiError)) {
+			if (config && canResend && ErrorHandler.isRetryableError(apiError)) {
 				const retryCount = config._retryCount ?? 0;
 				if (retryCount < this.maxRetries) {
 					config._retryCount = retryCount + 1;
