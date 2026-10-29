@@ -1,5 +1,7 @@
-import { useCallback, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
+import { format, parseISO } from "date-fns";
+import { handleCurrencyFormatting } from "@/utils";
 import {
 	FileText,
 	Download,
@@ -25,6 +27,10 @@ import { ProposalRejectionModal } from "@/components/BandProfile/Proposals/compo
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
 
+// Day only: a bare date would shift a day back in UTC-3
+const formatDay = (date: string | null | undefined) =>
+	date ? format(parseISO(date.slice(0, 10)), "dd/MM/yyyy") : "-";
+
 interface ContractSignaturePageProps {
 	identificadorUnico: string;
 }
@@ -33,6 +39,8 @@ export const ContractSignaturePage = ({
 	identificadorUnico,
 }: ContractSignaturePageProps) => {
 	const navigate = useNavigate();
+	const router = useRouter();
+	const canGoBack = useCanGoBack();
 
 	const { activeProduct } = useMusicalProductStore();
 	const { user } = useAuthStore();
@@ -59,6 +67,25 @@ export const ContractSignaturePage = ({
 	);
 
 	const [downloading, setDownloading] = useState(false);
+	const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+	// "Ver mais" only when the 3 lines actually cut the text (depends on width)
+	const descriptionRef = useRef<HTMLParagraphElement>(null);
+	const [isDescriptionClamped, setIsDescriptionClamped] = useState(false);
+
+	useEffect(() => {
+		const element = descriptionRef.current;
+		if (!element || isDescriptionOpen) return;
+
+		const measure = () => {
+			setIsDescriptionClamped(element.scrollHeight > element.clientHeight + 1);
+		};
+		measure();
+		const observer = new ResizeObserver(measure);
+		observer.observe(element);
+		return () => {
+			observer.disconnect();
+		};
+	}, [proposal?.descricao, isDescriptionOpen]);
 	const [isConfirmPaymentOpen, setIsConfirmPaymentOpen] = useState(false);
 	const [proposalToReject, setProposalToReject] =
 		useState<ProposalResponse | null>(null);
@@ -103,8 +130,18 @@ export const ContractSignaturePage = ({
 		setIsRejectionModalOpen(true);
 	}, []);
 
+	// Back to where the user came from (Contratações, Vendas or the chat). It
+	// always went to Vendas, even for the contractor; a page opened straight
+	// from a link has no history, so it falls back to the viewer's own tab
 	const handleBack = () => {
-		void navigate({ to: "/band/me", search: { tab: "sales" } });
+		if (canGoBack) {
+			router.history.back();
+			return;
+		}
+		void navigate({
+			to: "/band/me",
+			search: { tab: isContractor ? "hires" : "sales" },
+		});
 	};
 
 	if (isLoading) {
@@ -142,64 +179,95 @@ export const ContractSignaturePage = ({
 		<div className="min-h-screen bg-gray-50">
 			{/* Header */}
 			<div className="bg-white border-b border-gray-200 shadow-sm">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-						<div className="flex items-center gap-3 sm:gap-4">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={handleBack}
-								className="flex items-center gap-2"
-							>
-								<ArrowLeft className="h-4 w-4" />
-								Voltar
-							</Button>
-							<div className="flex items-center gap-3">
-								<FileText className="h-6 w-6 text-primary-600" />
-								<div>
-									<h1 className="text-xl font-bold text-gray-900">
-										Contrato
-										{/* #{proposal.idContrato} AQUI */}
-									</h1>
-									<p className="text-sm text-gray-600">
-										Proposta #{proposal.id}
-									</p>
-								</div>
-							</div>
-						</div>
-
-						<div className="self-start sm:self-auto">
-							<ProposalStatusCard name={proposal.status?.nome || ""} />
-						</div>
-					</div>
+				<div className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={handleBack}
+						className="flex items-center gap-2"
+					>
+						<ArrowLeft className="h-4 w-4" />
+						Voltar
+					</Button>
+					<ProposalStatusCard name={proposal.status?.nome || ""} />
 				</div>
 			</div>
-			{/* Contract Info */}
+
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-				<div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-						<div>
-							<p className="text-sm text-gray-600">Data de Criação</p>
-							<p className="text-lg font-semibold text-gray-900">
-								{new Date(proposal.dataCriacao).toLocaleDateString("pt-BR")}
-							</p>
+				{/* Summary: the description used to fill the "Título" field in
+				    large bold type; it's now a short, expandable paragraph */}
+				<div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+					<div className="flex items-start gap-3">
+						<div className="shrink-0 rounded-lg bg-primary-50 p-2">
+							<FileText className="h-5 w-5 text-primary-600" />
 						</div>
-						<div>
-							<p className="text-sm text-gray-600">Valor Total</p>
-							<p className="text-lg font-semibold text-gray-900">
-								R${" "}
-								{proposal.valor.toLocaleString("pt-BR", {
-									minimumFractionDigits: 2,
-								})}
-							</p>
-						</div>
-						<div>
-							<p className="text-sm text-gray-600">Título</p>
-							<p className="text-lg font-semibold text-gray-900">
-								{proposal.descricao}
+						<div className="min-w-0">
+							<h1 className="text-lg font-bold text-gray-900 sm:text-xl">
+								Contrato
+							</h1>
+							<p className="text-sm text-gray-500">
+								Proposta #{proposal.id}
+								{proposal.tipoEvento?.nome
+									? ` · ${proposal.tipoEvento.nome}`
+									: ""}
 							</p>
 						</div>
 					</div>
+
+					<dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-4 sm:grid-cols-4">
+						<div>
+							<dt className="text-xs text-gray-500">Data do evento</dt>
+							<dd className="text-sm font-semibold text-gray-900">
+								{formatDay(proposal.dataInicio)}
+								{proposal.horaInicio
+									? ` às ${proposal.horaInicio.slice(0, 5)}`
+									: ""}
+							</dd>
+						</div>
+						<div>
+							<dt className="text-xs text-gray-500">Valor total</dt>
+							<dd className="text-sm font-semibold text-gray-900">
+								R$ {handleCurrencyFormatting(proposal.valor)}
+							</dd>
+						</div>
+						<div className="col-span-2 sm:col-span-1">
+							<dt className="text-xs text-gray-500">Local</dt>
+							<dd className="break-words text-sm font-semibold text-gray-900">
+								{proposal.local || "-"}
+							</dd>
+						</div>
+						<div>
+							<dt className="text-xs text-gray-500">Criada em</dt>
+							<dd className="text-sm font-semibold text-gray-900">
+								{formatDay(proposal.dataCriacao)}
+							</dd>
+						</div>
+					</dl>
+
+					{proposal.descricao ? (
+						<div className="mt-4 border-t border-gray-100 pt-4">
+							<p className="text-xs text-gray-500">Descrição</p>
+							<p
+								ref={descriptionRef}
+								className={`mt-1 whitespace-pre-line text-sm text-gray-700 ${
+									isDescriptionOpen ? "" : "line-clamp-3"
+								}`}
+							>
+								{proposal.descricao}
+							</p>
+							{isDescriptionClamped || isDescriptionOpen ? (
+								<button
+									type="button"
+									className="mt-1 text-sm font-medium text-primary-600 hover:text-primary-700"
+									onClick={() => {
+										setIsDescriptionOpen((open) => !open);
+									}}
+								>
+									{isDescriptionOpen ? "Ver menos" : "Ver mais"}
+								</button>
+							) : null}
+						</div>
+					) : null}
 				</div>
 
 				{/* PDF Viewer Section */}
