@@ -156,9 +156,9 @@ describe("useProposals hooks", () => {
 				},
 			];
 
-			vi.mocked(useAuthStore).mockReturnValue({
-				user: mockUser,
-			} as any);
+			// The hook reads the store through a selector: useAuthStore(s => s.user)
+			vi.mocked(useAuthStore).mockImplementation(((selector: any) =>
+				selector({ user: mockUser })) as any);
 
 			const mockGetMyProposals = vi.mocked(proposalService.getMyProposalsAsContractor);
 			mockGetMyProposals.mockResolvedValue(
@@ -180,19 +180,15 @@ describe("useProposals hooks", () => {
 		});
 
 		it("should return empty array when user is not logged in", async () => {
-			vi.mocked(useAuthStore).mockReturnValue({
-				user: null,
-			} as any);
+			vi.mocked(useAuthStore).mockImplementation(((selector: any) =>
+				selector({ user: null })) as any);
 
 			const { result } = renderHook(() => useMyProposals(), {
 				wrapper: createWrapper,
 			});
 
-			await waitFor(() => {
-				expect(result.current.isSuccess).toBe(true);
-			});
-
-			expect(result.current.data).toEqual([]);
+			// Logged out the query stays disabled: nothing is fetched
+			expect(result.current.status).toBe("pending");
 			expect(
 				proposalService.getMyProposalsAsContractor
 			).not.toHaveBeenCalled();
@@ -224,25 +220,38 @@ describe("useProposals hooks", () => {
 				mockProposals
 			);
 
-			const { result } = renderHook(() => useProductProposals(5), {
-				wrapper: createWrapper,
-			});
+			const { result } = renderHook(
+				() => useProductProposals({ productId: 5, IdContratante: 3 }),
+				{ wrapper: createWrapper }
+			);
 
 			await waitFor(() => {
 				expect(result.current.isSuccess).toBe(true);
 			});
 
 			expect(result.current.data).toEqual(mockProposals);
-			expect(mockGetProductProposals).toHaveBeenCalledWith(5);
+			expect(mockGetProductProposals).toHaveBeenCalledWith({
+				productId: 5,
+				IdContratante: 3,
+			});
 		});
 
-		it("should not fetch when productId is not provided", () => {
-			const { result } = renderHook(() => useProductProposals(0), {
-				wrapper: createWrapper,
+		it("should fetch the contractor's proposals when there is no product", async () => {
+			vi.mocked(proposalService.getProductProposals).mockResolvedValue([]);
+
+			const { result } = renderHook(
+				() => useProductProposals({ productId: null, IdContratante: 3 }),
+				{ wrapper: createWrapper }
+			);
+
+			await waitFor(() => {
+				expect(result.current.isSuccess).toBe(true);
 			});
 
-			expect(result.current.status).toBe('pending');
-			expect(proposalService.getProductProposals).not.toHaveBeenCalled();
+			expect(proposalService.getProductProposals).toHaveBeenCalledWith({
+				productId: null,
+				IdContratante: 3,
+			});
 		});
 	});
 

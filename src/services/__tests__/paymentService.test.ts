@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it } from 'vitest';
 import { PaymentService, formatCurrency, calculateDeposit, isValidPaymentAmount } from '../paymentService';
 
 describe('PaymentService', () => {
