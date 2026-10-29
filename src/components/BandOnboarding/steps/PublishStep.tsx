@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import {
 	Loader2,
 	CheckCircle,
@@ -10,32 +10,14 @@ import {
 } from "lucide-react";
 import { Button } from "../../ui/Button/Button";
 import { StepLayout } from "../layout/StepLayout/StepLayout";
-import { useOnboardingData } from "@/hooks/useOnboarding";
-import type { OnboardingApiResponse } from "@/api/types";
-import { decryptValue, encryptValue } from "@/utils/encryptValue";
+import { useCurrentOnboarding } from "../hooks/useCurrentOnboarding";
+import { encryptValue } from "@/utils/encryptValue";
 import { PreviewProfileModal } from "../PreviewProfileModal";
 
 export default function PublishStep() {
 	const navigate = useNavigate();
 
-	const { data, isFetching } = useOnboardingData();
-
-	const searchParameters = useSearch({ from: "/band/register/onboarding/6" });
-	const onboardingID = searchParameters.registerId
-		? decryptValue(searchParameters.registerId ?? "")
-		: null;
-	const onboardingType = searchParameters.type ?? null;
-
-	const onboardingData = useMemo<OnboardingApiResponse | undefined>(() => {
-		if (!data?.length) return undefined;
-
-		if (onboardingType === "new-onboarding") return undefined;
-
-		if (onboardingID)
-			return data.find((item) => item.id === Number(onboardingID));
-
-		return data[0];
-	}, [data, onboardingID, onboardingType]);
+	const { onboardingData, isFetching, isStepDone } = useCurrentOnboarding();
 
 	const produtoMusicalId = onboardingData ? onboardingData.id : 0;
 
@@ -88,9 +70,7 @@ export default function PublishStep() {
 							</h3>
 							<div className="grid grid-cols-1 gap-3">
 								{requiredSteps.map((step) => {
-									const isCompleted =
-										onboardingData?.etapaCadastro &&
-										onboardingData?.etapaCadastro > step;
+									const isCompleted = isStepDone(step);
 
 									return (
 										<div

@@ -32,13 +32,16 @@ export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
 	});
 	const reservedBottom = isOnPublicProfile && window.innerWidth < 1024 ? 80 : 0;
 
-	// Touch screens get a 48px round icon-only button: the "Fale conosco"
-	// pill shrank its text to 8px there and covered page content
-	const isTouch = window.matchMedia("(pointer: coarse)").matches;
+	// Touch screens and phone-width windows get a 48px round icon-only button:
+	// the "Fale conosco" pill shrank its text to 8px there and covered page
+	// content. The width check covers browsers that don't report the touch
+	// screen (some Android tablets, in-app browsers)
+	const isCompact =
+		window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 640;
 
 	const DRAG_THRESHOLD = 5;
 	const BUTTON_HEIGHT = 48;
-	const BUTTON_WIDTH = isTouch ? 48 : 161;
+	const BUTTON_WIDTH = isCompact ? 48 : 161;
 	const MARGIN = 16;
 
 	const isPointerDown = useRef(false);
@@ -187,7 +190,7 @@ export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
 		openSupportWhatsapp();
 	};
 
-	if (!position || (isTouch && isOnMessages)) {
+	if (!position || (isCompact && isOnMessages)) {
 		return null;
 	}
 
@@ -230,10 +233,10 @@ export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
 				)}px`,
 				right: `${position.right}px`,
 				height: `${BUTTON_HEIGHT}px`,
-				width: isTouch ? `${BUTTON_WIDTH}px` : undefined,
+				width: isCompact ? `${BUTTON_WIDTH}px` : undefined,
 			}}
 		>
-			{isTouch ? (
+			{isCompact ? (
 				<FaWhatsapp className="text-[1.75rem]" aria-hidden="true" />
 			) : (
 				<>
