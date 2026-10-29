@@ -22,6 +22,7 @@ import {
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useEffect, useState } from "react";
+import { DateInput } from "@/components/forms/DateInput/DateInput";
 
 // Quick time options
 const quickTimeOptions = [
@@ -148,11 +149,12 @@ export const CreateEventForm = ({
 									className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
 									size={18}
 								/>
-								<Input
+								{/* Read-only: the date comes from the day picked in the agenda */}
+								<DateInput
 									id="date"
-									type="date"
+									value={watch("date") || ""}
+									onChange={() => undefined}
 									disabled
-									{...register("date")}
 									className={`pl-10 ${errors.date ? "border-red-500" : ""}`}
 								/>
 							</div>

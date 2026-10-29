@@ -26,6 +26,7 @@ import {
 } from "../../../hooks/useBookings";
 import type { CreateBookingRequest, MusicalProduct } from "../../../api/types";
 import { cn } from "../../../lib/utils/cn";
+import { DateInput } from "@/components/forms/DateInput/DateInput";
 
 interface CreateBookingModalProps {
 	isOpen: boolean;
@@ -199,14 +200,12 @@ export const CreateBookingModal = ({
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="space-y-2">
 								<Label htmlFor="dataEvento">Data do Evento *</Label>
-								<Input
+								<DateInput
 									id="dataEvento"
-									type="date"
-									value={formData.dataEvento}
-									onChange={(event) => {
-										handleInputChange("dataEvento", event.target.value);
+									value={formData.dataEvento ?? ""}
+									onChange={(value) => {
+										handleInputChange("dataEvento", value);
 									}}
-									required
 								/>
 							</div>
 							<div className="space-y-2">
