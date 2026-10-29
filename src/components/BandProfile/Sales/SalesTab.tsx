@@ -51,10 +51,7 @@ import { useCallback, useMemo, useState } from "react";
 import { EventsTable } from "../../EventsTable";
 import type { EventsTableSaleData } from "../../EventsTable/types";
 import { Dropdown } from "../../ui/Dropdown/Dropdown";
-import {
-	useFilteredProposals,
-	useUpdateProposalStatus,
-} from "../../../hooks/useProposals";
+import { useFilteredProposals } from "../../../hooks/useProposals";
 import { EmptyState, ErrorState, TableSkeleton } from "../../ui/LoadingStates";
 
 import { useAuthStore } from "../../../store/authStore";
@@ -67,28 +64,21 @@ import { ConfirmDownPaymentDialog } from "../Proposals/components/ConfirmDownPay
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
 import { useProposalFromLink } from "@/components/BandProfile/Proposals/hooks/useProposalFromLink";
+import { useProposalActions } from "@/components/BandProfile/Proposals/hooks/useProposalActions";
 import {
 	proposalStatusFilters,
 	proposalStatusLabel,
 } from "@/components/BandProfile/Proposals/components/ProposalStatusCard/types";
-import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
-import {
-	proposalParties,
-	resolveStatusSender,
-} from "@/features/message/utils/resolveStatusSender";
-import { showApiError } from "@/utils/showApiError";
-import { useConversations } from "@/hooks/useMessaging";
 import { ShareLink } from "@/components/ui/ShareLink/ShareLink";
-import type { Conversation } from "@/api/services/messages/types";
 
 export const SalesTab = () => {
 	const navigate = useNavigate();
 
 	const { activeProduct } = useMusicalProductStore();
 	const currentUser = useAuthStore((state) => state.user);
-	const updateStatusMutation = useUpdateProposalStatus();
-	const { sendStatusMessage } = useSendStatusMessage();
+	const { cancel, confirmPaidSign, isLoadingCancel, isLoadingPaidSign } =
+		useProposalActions();
 
 	const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
 	// Rejected proposal being answered with a counter-proposal
@@ -98,11 +88,9 @@ export const SalesTab = () => {
 		useState(false);
 	const [proposalDetails, setProposalDetails] =
 		useState<ProposalResponse | null>(null);
-	const [isLoadingPaidSign, setIsLoadingPaidSign] = useState(false);
 	// Proposal waiting for the "received the down payment?" confirmation
 	const [proposalToConfirmPayment, setProposalToConfirmPayment] =
 		useState<ProposalResponse | null>(null);
-	const [isLoadingCancel, setIsLoadingCancel] = useState(false);
 	const [statusFilter, setStatusFilter] = useState<string>("Todos os status");
 	// identificadorUnico of the proposal being shared (null = modal closed)
 	const [shareProposalId, setShareProposalId] = useState<string | null>(null);
@@ -115,29 +103,6 @@ export const SalesTab = () => {
 		status: statusFilter === "Todos os status" ? undefined : [statusFilter],
 		IdProdutoMusical: activeProduct?.id,
 	});
-
-	const { data: conversationsData } = useConversations({
-		IdProdutoMusical: activeProduct?.id || null,
-		enabled: false,
-	});
-
-	const conversation = useMemo<Conversation | null>(() => {
-		if (!proposalDetails || !conversationsData) return null;
-
-		const { produtoMusicalContratanteId, contratanteId } =
-			proposalParties(proposalDetails);
-
-		return (
-			conversationsData.find((c) => {
-				if (c.produtoMusicalId !== proposalDetails.produtoMusical.id)
-					return false;
-
-				return produtoMusicalContratanteId
-					? c.produtoMusicalContratanteId === produtoMusicalContratanteId
-					: !c.produtoMusicalContratanteId && c.contratanteId === contratanteId;
-			}) ?? null
-		);
-	}, [conversationsData, proposalDetails]);
 
 	const handleSeeProposal = useCallback(
 		(proposalId: string) => {
@@ -215,70 +180,6 @@ export const SalesTab = () => {
 			);
 		},
 		[filteredProposals?.data]
-	);
-
-	const handlePaidSign = async (proposal: ProposalResponse) => {
-		try {
-			setIsLoadingPaidSign(true);
-			await updateStatusMutation.mutateAsync({
-				proposalId: proposal.id,
-				status: "sinalPago",
-			});
-			setProposalToConfirmPayment(null);
-
-			sendStatusMessage({
-				type: "proposalPaidSign",
-				...resolveStatusSender(proposalParties(proposal), "contratado"),
-				// Without the id, chat/obter finds the conversation from the parties
-				produtoMusicalName: proposal.produtoMusical.nome,
-				link: entityLinks.proposalTab(proposal.id),
-				errorMessage: "Erro ao enviar sua requisição",
-				payload: {},
-			});
-		} catch (error) {
-			showApiError(error, "Erro ao confirmar o sinal. Tente novamente.");
-		} finally {
-			setIsLoadingPaidSign(false);
-		}
-	};
-
-	const handleCancelProposal = useCallback(
-		async (proposalId: number | null) => {
-			try {
-				setIsLoadingCancel(true);
-				if (!proposalId) {
-					toast.error("Proposta não encontrada.");
-					return;
-				}
-
-				await updateStatusMutation.mutateAsync({
-					proposalId,
-					status: "cancelado",
-				});
-
-				// The conversations query only reads the cache: when it's empty the
-				// message used to be skipped; chat/obter finds the conversation
-				if (!proposalDetails) return;
-
-				sendStatusMessage({
-					type: "proposalCanceled",
-					...resolveStatusSender(
-						proposalParties(proposalDetails),
-						"contratado"
-					),
-					conversationId: conversation?.id,
-					produtoMusicalName: proposalDetails.produtoMusical.nome,
-					link: entityLinks.proposalTab(proposalDetails.id),
-					errorMessage: "Erro ao enviar requisição",
-					payload: {},
-				});
-			} catch (error) {
-				showApiError(error, "Error updating proposal status:");
-			} finally {
-				setIsLoadingCancel(false);
-			}
-		},
-		[conversation?.id, proposalDetails, sendStatusMessage, updateStatusMutation]
 	);
 
 	const tableData: EventsTableSaleData =
@@ -452,7 +353,12 @@ export const SalesTab = () => {
 					);
 					return Promise.resolve();
 				}}
-				onCancel={handleCancelProposal}
+				onCancel={async (proposalId) => {
+					const proposal = filteredProposals?.data.find(
+						(p) => p.id === proposalId
+					);
+					if (proposal) await cancel(proposal);
+				}}
 				onSeeContract={handleSeeContract}
 				isLoadingPaidSign={isLoadingPaidSign}
 				isLoadingCancel={isLoadingCancel}
@@ -461,7 +367,11 @@ export const SalesTab = () => {
 			<ConfirmDownPaymentDialog
 				proposal={proposalToConfirmPayment}
 				isLoading={isLoadingPaidSign}
-				onConfirm={handlePaidSign}
+				onConfirm={async (proposal) => {
+					if (await confirmPaidSign(proposal)) {
+						setProposalToConfirmPayment(null);
+					}
+				}}
 				onClose={() => {
 					setProposalToConfirmPayment(null);
 				}}

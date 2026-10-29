@@ -21,8 +21,8 @@ import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProduct
 import { MoreOptionsDropdownItem } from "@/components/ui/MoreOptionsDropdownItem";
 import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
 import { BudgetListModal } from "@/components/BandProfile/Budgets/components/BudgetListModal";
-import { ProposalPreviewDialog } from "@/components/BandProfile/Proposals/components/ProposalPreviewDialog";
-import { useState } from "react";
+import { ChatProposalDialog } from "@/components/BandProfile/Proposals/components/ChatProposalDialog";
+import { useCallback, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { BUDGET_REQUEST_TITLE } from "@/features/message/utils/messageTemplates";
@@ -40,6 +40,9 @@ export const Chat = () => {
 	const [previewProposalId, setPreviewProposalId] = useState<number | null>(
 		null
 	);
+	const closePreview = useCallback(() => {
+		setPreviewProposalId(null);
+	}, []);
 
 	const {
 		messageInput,
@@ -301,12 +304,11 @@ export const Chat = () => {
 				/>
 			)}
 
-			<ProposalPreviewDialog
+			<ChatProposalDialog
 				proposalId={previewProposalId}
 				isSeller={isSeller}
-				onClose={() => {
-					setPreviewProposalId(null);
-				}}
+				conversationId={selectedConversation?.id}
+				onClose={closePreview}
 			/>
 		</ChatContainer>
 	);

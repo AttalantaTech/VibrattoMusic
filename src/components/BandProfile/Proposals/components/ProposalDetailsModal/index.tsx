@@ -227,9 +227,10 @@ export const ProposalDetailsModal = ({
 					{/* Contractor only; shown until the down payment is confirmed */}
 					{isContractor ? <DownPaymentNotice proposal={proposal} /> : null}
 
-					{/* Actions. Phones: stacked full width in a bar pinned to the bottom;
-					    in one row they ran off the left edge, below a ~1400px PDF */}
-					<div className="sticky bottom-0 -mx-6 -mb-6 mt-6 flex flex-col gap-3 border-t border-gray-200 bg-white px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] [&>*]:w-full [&>*]:h-[38px] [&>*]:px-4 [&>*]:text-sm sm:static sm:mx-0 sm:mb-0 sm:flex-row sm:justify-end sm:border-0 sm:p-0 sm:[&>*]:w-auto">
+					{/* Actions pinned to the bottom so they stay in view while the PDF
+					    (often several pages) scrolls. Phones: stacked full width; in
+					    one row they ran off the left edge */}
+					<div className="sticky bottom-0 -mx-6 -mb-6 mt-6 flex flex-col gap-3 border-t border-gray-200 bg-white px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] [&>*]:w-full [&>*]:h-[38px] [&>*]:px-4 [&>*]:text-sm sm:flex-row sm:justify-end sm:pb-4 sm:[&>*]:w-auto">
 						{/* Band actions when proposal is pending */}
 						{mode === "Contractor" ? (
 							<>
