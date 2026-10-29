@@ -913,6 +913,7 @@ export interface ProposalResponse {
 	transporteIncluso: boolean;
 	acomodacaoInclusa: boolean;
 	camarimIncluso: boolean;
+	estruturaPalcoSomIluminacaoInclusa?: boolean;
 	formaPagamento: Array<{
 		id: number;
 		nome: string;

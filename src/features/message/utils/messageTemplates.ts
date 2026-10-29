@@ -26,6 +26,8 @@ export interface StatusPayloads {
 		startTime?: string | null;
 		duration?: string | null;
 		location: string;
+		// Answer to a rejected proposal
+		counterProposal?: boolean;
 	};
 
 	proposalAccepted: Record<string, never>;
@@ -151,8 +153,12 @@ const statusTemplates: { [K in StatusMessageType]: Template<K> } = {
 	proposalRequested: (c) =>
 		renderCard({
 			variant: "info",
-			title: "🎵 Proposta criada!",
-			subtitle: `${greeting(c.recipientName)}, uma proposta foi criada. confira os dados.`,
+			title: c.counterProposal
+				? "🔁 Contraproposta recebida!"
+				: "🎵 Proposta criada!",
+			subtitle: c.counterProposal
+				? `${greeting(c.recipientName)}, você recebeu uma contraproposta. Confira os dados.`
+				: `${greeting(c.recipientName)}, uma proposta foi criada. confira os dados.`,
 			rows: [
 				{ icon: "🎤", label: "Tipo de evento", value: c.eventTypeLabel || "-" },
 				{ icon: "📝", label: "Descrição", value: c.description },

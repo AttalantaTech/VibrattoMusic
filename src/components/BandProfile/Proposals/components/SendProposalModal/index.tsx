@@ -27,6 +27,8 @@ interface SendProposalModalProps {
 	contractorName?: string;
 	conversationId?: number; // Conversation ID for sending a message
 	proposal?: ProposalResponse | null;
+	// Rejected proposal to answer: prefills the form and sends a new proposal
+	counterProposalOf?: ProposalResponse | null;
 }
 
 export const SendProposalModal = ({
@@ -37,6 +39,7 @@ export const SendProposalModal = ({
 	contractorName,
 	conversationId,
 	proposal,
+	counterProposalOf,
 }: SendProposalModalProps) => {
 	// Use the currently active musical product
 	const { activeProduct } = useMusicalProductStore();
@@ -58,7 +61,7 @@ export const SendProposalModal = ({
 		setSelectedPaymentMethods,
 		hasDefineEventTime,
 		setHasDefineEventTime,
-	} = useProposalState(proposal || null);
+	} = useProposalState(proposal || counterProposalOf || null);
 
 	const {
 		form,
@@ -67,6 +70,7 @@ export const SendProposalModal = ({
 		isSectionComplete,
 	} = useProposalForm({
 		proposal,
+		counterProposalOf,
 		contractorId,
 		contractorName,
 		setHasDefineEventTime,
@@ -85,6 +89,7 @@ export const SendProposalModal = ({
 		paymentConditions,
 		paymentMethods,
 		proposal,
+		counterProposalOf,
 		setShowProfileIncompleteModal,
 		contractorId,
 		contractorProductId,
@@ -111,14 +116,26 @@ export const SendProposalModal = ({
 				<form onSubmit={handleSubmit(onSubmit)}>
 					<DialogHeader>
 						<DialogTitle>
-							{proposal ? "Editar Proposta" : "Criar Nova Proposta"}
+							{proposal
+								? "Editar Proposta"
+								: counterProposalOf
+									? "Fazer Contraproposta"
+									: "Criar Nova Proposta"}
 						</DialogTitle>
 						<DialogDescription>
 							{proposal
 								? "Edite com facilidade os campos da proposta"
-								: "Configure todos os campos necessários para criar a proposta"}
+								: counterProposalOf
+									? "Os campos vêm da proposta rejeitada: altere o que o cliente pediu e envie"
+									: "Configure todos os campos necessários para criar a proposta"}
 						</DialogDescription>
 					</DialogHeader>
+					{counterProposalOf?.motivoRejeicao ? (
+						<p className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
+							<span className="font-medium">Motivo da rejeição:</span>{" "}
+							{counterProposalOf.motivoRejeicao.nome}
+						</p>
+					) : null}
 					<ProposalFormFields
 						form={form}
 						handleHasDefineEventTime={handleHasDefineEventTime}

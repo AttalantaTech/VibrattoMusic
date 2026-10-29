@@ -90,6 +90,9 @@ export const SalesTab = () => {
 	const { sendStatusMessage } = useSendStatusMessage();
 
 	const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
+	// Rejected proposal being answered with a counter-proposal
+	const [counterProposalOf, setCounterProposalOf] =
+		useState<ProposalResponse | null>(null);
 	const [isProposalDetailsModalOpen, setIsProposalDetailsModalOpen] =
 		useState(false);
 	const [proposalDetails, setProposalDetails] =
@@ -176,9 +179,21 @@ export const SalesTab = () => {
 		[filteredProposals?.data]
 	);
 
-	const handleCounterProposal = () => {
-		setIsProposalModalOpen(true);
-	};
+	// It used to open an empty form with no contractor, so the "counter-
+	// proposal" went to the band itself; it now starts from the rejected one
+	const handleCounterProposal = useCallback(
+		(proposalId: string) => {
+			const rejected = filteredProposals?.data.find(
+				(p) => p.identificadorUnico === proposalId
+			);
+			if (!rejected) return;
+
+			setProposalDetails(null);
+			setCounterProposalOf(rejected);
+			setIsProposalModalOpen(true);
+		},
+		[filteredProposals?.data]
+	);
 
 	const handleOpenConfirmPayment = useCallback(
 		(proposalId: string) => {
@@ -287,7 +302,9 @@ export const SalesTab = () => {
 						// an empty contratante.nome and the typed name in nomeContratante
 						clientName: event.contratante.nome || event.nomeContratante || "-",
 						value: event.valor,
-						aceitaContraProposta: event.aceitaContraProposta,
+						// Once answered the proposal is no longer "Rejeitada"
+						aceitaContraProposta:
+							event.aceitaContraProposta && event.status.nome === "Rejeitada",
 						canSign:
 							event.status.nome === "Aceita" &&
 							((!event.assinaturaContratante && isContractor) ||
@@ -311,6 +328,7 @@ export const SalesTab = () => {
 				handleSeeContract,
 				handleEditContract,
 				handleOpenConfirmPayment,
+				handleCounterProposal,
 			]
 		) || [];
 
@@ -414,9 +432,11 @@ export const SalesTab = () => {
 			<SendProposalModal
 				isOpen={isProposalModalOpen}
 				proposal={proposalDetails}
+				counterProposalOf={counterProposalOf}
 				onClose={() => {
 					setIsProposalModalOpen(false);
 					setProposalDetails(null);
+					setCounterProposalOf(null);
 				}}
 			/>
 

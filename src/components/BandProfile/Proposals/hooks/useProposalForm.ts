@@ -15,17 +15,22 @@ import { deadlineDays } from "../utils/deadlines";
 
 interface ProposalFormProps {
 	proposal?: ProposalResponse | null;
+	counterProposalOf?: ProposalResponse | null;
 	contractorId?: number;
 	contractorName?: string;
 	setHasDefineEventTime: (value: boolean) => void;
 }
 
 export const useProposalForm = ({
-	proposal,
+	proposal: editedProposal,
+	counterProposalOf,
 	contractorId,
 	contractorName,
 	setHasDefineEventTime,
 }: ProposalFormProps) => {
+	// A counter-proposal starts from every field of the rejected proposal
+	const proposal = editedProposal ?? counterProposalOf ?? null;
+
 	const { user } = useAuthStore();
 	const { data: userData } = useUser();
 	const { activeProduct } = useMusicalProductStore();
@@ -87,13 +92,15 @@ export const useProposalForm = ({
 
 	// Saved deadlines go back into the form as days from today
 	const dataVencimentoAceite = useMemo(
-		() => deadlineDays(proposal?.dataVencimentoAceite, 15),
-		[proposal?.dataVencimentoAceite]
+		// A counter-proposal gets fresh deadlines: the old ones count from the
+		// day the rejected proposal was sent
+		() => deadlineDays(editedProposal?.dataVencimentoAceite, 15),
+		[editedProposal?.dataVencimentoAceite]
 	);
 
 	const dataVencimentoSinalPagamento = useMemo(
-		() => deadlineDays(proposal?.dataVencimentoSinalPagamento, 30),
-		[proposal?.dataVencimentoSinalPagamento]
+		() => deadlineDays(editedProposal?.dataVencimentoSinalPagamento, 30),
+		[editedProposal?.dataVencimentoSinalPagamento]
 	);
 
 	const duration = useMemo(
@@ -127,7 +134,12 @@ export const useProposalForm = ({
 	const initialValues: CreateProposalForm = useMemo<CreateProposalForm>(() => {
 		return {
 			idContratante: proposal?.idContratante || getContractorId(),
-			nomeContratante: proposal?.contratante.nome || contractorName || "",
+			// Standalone proposals keep the typed name in nomeContratante
+			nomeContratante:
+				proposal?.contratante.nome ||
+				proposal?.nomeContratante ||
+				contractorName ||
+				"",
 			idTipoEvento: proposal?.tipoEvento.id || 0,
 			tipoSinalPagamento: proposal?.tipoSinalPagamento || null,
 			// Only an amount in reais fills the custom field
@@ -147,8 +159,9 @@ export const useProposalForm = ({
 			idCondicoesPagamento: proposal?.condicoesPagamento.id || 2,
 			transporteIncluso: proposal?.transporteIncluso || false,
 			acomodacaoInclusa: proposal?.acomodacaoInclusa || false,
-			camarimIncluso: proposal?.acomodacaoInclusa || false,
-			estruturaPalcoSomIluminacaoInclusa: proposal?.acomodacaoInclusa || false,
+			camarimIncluso: proposal?.camarimIncluso || false,
+			estruturaPalcoSomIluminacaoInclusa:
+				proposal?.estruturaPalcoSomIluminacaoInclusa || false,
 			// geradorIncluso: proposal?.geradorIncluso || false
 		};
 	}, [
