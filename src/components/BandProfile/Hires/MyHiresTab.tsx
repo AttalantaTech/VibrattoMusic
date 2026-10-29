@@ -1,14 +1,10 @@
 import { useCallback, useMemo, useState } from "react";
 import { ChevronDown, Check } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
-import {
-	useFilteredProposals,
-	useUpdateProposalStatus,
-} from "@/hooks/useProposals";
+import { useFilteredProposals } from "@/hooks/useProposals";
 import type { EventsTableHiresData } from "../../EventsTable/types";
 import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
 import { Button } from "@/components/ui/Button/Button";
-import { splitOnUppercase } from "@/utils/labels";
 import { EventsTable } from "../../EventsTable";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalDetailsModal } from "../Proposals/components/ProposalDetailsModal";
@@ -16,29 +12,13 @@ import type { ProposalResponse } from "@/api/types";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
-import { ProposalRejectionModal } from "../Proposals/components/ProposalRejectionModal";
-import { showApiError } from "@/utils/showApiError";
-import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
-import { entityLinks } from "@/features/message/utils/messageTemplates";
+import { useProposalFromLink } from "@/components/BandProfile/Proposals/hooks/useProposalFromLink";
+import { useProposalActions } from "@/components/BandProfile/Proposals/hooks/useProposalActions";
 import {
-	proposalParties,
-	resolveStatusSender,
-} from "@/features/message/utils/resolveStatusSender";
-import { useConversations } from "@/hooks/useMessaging";
-import type { Conversation } from "@/api/services/messages/types";
-
-const possibleStatusFilters = [
-	"Todos os status",
-	"Pendente",
-	"Aceita",
-	"Rejeitada",
-	"SinalPago",
-	"EnvioDocumento",
-	"EnvioSignatarios",
-	"EnvioAssinatura",
-	"AguardandoAssinatura",
-	"ContratoAssinado",
-];
+	proposalStatusFilters,
+	proposalStatusLabel,
+} from "@/components/BandProfile/Proposals/components/ProposalStatusCard/types";
+import { ProposalRejectionModal } from "../Proposals/components/ProposalRejectionModal";
 
 export const MyHiresTab = () => {
 	const navigate = useNavigate();
@@ -51,7 +31,6 @@ export const MyHiresTab = () => {
 		useState(false);
 	const [proposalDetails, setProposalDetails] =
 		useState<ProposalResponse | null>(null);
-	const [isLoadingAccept, setIsLoadingAccept] = useState(false);
 
 	const currentUser = useAuthStore((state) => state.user);
 	const { activeProduct } = useMusicalProductStore();
@@ -63,61 +42,7 @@ export const MyHiresTab = () => {
 			IdProdutoMusicalContratante: activeProduct ? activeProduct.id : null,
 		});
 
-	const { data: conversationsData } = useConversations({
-		IdContratante: !activeProduct ? currentUser?.id : activeProduct.id,
-		IdProdutoMusical: activeProduct?.id || null,
-		enabled: false,
-	});
-
-	const updateStatusMutation = useUpdateProposalStatus();
-	const { sendStatusMessage } = useSendStatusMessage();
-
-	const conversation = useMemo<Conversation | null>(() => {
-		if (!proposalDetails || !conversationsData) return null;
-
-		const { produtoMusicalContratanteId, contratanteId } =
-			proposalParties(proposalDetails);
-
-		return (
-			conversationsData.find((c) => {
-				if (c.produtoMusicalId !== proposalDetails.produtoMusical.id)
-					return false;
-
-				return produtoMusicalContratanteId
-					? c.produtoMusicalContratanteId === produtoMusicalContratanteId
-					: !c.produtoMusicalContratanteId && c.contratanteId === contratanteId;
-			}) ?? null
-		);
-	}, [conversationsData, proposalDetails]);
-
-	const handleAcceptProposal = async (proposalId: number) => {
-		try {
-			setIsLoadingAccept(true);
-			await updateStatusMutation.mutateAsync({
-				proposalId: proposalId,
-				status: "aceito",
-			});
-
-			if (!proposalDetails || !conversation?.id) return;
-
-			sendStatusMessage({
-				type: "proposalAccepted",
-				...resolveStatusSender(proposalParties(proposalDetails), "contratante"),
-				conversationId: conversation.id,
-				produtoMusicalName: proposalDetails.produtoMusical.nome,
-				link: entityLinks.proposalTab(proposalDetails.id),
-				errorMessage: "Erro ao enviar solicitação orçamento",
-				payload: {},
-			});
-		} catch (error) {
-			showApiError(
-				error,
-				"Erro ao tentar aceitar a proposta. Tente novamente."
-			);
-		} finally {
-			setIsLoadingAccept(false);
-		}
-	};
+	const { accept, isLoadingAccept } = useProposalActions();
 
 	const handleRejectProposal = useCallback(
 		(proposal: ProposalResponse | string) => {
@@ -163,6 +88,17 @@ export const MyHiresTab = () => {
 		[filteredProposals?.data]
 	);
 
+	const handleOpenLinkedProposal = useCallback((proposal: ProposalResponse) => {
+		setProposalDetails(proposal);
+		setIsProposalDetailsModalOpen(true);
+	}, []);
+
+	useProposalFromLink({
+		tab: "hires",
+		proposals: filteredProposals?.data,
+		onOpen: handleOpenLinkedProposal,
+	});
+
 	const tableData: EventsTableHiresData =
 		useMemo(
 			() =>
@@ -181,7 +117,7 @@ export const MyHiresTab = () => {
 						productName: event.produtoMusical.nome,
 						value: event.valor,
 						canSign:
-							event.status.nome === "AguardandoAssinatura" &&
+							event.status.nome === "Aceita" &&
 							((!event.assinaturaContratante && isContractor) ||
 								(!event.assinaturaContratado && !isContractor)),
 
@@ -223,12 +159,12 @@ export const MyHiresTab = () => {
 									variant="outline"
 									className="w-full sm:w-auto min-w-[180px] justify-between whitespace-nowrap"
 								>
-									{splitOnUppercase(statusFilter)}
+									{proposalStatusLabel(statusFilter)}
 									<ChevronDown className="h-4 w-4 ml-2" />
 								</Button>
 							}
 						>
-							{possibleStatusFilters.map((item) => (
+							{proposalStatusFilters.map((item) => (
 								<div className="flex w-full" key={item}>
 									<button
 										className="flex justify-between items-center rounded-md px-4 py-2 text-left hover:bg-gray-100 w-full"
@@ -236,7 +172,7 @@ export const MyHiresTab = () => {
 											setStatusFilter(item);
 										}}
 									>
-										{splitOnUppercase(item)}
+										{proposalStatusLabel(item)}
 										{item === statusFilter && <Check color="gray" size={16} />}
 									</button>
 								</div>
@@ -273,7 +209,9 @@ export const MyHiresTab = () => {
 					setIsProposalDetailsModalOpen(false);
 				}}
 				proposal={proposalDetails}
-				onAccept={handleAcceptProposal}
+				onAccept={async () => {
+					if (proposalDetails) await accept(proposalDetails);
+				}}
 				onReject={handleRejectProposal}
 				onSeeContract={handleSeeContract}
 				isLoadingAccept={isLoadingAccept}

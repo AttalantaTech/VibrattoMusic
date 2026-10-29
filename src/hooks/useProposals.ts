@@ -173,7 +173,7 @@ export const useUpdateProposalStatus = () => {
 				rejeitado: "Proposta rejeitada.",
 				cancelado: "Proposta cancelada.",
 				sinalPago:
-					"Sinal de proposta marcado como pago. O contrato agora precisa ser assinado.",
+					"Recebimento do sinal confirmado. A contratação foi concluída.",
 			};
 
 			toast.success(statusMessages[variables.status]);
@@ -189,6 +189,25 @@ export const useProposalById = (identificadorUnico: string) => {
 		queryKey: PROPOSAL_QUERY_KEYS.byId(identificadorUnico),
 		queryFn: () => proposalService.getProposalById(identificadorUnico),
 		enabled: !!identificadorUnico,
+	});
+};
+
+/**
+ * Proposal by its number (the id in the chat links), including replaced ones
+ */
+export const useProposalByNumber = (id: number | null | undefined) => {
+	return useQuery({
+		queryKey: [...PROPOSAL_QUERY_KEYS.all, "number", id],
+		queryFn: async () => {
+			const [proposal] = await proposalService.listProposals({
+				Id: id,
+				incluirSubstituidas: true,
+			});
+			if (!proposal) throw new Error("Proposal not found");
+			return proposal;
+		},
+		enabled: !!id,
+		retry: false,
 	});
 };
 

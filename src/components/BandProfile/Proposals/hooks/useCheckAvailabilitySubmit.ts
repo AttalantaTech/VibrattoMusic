@@ -90,7 +90,7 @@ export const useCheckAvailabilitySubmit = ({
 					"contratante"
 				),
 				produtoMusicalName: musicalProduct.nome,
-				link: budget?.id ? entityLinks.proposalTab(budget.id) : undefined,
+				link: budget?.id ? entityLinks.budgetRequest(budget.id) : undefined,
 				payload: {
 					eventTypeLabel: eventType?.label ?? "-",
 					description: formData.descricao,

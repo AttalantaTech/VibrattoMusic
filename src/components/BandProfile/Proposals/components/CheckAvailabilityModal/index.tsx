@@ -23,6 +23,7 @@ import { Controller } from "react-hook-form";
 import { SingleSelect } from "@/components/forms/SingleSelect/SingleSelect";
 import { format } from "date-fns";
 import { quickTimeOptions, timeToSeconds } from "@/utils";
+import { DateInput } from "@/components/forms/DateInput/DateInput";
 
 export interface CheckAvailabilityModalProps {
 	isOpen: boolean;
@@ -144,11 +145,11 @@ export const CheckAvailabilityModal = ({
 												    this field doubled it; the error still shows */}
 												<div className="hidden sm:block space-y-2">
 													<Label htmlFor="dataEvento">Data</Label>
-													<Input
+													<DateInput
 														id="dataEvento"
-														type="date"
-														{...field}
-														placeholder="dd/mm/aaaa"
+														value={field.value}
+														onChange={field.onChange}
+														onBlur={field.onBlur}
 													/>
 												</div>
 

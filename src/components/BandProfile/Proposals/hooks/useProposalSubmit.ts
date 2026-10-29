@@ -11,7 +11,7 @@ import type {
 import { useCreateProposal } from "@/hooks/useProposals";
 import { ensureHHMMSS, toBR } from "@/utils";
 import type { CreateProposalForm } from "../schemas/proposal.schema";
-import { addDays, format, isBefore } from "date-fns";
+import { format } from "date-fns";
 import { showApiError } from "@/utils/showApiError";
 import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
@@ -21,11 +21,15 @@ import {
 	type ProposalParties,
 } from "@/features/message/utils/resolveStatusSender";
 import { formatDate } from "@/utils/validation";
+import { calculateSignal, requiresDownPayment } from "../utils/calculateSignal";
+import { deadlineDate } from "../utils/deadlines";
 
 interface UseProposalSubmitProps {
 	setShowProfileIncompleteModal: (value: boolean) => void;
 	handleClose: () => void;
 	proposal?: ProposalResponse | null;
+	// Rejected proposal this one answers: same contractor, new proposal
+	counterProposalOf?: ProposalResponse | null;
 	contractorId?: number;
 	contractorProductId?: number | null;
 	userProductId?: number;
@@ -82,6 +86,7 @@ const getUserIdFromToken = (): number | null => {
 export const useProposalSubmit = ({
 	setShowProfileIncompleteModal,
 	proposal,
+	counterProposalOf,
 	contractorId,
 	contractorProductId,
 	userProductId,
@@ -94,6 +99,10 @@ export const useProposalSubmit = ({
 	const { isProfileComplete, refetch: refetchProfile } = useProfileStatus();
 	const createProposalMutation = useCreateProposal();
 	const { sendStatusMessage } = useSendStatusMessage();
+
+	// Edited proposal or, for a counter-proposal, the rejected one: either way
+	// it gives the parties and the conversation
+	const baseProposal = proposal ?? counterProposalOf ?? null;
 
 	const onSubmit = async (proposalFormData: CreateProposalForm) => {
 		// Refresh profile data to ensure we have the latest information
@@ -116,7 +125,7 @@ export const useProposalSubmit = ({
 		// Try multiple sources for contractor ID
 		const contractorIdToUse =
 			contractorId ||
-			proposal?.contratante.id ||
+			baseProposal?.contratante.id ||
 			proposalFormData.idContratante ||
 			user?.id ||
 			getUserIdFromToken();
@@ -140,8 +149,8 @@ export const useProposalSubmit = ({
 			return;
 		}
 
-		const parties: ProposalParties = proposal
-			? proposalParties(proposal)
+		const parties: ProposalParties = baseProposal
+			? proposalParties(baseProposal)
 			: {
 					produtoMusicalId: userProductId,
 					contratanteId: finalFormData.idContratante,
@@ -150,9 +159,9 @@ export const useProposalSubmit = ({
 
 		let conversation: Conversation | undefined | null = null;
 
-		if (proposal) {
+		if (baseProposal) {
 			const conversations = await messagingService.getConversations({
-				IdProdutoMusical: proposal.produtoMusical.id,
+				IdProdutoMusical: baseProposal.produtoMusical.id,
 			});
 
 			conversation =
@@ -166,24 +175,20 @@ export const useProposalSubmit = ({
 		}
 
 		const eventDate = toBR(finalFormData.dataEvento) || "";
-		const todayDate = toBR(new Date());
-
-		const isBeforeDate = isBefore(eventDate, todayDate);
-
-		const dataVencimentoAceite = format(
-			addDays(
-				isBeforeDate ? todayDate : eventDate,
-				finalFormData.dataVencimentoAceite
-			),
-			"yyyy-MM-dd"
+		const dataVencimentoAceite = deadlineDate(
+			finalFormData.dataVencimentoAceite
 		);
-		const dataVencimentoSinalPagamento = format(
-			addDays(
-				isBeforeDate ? todayDate : eventDate,
-				finalFormData.dataVencimentoSinalPagamento
-			),
-			"yyyy-MM-dd"
-		);
+		// No down payment ("À vista no dia do evento") means no due date
+		const dataVencimentoSinalPagamento = requiresDownPayment(
+			finalFormData.idCondicoesPagamento
+		)
+			? deadlineDate(finalFormData.dataVencimentoSinalPagamento)
+			: null;
+
+		const { tipoSinalPagamento, valorSinalPagamento } = calculateSignal({
+			conditionId: finalFormData.idCondicoesPagamento,
+			customValue: finalFormData.valorSinalPagamento,
+		});
 
 		// Build payload in camelCase exactly as API expects
 		const proposalData: CreateProposalRequest = {
@@ -207,8 +212,8 @@ export const useProposalSubmit = ({
 			formaPagamento: finalFormData.formaPagamento ?? [],
 			idCondicoesPagamento: finalFormData.idCondicoesPagamento,
 			idCondicoesPagamentoRestante: null,
-			tipoSinalPagamento: null,
-			valorSinalPagamento: null,
+			tipoSinalPagamento,
+			valorSinalPagamento,
 			transporteIncluso: Boolean(finalFormData.transporteIncluso),
 			acomodacaoInclusa: Boolean(finalFormData.acomodacaoInclusa),
 			camarimIncluso: Boolean(finalFormData.camarimIncluso),
@@ -216,6 +221,7 @@ export const useProposalSubmit = ({
 				finalFormData.estruturaPalcoSomIluminacaoInclusa
 			),
 			// geradorIncluso: Boolean(finalFormData.geradorIncluso),
+			idPropostaGerouContraProposta: counterProposalOf?.id ?? null,
 		};
 
 		try {
@@ -257,6 +263,7 @@ export const useProposalSubmit = ({
 					startTime: hasDefineEventTime ? data.horaInicio : null,
 					duration: hasDefineEventTime && data.duracao ? data.duracao : null,
 					location: data.local,
+					counterProposal: !!counterProposalOf,
 				},
 
 				errorMessage: "Erro ao enviar solicitação orçamento",

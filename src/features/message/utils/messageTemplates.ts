@@ -26,6 +26,8 @@ export interface StatusPayloads {
 		startTime?: string | null;
 		duration?: string | null;
 		location: string;
+		// Answer to a rejected proposal
+		counterProposal?: boolean;
 	};
 
 	proposalAccepted: Record<string, never>;
@@ -78,6 +80,9 @@ const variants: Record<
 		button: "bg-gray-600 hover:bg-gray-700",
 	},
 };
+
+// Also identifies budget cards sent before they had their own link
+export const BUDGET_REQUEST_TITLE = "Nova solicitação de orçamento";
 
 type Row = { icon: string; label: string; value: string | null | undefined };
 
@@ -136,7 +141,7 @@ const statusTemplates: { [K in StatusMessageType]: Template<K> } = {
 	budgetRequested: (c) =>
 		renderCard({
 			variant: "info",
-			title: "🎵 Nova solicitação de orçamento",
+			title: `🎵 ${BUDGET_REQUEST_TITLE}`,
 			subtitle: `${greeting(c.recipientName)}, que boa notícia! Você recebeu uma solicitação de orçamento.`,
 			rows: [
 				{ icon: "🎤", label: "Tipo de evento", value: c.eventTypeLabel || "-" },
@@ -151,8 +156,12 @@ const statusTemplates: { [K in StatusMessageType]: Template<K> } = {
 	proposalRequested: (c) =>
 		renderCard({
 			variant: "info",
-			title: "🎵 Proposta criada!",
-			subtitle: `${greeting(c.recipientName)}, uma proposta foi criada. confira os dados.`,
+			title: c.counterProposal
+				? "🔁 Contraproposta recebida!"
+				: "🎵 Proposta criada!",
+			subtitle: c.counterProposal
+				? `${greeting(c.recipientName)}, você recebeu uma contraproposta. Confira os dados.`
+				: `${greeting(c.recipientName)}, uma proposta foi criada. confira os dados.`,
 			rows: [
 				{ icon: "🎤", label: "Tipo de evento", value: c.eventTypeLabel || "-" },
 				{ icon: "📝", label: "Descrição", value: c.description },
@@ -173,8 +182,8 @@ const statusTemplates: { [K in StatusMessageType]: Template<K> } = {
 	proposalPaidSign: (c) =>
 		renderCard({
 			variant: "success",
-			title: "🎉 Sinal de proposta marcado como pago!",
-			subtitle: `${greeting(c.recipientName)},o contratado já confirmou o pagamento do sinal de proposta. O contrato agora precisa ser assinado.`,
+			title: "🎉 Pagamento do sinal confirmado!",
+			subtitle: `${greeting(c.recipientName)}, o contratado confirmou o recebimento do sinal. A contratação está concluída.`,
 			link: c.link,
 		}),
 
@@ -223,6 +232,11 @@ export const entityLinks = {
 	proposalPublic: (identificadorUnico: string): MessageLink => ({
 		label: "Ver proposta",
 		url: appUrl(`proposta/${identificadorUnico}`),
+	}),
+	// Opens the conversation's budget requests (the id is the budget's)
+	budgetRequest: (id: number | string): MessageLink => ({
+		label: "Ver solicitação",
+		url: appUrl(`band/me?tab=messages&orcamento=${id}`),
 	}),
 	contractTab: (id: number | string): MessageLink => ({
 		label: "Ver contrato",

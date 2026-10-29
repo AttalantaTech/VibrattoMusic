@@ -1,5 +1,5 @@
 import { AudioLines, AwardIcon, Check, ChevronRight } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { FinishModal } from "../../FinishModal/FinishModal";
 import { OnboardingHeader } from "../../../BandOnboarding/OnboardingHeader/OnboardingHeader";
@@ -57,6 +57,12 @@ export const StepLayout = ({
 	const currentStepName = steps[currentStep - 1] ?? "Finalização";
 
 	const [isFinishStepOpen, setIsFinishStepOpen] = useState(false);
+
+	// Each step is its own route and the router doesn't reset the scroll, so
+	// Continuar/Voltar opened the next step at the previous one's position
+	useEffect(() => {
+		window.scrollTo({ top: 0 });
+	}, [currentStep]);
 
 	const handleSkipOnboarding = async () => {
 		toast.info(

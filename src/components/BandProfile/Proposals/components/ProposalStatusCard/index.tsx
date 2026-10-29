@@ -1,12 +1,12 @@
 import type { FC } from "react";
 import {
-	ProposalStatusCardConfigDict,
+	proposalStatusCardConfigDict,
 	type ProposalStatusCardProps,
 } from "./types";
 import { splitOnUppercase } from "@/utils/labels";
 
 export const ProposalStatusCard: FC<ProposalStatusCardProps> = ({ name }) => {
-	const proposalStatusCardInfo = ProposalStatusCardConfigDict[name];
+	const proposalStatusCardInfo = proposalStatusCardConfigDict[name];
 	const Icon = proposalStatusCardInfo?.icon;
 
 	return (

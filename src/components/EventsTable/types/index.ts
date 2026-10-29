@@ -33,6 +33,8 @@ export type EventsTableSaleRow = {
 	onSeeContract: (proposalId: string) => void;
 	onEditContract: (proposalId: string) => void;
 	onShareProposal: (proposalId: string) => void;
+	// Only set while the proposal is waiting for the down payment
+	onConfirmDownPayment?: (proposalId: string) => void;
 };
 
 export type EventsTableBudgetsRow = {

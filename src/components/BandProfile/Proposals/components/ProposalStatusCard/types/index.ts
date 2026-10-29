@@ -1,4 +1,5 @@
 import type { LucideProps } from "lucide-react";
+import { splitOnUppercase } from "@/utils/labels";
 import {
 	Award,
 	Clock,
@@ -6,8 +7,6 @@ import {
 	PenTool,
 	XCircle,
 	FileArchive,
-	File,
-	FileSignature,
 	Check,
 } from "lucide-react";
 
@@ -28,7 +27,7 @@ type ProposalStatusCardConfigDictType = {
 	};
 };
 
-export const ProposalStatusCardConfigDict: ProposalStatusCardConfigDictType = {
+export const proposalStatusCardConfigDict: ProposalStatusCardConfigDictType = {
 	Pendente: {
 		label: "Pendente",
 		icon: Clock,
@@ -53,6 +52,14 @@ export const ProposalStatusCardConfigDict: ProposalStatusCardConfigDictType = {
 		bgColor: "bg-red-100",
 		borderColor: "border-red-200",
 	},
+	ContratacaoConcluida: {
+		label: "Contratação Concluída",
+		icon: Check,
+		variant: "secondary" as const,
+		color: "text-green-600",
+		bgColor: "bg-green-100",
+		borderColor: "border-green-200",
+	},
 	Cancelada: {
 		label: "Cancelada",
 		icon: XCircle,
@@ -61,52 +68,48 @@ export const ProposalStatusCardConfigDict: ProposalStatusCardConfigDictType = {
 		bgColor: "bg-gray-100",
 		borderColor: "border-gray-200",
 	},
-	SinalPago: {
-		label: "Sinal Pago",
+	Vencida: {
+		label: "Vencida",
+		icon: FileArchive,
+		variant: "secondary" as const,
+		color: "text-orange-600",
+		bgColor: "bg-orange-100",
+		borderColor: "border-orange-200",
+	},
+	Substituida: {
+		label: "Substituída",
+		icon: PenTool,
+		variant: "secondary" as const,
+		color: "text-yellow-600",
+		bgColor: "bg-yellow-100",
+		borderColor: "border-yellow-200",
+	},
+	AguardandoPagamento: {
+		label: "Aguardando Pagamento",
 		icon: DollarSign,
 		variant: "secondary" as const,
 		color: "text-white",
 		bgColor: "bg-primary-400",
 		borderColor: "border-primary-300",
 	},
-	AguardandoAssinatura: {
-		label: "Aguardando Assinatura",
-		icon: FileArchive,
-		variant: "secondary" as const,
-		color: "text-cyan-600",
-		bgColor: "bg-cyan-100",
-		borderColor: "border-cyan-200",
-	},
-	EnvioAssinatura: {
-		label: "Envio de Assinatura",
-		icon: PenTool,
-		variant: "secondary" as const,
-		color: "text-primary-600",
-		bgColor: "bg-primary-100",
-		borderColor: "border-primary-200",
-	},
-	EnvioDocumento: {
-		label: "Envio de Documento",
-		icon: File,
-		variant: "secondary" as const,
-		color: "text-purple-600",
-		bgColor: "bg-purple-100",
-		borderColor: "border-purple-200",
-	},
-	EnvioSignatarios: {
-		label: "Envio de Signatarios",
-		icon: FileSignature,
-		variant: "secondary" as const,
-		color: "text-orange-600",
-		bgColor: "bg-orange-100",
-		borderColor: "border-orange-200",
-	},
-	ContratoAssinado: {
-		label: "Envio de Signatarios",
-		icon: Check,
-		variant: "secondary" as const,
-		color: "text-green-600",
-		bgColor: "bg-green-100",
-		borderColor: "border-green-200",
-	},
 };
+
+// Statuses offered in the Vendas and Contratações filters, in the flow's order
+export const proposalStatusFilters = [
+	"Todos os status",
+	"Pendente",
+	"Aceita",
+	"AguardandoPagamento",
+	"ContratacaoConcluida",
+	"Rejeitada",
+	"Cancelada",
+	"Vencida",
+	"Substituida",
+];
+
+export const proposalStatusLabel = (status: string): string =>
+	proposalStatusCardConfigDict[status]?.label ?? splitOnUppercase(status);
+
+// The contract exists from the acceptance on; before that there's only the proposal
+export const hasContract = (status: string) =>
+	["Aceita", "AguardandoPagamento", "ContratacaoConcluida"].includes(status);

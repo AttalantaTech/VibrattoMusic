@@ -1,5 +1,7 @@
-import { useCallback, useMemo, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
+import { format, parseISO } from "date-fns";
+import { handleCurrencyFormatting } from "@/utils";
 import {
 	FileText,
 	Download,
@@ -12,73 +14,33 @@ import {
 } from "lucide-react";
 import { Button } from "../../components/ui/Button/Button";
 import { useContractPDF, useContractSections } from "../../hooks/useContracts";
-import { toast } from "sonner";
-import {
-	PROPOSAL_QUERY_KEYS,
-	useProposalById,
-	useUpdateProposalStatus,
-} from "../../hooks/useProposals";
+import { useProposalById } from "../../hooks/useProposals";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
-import type { unifiedStatusConfig } from "@/components/BandProfile/Sales/types/SalesTypes";
+import { proposalRoles } from "@/components/BandProfile/Proposals/utils/proposalRoles";
+import { useProposalActions } from "@/components/BandProfile/Proposals/hooks/useProposalActions";
+import { DownPaymentNotice } from "@/components/BandProfile/Proposals/components/DownPaymentNotice";
+import { ConfirmDownPaymentDialog } from "@/components/BandProfile/Proposals/components/ConfirmDownPaymentDialog";
 import { useAuthStore } from "@/store/authStore";
-import { entityLinks } from "@/features/message/utils/messageTemplates";
-import {
-	proposalParties,
-	resolveStatusSender,
-} from "@/features/message/utils/resolveStatusSender";
-import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
 import { showApiError } from "@/utils/showApiError";
-import type { ProposalResponse, User } from "@/api/types";
+import type { ProposalResponse } from "@/api/types";
 import { ProposalRejectionModal } from "@/components/BandProfile/Proposals/components/ProposalRejectionModal";
-import { useQueryClient } from "@tanstack/react-query";
-import type { Conversation } from "@/api/services/messages/types";
-import { useConversations } from "@/hooks/useMessaging";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
+
+// Day only: a bare date would shift a day back in UTC-3
+const formatDay = (date: string | null | undefined) =>
+	date ? format(parseISO(date.slice(0, 10)), "dd/MM/yyyy") : "-";
 
 interface ContractSignaturePageProps {
 	identificadorUnico: string;
 }
 
-const handleStatus = ({
-	proposal,
-	user,
-}: {
-	proposal: ProposalResponse | undefined;
-	user: User | null;
-}) => {
-	const statusKey = (
-		typeof proposal?.status === "object"
-			? proposal.status.nome
-			: proposal?.status
-	) as keyof typeof unifiedStatusConfig;
-
-	const isWaitingForResponse = statusKey === "Pendente";
-	const isContractor = user?.id === proposal?.contratante.id;
-	const isAcceptedStatus = statusKey === "Aceita";
-	const needsContractorPaidSign =
-		!isContractor && isAcceptedStatus && !proposal?.assinaturaContratado;
-
-	const signedContract =
-		proposal?.status.nome === "EnvioAssinatura" ||
-		proposal?.status.nome === "EnvioDocumento" ||
-		proposal?.status.nome === "EnvioSignatarios" ||
-		proposal?.status.nome === "ContratoAssinado";
-
-	return {
-		isWaitingForResponse,
-		isContractor,
-		isAcceptedStatus,
-		needsContractorPaidSign,
-		signedContract,
-	};
-};
-
 export const ContractSignaturePage = ({
 	identificadorUnico,
 }: ContractSignaturePageProps) => {
 	const navigate = useNavigate();
-	const queryClient = useQueryClient();
+	const router = useRouter();
+	const canGoBack = useCanGoBack();
 
 	const { activeProduct } = useMusicalProductStore();
 	const { user } = useAuthStore();
@@ -89,12 +51,14 @@ export const ContractSignaturePage = ({
 		error,
 	} = useProposalById(identificadorUnico || "");
 
-	const { data: conversationsData } = useConversations({
-		IdContratante: activeProduct?.id ? null : user?.id,
-		IdProdutoMusical: activeProduct?.id || null,
-	});
-	const updateStatusMutation = useUpdateProposalStatus();
-	const { sendStatusMessage } = useSendStatusMessage();
+	const {
+		accept,
+		cancel,
+		confirmPaidSign,
+		isLoadingAccept,
+		isLoadingCancel,
+		isLoadingPaidSign,
+	} = useProposalActions();
 
 	const { data: pdfUrl } = useContractPDF(identificadorUnico || "");
 	const { data: contractSections } = useContractSections(proposal?.id || 0);
@@ -103,12 +67,29 @@ export const ContractSignaturePage = ({
 	);
 
 	const [downloading, setDownloading] = useState(false);
-	const [isLoadingPaidSign, setIsLoadingPaidSign] = useState(false);
-	const [isLoadingCancel, setIsLoadingCancel] = useState(false);
+	const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+	// "Ver mais" only when the 3 lines actually cut the text (depends on width)
+	const descriptionRef = useRef<HTMLParagraphElement>(null);
+	const [isDescriptionClamped, setIsDescriptionClamped] = useState(false);
+
+	useEffect(() => {
+		const element = descriptionRef.current;
+		if (!element || isDescriptionOpen) return;
+
+		const measure = () => {
+			setIsDescriptionClamped(element.scrollHeight > element.clientHeight + 1);
+		};
+		measure();
+		const observer = new ResizeObserver(measure);
+		observer.observe(element);
+		return () => {
+			observer.disconnect();
+		};
+	}, [proposal?.descricao, isDescriptionOpen]);
+	const [isConfirmPaymentOpen, setIsConfirmPaymentOpen] = useState(false);
 	const [proposalToReject, setProposalToReject] =
 		useState<ProposalResponse | null>(null);
 	const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
-	const [isLoadingAccept, setIsLoadingAccept] = useState(false);
 
 	const {
 		isWaitingForResponse,
@@ -116,30 +97,11 @@ export const ContractSignaturePage = ({
 		isAcceptedStatus,
 		needsContractorPaidSign,
 		signedContract,
-	} = handleStatus({ proposal, user });
-
-	const conversation = useMemo<Conversation | null>(() => {
-		if (!proposal || !conversationsData) return null;
-
-		const { produtoMusicalContratanteId, contratanteId } =
-			proposalParties(proposal);
-
-		return (
-			conversationsData.find((c) => {
-				if (c.produtoMusicalId !== proposal.produtoMusical.id) return false;
-
-				return produtoMusicalContratanteId
-					? c.produtoMusicalContratanteId === produtoMusicalContratanteId
-					: !c.produtoMusicalContratanteId && c.contratanteId === contratanteId;
-			}) ?? null
-		);
-	}, [conversationsData, proposal]);
-
-	const handleInvalidateProposalQuery = useCallback(() => {
-		void queryClient.invalidateQueries({
-			queryKey: PROPOSAL_QUERY_KEYS.byId(identificadorUnico),
-		});
-	}, [identificadorUnico, queryClient]);
+	} = proposalRoles({
+		proposal,
+		user,
+		productContractorId: activeProduct ? activeProduct.id : null,
+	});
 
 	const handleDownload = () => {
 		if (!proposal) return;
@@ -161,110 +123,6 @@ export const ContractSignaturePage = ({
 		}
 	};
 
-	const handleAcceptProposal = async (proposalId: number) => {
-		try {
-			setIsLoadingAccept(true);
-			await updateStatusMutation.mutateAsync({
-				proposalId: proposalId,
-				status: "aceito",
-			});
-
-			if (proposal) {
-				sendStatusMessage({
-					type: "proposalAccepted",
-					...resolveStatusSender(proposalParties(proposal), "contratante"),
-					conversationId: conversation?.id,
-					produtoMusicalName: proposal.produtoMusical.nome,
-					link: entityLinks.proposalTab(proposal.id),
-					errorMessage: "Erro ao enviar solicitação orçamento",
-					payload: {},
-					onSuccess() {
-						handleInvalidateProposalQuery();
-					},
-				});
-			}
-		} catch (error) {
-			showApiError(
-				error,
-				"Erro ao tentar aceitar a proposta. Tente novamente."
-			);
-		} finally {
-			setIsLoadingAccept(false);
-		}
-	};
-
-	const handlePaidSign = async (proposalId: number) => {
-		try {
-			setIsLoadingPaidSign(true);
-			await updateStatusMutation.mutateAsync({
-				proposalId: proposalId,
-				status: "sinalPago",
-			});
-
-			if (proposal) {
-				sendStatusMessage({
-					type: "proposalPaidSign",
-					...resolveStatusSender(proposalParties(proposal), "contratado"),
-					conversationId: conversation?.id,
-					produtoMusicalName: proposal.produtoMusical.nome,
-					link: entityLinks.proposalTab(proposal.id),
-					errorMessage: "Erro ao enviar sua requisição",
-					payload: {},
-					onSuccess() {
-						handleInvalidateProposalQuery();
-					},
-				});
-			}
-		} catch (error) {
-			showApiError(error, "Erro ao pagar o sinal. Tente novamente.");
-		} finally {
-			setIsLoadingPaidSign(false);
-		}
-	};
-
-	const handleCancelProposal = useCallback(
-		async (proposalId: number | null) => {
-			try {
-				setIsLoadingCancel(true);
-				if (!proposalId) {
-					toast.error("Proposta não encontrada.");
-					return;
-				}
-
-				await updateStatusMutation.mutateAsync({
-					proposalId,
-					status: "cancelado",
-				});
-
-				if (proposal) {
-					sendStatusMessage({
-						type: "proposalCanceled",
-						...resolveStatusSender(proposalParties(proposal), "contratado"),
-						conversationId: conversation?.id,
-						produtoMusicalName: proposal.produtoMusical.nome,
-						link: entityLinks.proposalTab(proposal.id),
-						errorMessage: "Erro ao enviar requisição",
-						payload: {},
-						onSuccess() {
-							handleInvalidateProposalQuery();
-						},
-					});
-				}
-			} catch (error) {
-				showApiError(error, "Error updating proposal status:");
-			} finally {
-				setIsLoadingCancel(false);
-			}
-		},
-		[
-			updateStatusMutation,
-			sendStatusMessage,
-			proposal,
-			handleInvalidateProposalQuery,
-			conversation,
-		]
-	);
-
 	const handleRejectProposal = useCallback((proposal: ProposalResponse) => {
 		if (!proposal) return;
 		setProposalToReject(proposal);
@@ -272,8 +130,18 @@ export const ContractSignaturePage = ({
 		setIsRejectionModalOpen(true);
 	}, []);
 
+	// Back to where the user came from (Contratações, Vendas or the chat). It
+	// always went to Vendas, even for the contractor; a page opened straight
+	// from a link has no history, so it falls back to the viewer's own tab
 	const handleBack = () => {
-		void navigate({ to: "/band/me", search: { tab: "sales" } });
+		if (canGoBack) {
+			router.history.back();
+			return;
+		}
+		void navigate({
+			to: "/band/me",
+			search: { tab: isContractor ? "hires" : "sales" },
+		});
 	};
 
 	if (isLoading) {
@@ -311,64 +179,95 @@ export const ContractSignaturePage = ({
 		<div className="min-h-screen bg-gray-50">
 			{/* Header */}
 			<div className="bg-white border-b border-gray-200 shadow-sm">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-						<div className="flex items-center gap-3 sm:gap-4">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={handleBack}
-								className="flex items-center gap-2"
-							>
-								<ArrowLeft className="h-4 w-4" />
-								Voltar
-							</Button>
-							<div className="flex items-center gap-3">
-								<FileText className="h-6 w-6 text-primary-600" />
-								<div>
-									<h1 className="text-xl font-bold text-gray-900">
-										Contrato
-										{/* #{proposal.idContrato} AQUI */}
-									</h1>
-									<p className="text-sm text-gray-600">
-										Proposta #{proposal.id}
-									</p>
-								</div>
-							</div>
-						</div>
-
-						<div className="self-start sm:self-auto">
-							<ProposalStatusCard name={proposal.status?.nome || ""} />
-						</div>
-					</div>
+				<div className="max-w-7xl mx-auto flex items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={handleBack}
+						className="flex items-center gap-2"
+					>
+						<ArrowLeft className="h-4 w-4" />
+						Voltar
+					</Button>
+					<ProposalStatusCard name={proposal.status?.nome || ""} />
 				</div>
 			</div>
-			{/* Contract Info */}
+
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-				<div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-						<div>
-							<p className="text-sm text-gray-600">Data de Criação</p>
-							<p className="text-lg font-semibold text-gray-900">
-								{new Date(proposal.dataCriacao).toLocaleDateString("pt-BR")}
-							</p>
+				{/* Summary: the description used to fill the "Título" field in
+				    large bold type; it's now a short, expandable paragraph */}
+				<div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+					<div className="flex items-start gap-3">
+						<div className="shrink-0 rounded-lg bg-primary-50 p-2">
+							<FileText className="h-5 w-5 text-primary-600" />
 						</div>
-						<div>
-							<p className="text-sm text-gray-600">Valor Total</p>
-							<p className="text-lg font-semibold text-gray-900">
-								R${" "}
-								{proposal.valor.toLocaleString("pt-BR", {
-									minimumFractionDigits: 2,
-								})}
-							</p>
-						</div>
-						<div>
-							<p className="text-sm text-gray-600">Título</p>
-							<p className="text-lg font-semibold text-gray-900">
-								{proposal.descricao}
+						<div className="min-w-0">
+							<h1 className="text-lg font-bold text-gray-900 sm:text-xl">
+								Contrato
+							</h1>
+							<p className="text-sm text-gray-500">
+								Proposta #{proposal.id}
+								{proposal.tipoEvento?.nome
+									? ` · ${proposal.tipoEvento.nome}`
+									: ""}
 							</p>
 						</div>
 					</div>
+
+					<dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-4 sm:grid-cols-4">
+						<div>
+							<dt className="text-xs text-gray-500">Data do evento</dt>
+							<dd className="text-sm font-semibold text-gray-900">
+								{formatDay(proposal.dataInicio)}
+								{proposal.horaInicio
+									? ` às ${proposal.horaInicio.slice(0, 5)}`
+									: ""}
+							</dd>
+						</div>
+						<div>
+							<dt className="text-xs text-gray-500">Valor total</dt>
+							<dd className="text-sm font-semibold text-gray-900">
+								R$ {handleCurrencyFormatting(proposal.valor)}
+							</dd>
+						</div>
+						<div className="col-span-2 sm:col-span-1">
+							<dt className="text-xs text-gray-500">Local</dt>
+							<dd className="break-words text-sm font-semibold text-gray-900">
+								{proposal.local || "-"}
+							</dd>
+						</div>
+						<div>
+							<dt className="text-xs text-gray-500">Criada em</dt>
+							<dd className="text-sm font-semibold text-gray-900">
+								{formatDay(proposal.dataCriacao)}
+							</dd>
+						</div>
+					</dl>
+
+					{proposal.descricao ? (
+						<div className="mt-4 border-t border-gray-100 pt-4">
+							<p className="text-xs text-gray-500">Descrição</p>
+							<p
+								ref={descriptionRef}
+								className={`mt-1 whitespace-pre-line text-sm text-gray-700 ${
+									isDescriptionOpen ? "" : "line-clamp-3"
+								}`}
+							>
+								{proposal.descricao}
+							</p>
+							{isDescriptionClamped || isDescriptionOpen ? (
+								<button
+									type="button"
+									className="mt-1 text-sm font-medium text-primary-600 hover:text-primary-700"
+									onClick={() => {
+										setIsDescriptionOpen((open) => !open);
+									}}
+								>
+									{isDescriptionOpen ? "Ver menos" : "Ver mais"}
+								</button>
+							) : null}
+						</div>
+					) : null}
 				</div>
 
 				{/* PDF Viewer Section */}
@@ -427,59 +326,43 @@ export const ContractSignaturePage = ({
 					</div>
 				</div>
 
-				{isContractor && proposal.status.nome === "Aceita" && (
+				{proposal.status.nome === "Aceita" ? (
 					<div className="my-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
 						<div className="flex gap-3">
 							<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
 							<div className="text-sm text-primary-800">
 								<p className="font-medium mb-2">Importante:</p>
-								<span className="block mb-4">
-									Efetue o pagamento do sinal e aguarde{" "}
-									<span className="font-semibold">
-										{proposal.produtoMusical.nome}
-									</span>{" "}
-									confirmar o recebimento na plataforma. Após a confirmação,
-									você receberá um email para prosseguir com a assinatura
-									digital do contrato.
-								</span>
-							</div>
-						</div>
-					</div>
-				)}
-
-				{proposal.status.nome === "AguardandoAssinatura" ||
-				proposal.status.nome === "SinalPago" ? (
-					<div className="my-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
-						<div className="flex gap-3">
-							<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
-							<div className="text-sm text-primary-800">
-								<p className="font-medium mb-2">Importante:</p>
-								<span className="block mb-4">
-									Em instantes, você receberá um e-mail com as instruções para
-									realizar a assinatura eletrônica do contrato.
-								</span>
 
 								<span className="block mb-4">
-									Caso não encontre a mensagem na sua caixa de entrada,
-									verifique também as pastas de Spam, Lixo Eletrônico, Promoções
-									ou Atualizações.
+									O contrato precisa ser assinado eletronicamente pelas duas
+									partes (contratante e contratado). O processo só avança para a
+									próxima etapa depois que ambos assinarem.
 								</span>
-
 								<span className="block mb-4">
-									Se mesmo assim o e-mail não for localizado após alguns
-									minutos, entre em contato com nosso suporte para que possamos
-									ajudá-lo.
+									Cada parte receberá um e-mail com as instruções para assinar.
+									Caso não encontre a mensagem na caixa de entrada, verifique
+									também as pastas de Spam, Lixo Eletrônico, Promoções ou
+									Atualizações. Se você já assinou, aguarde a assinatura da
+									outra parte.
+								</span>
+								<span className="block mb-4">
+									Se o e-mail não chegar após alguns minutos, entre em contato
+									com nosso suporte.
 								</span>
 							</div>
 						</div>
 					</div>
 				) : null}
 
+				{/* Contractor only; shown until the down payment is confirmed */}
+				{isContractor ? <DownPaymentNotice proposal={proposal} /> : null}
+
 				{/* Action Buttons */}
 				<div className="bg-white rounded-lg shadow-sm p-6">
-					<div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+					<div className="flex flex-col sm:flex-row gap-3 justify-between items-center">
 						<Button
 							variant="outline"
+							size="sm"
 							onClick={handleDownload}
 							disabled={downloading}
 							className="w-full sm:w-auto flex items-center justify-center gap-2"
@@ -497,7 +380,9 @@ export const ContractSignaturePage = ({
 							)}
 						</Button>
 
-						<div className="mt-6 flex justify-end gap-3">
+						{/* Phones: stacked full width (in one row they ran off the screen);
+						    hidden when there's no action, it left a blank gap */}
+						<div className="flex w-full flex-col gap-3 empty:hidden [&>*]:w-full [&>*]:h-[38px] [&>*]:px-4 [&>*]:text-sm sm:w-auto sm:flex-row sm:justify-end sm:[&>*]:w-auto">
 							{/* Band actions when proposal is pending */}
 							{isContractor ? (
 								<>
@@ -506,7 +391,7 @@ export const ContractSignaturePage = ({
 											className="bg-green-600 hover:bg-green-700 border-green-600 disabled:hover:bg-green-600 disabled:opacity-50"
 											disabled={isLoadingAccept}
 											onClick={async () => {
-												await handleAcceptProposal(proposal.id);
+												await accept(proposal);
 											}}
 										>
 											{isLoadingAccept ? (
@@ -517,6 +402,7 @@ export const ContractSignaturePage = ({
 											Aceitar
 										</Button>
 									)}
+
 									{/* Reject button - available for both contractor and band */}
 									{isWaitingForResponse && (
 										<Button
@@ -540,8 +426,8 @@ export const ContractSignaturePage = ({
 										<Button
 											className="bg-green-600 hover:bg-green-700 border-green-600 disabled:hover:bg-green-600 disabled:opacity-50"
 											disabled={isLoadingPaidSign}
-											onClick={async () => {
-												await handlePaidSign(proposal.id);
+											onClick={() => {
+												setIsConfirmPaymentOpen(true);
 											}}
 										>
 											{isLoadingPaidSign ? (
@@ -549,7 +435,7 @@ export const ContractSignaturePage = ({
 											) : (
 												<DollarSign className="h-4 w-4 mr-2" />
 											)}
-											confirmar pagamento
+											Confirmar Recebimento do Sinal
 										</Button>
 									)}
 
@@ -559,7 +445,7 @@ export const ContractSignaturePage = ({
 											variant="outline"
 											disabled={isLoadingCancel}
 											onClick={async () => {
-												await handleCancelProposal(proposal.id);
+												await cancel(proposal);
 											}}
 										>
 											{isLoadingCancel ? (
@@ -577,7 +463,7 @@ export const ContractSignaturePage = ({
 						{signedContract && (
 							<div className="flex items-center gap-2 text-green-600">
 								<CheckCircle className="h-5 w-5" />
-								<span className="font-medium">Contrato Assinado</span>
+								<span className="font-medium">Contratação Concluída</span>
 							</div>
 						)}
 					</div>
@@ -591,6 +477,18 @@ export const ContractSignaturePage = ({
 					setProposalToReject(null);
 				}}
 				proposal={proposalToReject}
+			/>
+			<ConfirmDownPaymentDialog
+				proposal={isConfirmPaymentOpen ? proposal : null}
+				isLoading={isLoadingPaidSign}
+				onConfirm={async (confirmed) => {
+					if (await confirmPaidSign(confirmed)) {
+						setIsConfirmPaymentOpen(false);
+					}
+				}}
+				onClose={() => {
+					setIsConfirmPaymentOpen(false);
+				}}
 			/>
 		</div>
 	);

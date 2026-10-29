@@ -9,7 +9,7 @@ type CarouselSectionProps = {
 	carousel: Array<FilePropsLocal>;
 	loadingMap: Record<string, boolean>;
 	markAsLoaded: (url: string) => void;
-	onUpload: (file: File | null) => Promise<void>;
+	onUpload: (files: Array<File>) => Promise<void>;
 	onRemove: (id: number | null, index: number) => Promise<void>;
 	onLegendCarousel: (file: FilePropsLocal, legend: string) => void;
 };
@@ -33,7 +33,10 @@ export function CarouselSection({
 			<FileUploadBox
 				acceptedTypes={["image/jpg", "image/jpeg", "image/png", "video/mp4"]}
 				maxSizeMB={100}
-				onFileSelected={onUpload}
+				multiple
+				onFilesSelected={(files) => {
+					void onUpload(files);
+				}}
 			/>
 
 			<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 my-4">

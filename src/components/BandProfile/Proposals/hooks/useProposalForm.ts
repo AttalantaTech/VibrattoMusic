@@ -4,27 +4,33 @@ import { useForm } from "react-hook-form";
 import type { CreateProposalForm } from "../schemas/proposal.schema";
 import { createProposalSchema } from "../schemas/proposal.schema";
 
-import { differenceInDays, format } from "date-fns";
+import { format } from "date-fns";
 import type { ProposalResponse } from "@/api/types";
 import { useAuthStore } from "@/store/authStore";
 import { calculateDuration, secondsToTime, toBR } from "@/utils";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useUser } from "@/hooks/useUser";
 import { handleStandardProposalDescription } from "../utils/handleStandardProposalDescription";
+import { deadlineDays } from "../utils/deadlines";
 
 interface ProposalFormProps {
 	proposal?: ProposalResponse | null;
+	counterProposalOf?: ProposalResponse | null;
 	contractorId?: number;
 	contractorName?: string;
 	setHasDefineEventTime: (value: boolean) => void;
 }
 
 export const useProposalForm = ({
-	proposal,
+	proposal: editedProposal,
+	counterProposalOf,
 	contractorId,
 	contractorName,
 	setHasDefineEventTime,
 }: ProposalFormProps) => {
+	// A counter-proposal starts from every field of the rejected proposal
+	const proposal = editedProposal ?? counterProposalOf ?? null;
+
 	const { user } = useAuthStore();
 	const { data: userData } = useUser();
 	const { activeProduct } = useMusicalProductStore();
@@ -84,20 +90,17 @@ export const useProposalForm = ({
 		[proposal?.dataInicio]
 	);
 
+	// Saved deadlines go back into the form as days from today
 	const dataVencimentoAceite = useMemo(
-		() =>
-			proposal?.dataVencimentoAceite
-				? differenceInDays(proposal.dataVencimentoAceite, dataEvento)
-				: 15,
-		[dataEvento, proposal?.dataVencimentoAceite]
+		// A counter-proposal gets fresh deadlines: the old ones count from the
+		// day the rejected proposal was sent
+		() => deadlineDays(editedProposal?.dataVencimentoAceite, 15),
+		[editedProposal?.dataVencimentoAceite]
 	);
 
 	const dataVencimentoSinalPagamento = useMemo(
-		() =>
-			proposal?.dataVencimentoSinalPagamento
-				? differenceInDays(proposal.dataVencimentoSinalPagamento, dataEvento)
-				: 30,
-		[dataEvento, proposal?.dataVencimentoSinalPagamento]
+		() => deadlineDays(editedProposal?.dataVencimentoSinalPagamento, 30),
+		[editedProposal?.dataVencimentoSinalPagamento]
 	);
 
 	const duration = useMemo(
@@ -131,10 +134,19 @@ export const useProposalForm = ({
 	const initialValues: CreateProposalForm = useMemo<CreateProposalForm>(() => {
 		return {
 			idContratante: proposal?.idContratante || getContractorId(),
-			nomeContratante: proposal?.contratante.nome || contractorName || "",
+			// Standalone proposals keep the typed name in nomeContratante
+			nomeContratante:
+				proposal?.contratante.nome ||
+				proposal?.nomeContratante ||
+				contractorName ||
+				"",
 			idTipoEvento: proposal?.tipoEvento.id || 0,
-			// The description is editable: an existing proposal keeps the saved
-			// text, a new one starts from the standard text
+			tipoSinalPagamento: proposal?.tipoSinalPagamento || null,
+			// Only an amount in reais fills the custom field
+			valorSinalPagamento:
+				proposal?.tipoSinalPagamento === "V"
+					? proposal.valorSinalPagamento || 0
+					: 0,
 			descricao: proposal?.descricao || descricao,
 			valor: proposal?.valor || 0,
 			local: proposal?.local || "",
@@ -147,8 +159,9 @@ export const useProposalForm = ({
 			idCondicoesPagamento: proposal?.condicoesPagamento.id || 2,
 			transporteIncluso: proposal?.transporteIncluso || false,
 			acomodacaoInclusa: proposal?.acomodacaoInclusa || false,
-			camarimIncluso: proposal?.acomodacaoInclusa || false,
-			estruturaPalcoSomIluminacaoInclusa: proposal?.acomodacaoInclusa || false,
+			camarimIncluso: proposal?.camarimIncluso || false,
+			estruturaPalcoSomIluminacaoInclusa:
+				proposal?.estruturaPalcoSomIluminacaoInclusa || false,
 			// geradorIncluso: proposal?.geradorIncluso || false
 		};
 	}, [

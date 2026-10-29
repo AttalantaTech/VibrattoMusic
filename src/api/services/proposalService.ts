@@ -97,7 +97,7 @@ export const proposalService = {
 			IdProdutoMusical: filters.IdProdutoMusical ?? null,
 			DataDe: filters.DataDe ?? null,
 			DataAte: filters.DataAte ?? null,
-			incluirSubstituidas: false,
+			incluirSubstituidas: filters.incluirSubstituidas ?? false,
 		};
 
 		const response = await apiClient.post<Array<ProposalResponse>>(

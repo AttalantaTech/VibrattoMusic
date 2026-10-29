@@ -51,60 +51,46 @@ import { useCallback, useMemo, useState } from "react";
 import { EventsTable } from "../../EventsTable";
 import type { EventsTableSaleData } from "../../EventsTable/types";
 import { Dropdown } from "../../ui/Dropdown/Dropdown";
-import {
-	useFilteredProposals,
-	useUpdateProposalStatus,
-} from "../../../hooks/useProposals";
+import { useFilteredProposals } from "../../../hooks/useProposals";
 import { EmptyState, ErrorState, TableSkeleton } from "../../ui/LoadingStates";
 
 import { useAuthStore } from "../../../store/authStore";
-import { splitOnUppercase } from "../../../utils/labels";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import type { ProposalResponse } from "../../../api/types";
 import { ProposalDetailsModal } from "../Proposals/components/ProposalDetailsModal";
 import { SendProposalModal } from "../Proposals/components/SendProposalModal";
+import { ConfirmDownPaymentDialog } from "../Proposals/components/ConfirmDownPaymentDialog";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
-import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
-import { entityLinks } from "@/features/message/utils/messageTemplates";
+import { useProposalFromLink } from "@/components/BandProfile/Proposals/hooks/useProposalFromLink";
+import { useProposalActions } from "@/components/BandProfile/Proposals/hooks/useProposalActions";
 import {
-	proposalParties,
-	resolveStatusSender,
-} from "@/features/message/utils/resolveStatusSender";
-import { showApiError } from "@/utils/showApiError";
-import { useConversations } from "@/hooks/useMessaging";
+	proposalStatusFilters,
+	proposalStatusLabel,
+} from "@/components/BandProfile/Proposals/components/ProposalStatusCard/types";
+import { entityLinks } from "@/features/message/utils/messageTemplates";
 import { ShareLink } from "@/components/ui/ShareLink/ShareLink";
-import type { Conversation } from "@/api/services/messages/types";
-
-const possibleStatusFilters = [
-	"Todos os status",
-	"Pendente",
-	"Aceita",
-	"Rejeitada",
-	"SinalPago",
-	"EnvioDocumento",
-	"EnvioSignatarios",
-	"EnvioAssinatura",
-	"AguardandoAssinatura",
-	"ContratoAssinado",
-];
 
 export const SalesTab = () => {
 	const navigate = useNavigate();
 
 	const { activeProduct } = useMusicalProductStore();
 	const currentUser = useAuthStore((state) => state.user);
-	const updateStatusMutation = useUpdateProposalStatus();
-	const { sendStatusMessage } = useSendStatusMessage();
+	const { cancel, confirmPaidSign, isLoadingCancel, isLoadingPaidSign } =
+		useProposalActions();
 
 	const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
+	// Rejected proposal being answered with a counter-proposal
+	const [counterProposalOf, setCounterProposalOf] =
+		useState<ProposalResponse | null>(null);
 	const [isProposalDetailsModalOpen, setIsProposalDetailsModalOpen] =
 		useState(false);
 	const [proposalDetails, setProposalDetails] =
 		useState<ProposalResponse | null>(null);
-	const [isLoadingPaidSign, setIsLoadingPaidSign] = useState(false);
-	const [isLoadingCancel, setIsLoadingCancel] = useState(false);
+	// Proposal waiting for the "received the down payment?" confirmation
+	const [proposalToConfirmPayment, setProposalToConfirmPayment] =
+		useState<ProposalResponse | null>(null);
 	const [statusFilter, setStatusFilter] = useState<string>("Todos os status");
 	// identificadorUnico of the proposal being shared (null = modal closed)
 	const [shareProposalId, setShareProposalId] = useState<string | null>(null);
@@ -118,29 +104,6 @@ export const SalesTab = () => {
 		IdProdutoMusical: activeProduct?.id,
 	});
 
-	const { data: conversationsData } = useConversations({
-		IdProdutoMusical: activeProduct?.id || null,
-		enabled: false,
-	});
-
-	const conversation = useMemo<Conversation | null>(() => {
-		if (!proposalDetails || !conversationsData) return null;
-
-		const { produtoMusicalContratanteId, contratanteId } =
-			proposalParties(proposalDetails);
-
-		return (
-			conversationsData.find((c) => {
-				if (c.produtoMusicalId !== proposalDetails.produtoMusical.id)
-					return false;
-
-				return produtoMusicalContratanteId
-					? c.produtoMusicalContratanteId === produtoMusicalContratanteId
-					: !c.produtoMusicalContratanteId && c.contratanteId === contratanteId;
-			}) ?? null
-		);
-	}, [conversationsData, proposalDetails]);
-
 	const handleSeeProposal = useCallback(
 		(proposalId: string) => {
 			setProposalDetails(
@@ -152,6 +115,17 @@ export const SalesTab = () => {
 		},
 		[filteredProposals?.data]
 	);
+
+	const handleOpenLinkedProposal = useCallback((proposal: ProposalResponse) => {
+		setProposalDetails(proposal);
+		setIsProposalDetailsModalOpen(true);
+	}, []);
+
+	useProposalFromLink({
+		tab: "sales",
+		proposals: filteredProposals?.data,
+		onOpen: handleOpenLinkedProposal,
+	});
 
 	const handleSeeContract = useCallback(
 		async (proposalId: string) => {
@@ -181,71 +155,31 @@ export const SalesTab = () => {
 		[filteredProposals?.data]
 	);
 
-	const handleCounterProposal = () => {
-		setIsProposalModalOpen(true);
-	};
+	// It used to open an empty form with no contractor, so the "counter-
+	// proposal" went to the band itself; it now starts from the rejected one
+	const handleCounterProposal = useCallback(
+		(proposalId: string) => {
+			const rejected = filteredProposals?.data.find(
+				(p) => p.identificadorUnico === proposalId
+			);
+			if (!rejected) return;
 
-	const handlePaidSign = async (proposalId: number) => {
-		try {
-			setIsLoadingPaidSign(true);
-			await updateStatusMutation.mutateAsync({
-				proposalId: proposalId,
-				status: "sinalPago",
-			});
-
-			if (!proposalDetails || !conversation?.id) return;
-
-			sendStatusMessage({
-				type: "proposalPaidSign",
-				...resolveStatusSender(proposalParties(proposalDetails), "contratado"),
-				conversationId: conversation.id,
-				produtoMusicalName: proposalDetails.produtoMusical.nome,
-				link: entityLinks.proposalTab(proposalDetails.id),
-				errorMessage: "Erro ao enviar sua requisição",
-				payload: {},
-			});
-		} catch (error) {
-			showApiError(error, "Erro ao pagar o sinal. Tente novamente.");
-		} finally {
-			setIsLoadingPaidSign(false);
-		}
-	};
-
-	const handleCancelProposal = useCallback(
-		async (proposalId: number | null) => {
-			try {
-				setIsLoadingCancel(true);
-				if (!proposalId) {
-					toast.error("Proposta não encontrada.");
-					return;
-				}
-
-				await updateStatusMutation.mutateAsync({
-					proposalId,
-					status: "cancelado",
-				});
-
-				if (!proposalDetails || !conversation?.id) return;
-
-				sendStatusMessage({
-					type: "proposalCanceled",
-					...resolveStatusSender(
-						proposalParties(proposalDetails),
-						"contratado"
-					),
-					conversationId: conversation.id,
-					produtoMusicalName: proposalDetails.produtoMusical.nome,
-					link: entityLinks.proposalTab(proposalDetails.id),
-					errorMessage: "Erro ao enviar requisição",
-					payload: {},
-				});
-			} catch (error) {
-				showApiError(error, "Error updating proposal status:");
-			} finally {
-				setIsLoadingCancel(false);
-			}
+			setProposalDetails(null);
+			setCounterProposalOf(rejected);
+			setIsProposalModalOpen(true);
 		},
-		[conversation?.id, proposalDetails, sendStatusMessage, updateStatusMutation]
+		[filteredProposals?.data]
+	);
+
+	const handleOpenConfirmPayment = useCallback(
+		(proposalId: string) => {
+			setProposalToConfirmPayment(
+				filteredProposals?.data.find(
+					(p) => p.identificadorUnico === proposalId
+				) || null
+			);
+		},
+		[filteredProposals?.data]
 	);
 
 	const tableData: EventsTableSaleData =
@@ -266,9 +200,11 @@ export const SalesTab = () => {
 						// an empty contratante.nome and the typed name in nomeContratante
 						clientName: event.contratante.nome || event.nomeContratante || "-",
 						value: event.valor,
-						aceitaContraProposta: event.aceitaContraProposta,
+						// Once answered the proposal is no longer "Rejeitada"
+						aceitaContraProposta:
+							event.aceitaContraProposta && event.status.nome === "Rejeitada",
 						canSign:
-							event.status.nome === "AguardandoAssinatura" &&
+							event.status.nome === "Aceita" &&
 							((!event.assinaturaContratante && isContractor) ||
 								(!event.assinaturaContratado && !isContractor)),
 
@@ -277,6 +213,10 @@ export const SalesTab = () => {
 						onSeeContract: handleSeeContract,
 						onEditContract: handleEditContract,
 						onShareProposal: setShareProposalId,
+						onConfirmDownPayment:
+							event.status.nome === "AguardandoPagamento"
+								? handleOpenConfirmPayment
+								: undefined,
 					};
 				}),
 			[
@@ -285,6 +225,8 @@ export const SalesTab = () => {
 				handleSeeProposal,
 				handleSeeContract,
 				handleEditContract,
+				handleOpenConfirmPayment,
+				handleCounterProposal,
 			]
 		) || [];
 
@@ -320,12 +262,12 @@ export const SalesTab = () => {
 								variant="outline"
 								className="w-full sm:w-auto min-w-[180px] justify-between whitespace-nowrap"
 							>
-								{splitOnUppercase(statusFilter)}
+								{proposalStatusLabel(statusFilter)}
 								<ChevronDown className="h-4 w-4 ml-2" />
 							</Button>
 						}
 					>
-						{possibleStatusFilters.map((item) => (
+						{proposalStatusFilters.map((item) => (
 							<div className="flex w-full" key={item}>
 								<button
 									className="flex justify-between items-center rounded-md px-4 py-2 text-left hover:bg-gray-100 w-full"
@@ -333,7 +275,7 @@ export const SalesTab = () => {
 										setStatusFilter(item);
 									}}
 								>
-									{splitOnUppercase(item)}
+									{proposalStatusLabel(item)}
 									{item === statusFilter && <Check color="gray" size={16} />}
 								</button>
 							</div>
@@ -388,9 +330,11 @@ export const SalesTab = () => {
 			<SendProposalModal
 				isOpen={isProposalModalOpen}
 				proposal={proposalDetails}
+				counterProposalOf={counterProposalOf}
 				onClose={() => {
 					setIsProposalModalOpen(false);
 					setProposalDetails(null);
+					setCounterProposalOf(null);
 				}}
 			/>
 
@@ -402,11 +346,35 @@ export const SalesTab = () => {
 					setProposalDetails(null);
 				}}
 				proposal={proposalDetails}
-				onPaidSign={handlePaidSign}
-				onCancel={handleCancelProposal}
+				onPaidSign={(proposalId) => {
+					handleOpenConfirmPayment(
+						filteredProposals?.data.find((p) => p.id === proposalId)
+							?.identificadorUnico ?? ""
+					);
+					return Promise.resolve();
+				}}
+				onCancel={async (proposalId) => {
+					const proposal = filteredProposals?.data.find(
+						(p) => p.id === proposalId
+					);
+					if (proposal) await cancel(proposal);
+				}}
 				onSeeContract={handleSeeContract}
 				isLoadingPaidSign={isLoadingPaidSign}
 				isLoadingCancel={isLoadingCancel}
+			/>
+
+			<ConfirmDownPaymentDialog
+				proposal={proposalToConfirmPayment}
+				isLoading={isLoadingPaidSign}
+				onConfirm={async (proposal) => {
+					if (await confirmPaidSign(proposal)) {
+						setProposalToConfirmPayment(null);
+					}
+				}}
+				onClose={() => {
+					setProposalToConfirmPayment(null);
+				}}
 			/>
 
 			{/* The link opens the proposal PDF without login */}

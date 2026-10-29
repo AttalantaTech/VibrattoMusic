@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+	PAYMENT_CONDITION,
+	requiresDownPayment,
+} from "../utils/calculateSignal";
+import { isDeadlineAfterEvent } from "../utils/deadlines";
 
 const createProposalSchema = z
 	.object({
@@ -9,18 +14,9 @@ const createProposalSchema = z
 		valor: z.number().min(0.01, "Valor deve ser maior que zero"),
 		local: z.string().trim().min(3, "Local é obrigatório"),
 		definirHorarioEvento: z.boolean().optional(),
-		dataVencimentoSinalPagamento: z.coerce
-			.number({
-				errorMap: (issue, context) => {
-					if (issue.code === "invalid_type" || isNaN(Number(context.data))) {
-						return {
-							message: "Data de vencimento do pagamento do Sinal é obrigatória",
-						};
-					}
-					return { message: context.defaultError };
-				},
-			})
-			.min(1, "Data de vencimento do pagamento do Sinal é obrigatória"),
+		// Required only when the condition has a down payment (see superRefine);
+		// a cleared field becomes 0 instead of failing while it's hidden
+		dataVencimentoSinalPagamento: z.coerce.number().catch(0),
 		dataVencimentoAceite: z
 			.number({
 				errorMap: (issue, context) => {
@@ -38,6 +34,8 @@ const createProposalSchema = z
 		duracao: z.string().nullable(),
 		transporteIncluso: z.boolean().optional(),
 		acomodacaoInclusa: z.boolean().optional(),
+		tipoSinalPagamento: z.enum(["V", "P"]).nullable(),
+		valorSinalPagamento: z.number(),
 		camarimIncluso: z.boolean().optional(),
 		estruturaPalcoSomIluminacaoInclusa: z.boolean().optional(),
 		geradorIncluso: z.boolean().optional(),
@@ -52,6 +50,52 @@ const createProposalSchema = z
 	})
 
 	.superRefine((data, context) => {
+		if (
+			requiresDownPayment(data.idCondicoesPagamento) &&
+			!(data.dataVencimentoSinalPagamento >= 1)
+		) {
+			context.addIssue({
+				path: ["dataVencimentoSinalPagamento"],
+				code: z.ZodIssueCode.custom,
+				message: "Data de vencimento do pagamento do Sinal é obrigatória",
+			});
+		}
+
+		if (isDeadlineAfterEvent(data.dataVencimentoAceite, data.dataEvento)) {
+			context.addIssue({
+				path: ["dataVencimentoAceite"],
+				code: z.ZodIssueCode.custom,
+				message: "O prazo para aceitar termina depois da data do evento",
+			});
+		}
+
+		if (
+			requiresDownPayment(data.idCondicoesPagamento) &&
+			isDeadlineAfterEvent(data.dataVencimentoSinalPagamento, data.dataEvento)
+		) {
+			context.addIssue({
+				path: ["dataVencimentoSinalPagamento"],
+				code: z.ZodIssueCode.custom,
+				message: "O prazo do sinal termina depois da data do evento",
+			});
+		}
+
+		if (data.idCondicoesPagamento === PAYMENT_CONDITION.SIGNAL_CUSTOM) {
+			if (!data.valorSinalPagamento || data.valorSinalPagamento <= 0) {
+				context.addIssue({
+					path: ["valorSinalPagamento"],
+					code: z.ZodIssueCode.custom,
+					message: "Informe o valor do sinal",
+				});
+			} else if (data.valorSinalPagamento > data.valor) {
+				context.addIssue({
+					path: ["valorSinalPagamento"],
+					code: z.ZodIssueCode.custom,
+					message: "O sinal deve ser menor que o valor total",
+				});
+			}
+		}
+
 		if (!data.definirHorarioEvento) return;
 
 		const requiredFields = [

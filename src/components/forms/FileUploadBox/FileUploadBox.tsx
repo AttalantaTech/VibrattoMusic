@@ -19,6 +19,10 @@ interface SingleFileInputProps {
 	// or even empty on Windows)
 	acceptedExtensions?: Array<`.${string}`>;
 	onFileSelected?: (file: File | null) => void;
+	// With multiple, every valid file is handed over at once, so the caller
+	// can save the whole batch in a single request
+	multiple?: boolean;
+	onFilesSelected?: (files: Array<File>) => void;
 	maxSizeMB?: number;
 	className?: string;
 }
@@ -27,6 +31,8 @@ export const FileUploadBox = ({
 	acceptedTypes = ["image/png", "image/jpeg"],
 	acceptedExtensions = [],
 	onFileSelected,
+	multiple = false,
+	onFilesSelected,
 	maxSizeMB = 5,
 	className = "",
 }: SingleFileInputProps) => {
@@ -65,7 +71,52 @@ export const FileUploadBox = ({
 		return true;
 	};
 
+	const isFileAccepted = (file: File): boolean => {
+		const extension = `.${file.name.split(".").pop()?.toLowerCase() ?? ""}`;
+		const isAcceptedType =
+			acceptedTypes.length + acceptedExtensions.length === 0 ||
+			acceptedTypes.includes(file.type as FileType) ||
+			acceptedExtensions.includes(extension as `.${string}`);
+
+		return isAcceptedType && file.size <= maxSizeMB * 1024 * 1024;
+	};
+
+	const handleMultipleFiles = (fileList: FileList | null) => {
+		const files = Array.from(fileList ?? []);
+		const validFiles = files.filter(isFileAccepted);
+		const ignoredCount = files.length - validFiles.length;
+
+		setError(
+			ignoredCount > 0
+				? `${ignoredCount} ${ignoredCount === 1 ? "arquivo ignorado" : "arquivos ignorados"}: tipo não permitido ou grande demais.`
+				: null
+		);
+
+		if (validFiles.length === 0) return;
+
+		setCurrentFile(
+			validFiles.length === 1 && validFiles[0]
+				? {
+						name: validFiles[0].name,
+						size: fileSizeInMB(validFiles[0].size),
+					}
+				: {
+						name: `${validFiles.length} arquivos selecionados`,
+						size: fileSizeInMB(
+							validFiles.reduce((total, file) => total + file.size, 0)
+						),
+					}
+		);
+		onFilesSelected?.(validFiles);
+	};
+
 	const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+		if (multiple) {
+			handleMultipleFiles(event.target.files);
+			event.target.value = "";
+			return;
+		}
+
 		const file = event.target.files?.[0] || null;
 
 		if (file && validateFile(file)) {
@@ -96,6 +147,11 @@ export const FileUploadBox = ({
 	const handleDrop = (event: DragEvent<HTMLDivElement>) => {
 		event.preventDefault();
 		setIsDragging(false);
+
+		if (multiple) {
+			handleMultipleFiles(event.dataTransfer.files);
+			return;
+		}
 
 		const file = event.dataTransfer.files?.[0] || null;
 
@@ -163,6 +219,7 @@ export const FileUploadBox = ({
 				accept={acceptString}
 				className="hidden"
 				type="file"
+				multiple={multiple}
 				onChange={handleFileChange}
 			/>
 		</div>

@@ -22,6 +22,9 @@ import { Select } from "@/components/forms/Select/Select";
 import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
 import type { CreateProposalForm } from "../../schemas/proposal.schema";
 import type { FilterOption } from "@/api/types";
+import { PAYMENT_CONDITION } from "../../utils/calculateSignal";
+import { deadlineLabel } from "../../utils/deadlines";
+import { DateInput } from "@/components/forms/DateInput/DateInput";
 
 type SectionProposal =
 	| "eventData"
@@ -73,6 +76,7 @@ export function ProposalFormFields({
 	} = form;
 
 	const duration = watch("duracao") || "";
+	const paymentConditionId = watch("idCondicoesPagamento");
 
 	return (
 		<div className="space-y-4 py-4">
@@ -196,11 +200,11 @@ export function ProposalFormFields({
 							render={({ field }) => (
 								<>
 									<Label htmlFor="dataEvento">Data do Evento</Label>
-									<Input
+									<DateInput
 										id="dataEvento"
-										type="date"
-										{...field}
-										placeholder="dd/mm/aaaa"
+										value={field.value}
+										onChange={field.onChange}
+										onBlur={field.onBlur}
 									/>
 
 									{errors.dataEvento?.message && (
@@ -239,6 +243,12 @@ export function ProposalFormFields({
 										}}
 									/>
 
+									{field.value >= 1 && !errors.dataVencimentoAceite ? (
+										<p className="text-xs text-gray-500">
+											Vence em {deadlineLabel(field.value)}
+										</p>
+									) : null}
+
 									{errors.dataVencimentoAceite?.message && (
 										<div className="text-red-500 text-sm">
 											{errors.dataVencimentoAceite.message}
@@ -249,38 +259,48 @@ export function ProposalFormFields({
 						/>
 					</div>
 
-					<div className="space-y-2">
-						<Controller
-							control={control}
-							name="dataVencimentoSinalPagamento"
-							render={({ field }) => (
-								<>
-									<Label htmlFor="dataVencimentoSinalPagamento">
-										Prazo para Pagar Sinal{" "}
-										<span className="text-xs text-gray-400 font-light italic">
-											( dias )
-										</span>
-									</Label>
-									<Input
-										id="dataVencimentoSinalPagamento"
-										type="number"
-										min={1}
-										{...field}
-										onChange={(event) => {
-											const days = parseInt(event.target.value);
-											field.onChange(days);
-										}}
-									/>
+					{/* "À vista no dia do evento" has no down payment, so no due date */}
+					{paymentConditionId !== PAYMENT_CONDITION.ON_EVENT_DAY ? (
+						<div className="space-y-2">
+							<Controller
+								control={control}
+								name="dataVencimentoSinalPagamento"
+								render={({ field }) => (
+									<>
+										<Label htmlFor="dataVencimentoSinalPagamento">
+											Prazo para Pagar Sinal{" "}
+											<span className="text-xs text-gray-400 font-light italic">
+												( dias )
+											</span>
+										</Label>
+										<Input
+											id="dataVencimentoSinalPagamento"
+											type="number"
+											min={1}
+											{...field}
+											onChange={(event) => {
+												const days = parseInt(event.target.value);
+												field.onChange(days);
+											}}
+										/>
 
-									{errors.dataVencimentoSinalPagamento?.message && (
-										<div className="text-red-500 text-sm">
-											{errors.dataVencimentoSinalPagamento.message}
-										</div>
-									)}
-								</>
-							)}
-						/>
-					</div>
+										{field.value >= 1 &&
+										!errors.dataVencimentoSinalPagamento ? (
+											<p className="text-xs text-gray-500">
+												Vence em {deadlineLabel(field.value)}
+											</p>
+										) : null}
+
+										{errors.dataVencimentoSinalPagamento?.message && (
+											<div className="text-red-500 text-sm">
+												{errors.dataVencimentoSinalPagamento.message}
+											</div>
+										)}
+									</>
+								)}
+							/>
+						</div>
+					) : null}
 				</div>
 
 				<div className="flex items-center gap-3">
@@ -485,6 +505,47 @@ export function ProposalFormFields({
 						)}
 					/>
 				</div>
+
+				{paymentConditionId === PAYMENT_CONDITION.SIGNAL_CUSTOM ? (
+					<div className="space-y-2">
+						<Controller
+							control={control}
+							name="valorSinalPagamento"
+							render={({ field }) => (
+								<>
+									<Label htmlFor="value">Valor do Sinal de Pagamento</Label>
+									<div className="relative">
+										<span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-sm text-gray-500">
+											R$
+										</span>
+										<Input
+											{...field}
+											type="text"
+											inputMode="numeric"
+											className="pl-10"
+											value={
+												field.value ? handleCurrencyFormatting(field.value) : ""
+											}
+											onChange={(event) => {
+												const digits = event.target.value.replace(/\D/g, "");
+												const number = digits ? Number(digits) / 100 : 0;
+
+												field.onChange(number);
+											}}
+											placeholder="0,00"
+										/>
+									</div>
+
+									{errors.valorSinalPagamento?.message && (
+										<div className="text-red-500 text-sm">
+											{errors.valorSinalPagamento.message}
+										</div>
+									)}
+								</>
+							)}
+						/>
+					</div>
+				) : null}
 			</Accordion>
 
 			{/* Included Services Section */}

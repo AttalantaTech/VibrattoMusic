@@ -11,14 +11,14 @@ import {
 import type { ProposalResponse } from "../../../../../api/types";
 import { formatDate } from "../../../../../utils/validation";
 import { Button } from "../../../../ui/Button/Button";
-import type { unifiedStatusConfig } from "@/components/BandProfile/Sales/types/SalesTypes";
 import { useAuthStore } from "@/store/authStore";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
+import { proposalRoles } from "@/components/BandProfile/Proposals/utils/proposalRoles";
+import { DownPaymentNotice } from "@/components/BandProfile/Proposals/components/DownPaymentNotice";
 import { useProposalPDF } from "@/hooks/useProposals";
 import { Accordion } from "@/components/ui/Accordion";
 import { useState } from "react";
-import { useContractPDF } from "@/hooks/useContracts";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
 
@@ -53,8 +53,6 @@ export const ProposalDetailsModal = ({
 }: ProposalDetailsModalProps) => {
 	const { data: proposalPdfUrl, isLoading: proposalPdfLoading } =
 		useProposalPDF(proposal?.identificadorUnico || "");
-	const { data: contractPdfUrl, isLoading: contractPdfLoading } =
-		useContractPDF(proposal?.identificadorUnico || "");
 
 	const { user } = useAuthStore();
 	const { activeProduct } = useMusicalProductStore();
@@ -62,7 +60,6 @@ export const ProposalDetailsModal = ({
 	// Accordion sections state
 	const [expandedSections, setExpandedSections] = useState({
 		proposalFile: true,
-		contractFile: false,
 	});
 
 	const toggleSection = (section: keyof typeof expandedSections) => {
@@ -72,29 +69,22 @@ export const ProposalDetailsModal = ({
 		}));
 	};
 
-	if (!proposal) {
-		onClose();
-		return null;
-	}
+	// Nothing to show yet. It used to call onClose() here, during render: a
+	// stale render without the proposal then closed a dialog that had just
+	// been opened (the "Ver proposta" link never showed it)
+	if (!proposal) return null;
 
-	const statusKey = (
-		typeof proposal.status === "object" ? proposal.status.nome : proposal.status
-	) as keyof typeof unifiedStatusConfig;
-
-	const isContractor = user?.id === proposal.contratante.id;
-	const isClient = activeProduct?.id === proposal.produtoMusical.id;
-	const isWaitingForResponse = statusKey === "Pendente";
-	const isAcceptedStatus = statusKey === "Aceita";
-	const isPaidSignStatus = statusKey === "SinalPago";
-
-	const needsContractorSignature =
-		isPaidSignStatus && !proposal.assinaturaContratante;
-
-	const needsContractedSignature =
-		isPaidSignStatus && !proposal.assinaturaContratado;
-
-	const needsContractorPaidSign =
-		!isContractor && isAcceptedStatus && !proposal.assinaturaContratado;
+	const {
+		isWaitingForResponse,
+		isContractor,
+		isAcceptedStatus,
+		needsContractorPaidSign,
+		signedContract,
+	} = proposalRoles({
+		proposal,
+		user,
+		productContractorId: activeProduct ? activeProduct.id : null,
+	});
 
 	if (!isOpen) return null;
 
@@ -109,7 +99,8 @@ export const ProposalDetailsModal = ({
 		>
 			<DialogContent
 				aria-describedby={undefined}
-				className="block max-w-2xl gap-0 p-0"
+				// The action bar carries the bottom safe area itself (pinned there)
+				className="block max-w-2xl gap-0 p-0 max-sm:pb-0"
 			>
 				<div className="p-6">
 					{/* Header (the dialog's own X closes it) */}
@@ -133,6 +124,7 @@ export const ProposalDetailsModal = ({
 						)}
 					</div>
 
+					{/* Only the proposal; the contract opens from the menu (Visualizar Contrato) */}
 					<div className="mt-6">
 						<Accordion
 							title="Proposta"
@@ -170,97 +162,46 @@ export const ProposalDetailsModal = ({
 						</Accordion>
 					</div>
 
-					<div className="mt-6">
-						<Accordion
-							title="Contrato"
-							description=""
-							icon={<File className="h-5 w-5 text-gray-600" />}
-							isComplete={false}
-							isExpanded={expandedSections.contractFile}
-							onToggle={() => {
-								toggleSection("contractFile");
-							}}
-						>
-							<>
-								{contractPdfUrl ? (
-									<div className="border-y-2 border-gray-100">
-										<PdfViewer
-											src={contractPdfUrl}
-											className="w-full h-[60dvh] sm:h-[700px] border-0"
-											title="PDF do Contrato"
-										/>
-									</div>
-								) : contractPdfLoading ? (
-									<div className="flex items-center justify-center h-[400px]">
-										<div className="text-center">
-											<FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-											<h4 className="text-lg font-semibold text-gray-900 mb-2">
-												Carregando proposta...
-											</h4>
-											<p className="text-gray-600">
-												O PDF da proposta está sendo carregado.
-											</p>
-										</div>
-									</div>
-								) : null}
-							</>
-						</Accordion>
-					</div>
-
 					{/* Creation Date */}
 					<div className="text-sm text-gray-500 pt-4">
 						Proposta criada em {formatDate(proposal.dataCriacao)}
 					</div>
 
-					{mode === "Contractor" && proposal.status.nome === "Aceita" && (
-						<div className="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
+					{proposal.status.nome === "Aceita" ? (
+						<div className="my-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
 							<div className="flex gap-3">
 								<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
 								<div className="text-sm text-primary-800">
 									<p className="font-medium mb-2">Importante:</p>
-									<span className="block mb-4">
-										Efetue o pagamento do sinal e aguarde{" "}
-										<span className="font-semibold">
-											{proposal.produtoMusical.nome}
-										</span>{" "}
-										confirmar o recebimento na plataforma. Após a confirmação,
-										você receberá um email para prosseguir com a assinatura
-										digital do contrato.
-									</span>
-								</div>
-							</div>
-						</div>
-					)}
-
-					{proposal.status.nome === "AguardandoAssinatura" && (
-						<div className="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
-							<div className="flex gap-3">
-								<AlertCircle className="h-5 w-5 text-primary-600 flex-shrink-0 mt-0.5" />
-								<div className="text-sm text-primary-800">
-									<p className="font-medium mb-2">Importante:</p>
-									<span className="block mb-4">
-										Em instantes, você receberá um e-mail com as instruções para
-										realizar a assinatura eletrônica do contrato.
-									</span>
 
 									<span className="block mb-4">
-										Caso não encontre a mensagem na sua caixa de entrada,
+										O contrato precisa ser assinado eletronicamente pelas duas
+										partes (contratante e contratado). O processo só avança para
+										a próxima etapa depois que ambos assinarem.
+									</span>
+									<span className="block mb-4">
+										Cada parte receberá um e-mail com as instruções para
+										assinar. Caso não encontre a mensagem na caixa de entrada,
 										verifique também as pastas de Spam, Lixo Eletrônico,
-										Promoções ou Atualizações.
+										Promoções ou Atualizações. Se você já assinou, aguarde a
+										assinatura da outra parte.
 									</span>
-
 									<span className="block mb-4">
-										Se mesmo assim o e-mail não for localizado após alguns
-										minutos, entre em contato com nosso suporte para que
-										possamos ajudá-lo.
+										Se o e-mail não chegar após alguns minutos, entre em contato
+										com nosso suporte.
 									</span>
 								</div>
 							</div>
 						</div>
-					)}
+					) : null}
 
-					{/* Actions */}
-					<div className="mt-6 flex justify-end gap-3">
+					{/* Contractor only; shown until the down payment is confirmed */}
+					{isContractor ? <DownPaymentNotice proposal={proposal} /> : null}
+
+					{/* Actions pinned to the bottom so they stay in view while the PDF
+					    (often several pages) scrolls. Phones: stacked full width; in
+					    one row they ran off the left edge */}
+					<div className="sticky bottom-0 -mx-6 -mb-6 mt-6 flex flex-col gap-3 border-t border-gray-200 bg-white px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] [&>*]:w-full [&>*]:h-[38px] [&>*]:px-4 [&>*]:text-sm sm:flex-row sm:justify-end sm:pb-4 sm:[&>*]:w-auto">
 						{/* Band actions when proposal is pending */}
 						{mode === "Contractor" ? (
 							<>
@@ -300,7 +241,7 @@ export const ProposalDetailsModal = ({
 								)}
 
 								{/* Band (contracted) signature button */}
-								{needsContractedSignature && (
+								{isAcceptedStatus && (
 									<Button
 										className="bg-primary-600 hover:bg-primary-700 transition-all"
 										onClick={() => {
@@ -330,7 +271,7 @@ export const ProposalDetailsModal = ({
 										) : (
 											<DollarSign className="h-4 w-4 mr-2" />
 										)}
-										confirmar pagamento
+										Confirmar Recebimento do Sinal
 									</Button>
 								)}
 								{(isWaitingForResponse || isAcceptedStatus) && (
@@ -339,10 +280,8 @@ export const ProposalDetailsModal = ({
 										variant="outline"
 										disabled={isLoadingCancel}
 										onClick={async () => {
-											if (isClient) {
-												await onCancel?.(proposal.id);
-												onClose();
-											}
+											await onCancel?.(proposal.id);
+											onClose();
 										}}
 									>
 										{isLoadingCancel ? (
@@ -354,7 +293,7 @@ export const ProposalDetailsModal = ({
 									</Button>
 								)}
 								{/* Contractor signature button */}
-								{needsContractorSignature && (
+								{isAcceptedStatus && (
 									<Button
 										className="bg-primary-600 hover:bg-primary-700"
 										onClick={() => {
@@ -367,6 +306,13 @@ export const ProposalDetailsModal = ({
 									</Button>
 								)}
 							</>
+						)}
+
+						{signedContract && (
+							<div className="flex items-center gap-2 text-green-600">
+								<CheckCircle className="h-5 w-5" />
+								<span className="font-medium">Contratação Concluída</span>
+							</div>
 						)}
 
 						<Button variant="secondary" onClick={onClose}>

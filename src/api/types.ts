@@ -831,7 +831,7 @@ export interface CreateProposalRequest {
 	idCondicoesPagamentoRestante?: number | null;
 	tipoSinalPagamento?: "P" | "V" | null;
 	valorSinalPagamento?: number | null;
-	dataVencimentoSinalPagamento: string;
+	dataVencimentoSinalPagamento: string | null;
 	dataVencimentoAceite: string;
 	transporteIncluso?: boolean;
 	acomodacaoInclusa?: boolean;
@@ -863,19 +863,27 @@ export interface ProposalFilterRequest {
 	DataDe?: string | null;
 	DataAte?: string | null;
 	Enviado?: boolean;
+	/** The list leaves "Substituída" proposals out unless this is true */
+	incluirSubstituidas?: boolean;
 }
 
 export type ProposalStatusResponse =
 	| "Pendente"
 	| "Aceita"
 	| "Rejeitada"
-	| "Cancelado"
-	| "SinalPago"
-	| "AguardandoAssinatura"
-	| "EnvioAssinatura"
+	| "ContratacaoConcluida"
+	| "Cancelada"
+	| "Vencida"
+	| "Substituida"
+	| "AguardandoPagamento";
+
+export type ProposalD4SignResponse =
+	| "AguardandoEnvio"
 	| "EnvioDocumento"
 	| "EnvioSignatarios"
-	| "ContratoAssinado";
+	| "EnvioAssinatura"
+	| "AguardandoAssinatura"
+	| "Assinado";
 
 export interface ProposalResponse {
 	id: number;
@@ -907,6 +915,7 @@ export interface ProposalResponse {
 	transporteIncluso: boolean;
 	acomodacaoInclusa: boolean;
 	camarimIncluso: boolean;
+	estruturaPalcoSomIluminacaoInclusa?: boolean;
 	formaPagamento: Array<{
 		id: number;
 		nome: string;
@@ -919,7 +928,7 @@ export interface ProposalResponse {
 		id: number;
 		nome: string;
 	} | null;
-	tipoSinalPagamento: string | null;
+	tipoSinalPagamento: "V" | "P" | null;
 	valorSinalPagamento: number | null;
 	dataVencimentoSinalPagamento: string | null;
 	dataVencimentoAceite: string | null;
@@ -928,6 +937,10 @@ export interface ProposalResponse {
 	status: {
 		id: number;
 		nome: ProposalStatusResponse;
+	};
+	etapaD4Sign?: {
+		id: number;
+		nome: ProposalD4SignResponse;
 	};
 	motivoRejeicao: {
 		id: number;

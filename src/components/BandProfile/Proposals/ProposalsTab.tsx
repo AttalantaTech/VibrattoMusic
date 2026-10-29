@@ -15,12 +15,10 @@ import {
 	ChevronDown,
 	CreditCard,
 	X,
-	FilePen,
-	FileSignature,
 	PenTool,
-	File as FileTxt,
 	FileArchive,
 	Award,
+	Check,
 } from "lucide-react";
 import {
 	useMyProposals,
@@ -63,61 +61,45 @@ const statusConfig = {
 		bgColor: "bg-red-100",
 		borderColor: "border-red-200",
 	},
-	Cancelado: {
-		label: "Cancelado",
+	ContratacaoConcluida: {
+		label: "Contratação Concluída",
+		icon: Check,
+		variant: "secondary" as const,
+		color: "text-green-600",
+		bgColor: "bg-green-100",
+		borderColor: "border-green-200",
+	},
+	Cancelada: {
+		label: "Cancelada",
 		icon: XCircle,
 		variant: "secondary" as const,
-		color: "text-gray-600",
+		color: "text-gray-400",
 		bgColor: "bg-gray-100",
 		borderColor: "border-gray-200",
 	},
-	SinalPago: {
-		label: "Sinal Pago",
-		icon: DollarSign,
-		variant: "secondary" as const,
-		color: "text-orange-600",
-		bgColor: "bg-orange-100",
-		borderColor: "border-orange-200",
-	},
-	AguardandoAssinatura: {
-		label: "Aguardando Assinatura",
+	Vencida: {
+		label: "Vencida",
 		icon: FileArchive,
 		variant: "secondary" as const,
 		color: "text-orange-600",
 		bgColor: "bg-orange-100",
 		borderColor: "border-orange-200",
 	},
-	EnvioAssinatura: {
-		label: "Envio de Assinatura",
+	Substituida: {
+		label: "Substituída",
 		icon: PenTool,
 		variant: "secondary" as const,
-		color: "text-red-600",
-		bgColor: "bg-red-100",
-		borderColor: "border-red-200",
+		color: "text-yellow-600",
+		bgColor: "bg-yellow-100",
+		borderColor: "border-yellow-200",
 	},
-	EnvioDocumento: {
-		label: "Envio de Documento",
-		icon: FileTxt,
+	AguardandoPagamento: {
+		label: "Aguardando Pagamento",
+		icon: DollarSign,
 		variant: "secondary" as const,
-		color: "text-purple-600",
-		bgColor: "bg-purple-100",
-		borderColor: "border-purple-200",
-	},
-	EnvioSignatarios: {
-		label: "Envio de Signatarios",
-		icon: FileSignature,
-		variant: "secondary" as const,
-		color: "text-red-600",
-		bgColor: "bg-red-100",
-		borderColor: "border-red-200",
-	},
-	ContratoAssinado: {
-		label: "Envio de Signatarios",
-		icon: FilePen,
-		variant: "secondary" as const,
-		color: "text-red-600",
-		bgColor: "bg-red-100",
-		borderColor: "border-red-200",
+		color: "text-white",
+		bgColor: "bg-primary-400",
+		borderColor: "border-primary-300",
 	},
 };
 
@@ -257,7 +239,7 @@ const ProposalDetailsModal = ({
 					<div className="mt-6 flex justify-end gap-3">
 						{/* Botão de cancelar para o criador da proposta - sempre disponível */}
 						{isProposalCreator(proposal) &&
-							proposal.status.nome !== "Cancelado" &&
+							proposal.status.nome !== "Cancelada" &&
 							proposal.status.nome !== "Rejeitada" && (
 								<Button
 									variant="outline"
@@ -820,7 +802,7 @@ export const ProposalsTab = ({ productId }: ProposalsTabProps) => {
 									)}
 									{/* Botão de cancelar para o criador da proposta - sempre visível */}
 									{isProposalCreator(proposal) &&
-										proposal.status.nome !== "Cancelado" &&
+										proposal.status.nome !== "Cancelada" &&
 										proposal.status.nome !== "Rejeitada" && (
 											<div className="flex lg:justify-center">
 												<Button

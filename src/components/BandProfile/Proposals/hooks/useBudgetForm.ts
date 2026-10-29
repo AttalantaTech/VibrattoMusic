@@ -107,6 +107,12 @@ export const useBudgetForm = ({
 			idContratante: getContractorId(),
 			nomeContratante: budget?.nomeContratante || contractorName || "",
 			idTipoEvento: budget?.idTipoEvento || 0,
+			tipoSinalPagamento: budget?.tipoSinalPagamento || null,
+			// Only an amount in reais fills the custom field
+			valorSinalPagamento:
+				budget?.tipoSinalPagamento === "V"
+					? budget.valorSinalPagamento || 0
+					: 0,
 			descricao,
 			valor: 0,
 			local: budget?.local || "",
