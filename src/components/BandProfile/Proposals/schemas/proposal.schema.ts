@@ -3,6 +3,7 @@ import {
 	PAYMENT_CONDITION,
 	requiresDownPayment,
 } from "../utils/calculateSignal";
+import { isDeadlineAfterEvent } from "../utils/deadlines";
 
 const createProposalSchema = z
 	.object({
@@ -57,6 +58,25 @@ const createProposalSchema = z
 				path: ["dataVencimentoSinalPagamento"],
 				code: z.ZodIssueCode.custom,
 				message: "Data de vencimento do pagamento do Sinal é obrigatória",
+			});
+		}
+
+		if (isDeadlineAfterEvent(data.dataVencimentoAceite, data.dataEvento)) {
+			context.addIssue({
+				path: ["dataVencimentoAceite"],
+				code: z.ZodIssueCode.custom,
+				message: "O prazo para aceitar termina depois da data do evento",
+			});
+		}
+
+		if (
+			requiresDownPayment(data.idCondicoesPagamento) &&
+			isDeadlineAfterEvent(data.dataVencimentoSinalPagamento, data.dataEvento)
+		) {
+			context.addIssue({
+				path: ["dataVencimentoSinalPagamento"],
+				code: z.ZodIssueCode.custom,
+				message: "O prazo do sinal termina depois da data do evento",
 			});
 		}
 

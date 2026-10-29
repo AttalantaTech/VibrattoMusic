@@ -11,7 +11,7 @@ import type {
 import { useCreateProposal } from "@/hooks/useProposals";
 import { ensureHHMMSS, toBR } from "@/utils";
 import type { CreateProposalForm } from "../schemas/proposal.schema";
-import { addDays, format, isBefore } from "date-fns";
+import { format } from "date-fns";
 import { showApiError } from "@/utils/showApiError";
 import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
@@ -22,6 +22,7 @@ import {
 } from "@/features/message/utils/resolveStatusSender";
 import { formatDate } from "@/utils/validation";
 import { calculateSignal, requiresDownPayment } from "../utils/calculateSignal";
+import { deadlineDate } from "../utils/deadlines";
 
 interface UseProposalSubmitProps {
 	setShowProfileIncompleteModal: (value: boolean) => void;
@@ -167,28 +168,14 @@ export const useProposalSubmit = ({
 		}
 
 		const eventDate = toBR(finalFormData.dataEvento) || "";
-		const todayDate = toBR(new Date());
-
-		const isBeforeDate = isBefore(eventDate, todayDate);
-
-		const dataVencimentoAceite = format(
-			addDays(
-				isBeforeDate ? todayDate : eventDate,
-				finalFormData.dataVencimentoAceite
-			),
-			"yyyy-MM-dd"
+		const dataVencimentoAceite = deadlineDate(
+			finalFormData.dataVencimentoAceite
 		);
 		// No down payment ("À vista no dia do evento") means no due date
 		const dataVencimentoSinalPagamento = requiresDownPayment(
 			finalFormData.idCondicoesPagamento
 		)
-			? format(
-					addDays(
-						isBeforeDate ? todayDate : eventDate,
-						finalFormData.dataVencimentoSinalPagamento
-					),
-					"yyyy-MM-dd"
-				)
+			? deadlineDate(finalFormData.dataVencimentoSinalPagamento)
 			: null;
 
 		const { tipoSinalPagamento, valorSinalPagamento } = calculateSignal({
