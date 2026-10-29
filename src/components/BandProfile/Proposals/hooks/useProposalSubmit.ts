@@ -28,6 +28,8 @@ interface UseProposalSubmitProps {
 	setShowProfileIncompleteModal: (value: boolean) => void;
 	handleClose: () => void;
 	proposal?: ProposalResponse | null;
+	// Rejected proposal this one answers: same contractor, new proposal
+	counterProposalOf?: ProposalResponse | null;
 	contractorId?: number;
 	contractorProductId?: number | null;
 	userProductId?: number;
@@ -84,6 +86,7 @@ const getUserIdFromToken = (): number | null => {
 export const useProposalSubmit = ({
 	setShowProfileIncompleteModal,
 	proposal,
+	counterProposalOf,
 	contractorId,
 	contractorProductId,
 	userProductId,
@@ -96,6 +99,10 @@ export const useProposalSubmit = ({
 	const { isProfileComplete, refetch: refetchProfile } = useProfileStatus();
 	const createProposalMutation = useCreateProposal();
 	const { sendStatusMessage } = useSendStatusMessage();
+
+	// Edited proposal or, for a counter-proposal, the rejected one: either way
+	// it gives the parties and the conversation
+	const baseProposal = proposal ?? counterProposalOf ?? null;
 
 	const onSubmit = async (proposalFormData: CreateProposalForm) => {
 		// Refresh profile data to ensure we have the latest information
@@ -118,7 +125,7 @@ export const useProposalSubmit = ({
 		// Try multiple sources for contractor ID
 		const contractorIdToUse =
 			contractorId ||
-			proposal?.contratante.id ||
+			baseProposal?.contratante.id ||
 			proposalFormData.idContratante ||
 			user?.id ||
 			getUserIdFromToken();
@@ -142,8 +149,8 @@ export const useProposalSubmit = ({
 			return;
 		}
 
-		const parties: ProposalParties = proposal
-			? proposalParties(proposal)
+		const parties: ProposalParties = baseProposal
+			? proposalParties(baseProposal)
 			: {
 					produtoMusicalId: userProductId,
 					contratanteId: finalFormData.idContratante,
@@ -152,9 +159,9 @@ export const useProposalSubmit = ({
 
 		let conversation: Conversation | undefined | null = null;
 
-		if (proposal) {
+		if (baseProposal) {
 			const conversations = await messagingService.getConversations({
-				IdProdutoMusical: proposal.produtoMusical.id,
+				IdProdutoMusical: baseProposal.produtoMusical.id,
 			});
 
 			conversation =
@@ -214,6 +221,7 @@ export const useProposalSubmit = ({
 				finalFormData.estruturaPalcoSomIluminacaoInclusa
 			),
 			// geradorIncluso: Boolean(finalFormData.geradorIncluso),
+			idPropostaGerouContraProposta: counterProposalOf?.id ?? null,
 		};
 
 		try {
@@ -255,6 +263,7 @@ export const useProposalSubmit = ({
 					startTime: hasDefineEventTime ? data.horaInicio : null,
 					duration: hasDefineEventTime && data.duracao ? data.duracao : null,
 					location: data.local,
+					counterProposal: !!counterProposalOf,
 				},
 
 				errorMessage: "Erro ao enviar solicitação orçamento",
