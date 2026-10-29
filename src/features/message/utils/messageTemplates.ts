@@ -81,6 +81,9 @@ const variants: Record<
 	},
 };
 
+// Also identifies budget cards sent before they had their own link
+export const BUDGET_REQUEST_TITLE = "Nova solicitação de orçamento";
+
 type Row = { icon: string; label: string; value: string | null | undefined };
 
 const renderRow = ({ icon, label, value }: Row) =>
@@ -138,7 +141,7 @@ const statusTemplates: { [K in StatusMessageType]: Template<K> } = {
 	budgetRequested: (c) =>
 		renderCard({
 			variant: "info",
-			title: "🎵 Nova solicitação de orçamento",
+			title: `🎵 ${BUDGET_REQUEST_TITLE}`,
 			subtitle: `${greeting(c.recipientName)}, que boa notícia! Você recebeu uma solicitação de orçamento.`,
 			rows: [
 				{ icon: "🎤", label: "Tipo de evento", value: c.eventTypeLabel || "-" },
@@ -229,6 +232,11 @@ export const entityLinks = {
 	proposalPublic: (identificadorUnico: string): MessageLink => ({
 		label: "Ver proposta",
 		url: appUrl(`proposta/${identificadorUnico}`),
+	}),
+	// Opens the conversation's budget requests (the id is the budget's)
+	budgetRequest: (id: number | string): MessageLink => ({
+		label: "Ver solicitação",
+		url: appUrl(`band/me?tab=messages&orcamento=${id}`),
 	}),
 	contractTab: (id: number | string): MessageLink => ({
 		label: "Ver contrato",

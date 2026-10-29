@@ -15,6 +15,7 @@ import type { ProposalResponse } from "@/api/types";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
+import { useProposalFromLink } from "@/components/BandProfile/Proposals/hooks/useProposalFromLink";
 import {
 	proposalStatusFilters,
 	proposalStatusLabel,
@@ -88,12 +89,14 @@ export const MyHiresTab = () => {
 				status: "aceito",
 			});
 
-			if (!proposalDetails || !conversation?.id) return;
+			// The conversations query only reads the cache: when it's empty the
+			// message used to be skipped; chat/obter finds the conversation
+			if (!proposalDetails) return;
 
 			sendStatusMessage({
 				type: "proposalAccepted",
 				...resolveStatusSender(proposalParties(proposalDetails), "contratante"),
-				conversationId: conversation.id,
+				conversationId: conversation?.id,
 				produtoMusicalName: proposalDetails.produtoMusical.nome,
 				link: entityLinks.proposalTab(proposalDetails.id),
 				errorMessage: "Erro ao enviar solicitação orçamento",
@@ -152,6 +155,17 @@ export const MyHiresTab = () => {
 		},
 		[filteredProposals?.data]
 	);
+
+	const handleOpenLinkedProposal = useCallback((proposal: ProposalResponse) => {
+		setProposalDetails(proposal);
+		setIsProposalDetailsModalOpen(true);
+	}, []);
+
+	useProposalFromLink({
+		tab: "hires",
+		proposals: filteredProposals?.data,
+		onOpen: handleOpenLinkedProposal,
+	});
 
 	const tableData: EventsTableHiresData =
 		useMemo(
