@@ -10,7 +10,10 @@ import { useAuthStore } from "@/store/authStore";
 import { calculateDuration, secondsToTime, toBR } from "@/utils";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useUser } from "@/hooks/useUser";
-import { handleStandardProposalDescription } from "../utils/handleStandardProposalDescription";
+import {
+	handleStandardProposalDescription,
+	proposalLegalParty,
+} from "../utils/handleStandardProposalDescription";
 import { deadlineDays } from "../utils/deadlines";
 
 interface ProposalFormProps {
@@ -117,16 +120,7 @@ export const useProposalForm = ({
 
 		return handleStandardProposalDescription({
 			category: String(activeProduct.categoria.nome),
-			document: String(
-				activeProduct.usaCnpj
-					? activeProduct.cnpj || "-"
-					: userData?.cpfResponsavelLegal || "-"
-			),
-			legalName: String(
-				activeProduct.usaCnpj
-					? activeProduct.razaoSocial || "-"
-					: userData?.nomeResponsavelLegal || "-"
-			),
+			...proposalLegalParty({ product: activeProduct, user: userData }),
 			artisticName: activeProduct.nome,
 		});
 	}, [activeProduct, userData]);
