@@ -71,6 +71,7 @@ import {
 } from "@/components/BandProfile/Proposals/components/ProposalStatusCard/types";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
 import { ShareLink } from "@/components/ui/ShareLink/ShareLink";
+import { proposalTitle } from "@/components/BandProfile/Proposals/utils/proposalTitle";
 
 export const SalesTab = () => {
 	const navigate = useNavigate();
@@ -191,7 +192,13 @@ export const SalesTab = () => {
 					return {
 						event: {
 							id: event.identificadorUnico,
-							title: event.descricao,
+							// The other party (the client) over "Casamento · 20/12/2026"; it
+							// was the description, the same standard text for every proposal
+							title:
+								event.contratante.nome ||
+								event.nomeContratante ||
+								proposalTitle(event),
+							subtitle: proposalTitle(event),
 							date: event.dataCriacao,
 						},
 						status: event.status.nome,

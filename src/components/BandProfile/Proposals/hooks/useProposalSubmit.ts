@@ -38,6 +38,8 @@ interface UseProposalSubmitProps {
 	eventTypes: Array<FilterOption>;
 	paymentMethods: Array<FilterOption>;
 	paymentConditions: Array<FilterOption>;
+	/** Fixed text shown above the description; goes in the chat card */
+	standardDescription: string;
 }
 
 // Helper function to extract user ID from JWT token
@@ -94,6 +96,7 @@ export const useProposalSubmit = ({
 	handleClose,
 	hasDefineEventTime,
 	eventTypes,
+	standardDescription,
 }: UseProposalSubmitProps) => {
 	const { user } = useAuthStore();
 	const { isProfileComplete, refetch: refetchProfile } = useProfileStatus();
@@ -199,7 +202,8 @@ export const useProposalSubmit = ({
 			),
 			idProdutoMusical: Number(userProductId),
 			idTipoEvento: Number(finalFormData.idTipoEvento),
-			descricao: finalFormData.descricao || "",
+			// Only the complement: the PDF prints the standard text on its own
+			descricao: finalFormData.descricao?.trim() || "",
 			valor: Number(finalFormData.valor),
 			local: finalFormData.local,
 			dataEvento: format(eventDate, "yyyy-MM-dd"),
@@ -258,7 +262,8 @@ export const useProposalSubmit = ({
 					: undefined,
 				payload: {
 					eventTypeLabel,
-					description: data.descricao,
+					description: standardDescription,
+					complement: data.descricao,
 					date: formatDate(data.dataEvento),
 					startTime: hasDefineEventTime ? data.horaInicio : null,
 					duration: hasDefineEventTime && data.duracao ? data.duracao : null,

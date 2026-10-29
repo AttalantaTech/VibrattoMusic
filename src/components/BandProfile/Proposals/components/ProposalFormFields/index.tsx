@@ -3,6 +3,7 @@ import {
 	CalendarIcon,
 	FileTextIcon,
 	CheckCircleIcon,
+	Lock,
 } from "lucide-react";
 import {
 	handleCurrencyFormatting,
@@ -52,6 +53,8 @@ interface ProposalFormFieldsProps {
 	paymentMethods: Array<FilterOption>;
 	paymentConditions: Array<FilterOption>;
 	eventTypes: Array<FilterOption>;
+	/** Fixed text above the description; only the complement is editable */
+	standardDescription: string;
 }
 
 export function ProposalFormFields({
@@ -67,6 +70,7 @@ export function ProposalFormFields({
 	setSelectedPaymentMethods,
 	paymentConditions,
 	eventTypes,
+	standardDescription,
 }: ProposalFormFieldsProps) {
 	const {
 		control,
@@ -156,12 +160,26 @@ export function ProposalFormFields({
 						render={({ field }) => (
 							<>
 								<Label htmlFor="description">Descrição da Proposta</Label>
-								<Textarea
-									id="description"
-									{...field}
-									placeholder="Descreva detalhes da apresentação, repertório, equipamentos..."
-									rows={4}
-								/>
+								{/* One box: the standard text, fixed (the PDF prints it
+								    on its own), and below it the complement, which is
+								    what descricao saves */}
+								<div className="overflow-hidden rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+									<div className="flex gap-2 border-b border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
+										<Lock
+											className="mt-0.5 h-4 w-4 shrink-0 text-gray-400"
+											aria-label="Texto padrão, não editável"
+										/>
+										<p>{standardDescription}</p>
+									</div>
+									<Textarea
+										id="description"
+										{...field}
+										value={field.value ?? ""}
+										placeholder="Adicione informações complementares (opcional): repertório, equipamentos, detalhes da apresentação..."
+										rows={3}
+										className="rounded-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+									/>
+								</div>
 							</>
 						)}
 					/>

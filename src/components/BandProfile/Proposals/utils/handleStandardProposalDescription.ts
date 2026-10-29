@@ -53,3 +53,19 @@ export const proposalLegalParty = ({
 		document: (isCPF ? user?.cpfOuCnpj : user?.cpfResponsavelLegal) || "-",
 	};
 };
+
+const STANDARD_TEXT =
+	/^Conforme solicitação, segue proposta orçamentária[\s\S]*?inscrita no CPF\/CNPJ[ \t]*[\d./-]*/;
+
+/**
+ * The part of `descricao` the professional typed. The standard text is no
+ * longer saved (the PDF prints it on its own), but older proposals have it
+ * at the start of `descricao`, sometimes followed by extra text.
+ */
+export const descriptionComplement = (descricao?: string | null): string =>
+	(descricao ?? "")
+		.trim()
+		.replace(STANDARD_TEXT, "")
+		// What followed the standard text started with its final punctuation
+		.replace(/^[\s.,;:-]+/, "")
+		.trim();
