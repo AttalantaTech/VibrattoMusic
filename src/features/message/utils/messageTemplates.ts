@@ -173,8 +173,8 @@ const statusTemplates: { [K in StatusMessageType]: Template<K> } = {
 	proposalPaidSign: (c) =>
 		renderCard({
 			variant: "success",
-			title: "🎉 Sinal de proposta marcado como pago!",
-			subtitle: `${greeting(c.recipientName)},o contratado já confirmou o pagamento do sinal de proposta. O contrato agora precisa ser assinado.`,
+			title: "🎉 Pagamento do sinal confirmado!",
+			subtitle: `${greeting(c.recipientName)}, o contratado confirmou o recebimento do sinal. A contratação está concluída.`,
 			link: c.link,
 		}),
 

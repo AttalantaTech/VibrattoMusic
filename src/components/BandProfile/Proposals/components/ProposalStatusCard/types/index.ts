@@ -1,4 +1,5 @@
 import type { LucideProps } from "lucide-react";
+import { splitOnUppercase } from "@/utils/labels";
 import {
 	Award,
 	Clock,
@@ -76,7 +77,7 @@ export const proposalStatusCardConfigDict: ProposalStatusCardConfigDictType = {
 		borderColor: "border-orange-200",
 	},
 	Substituida: {
-		label: "Substituida",
+		label: "Substituída",
 		icon: PenTool,
 		variant: "secondary" as const,
 		color: "text-yellow-600",
@@ -92,3 +93,19 @@ export const proposalStatusCardConfigDict: ProposalStatusCardConfigDictType = {
 		borderColor: "border-primary-300",
 	},
 };
+
+// Statuses offered in the Vendas and Contratações filters, in the flow's order
+export const proposalStatusFilters = [
+	"Todos os status",
+	"Pendente",
+	"Aceita",
+	"AguardandoPagamento",
+	"ContratacaoConcluida",
+	"Rejeitada",
+	"Cancelada",
+	"Vencida",
+	"Substituida",
+];
+
+export const proposalStatusLabel = (status: string): string =>
+	proposalStatusCardConfigDict[status]?.label ?? splitOnUppercase(status);

@@ -134,7 +134,11 @@ export const useProposalForm = ({
 			nomeContratante: proposal?.contratante.nome || contractorName || "",
 			idTipoEvento: proposal?.tipoEvento.id || 0,
 			tipoSinalPagamento: proposal?.tipoSinalPagamento || null,
-			valorSinalPagamento: proposal?.valorSinalPagamento || 0,
+			// Only an amount in reais fills the custom field
+			valorSinalPagamento:
+				proposal?.tipoSinalPagamento === "V"
+					? proposal.valorSinalPagamento || 0
+					: 0,
 			descricao: proposal?.descricao || descricao,
 			valor: proposal?.valor || 0,
 			local: proposal?.local || "",

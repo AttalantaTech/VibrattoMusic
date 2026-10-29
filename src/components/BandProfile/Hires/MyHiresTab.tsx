@@ -8,7 +8,6 @@ import {
 import type { EventsTableHiresData } from "../../EventsTable/types";
 import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
 import { Button } from "@/components/ui/Button/Button";
-import { splitOnUppercase } from "@/utils/labels";
 import { EventsTable } from "../../EventsTable";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalDetailsModal } from "../Proposals/components/ProposalDetailsModal";
@@ -16,6 +15,10 @@ import type { ProposalResponse } from "@/api/types";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
+import {
+	proposalStatusFilters,
+	proposalStatusLabel,
+} from "@/components/BandProfile/Proposals/components/ProposalStatusCard/types";
 import { ProposalRejectionModal } from "../Proposals/components/ProposalRejectionModal";
 import { showApiError } from "@/utils/showApiError";
 import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
@@ -26,19 +29,6 @@ import {
 } from "@/features/message/utils/resolveStatusSender";
 import { useConversations } from "@/hooks/useMessaging";
 import type { Conversation } from "@/api/services/messages/types";
-
-const possibleStatusFilters = [
-	"Todos os status",
-	"Pendente",
-	"Aceita",
-	"Rejeitada",
-	"SinalPago",
-	"EnvioDocumento",
-	"EnvioSignatarios",
-	"EnvioAssinatura",
-	"AguardandoAssinatura",
-	"ContratoAssinado",
-];
 
 export const MyHiresTab = () => {
 	const navigate = useNavigate();
@@ -223,12 +213,12 @@ export const MyHiresTab = () => {
 									variant="outline"
 									className="w-full sm:w-auto min-w-[180px] justify-between whitespace-nowrap"
 								>
-									{splitOnUppercase(statusFilter)}
+									{proposalStatusLabel(statusFilter)}
 									<ChevronDown className="h-4 w-4 ml-2" />
 								</Button>
 							}
 						>
-							{possibleStatusFilters.map((item) => (
+							{proposalStatusFilters.map((item) => (
 								<div className="flex w-full" key={item}>
 									<button
 										className="flex justify-between items-center rounded-md px-4 py-2 text-left hover:bg-gray-100 w-full"
@@ -236,7 +226,7 @@ export const MyHiresTab = () => {
 											setStatusFilter(item);
 										}}
 									>
-										{splitOnUppercase(item)}
+										{proposalStatusLabel(item)}
 										{item === statusFilter && <Check color="gray" size={16} />}
 									</button>
 								</div>

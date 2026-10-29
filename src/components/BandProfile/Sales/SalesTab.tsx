@@ -58,7 +58,6 @@ import {
 import { EmptyState, ErrorState, TableSkeleton } from "../../ui/LoadingStates";
 
 import { useAuthStore } from "../../../store/authStore";
-import { splitOnUppercase } from "../../../utils/labels";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import type { ProposalResponse } from "../../../api/types";
@@ -66,6 +65,10 @@ import { ProposalDetailsModal } from "../Proposals/components/ProposalDetailsMod
 import { SendProposalModal } from "../Proposals/components/SendProposalModal";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
+import {
+	proposalStatusFilters,
+	proposalStatusLabel,
+} from "@/components/BandProfile/Proposals/components/ProposalStatusCard/types";
 import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
 import {
@@ -76,19 +79,6 @@ import { showApiError } from "@/utils/showApiError";
 import { useConversations } from "@/hooks/useMessaging";
 import { ShareLink } from "@/components/ui/ShareLink/ShareLink";
 import type { Conversation } from "@/api/services/messages/types";
-
-const possibleStatusFilters = [
-	"Todos os status",
-	"Pendente",
-	"Aceita",
-	"Rejeitada",
-	"SinalPago",
-	"EnvioDocumento",
-	"EnvioSignatarios",
-	"EnvioAssinatura",
-	"AguardandoAssinatura",
-	"ContratoAssinado",
-];
 
 export const SalesTab = () => {
 	const navigate = useNavigate();
@@ -320,12 +310,12 @@ export const SalesTab = () => {
 								variant="outline"
 								className="w-full sm:w-auto min-w-[180px] justify-between whitespace-nowrap"
 							>
-								{splitOnUppercase(statusFilter)}
+								{proposalStatusLabel(statusFilter)}
 								<ChevronDown className="h-4 w-4 ml-2" />
 							</Button>
 						}
 					>
-						{possibleStatusFilters.map((item) => (
+						{proposalStatusFilters.map((item) => (
 							<div className="flex w-full" key={item}>
 								<button
 									className="flex justify-between items-center rounded-md px-4 py-2 text-left hover:bg-gray-100 w-full"
@@ -333,7 +323,7 @@ export const SalesTab = () => {
 										setStatusFilter(item);
 									}}
 								>
-									{splitOnUppercase(item)}
+									{proposalStatusLabel(item)}
 									{item === statusFilter && <Check color="gray" size={16} />}
 								</button>
 							</div>
