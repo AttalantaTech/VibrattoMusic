@@ -17,6 +17,7 @@ import { EpsFilePreview } from "@/components/cards/EpsFilePreview/EpsFilePreview
 import { CheckCircle2, Disc, Loader2, MapPin, Verified } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
+import { SafeHtml } from "@/components/ui/SafeHtml/SafeHtml";
 
 interface ProfileDetailsProps {
 	musicalProduct: MusicalProduct;
@@ -195,9 +196,9 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 				} else if (musicalProduct?.riderTexto) {
 					return (
 						<div className="flex justify-center items-center p-4 max-w-screen-md min-h-[480px] bg-gray-100 w-full">
-							<div
-								dangerouslySetInnerHTML={{ __html: musicalProduct.riderTexto }}
-							/>
+							{/* Written by the profile owner and shown to every visitor:
+							    unfiltered, it could run code in their browser */}
+							<SafeHtml html={musicalProduct.riderTexto} />
 						</div>
 					);
 				} else {
@@ -232,11 +233,7 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 				} else if (musicalProduct?.infraCamarimTexto) {
 					return (
 						<div className="flex justify-center items-center p-4 max-w-screen-md min-h-[480px] bg-gray-100 w-full">
-							<div
-								dangerouslySetInnerHTML={{
-									__html: musicalProduct.infraCamarimTexto,
-								}}
-							/>
+							<SafeHtml html={musicalProduct.infraCamarimTexto} />
 						</div>
 					);
 				} else {
