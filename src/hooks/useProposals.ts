@@ -10,6 +10,7 @@ import type {
 import { toast } from "sonner";
 import { useAuthStore } from "../store/authStore";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { retryUnlessNotFound } from "@/api/queryRetry";
 
 export interface UseProductProposalsParameters {
 	productId: number | null;
@@ -189,6 +190,7 @@ export const useProposalById = (identificadorUnico: string) => {
 		queryKey: PROPOSAL_QUERY_KEYS.byId(identificadorUnico),
 		queryFn: () => proposalService.getProposalById(identificadorUnico),
 		enabled: !!identificadorUnico,
+		retry: retryUnlessNotFound(3),
 	});
 };
 
