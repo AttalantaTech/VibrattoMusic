@@ -12,6 +12,7 @@ import { useFilterLookup } from "@/features/MusicalProfile/hooks/useFilterLookup
 import { useDetailsForm } from "@/features/MusicalProfile/hooks/useDetailsForm";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { musicalProductMapper } from "@/features/MusicalProfile/utils/musicalProductMapper";
+import { BIO_MAX_LENGTH } from "@/features/MusicalProfile/schemas/detailsSchema";
 
 interface DetailsSectionProps {
 	onActiveSection: Dispatch<SetStateAction<string>>;
@@ -208,10 +209,11 @@ export default function DetailsSection({
 				/>
 				<TextAreaField
 					showCharCount
-					helperText="Conte brevemente a trajetória da banda em até 300 caracteres."
+					maxLength={BIO_MAX_LENGTH}
 					label="Bio (release)"
+					labelTooltip="Nos conte sobre você, sua história na música e destaques como experiência, trabalhos e parcerias que possam ajudar na sua contratação."
 					name="bio"
-					placeholder="Digitar..."
+					placeholder="Nos conte sobre você, sua história na música e destaques…"
 					value={watch("descricao") || ""}
 					onChange={(event) => {
 						setValue("descricao", event.target.value);
