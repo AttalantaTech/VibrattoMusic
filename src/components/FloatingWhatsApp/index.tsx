@@ -3,16 +3,50 @@ import { FaWhatsapp } from "react-icons/fa";
 import { useRouterState, type AnyRouter } from "@tanstack/react-router";
 import { openSupportWhatsapp } from "@/utils/support";
 
+// Distance from the bottom-right corner: when the phone keyboard or the
+// address bar shrinks the screen, the button keeps its place relative to the
+// bottom instead of being pushed up for good
 type Position = {
-	top: number;
+	bottom: number;
 	right: number;
 };
 
-const WHATSAPP_STORAGE = "whatsapp-button-position";
+// v2: the old key stored `top`, which hid the button behind the header for
+// some users; they get the default spot back
+const WHATSAPP_STORAGE = "whatsapp-button-position-v2";
+const LEGACY_WHATSAPP_STORAGE = "whatsapp-button-position";
+
+const DRAG_THRESHOLD = 5;
+const BUTTON_HEIGHT = 48;
+const MARGIN = 16;
+// The fixed header (64px, z-50) covers anything above this line
+const HEADER_SPACE = 64 + 8;
+
+const readSavedPosition = (): Position | null => {
+	try {
+		localStorage.removeItem(LEGACY_WHATSAPP_STORAGE);
+		const saved = localStorage.getItem(WHATSAPP_STORAGE);
+		if (!saved) return null;
+		const parsed = JSON.parse(saved) as Partial<Position>;
+		return typeof parsed.bottom === "number" && typeof parsed.right === "number"
+			? { bottom: parsed.bottom, right: parsed.right }
+			: null;
+	} catch {
+		return null;
+	}
+};
 
 // Rendered outside RouterProvider (App.tsx), so it gets the router as a prop
 export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
-	const [position, setPosition] = useState<Position | null>(null);
+	const [position, setPosition] = useState<Position>(
+		() => readSavedPosition() ?? { bottom: MARGIN, right: MARGIN }
+	);
+	// Re-render on resize so the limits below follow the screen; the saved
+	// position itself only changes when the user drags the button
+	const [, setViewport] = useState({
+		width: window.innerWidth,
+		height: window.innerHeight,
+	});
 
 	// The chat already is a contact channel, and on phones the button sat
 	// right over its send button. "messages" is also the default tab
@@ -39,10 +73,17 @@ export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
 	const isCompact =
 		window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 640;
 
-	const DRAG_THRESHOLD = 5;
-	const BUTTON_HEIGHT = 48;
 	const BUTTON_WIDTH = isCompact ? 48 : 161;
-	const MARGIN = 16;
+
+	// Always on screen, between the header and the bottom (or the action bar).
+	// Dragging it up while scrolling used to park it behind the header, saved
+	const clampBottom = (bottom: number) =>
+		Math.max(
+			MARGIN + reservedBottom,
+			Math.min(bottom, window.innerHeight - BUTTON_HEIGHT - HEADER_SPACE)
+		);
+	const clampRight = (right: number) =>
+		Math.max(0, Math.min(right, window.innerWidth - BUTTON_WIDTH));
 
 	const isPointerDown = useRef(false);
 	const hasMoved = useRef(false);
@@ -50,57 +91,9 @@ export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
 	const startPosition = useRef({ x: 0, y: 0 });
 	const offset = useRef({ x: 0, y: 0 });
 
-	// Initial Position
-	useEffect(() => {
-		const saved = localStorage.getItem(WHATSAPP_STORAGE);
-
-		if (saved) {
-			try {
-				const storageData = localStorage.getItem(WHATSAPP_STORAGE);
-				const parsed: Position | null = storageData
-					? (JSON.parse(storageData) as Position)
-					: null;
-
-				if (!parsed) return;
-
-				setPosition({
-					top: Math.max(
-						0,
-						Math.min(parsed.top, window.innerHeight - BUTTON_HEIGHT)
-					),
-					right: Math.max(
-						0,
-						Math.min(parsed.right, window.innerWidth - BUTTON_WIDTH)
-					),
-				});
-
-				return;
-			} catch {
-				console.error("Error Position");
-			}
-		}
-
-		setPosition({
-			top: window.innerHeight - BUTTON_HEIGHT - MARGIN,
-			right: MARGIN,
-		});
-	}, [BUTTON_HEIGHT, BUTTON_WIDTH]);
-
-	// Fix Position
 	useEffect(() => {
 		const handleResize = () => {
-			setPosition((current) => {
-				if (!current) return current;
-
-				const newPosition = {
-					top: Math.min(current.top, window.innerHeight - BUTTON_HEIGHT),
-					right: Math.min(current.right, window.innerWidth - BUTTON_WIDTH),
-				};
-
-				localStorage.setItem(WHATSAPP_STORAGE, JSON.stringify(newPosition));
-
-				return newPosition;
-			});
+			setViewport({ width: window.innerWidth, height: window.innerHeight });
 		};
 
 		window.addEventListener("resize", handleResize);
@@ -108,11 +101,9 @@ export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
 		return () => {
 			window.removeEventListener("resize", handleResize);
 		};
-	}, [BUTTON_HEIGHT, BUTTON_WIDTH]);
+	}, []);
 
 	const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
-		if (!position) return;
-
 		isPointerDown.current = true;
 		hasMoved.current = false;
 
@@ -145,22 +136,12 @@ export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
 
 		hasMoved.current = true;
 
-		const top = Math.min(
-			Math.max(0, event.clientY - offset.current.y),
-			window.innerHeight - BUTTON_HEIGHT
-		);
-
-		const right = Math.min(
-			Math.max(
-				0,
-				window.innerWidth - (event.clientX - offset.current.x) - BUTTON_WIDTH
-			),
-			window.innerWidth - BUTTON_WIDTH
-		);
+		const top = event.clientY - offset.current.y;
+		const left = event.clientX - offset.current.x;
 
 		setPosition({
-			top,
-			right,
+			bottom: clampBottom(window.innerHeight - top - BUTTON_HEIGHT),
+			right: clampRight(window.innerWidth - left - BUTTON_WIDTH),
 		});
 	};
 
@@ -174,13 +155,11 @@ export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
 		}
 
 		if (hasMoved.current) {
-			setPosition((current) => {
-				if (!current) return current;
-
-				localStorage.setItem(WHATSAPP_STORAGE, JSON.stringify(current));
-
-				return current;
-			});
+			try {
+				localStorage.setItem(WHATSAPP_STORAGE, JSON.stringify(position));
+			} catch {
+				// Private mode: the position just isn't remembered
+			}
 		}
 	};
 
@@ -190,7 +169,7 @@ export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
 		openSupportWhatsapp();
 	};
 
-	if (!position || (isCompact && isOnMessages)) {
+	if (isCompact && isOnMessages) {
 		return null;
 	}
 
@@ -224,14 +203,8 @@ export function FloatingWhatsApp({ router }: { router: AnyRouter }) {
         transition-transform
 			`}
 			style={{
-				top: `${Math.max(
-					0,
-					Math.min(
-						position.top,
-						window.innerHeight - BUTTON_HEIGHT - MARGIN - reservedBottom
-					)
-				)}px`,
-				right: `${position.right}px`,
+				bottom: `${clampBottom(position.bottom)}px`,
+				right: `${clampRight(position.right)}px`,
 				height: `${BUTTON_HEIGHT}px`,
 				width: isCompact ? `${BUTTON_WIDTH}px` : undefined,
 			}}
