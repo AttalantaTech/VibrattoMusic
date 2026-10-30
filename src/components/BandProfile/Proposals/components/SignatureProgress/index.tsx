@@ -16,6 +16,11 @@ const PREPARING_STEPS = new Set([
 	"EnvioAssinatura",
 ]);
 
+const EMAIL_NOT_FOUND_HELP =
+	"Se não encontrar o e-mail, procure também em Spam, Lixo Eletrônico ou Promoções. Se não chegar em alguns minutos, fale com o nosso suporte.";
+
+const D4SIGN_EMAIL_HELP = `Confira o e-mail da D4Sign para assinar. ${EMAIL_NOT_FOUND_HELP}`;
+
 // Day only: a bare date would shift a day back in UTC-3
 const formatDay = (date: string) =>
 	format(parseISO(date.slice(0, 10)), "dd/MM/yyyy");
@@ -30,7 +35,11 @@ export const SignatureProgress = ({
 	proposal,
 	isContractor,
 }: SignatureProgressProps) => {
-	if (proposal.status.nome !== "Aceita") return null;
+	const status = proposal.status.nome;
+	// Pending: the contract doesn't exist yet, but whoever is deciding should
+	// know the signature comes by e-mail once the proposal is accepted
+	const isPending = status === "Pendente";
+	if (status !== "Aceita" && !isPending) return null;
 
 	const contractor = {
 		role: "Contratante",
@@ -54,12 +63,18 @@ export const SignatureProgress = ({
 	const isPreparing = PREPARING_STEPS.has(proposal.etapaD4Sign?.nome ?? "");
 
 	let guidance: string;
-	if (isPreparing) {
+	if (isPending) {
+		// Nothing was sent yet, so it says where the e-mail will come from
+		guidance = `${
+			isContractor
+				? "Ao aceitar esta proposta, você receberá no e-mail cadastrado as orientações para a assinatura do contrato, enviadas pela D4Sign."
+				: "Quando o contratante aceitar esta proposta, as duas partes receberão no e-mail cadastrado as orientações para a assinatura do contrato, enviadas pela D4Sign."
+		} ${EMAIL_NOT_FOUND_HELP}`;
+	} else if (isPreparing) {
 		guidance =
 			"Preparando o contrato para assinatura. Em instantes cada parte recebe um e-mail da D4Sign com as instruções.";
 	} else if (!viewer.signed) {
-		guidance =
-			"Confira o e-mail da D4Sign para assinar. Se não encontrar, procure também em Spam, Lixo Eletrônico ou Promoções. Se não chegar em alguns minutos, fale com o nosso suporte.";
+		guidance = D4SIGN_EMAIL_HELP;
 	} else if (!other.signed) {
 		guidance = `Você já assinou. Falta a assinatura de ${other.name}.`;
 	} else {
@@ -74,45 +89,61 @@ export const SignatureProgress = ({
 				<div className="min-w-0 flex-1 text-sm text-primary-800">
 					<p className="mb-3 font-medium">Assinatura do contrato</p>
 
-					<ul className="mb-3 space-y-2">
-						{[contractor, contracted].map((party) => (
-							<li
-								key={party.role}
-								className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 rounded-md bg-white/70 px-3 py-2"
-							>
-								<span className="flex min-w-0 items-center gap-2">
-									{party.signed ? (
-										<CheckCircle2
-											className="h-4 w-4 shrink-0 text-green-600"
-											aria-label="Assinado"
-										/>
-									) : (
-										<Clock
-											className="h-4 w-4 shrink-0 text-amber-600"
-											aria-label="Aguardando"
-										/>
-									)}
-									<span className="truncate">
-										<span className="text-gray-500">{party.role} · </span>
-										<span className="font-medium text-gray-900">
-											{party.name}
+					{/* No contract while pending, so no one to list yet */}
+					{!isPending ? (
+						<ul className="mb-3 space-y-2">
+							{[contractor, contracted].map((party) => (
+								<li
+									key={party.role}
+									className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 rounded-md bg-white/70 px-3 py-2"
+								>
+									<span className="flex min-w-0 items-center gap-2">
+										{party.signed ? (
+											<CheckCircle2
+												className="h-4 w-4 shrink-0 text-green-600"
+												aria-label="Assinado"
+											/>
+										) : (
+											<Clock
+												className="h-4 w-4 shrink-0 text-amber-600"
+												aria-label="Aguardando"
+											/>
+										)}
+										<span className="truncate">
+											<span className="text-gray-500">{party.role} · </span>
+											<span className="font-medium text-gray-900">
+												{party.name}
+											</span>
 										</span>
 									</span>
-								</span>
-								<span
-									className={party.signed ? "text-green-700" : "text-amber-700"}
-								>
-									{party.signed
-										? party.date
-											? `assinado em ${formatDay(party.date)}`
-											: "assinado"
-										: "aguardando assinatura"}
-								</span>
-							</li>
-						))}
-					</ul>
+									<span
+										className={
+											party.signed ? "text-green-700" : "text-amber-700"
+										}
+									>
+										{party.signed
+											? party.date
+												? `assinado em ${formatDay(party.date)}`
+												: "assinado"
+											: "aguardando assinatura"}
+									</span>
+								</li>
+							))}
+						</ul>
+					) : null}
 
 					<p>{guidance}</p>
+
+					{/* Professional only: the hired side runs the signature and may
+					    do it before or after the down payment */}
+					{!isContractor ? (
+						<p className="mt-2 border-t border-primary-200 pt-2">
+							Como contratado, você é responsável por assinar o contrato.
+							{proposal.possuiSinalPagamento
+								? " A assinatura pode ser feita antes ou depois do pagamento do sinal, como preferir."
+								: ""}
+						</p>
+					) : null}
 				</div>
 			</div>
 		</div>

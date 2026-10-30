@@ -276,6 +276,14 @@ export const ContractSignaturePage = ({
 					) : null}
 				</div>
 
+				{/* What the user has to do now goes above the contract; below it (a
+				    long text) it was easy to miss */}
+				{/* Who has signed and who is missing, while the contract is signed */}
+				<SignatureProgress proposal={proposal} isContractor={!!isContractor} />
+
+				{/* Contractor only; shown until the down payment is confirmed */}
+				{isContractor ? <DownPaymentNotice proposal={proposal} /> : null}
+
 				{/* PDF Viewer Section */}
 				<div className="bg-white rounded-lg shadow-sm mb-6">
 					<div className="border-b border-gray-200 px-6 py-4">
@@ -331,12 +339,6 @@ export const ContractSignaturePage = ({
 						)}
 					</div>
 				</div>
-
-				{/* Who has signed and who is missing, while the contract is signed */}
-				<SignatureProgress proposal={proposal} isContractor={!!isContractor} />
-
-				{/* Contractor only; shown until the down payment is confirmed */}
-				{isContractor ? <DownPaymentNotice proposal={proposal} /> : null}
 
 				{/* Action Buttons */}
 				<div className="bg-white rounded-lg shadow-sm p-6">
