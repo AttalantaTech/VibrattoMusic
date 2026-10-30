@@ -928,6 +928,8 @@ export interface ProposalResponse {
 		id: number;
 		nome: string;
 	} | null;
+	/** Whether the proposal asks for a down payment (the back-end works it out) */
+	possuiSinalPagamento?: boolean;
 	tipoSinalPagamento: "V" | "P" | null;
 	valorSinalPagamento: number | null;
 	dataVencimentoSinalPagamento: string | null;
