@@ -22,10 +22,15 @@ import { MoreOptionsDropdownItem } from "@/components/ui/MoreOptionsDropdownItem
 import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
 import { BudgetListModal } from "@/components/BandProfile/Budgets/components/BudgetListModal";
 import { ChatProposalDialog } from "@/components/BandProfile/Proposals/components/ChatProposalDialog";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { BUDGET_REQUEST_TITLE } from "@/features/message/utils/messageTemplates";
+import {
+	buildReplyQuote,
+	replyExcerpt,
+	type ReplyTarget,
+} from "@/features/message/utils/replyQuote";
 
 export const Chat = () => {
 	const { user } = useAuthStore();
@@ -65,8 +70,47 @@ export const Chat = () => {
 		!!currentProductId &&
 		currentProductId === selectedConversation?.produtoMusicalId;
 
+	// Message being answered (the reply goes out with a quote of it)
+	const [replyTo, setReplyTo] = useState<ReplyTarget | null>(null);
+	const conversationId = selectedConversation?.id;
+	useEffect(() => {
+		setReplyTo(null);
+	}, [conversationId]);
+
+	const replyToMessage = (message: Message, author: string) => {
+		setReplyTo({
+			id: message.id,
+			author,
+			excerpt: replyExcerpt(message.conteudo),
+		});
+	};
+
+	// The quote on top of a reply jumps to the original and flashes it
+	const jumpToQuotedMessage = (quote: HTMLElement) => {
+		const original = document.querySelector<HTMLElement>(
+			`[data-message-id="${quote.dataset["replyTo"]}"]`
+		);
+		if (!original) {
+			toast.info("A mensagem original não está mais nesta conversa.");
+			return;
+		}
+		original.scrollIntoView({ behavior: "smooth", block: "center" });
+		original.classList.add("bg-primary-100");
+		window.setTimeout(() => {
+			original.classList.remove("bg-primary-100");
+		}, 1500);
+	};
+
 	const handleMessageLinkClick = (event: React.MouseEvent<HTMLDivElement>) => {
 		if (event.ctrlKey || event.metaKey || event.shiftKey) return;
+
+		const quote = (event.target as HTMLElement).closest<HTMLElement>(
+			"blockquote[data-reply-to]"
+		);
+		if (quote) {
+			jumpToQuotedMessage(quote);
+			return;
+		}
 
 		const anchor = (event.target as HTMLElement).closest("a");
 		if (!anchor) return;
@@ -197,22 +241,34 @@ export const Chat = () => {
 										userId: user?.id,
 										productId: activeProduct?.id,
 									});
+									const pairName = selectedConversation.pair.name || "Usuário";
+									const onReply = () => {
+										replyToMessage(
+											message,
+											isOwn ? message.nomeRemetente || "Você" : pairName
+										);
+									};
 
 									return (
 										<MessageLine
 											key={message.id}
 											message={message}
 											isOwn={isOwn}
+											onReply={onReply}
 										>
 											{isOwn ? (
-												<OwnMessageElement message={message} />
+												<OwnMessageElement
+													message={message}
+													onReply={onReply}
+												/>
 											) : (
 												<MessageElement
 													message={message}
-													userName={selectedConversation.pair.name || "Usuário"}
+													userName={pairName}
 													userProfileImageUrl={
 														selectedConversation.pair.profileImageUrl || null
 													}
+													onReply={onReply}
 												/>
 											)}
 										</MessageLine>
@@ -269,13 +325,17 @@ export const Chat = () => {
 
 							<ChatInput
 								value={messageInput}
-								onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
-									setMessageInput?.(event.target.value);
+								onChange={(html) => {
+									setMessageInput?.(html);
+								}}
+								replyTo={replyTo}
+								onCancelReply={() => {
+									setReplyTo(null);
 								}}
 								onSend={(content: string) => {
 									if (handleSendMessage) {
 										void handleSendMessage(
-											content,
+											replyTo ? buildReplyQuote(replyTo) + content : content,
 											activeProduct?.id ? 2 : 1,
 											activeProduct?.id ? activeProduct.id : null
 										);

@@ -13,6 +13,7 @@ import {
 import { formatMessageTime, getParticipantInitials } from "../../utils/Message";
 import { useChat } from "@/hooks/useChat";
 import { stripHtml } from "@/utils/stripHtml";
+import { withoutReplyQuote } from "@/features/message/utils/replyQuote";
 
 export const SideBar = () => {
 	const {
@@ -106,10 +107,13 @@ export const SideBar = () => {
 									{conversation.pair.name}
 								</h4>
 								<p className="text-sm text-gray-500 truncate">
+									{/* Always as plain text: short formatted messages showed
+									    their tags ("<b>Oi</b>"). A reply shows only the answer,
+									    not the quote of the message it answers */}
 									{conversation.ultimaMensagem
-										? conversation.ultimaMensagem.conteudo.length > 50
-											? stripHtml(conversation.ultimaMensagem.conteudo)
-											: conversation.ultimaMensagem.conteudo
+										? stripHtml(
+												withoutReplyQuote(conversation.ultimaMensagem.conteudo)
+											)
 										: "Nenhuma mensagem ainda"}
 								</p>
 								{conversation.ultimaMensagem?.dataEnvio && (

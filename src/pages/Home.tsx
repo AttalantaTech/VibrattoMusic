@@ -3,7 +3,6 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
 	ArrowLeft,
 	ArrowRight,
-	Facebook,
 	SlidersHorizontal,
 	Instagram,
 	MapPin,
@@ -21,6 +20,7 @@ import { PromoCard } from "../components/cards/PromoCard/PromoCard";
 import { TestimonialCard } from "../components/cards/TestimonialCard/TestimonialCard";
 import { FAQAccordion } from "../components/cards/FAQAccordion/FAQAccordion";
 import { VibrattoLogo } from "../components/VibrattoLogo/VibrattoLogo";
+import { BrowseLinks } from "@/components/BrowseLinks";
 import { useAuthStore } from "../store/authStore";
 // Removed imports that are now handled by ArtistCardWithFavorites
 import { useHomePageImages } from "../hooks/useFilters";
@@ -82,15 +82,6 @@ export const Home = (): FunctionComponent => {
 	const { isAuthenticated } = useAuthStore();
 	// Removed favorites hooks - now handled by ArtistCardWithFavorites
 	const navigate = useNavigate();
-
-	// Helper function to chunk array into groups
-	const chunkArray = <T,>(array: Array<T>, size: number): Array<Array<T>> => {
-		const chunks: Array<Array<T>> = [];
-		for (let index = 0; index < array.length; index += size) {
-			chunks.push(array.slice(index, index + size));
-		}
-		return chunks;
-	};
 
 	const [currentTestimonyIndex, setCurrentTestimonyIndex] = useState(0);
 	const [searchInput, setSearchInput] = useState("");
@@ -509,214 +500,25 @@ export const Home = (): FunctionComponent => {
 							))}
 						</div>
 					</div>
-					{/* Categories */}
-					<div className="w-full flex flex-col justify-center items-center py-8 gap-7 bg-primary-50/60 px-4">
-						<h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center">
-							Categorias
-						</h1>
-						<div className="w-full flex flex-col items-center gap-4">
-							{/* Mobile: 2 columns */}
-							<div className="grid grid-cols-2 gap-3 w-full sm:hidden">
-								{categoryOptions.map((category) => (
-									<Link
-										key={category.value}
-										to="/search"
-										search={{ categorias: [category.value] }}
-										className="font-medium text-sm text-gray-900 hover:text-primary-600 transition-colors text-center p-3 
-										rounded-lg hover:bg-white/50 border border-gray-200 hover:border-primary-500"
-									>
-										{category.label}
-									</Link>
-								))}
-							</div>
-
-							{/* Tablet: 3 columns per row */}
-							<div className="hidden sm:flex md:hidden flex-col items-center gap-4 w-full">
-								{chunkArray(categoryOptions, 3).map((row, rowIndex) => (
-									<div
-										key={rowIndex}
-										className="flex justify-center gap-4 w-full"
-									>
-										{row.map((category) => (
-											<Link
-												key={category.value}
-												to="/search"
-												search={{ categorias: [category.value.toString()] }}
-												className="font-medium text-base text-gray-900 hover:text-primary-600 transition-colors text-center p-3 rounded-lg hover:bg-primary-50 w-fit min-w-0 flex-1 max-w-xs"
-											>
-												{category.label}
-											</Link>
-										))}
-									</div>
-								))}
-							</div>
-
-							{/* Desktop: 5 columns per row */}
-							<div className="hidden md:flex flex-col items-center gap-4 w-full">
-								{chunkArray(categoryOptions, 5).map((row, rowIndex) => (
-									<div
-										key={rowIndex}
-										className="flex justify-center gap-4 lg:gap-6 w-full"
-									>
-										{row.map((category) => (
-											<Link
-												key={category.value}
-												to="/search"
-												search={{ categorias: [category.value.toString()] }}
-												className="font-medium text-base lg:text-lg text-primary-800 transition-colors text-center p-3 rounded-lg hover:bg-primary-50 hover:border-primary-300 w-fit"
-											>
-												{category.label}
-											</Link>
-										))}
-									</div>
-								))}
-							</div>
-						</div>
-						<Link
-							to="/search"
-							className="text-primary-500 text-lg font-medium hover:underline flex gap-3 align-center justify-center w-full"
-						>
-							Ver Todos
-							<ArrowRight className="rounded-full border-2 border-solid border-current h-[26px] w-[26px]" />
-						</Link>
-					</div>{" "}
-					{/* Navigate By */}
-					<div className="w-full flex flex-col justify-center items-center gap-7 py-8 px-4 max-w-9xl mx-auto">
-						<h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center">
-							Navegue por:
-						</h1>
-						<div className="w-full flex flex-col items-center gap-4">
-							{/* Mobile: 2 columns */}
-							<div className="grid grid-cols-2 gap-3 w-full sm:hidden">
-								{eventTypeOptions.map((eventType) => (
-									<Link
-										key={eventType.value}
-										to="/search"
-										search={{ tipos: [eventType.value.toString()] }}
-										className="flex flex-col items-center gap-2 text-primary-700 hover:text-primary-700 transition-colors p-3 rounded-lg hover:bg-primary-50 text-center border border-primary-200 bg-primary-50/30"
-									>
-										<span className="text-sm font-medium leading-tight">
-											{eventType.label}
-										</span>
-									</Link>
-								))}
-							</div>
-
-							{/* Tablet: 3 columns per row */}
-							<div className="hidden sm:flex md:hidden flex-col items-center gap-4 w-full">
-								{chunkArray(eventTypeOptions, 3).map((row, rowIndex) => (
-									<div
-										key={rowIndex}
-										className="flex justify-center gap-4 w-full"
-									>
-										{row.map((eventType) => (
-											<Link
-												key={eventType.value}
-												to="/search"
-												search={{ tipos: [eventType.value.toString()] }}
-												className="flex flex-col items-center gap-2 text-primary-700 hover:text-primary-700 transition-colors p-3 rounded-lg hover:bg-primary-50 text-center w-fit min-w-0 flex-1 max-w-xs"
-											>
-												<span className="text-base font-medium leading-tight">
-													{eventType.label}
-												</span>
-											</Link>
-										))}
-									</div>
-								))}
-							</div>
-
-							{/* Desktop: 5 columns per row */}
-							<div className="hidden md:flex flex-col items-center gap-4 w-full">
-								{chunkArray(eventTypeOptions, 5).map((row, rowIndex) => (
-									<div
-										key={rowIndex}
-										className="flex justify-center gap-4 lg:gap-6 w-full"
-									>
-										{row.map((eventType) => (
-											<Link
-												key={eventType.value}
-												to="/search"
-												search={{ tipos: [eventType.value.toString()] }}
-												className="flex flex-col items-center gap-2 text-primary-700 hover:text-primary-700 transition-colors p-3 rounded-lg hover:bg-primary-50 text-center w-fit"
-											>
-												<span className="text-base lg:text-lg font-medium leading-tight">
-													{eventType.label}
-												</span>
-											</Link>
-										))}
-									</div>
-								))}
-							</div>
-						</div>
-					</div>
-					{/* Gêneros Musicais */}
-					<div className="w-full flex flex-col justify-center items-center gap-7 py-8 px-4 max-w-9xl mx-auto">
-						<h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center">
-							Gêneros Musicais
-						</h1>
-						<div className="w-full flex flex-col items-center gap-4">
-							{/* Mobile: 2 columns */}
-							<div className="grid grid-cols-2 gap-3 w-full sm:hidden">
-								{musicalGenreOptions.map((genre) => (
-									<Link
-										key={genre.value}
-										to="/search"
-										search={{ generos: [genre.value.toString()] }}
-										className="flex flex-col items-center gap-2 text-primary-700 hover:text-primary-700 transition-colors p-3 rounded-lg hover:bg-primary-50 text-center border border-primary-200 bg-primary-50/30"
-									>
-										<span className="text-sm font-medium leading-tight">
-											{genre.label}
-										</span>
-									</Link>
-								))}
-							</div>
-
-							{/* Tablet: 3 columns per row */}
-							<div className="hidden sm:flex md:hidden flex-col items-center gap-4 w-full">
-								{chunkArray(musicalGenreOptions, 3).map((row, rowIndex) => (
-									<div
-										key={rowIndex}
-										className="flex justify-center gap-4 w-full"
-									>
-										{row.map((genre) => (
-											<Link
-												key={genre.value}
-												to="/search"
-												search={{ generos: [genre.value.toString()] }}
-												className="flex flex-col items-center gap-2 text-primary-700 hover:text-primary-700 transition-colors p-3 rounded-lg hover:bg-primary-50 text-center w-fit min-w-0 flex-1 max-w-xs"
-											>
-												<span className="text-base font-medium leading-tight">
-													{genre.label}
-												</span>
-											</Link>
-										))}
-									</div>
-								))}
-							</div>
-
-							{/* Desktop: 5 columns per row */}
-							<div className="hidden md:flex flex-col items-center gap-4 w-full">
-								{chunkArray(musicalGenreOptions, 5).map((row, rowIndex) => (
-									<div
-										key={rowIndex}
-										className="flex justify-center gap-4 lg:gap-6 w-full"
-									>
-										{row.map((genre) => (
-											<Link
-												key={genre.value}
-												to="/search"
-												search={{ generos: [genre.value.toString()] }}
-												className="flex flex-col items-center gap-2 text-primary-700 hover:text-primary-700 transition-colors p-3 rounded-lg hover:bg-primary-50 text-center w-fit"
-											>
-												<span className="text-base lg:text-lg font-medium leading-tight">
-													{genre.label}
-												</span>
-											</Link>
-										))}
-									</div>
-								))}
-							</div>
-						</div>
+					{/* A thin line, as wide as the pills, marks where each one ends;
+					    the white gap alone left the three floating */}
+					<div className="w-full max-w-5xl mx-auto px-4 divide-y divide-gray-200">
+						<BrowseLinks
+							title="Categorias"
+							options={categoryOptions}
+							searchKey="categorias"
+							showSeeAll
+						/>
+						<BrowseLinks
+							title="Tipos de Evento"
+							options={eventTypeOptions}
+							searchKey="tipos"
+						/>
+						<BrowseLinks
+							title="Gêneros Musicais"
+							options={musicalGenreOptions}
+							searchKey="generos"
+						/>
 					</div>
 					{/* Testimonials */}
 					<div className="relative w-full flex flex-col justify-center items-center gap-7 py-8 px-4 max-w-9xl mx-auto">
@@ -852,20 +654,17 @@ export const Home = (): FunctionComponent => {
 
 							<div className="flex w-full items-center justify-between flex-col sm:flex-row gap-4">
 								<p className="text-gray-400 text-sm sm:text-base">
-									© 2025 Vibratto - Projeto Atual Out/2026
+									© {new Date().getFullYear()} Vibratto
 								</p>
 								<div className="flex gap-4 items-center justify-center">
 									<a
-										href="#"
+										href="https://www.instagram.com/vibrattomusic/"
+										target="_blank"
+										rel="noopener noreferrer"
+										aria-label="Instagram da Vibratto"
 										className="text-gray-400 hover:text-gray-600 transition-colors"
 									>
 										<Instagram size={20} />
-									</a>
-									<a
-										href="#"
-										className="text-gray-400 hover:text-gray-600 transition-colors"
-									>
-										<Facebook size={20} />
 									</a>
 								</div>
 							</div>
