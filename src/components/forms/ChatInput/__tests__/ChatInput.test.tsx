@@ -203,4 +203,22 @@ describe("ChatInput", () => {
 
 		expect(onSendMock).toHaveBeenCalledWith("valor &lt; 500");
 	});
+
+	it("shows the message being answered and cancels it with the x", async () => {
+		const user = userEvent.setup();
+		const onCancelReply = vi.fn();
+		render(
+			<ChatInput
+				onSend={onSendMock}
+				replyTo={{ id: 7, author: "Maria", excerpt: "Qual o valor?" }}
+				onCancelReply={onCancelReply}
+			/>
+		);
+
+		expect(screen.getByText("Respondendo a Maria")).toBeInTheDocument();
+		expect(screen.getByText("Qual o valor?")).toBeInTheDocument();
+
+		await user.click(screen.getByLabelText("Cancelar resposta"));
+		expect(onCancelReply).toHaveBeenCalled();
+	});
 });
