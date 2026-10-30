@@ -143,6 +143,17 @@ export class MusicalProductService {
 		);
 	}
 
+	/** Schedule between two dates (yyyy-MM-dd), e.g. today to the last booked event */
+	public async getScheduleRange(
+		productId: number,
+		dataInicio: string,
+		dataFim: string
+	): Promise<Array<ScheduleApiResponse>> {
+		return this.apiClient.get(
+			`/produtomusical/${productId}/agenda?dataInicio=${dataInicio}&dataFim=${dataFim}`
+		);
+	}
+
 	/**
 	 * Save schedule
 	 */
