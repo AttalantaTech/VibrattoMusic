@@ -3,7 +3,6 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
 	ArrowLeft,
 	ArrowRight,
-	Facebook,
 	SlidersHorizontal,
 	Instagram,
 	MapPin,
@@ -655,20 +654,17 @@ export const Home = (): FunctionComponent => {
 
 							<div className="flex w-full items-center justify-between flex-col sm:flex-row gap-4">
 								<p className="text-gray-400 text-sm sm:text-base">
-									© 2025 Vibratto - Projeto Atual Out/2026
+									© {new Date().getFullYear()} Vibratto
 								</p>
 								<div className="flex gap-4 items-center justify-center">
 									<a
-										href="#"
+										href="https://www.instagram.com/vibrattomusic/"
+										target="_blank"
+										rel="noopener noreferrer"
+										aria-label="Instagram da Vibratto"
 										className="text-gray-400 hover:text-gray-600 transition-colors"
 									>
 										<Instagram size={20} />
-									</a>
-									<a
-										href="#"
-										className="text-gray-400 hover:text-gray-600 transition-colors"
-									>
-										<Facebook size={20} />
 									</a>
 								</div>
 							</div>
