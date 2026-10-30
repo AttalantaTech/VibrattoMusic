@@ -6,16 +6,10 @@ import LogoVibratto from "@/assets/images/Logo_Vibratto.png";
 import VibrattoName from "@/assets/images/Vibratto.png";
 import ShowImg from "@/assets/images/show.jpg";
 import { InputField } from "@/components/forms/InputField/InputField";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/Select/Select";
+import { Select } from "@/components/forms/Select/Select";
 import { useRegisterForm } from "@/features/Register/hooks/useRegisterForm";
 import { useRegisterSubmit } from "@/features/Register/hooks/useRegisterSubmit";
-import { CNPJ_MASK, CPF_MASK } from "@/utils/validation";
+import { CNPJ_MASK, CPF_MASK, DOCUMENT_TYPE_OPTIONS } from "@/utils/validation";
 import { FieldError } from "@/components/forms/FieldError";
 import { PasswordRequirements } from "@/components/forms/PasswordRequirements";
 
@@ -119,20 +113,23 @@ export const Register = () => {
 											control={control}
 											render={({ field }) => (
 												<Select
-													value={field.value}
-													onValueChange={(value) => {
-														field.onChange(value as DocumentType);
+													name="tipoDocumento"
+													options={DOCUMENT_TYPE_OPTIONS}
+													placeholder="Selecione..."
+													clearable={false}
+													className="px-3"
+													selectedOptions={DOCUMENT_TYPE_OPTIONS.filter(
+														(option) => option.value === field.value
+													)}
+													setSelectedOptions={(options) => {
+														const value = options[0]?.value as
+															| DocumentType
+															| undefined;
+														if (!value || value === field.value) return;
+														field.onChange(value);
 														setValue("cpfOuCnpj", "", { shouldDirty: true });
 													}}
-												>
-													<SelectTrigger className="w-full">
-														<SelectValue placeholder="Selecione..." />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="cpf">CPF</SelectItem>
-														<SelectItem value="cnpj">CNPJ</SelectItem>
-													</SelectContent>
-												</Select>
+												/>
 											)}
 										/>
 

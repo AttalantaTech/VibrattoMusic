@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/Input/Input";
 import { Label } from "@/components/ui/Label/Label";
 import { Textarea } from "@/components/ui/Textarea/Textarea";
 import { Switch } from "@/components/ui/switch";
-import { SingleSelect } from "@/components/forms/SingleSelect/SingleSelect";
 import type { Option } from "@/components/forms/Select/Select";
 import { Select } from "@/components/forms/Select/Select";
 import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
@@ -82,6 +81,14 @@ export function ProposalFormFields({
 	const duration = watch("duracao") || "";
 	const paymentConditionId = watch("idCondicoesPagamento");
 
+	const eventTypeOptions: Array<Option> = eventTypes.map((type) => ({
+		value: String(type.Id),
+		label: type.Nome,
+	}));
+	const paymentConditionOptions: Array<Option> = paymentConditions.map(
+		(condition) => ({ value: String(condition.Id), label: condition.Nome })
+	);
+
 	return (
 		<div className="space-y-4 py-4">
 			{/* Event Data Section */}
@@ -102,20 +109,17 @@ export function ProposalFormFields({
 						name="idTipoEvento"
 						render={({ field }) => (
 							<>
-								<Label htmlFor="eventType">Tipo de Evento</Label>
-								<SingleSelect
-									value={
-										field.value && field.value > 0 ? String(field.value) : ""
-									}
-									onChange={(value) => {
-										const numericValue = value ? Number(value) : 0;
-										field.onChange(numericValue);
-									}}
-									options={eventTypes.map((type) => ({
-										value: String(type.Id),
-										label: type.Nome,
-									}))}
+								<Select
+									label="Tipo de Evento"
+									name="eventType"
+									options={eventTypeOptions}
 									placeholder="Selecionar tipo"
+									selectedOptions={eventTypeOptions.filter(
+										(option) => option.value === String(field.value)
+									)}
+									setSelectedOptions={(options) => {
+										field.onChange(Number(options[0]?.value ?? 0));
+									}}
 								/>
 
 								{errors.idTipoEvento?.message && (
@@ -496,22 +500,17 @@ export function ProposalFormFields({
 						name="idCondicoesPagamento"
 						render={({ field }) => (
 							<>
-								<Label htmlFor="paymentConditions">
-									Condições de Pagamento
-								</Label>
-								<SingleSelect
-									value={
-										field.value && field.value > 0 ? String(field.value) : ""
-									}
-									onChange={(value) => {
-										const numericValue = value ? Number(value) : 0;
-										field.onChange(numericValue);
-									}}
-									options={paymentConditions.map((c) => ({
-										value: String(c.Id),
-										label: c.Nome,
-									}))}
+								<Select
+									label="Condições de Pagamento"
+									name="paymentConditions"
+									options={paymentConditionOptions}
 									placeholder="Selecionar condição"
+									selectedOptions={paymentConditionOptions.filter(
+										(option) => option.value === String(field.value)
+									)}
+									setSelectedOptions={(options) => {
+										field.onChange(Number(options[0]?.value ?? 0));
+									}}
 								/>
 
 								{errors.idCondicoesPagamento?.message && (
