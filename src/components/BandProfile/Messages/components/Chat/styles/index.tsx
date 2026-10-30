@@ -11,6 +11,11 @@ import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProduct
 import type { Message } from "@/api/services/messages/types";
 import { MessageHtml } from "@/features/message/component/MessageHtml";
 
+// Lists typed in the chat field keep their bullets (Tailwind's reset drops
+// them); break-words so a long link doesn't stretch the bubble
+const MESSAGE_TEXT =
+	"break-words [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5";
+
 export const ChatContainer = ({
 	children,
 	isInsideConversation,
@@ -96,7 +101,7 @@ export const OwnMessageElement = ({
 					className={`bg-primary-400 text-white py-3 rounded-l-2xl rounded-tr-2xl rounded-br-md shadow-lg ${isCard ? "w-full px-3 sm:px-4" : "px-4"}`}
 				>
 					<div className="text-sm leading-relaxed">
-						<MessageHtml html={message.conteudo} />
+						<MessageHtml html={message.conteudo} className={MESSAGE_TEXT} />
 					</div>
 				</div>
 				<div className="flex items-center justify-end space-x-1 mt-1 px-1">
@@ -148,7 +153,7 @@ export const MessageElement = ({
 					}`}
 				>
 					<div className="text-sm text-gray-800 leading-relaxed">
-						<MessageHtml html={message.conteudo} />
+						<MessageHtml html={message.conteudo} className={MESSAGE_TEXT} />
 					</div>
 				</div>
 				<div className="flex items-center space-x-1 mt-1 px-1">
