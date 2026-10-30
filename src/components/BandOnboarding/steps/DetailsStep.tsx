@@ -126,9 +126,8 @@ export default function DetailsStep() {
 					selectedOptions={selectedCategoria}
 					setSelectedOptions={(options) => {
 						setSelectedCategoria(options);
-						if (options && options.length > 0) {
-							setValue("idCategoria", Number(options[0]?.value));
-						}
+						// Cleared with the x: no stale value left behind (validation asks again)
+						setValue("idCategoria", Number(options[0]?.value ?? 0));
 					}}
 				/>
 				{formState.errors.idCategoria && (
@@ -146,9 +145,8 @@ export default function DetailsStep() {
 					selectedOptions={selectedCidade}
 					setSelectedOptions={(options) => {
 						setSelectedCidade(options);
-						if (options && options.length > 0) {
-							setValue("codigoMunicipio", Number(options[0]?.value));
-						}
+						// Cleared with the x: no stale value left behind (validation asks again)
+						setValue("codigoMunicipio", Number(options[0]?.value ?? 0));
 					}}
 					searchTerm={searchCity}
 					setSearchTerm={setSearchCity}

@@ -4,6 +4,14 @@ import { ptBR } from "date-fns/locale";
 
 export type DocumentType = "cpf" | "cnpj";
 
+export const DOCUMENT_TYPE_OPTIONS: Array<{
+	value: DocumentType;
+	label: string;
+}> = [
+	{ value: "cpf", label: "CPF" },
+	{ value: "cnpj", label: "CNPJ" },
+];
+
 // Utility functions for CPF/CNPJ validation
 export const validateCPF = (cpf: string): boolean => {
 	const cleaned = cpf.replace(/\D/g, "");

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Option } from "@/components/forms/SingleSelect/SingleSelect";
+import type { Option } from "@/components/forms/Select/Select";
 import type { FilterOption } from "@/api/types";
 import { toBR } from "@/utils";
 import { filterService } from "@/api";

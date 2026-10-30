@@ -15,13 +15,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/Badge/Badge";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/Select/Select";
+import { Select } from "@/components/forms/Select/Select";
 import { Textarea } from "@/components/ui/Textarea/Textarea";
 import {
 	PROPOSAL_QUERY_KEYS,
@@ -75,6 +69,9 @@ export const ProposalRejectionModal = ({
 	const rejectMutation = useUpdateProposalStatus();
 	const { sendStatusMessage } = useSendStatusMessage();
 
+	const reasonOptions = (rejectionReasons ?? []).map(
+		(reason: FilterOption) => ({ value: String(reason.Id), label: reason.Nome })
+	);
 	const selectedReason = rejectionReasons?.find(
 		(r) => r.Id === selectedReasonId
 	);
@@ -225,37 +222,25 @@ export const ProposalRejectionModal = ({
 							{/* Reason Selection */}
 							<div className="space-y-4">
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
-										Motivo da Rejeição *
-									</label>
 									<Select
-										value={String(
-											rejectionReasons?.find((r) => r.Id === selectedReasonId)
-												?.Id
+										label="Motivo da Rejeição *"
+										name="rejectionReason"
+										options={reasonOptions}
+										placeholder={
+											isLoadingReasons
+												? "Carregando motivos..."
+												: "Selecione um motivo..."
+										}
+										selectedOptions={reasonOptions.filter(
+											(option) => option.value === String(selectedReasonId)
 										)}
-										onValueChange={(value) => {
-											setSelectedReasonId(Number(value));
+										setSelectedOptions={(options) => {
+											setSelectedReasonId(
+												options[0] ? Number(options[0].value) : null
+											);
 										}}
 										disabled={isLoadingReasons || !!reasonsError}
-									>
-										<SelectTrigger className="w-full">
-											<SelectValue
-												className="bg-red-500"
-												placeholder={
-													isLoadingReasons
-														? "Carregando motivos..."
-														: "Selecione um motivo..."
-												}
-											/>
-										</SelectTrigger>
-										<SelectContent>
-											{rejectionReasons?.map((reason: FilterOption) => (
-												<SelectItem key={reason.Id} value={String(reason.Id)}>
-													{reason.Nome}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+									/>
 									{validationError && (
 										<p className="text-sm text-red-600 mt-1">
 											{validationError}
