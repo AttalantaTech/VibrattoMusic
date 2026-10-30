@@ -10,7 +10,8 @@ export type Option = {
 
 type SelectProps = {
 	icon?: React.ReactNode;
-	label: string;
+	/** Optional when the field already has a label around it */
+	label?: string;
 	name: string;
 	placeholder?: string;
 	options: Array<Option>;
@@ -19,11 +20,17 @@ type SelectProps = {
 	className?: string;
 	multiple?: boolean;
 	disabled?: boolean;
+	/** False for a required choice with nothing to clear to (CPF/CNPJ) */
+	clearable?: boolean;
 	onReachEnd?: () => void;
 	searchTerm?: string;
 	setSearchTerm?: (value: string) => void;
 	isLoading?: boolean;
 };
+
+// Lists this long open on a search box ready to type (event types have 6);
+// shorter ones (payment terms, CPF/CNPJ) are read at a glance
+export const SEARCH_MIN_OPTIONS = 6;
 
 const ALL_OPTION: Option = {
 	value: "__ALL__",
@@ -41,12 +48,25 @@ export const Select = ({
 	className,
 	multiple,
 	disabled = false,
+	clearable = true,
 	onReachEnd,
-	searchTerm = "",
-	setSearchTerm,
+	searchTerm: externalSearchTerm,
+	setSearchTerm: externalSetSearchTerm,
 	isLoading,
 }: SelectProps): FunctionComponent => {
 	const [isOpen, setIsOpen] = useState(false);
+
+	// Server-searched lists (cities) own the term; the others filter here.
+	// Before, typing in their search box changed nothing
+	const isServerSearch = !!externalSetSearchTerm;
+	const [localSearchTerm, setLocalSearchTerm] = useState("");
+	const searchTerm = isServerSearch
+		? (externalSearchTerm ?? "")
+		: localSearchTerm;
+	const setSearchTerm = isServerSearch
+		? externalSetSearchTerm
+		: setLocalSearchTerm;
+	const showSearch = isServerSearch || options.length >= SEARCH_MIN_OPTIONS;
 
 	const containerRef = useRef<HTMLDivElement>(null);
 	const dropdownRef = useRef<HTMLDivElement>(null);
@@ -63,7 +83,7 @@ export const Select = ({
 
 	const toggleDropdown = () => {
 		setIsOpen(!isOpen);
-		setSearchTerm?.("");
+		setSearchTerm("");
 	};
 
 	const toggleOption = (option: Option) => {
@@ -121,7 +141,8 @@ export const Select = ({
 			return `${selectedOptions.length} selecionados`;
 		}
 
-		return `${selectedOptions.length} selecionado`;
+		// A single choice shows its name ("Campinas - SP"), not "1 selecionado"
+		return selectedOptions[0]?.label ?? placeholder;
 	};
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -130,7 +151,7 @@ export const Select = ({
 				!containerRef.current.contains(event.target as Node)
 			) {
 				setIsOpen(false);
-				setSearchTerm?.("");
+				setSearchTerm("");
 			}
 		};
 
@@ -176,10 +197,12 @@ export const Select = ({
 
 	return (
 		<div className="flex flex-col gap-2 w-full">
-			<div className="flex items-center gap-1">
-				{icon}
-				<label className="text-sm font-medium text-gray-700">{label}</label>
-			</div>
+			{label || icon ? (
+				<div className="flex items-center gap-1">
+					{icon}
+					<label className="text-sm font-medium text-gray-700">{label}</label>
+				</div>
+			) : null}
 
 			{/* Input com dropdown */}
 			<div className="relative" ref={containerRef}>
@@ -207,10 +230,29 @@ export const Select = ({
 					>
 						{handleSelectOptionsText()}
 					</span>
-					<ChevronDown
-						className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
-						size={16}
-					/>
+					<span className="flex shrink-0 items-center gap-1">
+						{/* A single choice clears here (multiple ones use the tags below) */}
+						{!multiple &&
+						clearable &&
+						selectedOptions.length > 0 &&
+						!disabled ? (
+							<button
+								type="button"
+								aria-label="Limpar seleção"
+								className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+								onClick={(event) => {
+									event.stopPropagation();
+									setSelectedOptions([]);
+								}}
+							>
+								<X size={14} />
+							</button>
+						) : null}
+						<ChevronDown
+							className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+							size={16}
+						/>
+					</span>
 				</div>
 
 				{/* Dropdown */}
@@ -222,31 +264,35 @@ export const Select = ({
 							event.stopPropagation();
 						}}
 					>
-						<div className="p-2 border-b border-gray-200">
-							<div className="relative">
-								<Search
-									size={16}
-									className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-								/>
+						{showSearch ? (
+							<div className="p-2 border-b border-gray-200">
+								<div className="relative">
+									<Search
+										size={16}
+										className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+									/>
 
-								<input
-									id={`${name}-search`}
-									name={`${name}-search`}
-									type="text"
-									value={searchTerm}
-									onChange={(event) => {
-										setSearchTerm?.(event.target.value);
-									}}
-									placeholder="Pesquisar..."
-									className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm
+									<input
+										id={`${name}-search`}
+										name={`${name}-search`}
+										type="text"
+										value={searchTerm}
+										onChange={(event) => {
+											setSearchTerm(event.target.value);
+										}}
+										placeholder="Pesquisar..."
+										// Opening goes straight to typing
+										autoFocus
+										className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm
                     text-gray-900 placeholder-gray-400 focus:border-primary-500
                     focus:outline-none focus:ring-1 focus:ring-primary-500"
-									onClick={(event) => {
-										event.stopPropagation();
-									}}
-								/>
+										onClick={(event) => {
+											event.stopPropagation();
+										}}
+									/>
+								</div>
 							</div>
-						</div>
+						) : null}
 						<ul className="py-1">
 							{computedOptions.map((option) => {
 								const isAll = option.value === ALL_OPTION.value;
@@ -289,7 +335,9 @@ export const Select = ({
 				)}
 			</div>
 
-			{selectedOptions.length > 0 && (
+			{/* Removable tags for multiple choices; a single one already shows
+			    its name in the field */}
+			{multiple && selectedOptions.length > 0 && (
 				<div className="mt-2 flex flex-wrap gap-2">
 					{selectedOptions
 						.filter((option) => option.label !== "Todos")

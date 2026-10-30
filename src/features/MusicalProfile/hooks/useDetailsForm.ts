@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useUpdateMusicalProduct } from "@/hooks/useMusicalProducts";
 import { detailsSchema, type DetailsFormData } from "../schemas/detailsSchema";
-import type { Option } from "@/components/forms/SingleSelect/SingleSelect";
+import type { Option } from "@/components/forms/Select/Select";
 import { VibrattoApiError } from "@/api";
 import type { OnboardingApiResponse } from "@/api/types";
 import { useSaveOnboardingDetails } from "@/hooks/useOnboarding";

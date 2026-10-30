@@ -86,6 +86,11 @@ export const ProposalDetailsModal = ({
 		productContractorId: activeProduct ? activeProduct.id : null,
 	});
 
+	// The notices follow the tab that opened the dialog (Contratações =
+	// contractor, Vendas = professional): someone who is both sides of a
+	// proposal got the contractor's notices in Vendas too
+	const viewerIsContractor = mode === "Contractor";
+
 	if (!isOpen) return null;
 
 	return (
@@ -123,6 +128,19 @@ export const ProposalDetailsModal = ({
 							</div>
 						)}
 					</div>
+
+					{/* What the user has to do now goes above the PDF; below it (several
+					    pages long) it was easy to miss */}
+					{/* Who has signed and who is missing, while the contract is signed */}
+					<SignatureProgress
+						proposal={proposal}
+						isContractor={viewerIsContractor}
+					/>
+
+					{/* Contractor only; shown until the down payment is confirmed */}
+					{viewerIsContractor ? (
+						<DownPaymentNotice proposal={proposal} />
+					) : null}
 
 					{/* Only the proposal; the contract opens from the menu (Visualizar Contrato) */}
 					<div className="mt-6">
@@ -166,15 +184,6 @@ export const ProposalDetailsModal = ({
 					<div className="text-sm text-gray-500 pt-4">
 						Proposta criada em {formatDate(proposal.dataCriacao)}
 					</div>
-
-					{/* Who has signed and who is missing, while the contract is signed */}
-					<SignatureProgress
-						proposal={proposal}
-						isContractor={!!isContractor}
-					/>
-
-					{/* Contractor only; shown until the down payment is confirmed */}
-					{isContractor ? <DownPaymentNotice proposal={proposal} /> : null}
 
 					{/* Actions pinned to the bottom so they stay in view while the PDF
 					    (often several pages) scrolls. Phones: stacked full width; in

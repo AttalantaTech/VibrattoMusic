@@ -1,4 +1,6 @@
 import React from "react";
+import { HelpCircle } from "lucide-react";
+import { TooltipCustom } from "@/components/ui/TooltipCustom/TooltipCustom";
 import { cn } from "../../../lib/utils/cn";
 import type { FunctionComponent } from "../../../common/types";
 
@@ -12,6 +14,8 @@ type TextAreaFieldProps = {
 	rows?: number; // Número de linhas (altura)
 	maxLength?: number; // Máximo de caracteres
 	showCharCount?: boolean; // Mostrar contador de caracteres
+	/** Help shown in a (?) next to the label */
+	labelTooltip?: string;
 } & React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 export const TextAreaField = React.forwardRef<
@@ -30,31 +34,44 @@ export const TextAreaField = React.forwardRef<
 			rows = 4,
 			maxLength,
 			showCharCount = true,
+			labelTooltip,
 			onChange,
 			...props
 		},
 		ref
 	): FunctionComponent => {
-		const [charCount, setCharCount] = React.useState(0);
+		const [typedCount, setTypedCount] = React.useState(0);
+		// A controlled field counts its value: the typed-only count started at
+		// 0 on a field that already had text (editing a profile)
+		const charCount =
+			props.value !== undefined ? String(props.value).length : typedCount;
+		const isOverLimit = !!maxLength && charCount > maxLength;
 
 		const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-			if (maxLength && event.target.value.length > maxLength) return;
+			const length = event.target.value.length;
+			// Blocks only growing past the limit: a text saved before the limit
+			// existed can still be shortened
+			if (maxLength && length > maxLength && length >= charCount) return;
 
-			setCharCount(event.target.value.length);
+			setTypedCount(length);
 			onChange?.(event);
 		};
 
 		return (
 			<div className="flex flex-col gap-2">
 				<div className="flex justify-between items-center">
-					<label className="text-sm font-medium text-gray-700" htmlFor={name}>
+					<label
+						className="flex items-center gap-1.5 text-sm font-medium text-gray-700"
+						htmlFor={name}
+					>
 						{label} {required && <span className="text-red-500">*</span>}
+						{labelTooltip ? (
+							<TooltipCustom
+								trigger={<HelpCircle className="h-4 w-4 text-gray-400" />}
+								content={labelTooltip}
+							/>
+						) : null}
 					</label>
-					{maxLength && showCharCount && (
-						<span className="text-xs text-gray-500">
-							{charCount}/{maxLength}
-						</span>
-					)}
 				</div>
 
 				<div className="relative">
@@ -80,7 +97,26 @@ export const TextAreaField = React.forwardRef<
 					/>
 				</div>
 
-				{helperText && <p className="text-xs text-gray-500">{helperText}</p>}
+				{helperText || (maxLength && showCharCount) ? (
+					<div className="flex items-start justify-between gap-3">
+						{helperText ? (
+							<p className="text-xs text-gray-500">{helperText}</p>
+						) : (
+							<span />
+						)}
+						{maxLength && showCharCount ? (
+							<span
+								className={cn(
+									"shrink-0 text-xs",
+									isOverLimit ? "font-medium text-red-600" : "text-gray-500"
+								)}
+								aria-live="polite"
+							>
+								{charCount}/{maxLength}
+							</span>
+						) : null}
+					</div>
+				) : null}
 			</div>
 		);
 	}

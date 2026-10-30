@@ -1,6 +1,7 @@
 import clsx from "clsx";
-import { ChevronDown, Loader, Search } from "lucide-react";
+import { ChevronDown, Loader, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { SEARCH_MIN_OPTIONS } from "@/components/forms/Select/Select";
 
 type Option = {
 	label: string;
@@ -30,11 +31,28 @@ export const DropdownSelect = ({
 	selectedOption,
 	setSelectedOption,
 	onReachEnd,
-	searchTerm = "",
-	setSearchTerm,
+	searchTerm: externalSearchTerm,
+	setSearchTerm: externalSetSearchTerm,
 	isLoading,
 }: DropdownSelectProps) => {
 	const [isOpen, setIsOpen] = useState(false);
+
+	// Same rule as the form Select: cities search on the server, the other
+	// long lists (categories, genres, event types) filter here
+	const isServerSearch = !!externalSetSearchTerm;
+	const [localSearchTerm, setLocalSearchTerm] = useState("");
+	const searchTerm = isServerSearch
+		? (externalSearchTerm ?? "")
+		: localSearchTerm;
+	const setSearchTerm = isServerSearch
+		? externalSetSearchTerm
+		: setLocalSearchTerm;
+	const showSearch = isServerSearch || options.length >= SEARCH_MIN_OPTIONS;
+	const visibleOptions = isServerSearch
+		? options
+		: options.filter((option) =>
+				option.label.toLowerCase().includes(searchTerm.toLowerCase())
+			);
 
 	const containerRef = useRef<HTMLDivElement>(null);
 	const dropdownRef = useRef<HTMLDivElement>(null);
@@ -52,8 +70,8 @@ export const DropdownSelect = ({
 				containerRef.current &&
 				!containerRef.current.contains(event.target as Node)
 			) {
-				setIsOpen(!isOpen);
-				setSearchTerm?.("");
+				setIsOpen(false);
+				setSearchTerm("");
 			}
 		};
 
@@ -99,16 +117,39 @@ export const DropdownSelect = ({
 
 	return (
 		<div className={clsx("relative", className)} ref={containerRef}>
-			<button
-				className="flex items-center gap-1 px-2 py-1 text-sm text-black hover:text-primary-600"
-				onClick={() => {
-					setIsOpen(!isOpen);
-				}}
-			>
-				{icon}
-				<span className="font-normal text-base text-gray-900">{current}</span>
-				<ChevronDown className="ml-1" size={16} />
-			</button>
+			{/* Same behavior as the form Select: the choice shows its name with an
+			    x to clear it (it was a "Remover seleção" row inside the list) */}
+			<div className="flex items-center">
+				<button
+					type="button"
+					className="flex items-center gap-1 px-2 py-1 text-sm text-black hover:text-primary-600"
+					onClick={() => {
+						setIsOpen(!isOpen);
+						setSearchTerm("");
+					}}
+				>
+					{icon}
+					<span className="font-normal text-base text-gray-900">{current}</span>
+					<ChevronDown
+						className={`ml-1 transition-transform ${isOpen ? "rotate-180" : ""}`}
+						size={16}
+					/>
+				</button>
+				{selectedOption ? (
+					<button
+						type="button"
+						aria-label="Limpar seleção"
+						className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+						onClick={() => {
+							setSelectedOption(null);
+							setIsOpen(false);
+							setSearchTerm("");
+						}}
+					>
+						<X size={14} />
+					</button>
+				) : null}
+			</div>
 
 			{isOpen && (
 				<div
@@ -119,7 +160,7 @@ export const DropdownSelect = ({
 					}}
 				>
 					{/* Search */}
-					{setSearchTerm && (
+					{showSearch && (
 						<div className="border-b border-gray-200 p-2">
 							<div className="relative">
 								<Search
@@ -136,6 +177,8 @@ export const DropdownSelect = ({
 										setSearchTerm(event.target.value);
 									}}
 									placeholder="Pesquisar..."
+									// Opening goes straight to typing
+									autoFocus
 									className=" h-9 w-full rounded-md
 								border border-gray-300
 								bg-white
@@ -157,34 +200,25 @@ export const DropdownSelect = ({
 
 					{/* Options */}
 					<ul className="max-h-60 overflow-y-auto py-1">
-						{options.map((option, index) => (
+						{visibleOptions.map((option, index) => (
 							<li key={index}>
 								<button
-									className="w-full text-left px-4 py-2 hover:bg-gray-100"
+									type="button"
+									className={clsx(
+										"w-full text-left px-4 py-2 hover:bg-gray-100",
+										option.value === selectedOption?.value &&
+											"bg-primary-50 text-primary-900"
+									)}
 									onClick={() => {
 										setSelectedOption(option);
 										setIsOpen(false);
+										setSearchTerm("");
 									}}
 								>
 									{option.label}
 								</button>
 							</li>
 						))}
-						{selectedOption && (
-							<li>
-								<button
-									className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 border-t border-gray-200"
-									onClick={() => {
-										setSelectedOption(null);
-										setIsOpen(!isOpen);
-										setSearchTerm?.("");
-									}}
-								>
-									Remover seleção
-								</button>
-							</li>
-						)}
-
 						<li
 							ref={sentinelRef}
 							className={`${isLoading ? "h-10" : ""} flex justify-center items-center`}

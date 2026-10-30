@@ -3,19 +3,13 @@ import { Save, User } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button/Button";
 import { InputField } from "@/components/forms/InputField/InputField";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/Select/Select";
+import { Select } from "@/components/forms/Select/Select";
 import { useUpdateUser, useUser } from "@/hooks/useUser";
 import { useAuthStore } from "@/store/authStore";
 import { SettingsSection } from "./SettingsSection";
 import { useProfileSettingsForm } from "./hooks/useProfileSettingsForm";
 import type { ProfileSettingsFormData } from "./schemas/settingsSchemas";
-import type { DocumentType } from "@/utils/validation";
+import { DOCUMENT_TYPE_OPTIONS, type DocumentType } from "@/utils/validation";
 import {
 	CEP_MASK,
 	CNPJ_MASK,
@@ -127,30 +121,28 @@ export const ProfileSection = () => {
 				<GroupTitle>Documento</GroupTitle>
 				<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-2">
-							Tipo
-						</label>
 						<Controller
 							name="tipoDocumento"
 							control={control}
 							render={({ field }) => (
 								<Select
-									value={field.value}
+									label="Tipo"
+									name="tipoDocumento"
+									options={DOCUMENT_TYPE_OPTIONS}
+									placeholder="Selecione..."
+									clearable={false}
 									disabled={isBusy}
-									onValueChange={(value) => {
-										field.onChange(value as DocumentType);
+									selectedOptions={DOCUMENT_TYPE_OPTIONS.filter(
+										(option) => option.value === field.value
+									)}
+									setSelectedOptions={(options) => {
+										const value = options[0]?.value as DocumentType | undefined;
+										if (!value || value === field.value) return;
+										field.onChange(value);
 										// A document typed for one type is invalid for the other
 										setValue("cpfOuCnpj", "", { shouldDirty: true });
 									}}
-								>
-									<SelectTrigger className="w-full">
-										<SelectValue placeholder="Selecione..." />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="cpf">CPF</SelectItem>
-										<SelectItem value="cnpj">CNPJ</SelectItem>
-									</SelectContent>
-								</Select>
+								/>
 							)}
 						/>
 					</div>

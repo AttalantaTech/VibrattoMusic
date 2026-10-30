@@ -20,6 +20,7 @@ import { useOnboardingData } from "../../../hooks/useOnboarding";
 import { decryptValue, encryptValue } from "@/utils/encryptValue";
 import { useFilterLookup } from "@/features/MusicalProfile/hooks/useFilterLookup";
 import { useDetailsForm } from "@/features/MusicalProfile/hooks/useDetailsForm";
+import { BIO_MAX_LENGTH } from "@/features/MusicalProfile/schemas/detailsSchema";
 
 export default function DetailsStep() {
 	const { data } = useOnboardingData();
@@ -125,9 +126,8 @@ export default function DetailsStep() {
 					selectedOptions={selectedCategoria}
 					setSelectedOptions={(options) => {
 						setSelectedCategoria(options);
-						if (options && options.length > 0) {
-							setValue("idCategoria", Number(options[0]?.value));
-						}
+						// Cleared with the x: no stale value left behind (validation asks again)
+						setValue("idCategoria", Number(options[0]?.value ?? 0));
 					}}
 				/>
 				{formState.errors.idCategoria && (
@@ -145,9 +145,8 @@ export default function DetailsStep() {
 					selectedOptions={selectedCidade}
 					setSelectedOptions={(options) => {
 						setSelectedCidade(options);
-						if (options && options.length > 0) {
-							setValue("codigoMunicipio", Number(options[0]?.value));
-						}
+						// Cleared with the x: no stale value left behind (validation asks again)
+						setValue("codigoMunicipio", Number(options[0]?.value ?? 0));
 					}}
 					searchTerm={searchCity}
 					setSearchTerm={setSearchCity}
@@ -231,10 +230,11 @@ export default function DetailsStep() {
 				/>
 				<TextAreaField
 					showCharCount
-					helperText="Conte brevemente a trajetória da banda em até 300 caracteres."
+					maxLength={BIO_MAX_LENGTH}
 					label="Bio (release)"
+					labelTooltip="Nos conte sobre você, sua história na música e destaques como experiência, trabalhos e parcerias que possam ajudar na sua contratação."
 					name="bio"
-					placeholder="Digitar..."
+					placeholder="Nos conte sobre você, sua história na música e destaques…"
 					value={watch("descricao") || ""}
 					onChange={(event) => {
 						setValue("descricao", event.target.value);

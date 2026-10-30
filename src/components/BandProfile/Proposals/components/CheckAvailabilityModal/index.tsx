@@ -10,6 +10,8 @@ import {
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DatePicker } from "@/components/Calendar/DatePicker";
 import type { Option } from "@/components/forms/Select/Select";
+import { Select } from "@/components/forms/Select/Select";
+import { useCitySearch } from "@/hooks/useCitySearch";
 
 import type { MusicalProduct } from "@/api/types";
 import { useSchedule } from "@/hooks/useMusicalProducts";
@@ -20,7 +22,6 @@ import { useCheckAvailabilityForm } from "@/components/BandProfile/Proposals/hoo
 import { useCheckAvailabilitySubmit } from "@/components/BandProfile/Proposals/hooks/useCheckAvailabilitySubmit";
 import { useStartConversation } from "@/hooks/useMessaging";
 import { Controller } from "react-hook-form";
-import { SingleSelect } from "@/components/forms/SingleSelect/SingleSelect";
 import { format } from "date-fns";
 import { quickTimeOptions, timeToSeconds } from "@/utils";
 import { DateInput } from "@/components/forms/DateInput/DateInput";
@@ -64,6 +65,14 @@ export const CheckAvailabilityModal = ({
 	} = useCheckAvailabilityForm({ setHasDefineEventTime });
 
 	const duration = watch("duracao") || "";
+
+	const {
+		options: cityOptions,
+		search: citySearch,
+		setSearch: setCitySearch,
+		loadMore: loadMoreCities,
+		isFetching: isFetchingCities,
+	} = useCitySearch(isOpen);
 
 	const tipoEventoOptions: Array<Option> = (eventTypes || []).map((tipo) => ({
 		value: tipo.Id.toString(),
@@ -172,22 +181,17 @@ export const CheckAvailabilityModal = ({
 										name="idTipoEvento"
 										render={({ field }) => (
 											<>
-												<Label htmlFor="eventType">Tipo de Evento</Label>
-												<SingleSelect
-													value={
-														field.value && field.value > 0
-															? String(field.value)
-															: ""
-													}
-													onChange={(value) => {
-														const numericValue = value ? Number(value) : 0;
-														field.onChange(numericValue);
-													}}
-													options={eventTypes.map((type) => ({
-														value: String(type.Id),
-														label: type.Nome,
-													}))}
+												<Select
+													label="Tipo de Evento"
+													name="eventType"
+													options={tipoEventoOptions}
 													placeholder="Selecionar tipo"
+													selectedOptions={tipoEventoOptions.filter(
+														(option) => option.value === String(field.value)
+													)}
+													setSelectedOptions={(options) => {
+														field.onChange(Number(options[0]?.value ?? 0));
+													}}
 												/>
 
 												{errors.idTipoEvento?.message && (
@@ -207,11 +211,32 @@ export const CheckAvailabilityModal = ({
 										name="local"
 										render={({ field }) => (
 											<>
-												<Label htmlFor="location">Local do Evento</Label>
-												<Input
-													id="location"
-													{...field}
-													placeholder="Endereço completo do evento"
+												{/* The cities in the database, searchable as you type;
+												    `local` keeps the city name ("São Paulo - SP") */}
+												<Select
+													label="Local do Evento"
+													name="local"
+													options={cityOptions}
+													placeholder="Selecione a cidade"
+													selectedOptions={
+														field.value
+															? [
+																	cityOptions.find(
+																		(option) => option.label === field.value
+																	) ?? {
+																		value: field.value,
+																		label: field.value,
+																	},
+																]
+															: []
+													}
+													setSelectedOptions={(options) => {
+														field.onChange(options[0]?.label ?? "");
+													}}
+													searchTerm={citySearch}
+													setSearchTerm={setCitySearch}
+													onReachEnd={loadMoreCities}
+													isLoading={isFetchingCities}
 												/>
 
 												{errors.local?.message && (
