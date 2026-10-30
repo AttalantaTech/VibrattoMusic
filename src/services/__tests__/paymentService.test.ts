@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PaymentService, formatCurrency, calculateDeposit, isValidPaymentAmount } from '../paymentService';
 
 describe('PaymentService', () => {
@@ -6,6 +6,10 @@ describe('PaymentService', () => {
 
 	beforeEach(() => {
 		paymentService = new PaymentService();
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	describe('configure', () => {
@@ -119,6 +123,10 @@ describe('PaymentService', () => {
 				successUrl: 'https://example.com/success',
 				cancelUrl: 'https://example.com/cancel',
 			};
+
+			// The placeholder fails at random 10% of the time (Math.random), which
+			// turned the CI red now and then; pin the draw to the success side
+			vi.spyOn(Math, 'random').mockReturnValue(0.5);
 
 			// This will use the placeholder implementation
 			const session = await paymentService.createPaymentSession(paymentData);
