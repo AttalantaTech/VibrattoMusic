@@ -269,8 +269,8 @@ export const Chat = () => {
 
 							<ChatInput
 								value={messageInput}
-								onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => {
-									setMessageInput?.(event.target.value);
+								onChange={(html) => {
+									setMessageInput?.(html);
 								}}
 								onSend={(content: string) => {
 									if (handleSendMessage) {
