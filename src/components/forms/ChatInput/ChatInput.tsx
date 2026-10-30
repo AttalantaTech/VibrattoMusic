@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { Send, Smile, Type } from "lucide-react";
+import { Reply, Send, Smile, Type, X } from "lucide-react";
 import {
 	BtnBold,
 	BtnBulletList,
@@ -12,6 +12,7 @@ import {
 import type { EmojiClickData } from "emoji-picker-react";
 import { cn } from "../../../lib/utils/cn";
 import { chatMessageHtml } from "@/features/message/utils/chatMessageHtml";
+import type { ReplyTarget } from "@/features/message/utils/replyQuote";
 
 // The picker and its Portuguese names (search "festa", "música") only load
 // when someone opens it
@@ -55,6 +56,9 @@ type ChatInputProps = {
 	disabled?: boolean;
 	placeholder?: string;
 	className?: string;
+	/** Message being answered: shown above the field until sent or cancelled */
+	replyTo?: ReplyTarget | null;
+	onCancelReply?: () => void;
 };
 
 const toolbarButton =
@@ -72,6 +76,8 @@ export const ChatInput = ({
 	disabled = false,
 	placeholder = "Digite sua mensagem...",
 	className,
+	replyTo,
+	onCancelReply,
 }: ChatInputProps) => {
 	const [internalValue, setInternalValue] = useState("");
 	const [showFormatting, setShowFormatting] = useState(false);
@@ -132,6 +138,10 @@ export const ChatInput = ({
 	};
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+		if (event.key === "Escape" && replyTo) {
+			onCancelReply?.();
+			return;
+		}
 		if (event.key !== "Enter" || event.shiftKey) return;
 		const anchor = window.getSelection()?.anchorNode;
 		const inList =
@@ -142,6 +152,19 @@ export const ChatInput = ({
 		event.preventDefault();
 		send();
 	};
+
+	// Choosing a message to answer goes straight to typing the answer
+	const replyId = replyTo?.id;
+	useEffect(() => {
+		const editor = editorRef.current;
+		if (!replyId || !editor) return;
+		editor.focus();
+		const range = document.createRange();
+		range.selectNodeContents(editor);
+		range.collapse(false);
+		window.getSelection()?.removeAllRanges();
+		window.getSelection()?.addRange(range);
+	}, [replyId]);
 
 	useEffect(() => {
 		if (!showEmoji) return;
@@ -167,6 +190,26 @@ export const ChatInput = ({
 	return (
 		<EditorProvider>
 			<div className={cn("relative flex w-full flex-col gap-1", className)}>
+				{replyTo ? (
+					<div className="flex items-start gap-2 rounded-md border-l-4 border-primary-400 bg-gray-50 px-3 py-2">
+						<Reply size={16} className="mt-0.5 shrink-0 text-primary-500" />
+						<div className="min-w-0 flex-1 text-xs">
+							<p className="font-semibold text-primary-700">
+								Respondendo a {replyTo.author}
+							</p>
+							<p className="truncate text-gray-600">{replyTo.excerpt}</p>
+						</div>
+						<button
+							type="button"
+							aria-label="Cancelar resposta"
+							className="rounded p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+							onClick={onCancelReply}
+						>
+							<X size={16} />
+						</button>
+					</div>
+				) : null}
+
 				{showFormatting ? (
 					<Toolbar className="w-fit gap-0.5 !rounded-md !border !border-gray-200 !bg-gray-50 p-0.5">
 						<BtnBold title="Negrito" className={toolbarButton} />
