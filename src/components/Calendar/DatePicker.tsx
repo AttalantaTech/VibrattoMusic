@@ -129,13 +129,16 @@ export function DatePicker({
 
 	const renderHeader = () => (
 		<div className="flex justify-between items-center mb-6">
-			<button onClick={previousMonth}>
+			{/* type="button": inside the availability form a plain <button>
+			    submits it, which focused the first empty field (the keyboard
+			    popped up on phones) or even sent a filled-in request */}
+			<button type="button" onClick={previousMonth}>
 				<ChevronLeft />
 			</button>
 			<h2 className="text-base font-medium text-gray-600 py-2">
 				{capitalize(format(currentMonth, "MMMM yyyy", { locale: ptBR }))}
 			</h2>
-			<button onClick={nextMonth}>
+			<button type="button" onClick={nextMonth}>
 				<ChevronRight />
 			</button>
 		</div>
