@@ -20,15 +20,22 @@ import { sortByDate } from "@/utils/sortByDate";
 import type { AgendaDateStatus, ScheduleApiResponse } from "@/api/types";
 import { toZonedTime } from "date-fns-tz";
 import { TIME_ZONE } from "@/utils";
+import type { PreReservation } from "@/hooks/usePreReservations";
 
 interface CalendarProps {
 	onSelectDate: (date: Date) => void;
-	onHasDateForDay?: (event: Array<AgendaEvent> | null) => void;
+	onHasDateForDay?: (event: Array<AgendaEvent> | null, date: Date) => void;
 	eventsAgendaFormat: Array<AgendaEvent>;
 	currentMonth: Date;
 	setCurrentMonth: (date: Date) => void;
 	agendaData?: Array<ScheduleApiResponse>;
+	/** Days promised by accepted proposals, not yet blocked by an event */
+	preReservations?: Array<PreReservation>;
 }
+
+// Promised to a client (accepted proposal) but not blocked yet: blue, apart
+// from the green/amber/red the back-end works out from the events
+const PRE_RESERVATION_STYLE = "bg-[#2E90FA] text-white rounded-full";
 
 export const CalendarCustom = ({
 	onSelectDate,
@@ -37,6 +44,7 @@ export const CalendarCustom = ({
 	currentMonth = new Date(),
 	setCurrentMonth,
 	agendaData = [],
+	preReservations = [],
 }: CalendarProps) => {
 	const nextMonth = () => {
 		setCurrentMonth(addMonths(currentMonth, 1));
@@ -53,7 +61,7 @@ export const CalendarCustom = ({
 		);
 
 		if (onHasDateForDay) {
-			onHasDateForDay(hasEventForDay.length > 0 ? hasEventForDay : null);
+			onHasDateForDay(hasEventForDay.length > 0 ? hasEventForDay : null, date);
 		}
 	};
 
@@ -138,6 +146,11 @@ export const CalendarCustom = ({
 					<span className="block">Indisponível</span>
 					<span className="block h-3 w-3 rounded-full bg-[#D92D20] opacity-50 border border-[#D92D20]" />
 				</div>
+
+				<div className="flex items-center gap-1">
+					<span className="block">Pré-reserva</span>
+					<span className="block h-3 w-3 rounded-full bg-[#2E90FA] border border-[#2E90FA]" />
+				</div>
 			</div>
 		</div>
 	);
@@ -181,6 +194,11 @@ export const CalendarCustom = ({
 						format(event.date, "dd/MM/yyyy") === format(cloneDay, "dd/MM/yyyy")
 				);
 
+				const preReservationsForDay = preReservations.filter(
+					(reservation) => reservation.date === format(cloneDay, "yyyy-MM-dd")
+				);
+				const isPreReserved = preReservationsForDay.length > 0;
+
 				const agendaDateStatus = agendaData.find((eventApi) => {
 					return isSameDay(
 						toZonedTime(eventApi.data, TIME_ZONE),
@@ -210,13 +228,16 @@ export const CalendarCustom = ({
 							className={`
               text-sm font-medium w-7 h-7 border border-white flex items-center justify-center rounded-full
 							${
-								agendaDateStatus && isSameDay(cloneDay, agendaDateStatus.data)
-									? dateStatusStyle(
-											agendaDateStatus.status,
-											isBefore(currentDate, cloneDay),
-											isToday(cloneDay)
-										)
-									: ""
+								isPreReserved
+									? PRE_RESERVATION_STYLE
+									: agendaDateStatus &&
+										  isSameDay(cloneDay, agendaDateStatus.data)
+										? dateStatusStyle(
+												agendaDateStatus.status,
+												isBefore(currentDate, cloneDay),
+												isToday(cloneDay)
+											)
+										: ""
 							}
             `}
 						>
@@ -242,6 +263,14 @@ export const CalendarCustom = ({
 
 						{/* Event Space */}
 						<div className="mt-1 hidden sm:block flex-1 overflow-y-auto">
+							{preReservationsForDay.map((reservation) => (
+								<div
+									key={reservation.proposal.id}
+									className="mb-1 truncate rounded bg-[#D1E9FF] px-1 py-0.5 text-[10px] text-[#175CD3]"
+								>
+									Pré-reserva · {reservation.client}
+								</div>
+							))}
 							{eventsForDay.length > 0 &&
 								eventsForDay
 									.sort((a, b) => {
