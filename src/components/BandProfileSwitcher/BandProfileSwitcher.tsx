@@ -14,7 +14,6 @@ import type { ActiveMusicalProduct } from "@/hooks/useActiveMusicalProduct";
 import { useUser } from "@/hooks/useUser";
 import { useOnboardingData } from "@/hooks/useOnboarding";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { userKeys } from "@/hooks/useUser";
 import { useAuthStore } from "@/store/authStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { OnboardingsPedingModal } from "../BandProfile/Account/OnboardingsPedingModal";
@@ -133,14 +132,14 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 		setIsOpen(!isOpen);
 	};
 
-	const handleLogout = async () => {
+	// It used to refetch the user (401, now logged out) and only then go home:
+	// that late navigation took over Entrar/Cadastre-se clicked in the
+	// meantime. Now the cached data of the account is dropped (nothing of it
+	// stays for whoever logs in next) and home opens at once
+	const handleLogout = () => {
 		logout();
-
-		await queryClient.resetQueries({
-			queryKey: userKeys.all,
-		});
-
-		await navigate({ to: "/" });
+		queryClient.clear();
+		void navigate({ to: "/" });
 	};
 
 	return (
