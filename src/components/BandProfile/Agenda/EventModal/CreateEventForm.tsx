@@ -60,6 +60,9 @@ export const CreateEventForm = ({
 	const errors = form.formState.errors;
 
 	const [hasDefineEventTime, setHasDefineEventTime] = useState(false);
+	// A new event can come filled in (confirming a pre-reservation); only one
+	// already saved (it has an id) is being edited
+	const isEditing = !!currentEvent?.id;
 
 	useEffect(() => {
 		if (currentEvent && currentEvent?.startTime && currentEvent?.endTime) {
@@ -100,7 +103,7 @@ export const CreateEventForm = ({
 			<div className="shrink-0 px-6 py-5 border-b border-gray-200">
 				<DialogHeader>
 					<DialogTitle className="text-xl font-semibold text-gray-900">
-						{currentEvent ? "Edição de Evento" : "Novo Evento"}
+						{isEditing ? "Edição de Evento" : "Novo Evento"}
 					</DialogTitle>
 
 					<DialogDescription />
@@ -371,7 +374,7 @@ export const CreateEventForm = ({
 							type="button"
 							variant="secondary"
 							onClick={() => {
-								if (currentEvent) {
+								if (isEditing) {
 									onCancel();
 								} else {
 									onClose();
@@ -386,7 +389,7 @@ export const CreateEventForm = ({
 							variant="primary"
 							className="px-4 py-2 whitespace-nowrap"
 						>
-							{currentEvent ? "Salvar" : "Criar Evento"}
+							{isEditing ? "Salvar" : "Criar Evento"}
 						</Button>
 					</div>
 				</div>

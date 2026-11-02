@@ -5,7 +5,16 @@ import { useSaveSchedule, useSchedule } from "@/hooks/useMusicalProducts";
 import { CalendarCustom } from "../Calendar/CalendarCustom";
 import { mapAgendaEventToFormData } from "@/utils/mapAgendaEventToFormData";
 import type { CommitmentAPI, MusicalProductSchedule } from "@/api/types";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { CalendarClock } from "lucide-react";
+import { musicalProductService } from "@/api";
+import { Button } from "@/components/ui/Button/Button";
+import {
+	usePreReservations,
+	type PreReservation,
+} from "@/hooks/usePreReservations";
+import { proposalStatusLabel } from "@/components/BandProfile/Proposals/components/ProposalStatusCard/types";
 import { EventModal } from "../BandProfile/Agenda/EventModal/EventModal";
 import { toast } from "sonner";
 import {
@@ -39,6 +48,51 @@ export const AgendaComponent = () => {
 		activeProduct?.id ?? 0,
 		currentMonth
 	);
+
+	const preReservations = usePreReservations(activeProduct?.id);
+
+	// Opens "Novo Evento" filled with the proposal, on top of that day's other
+	// events: saving sends the whole day, so they must be loaded first or the
+	// save would drop them
+	const confirmPreReservation = async (reservation: PreReservation) => {
+		if (!activeProduct?.id) return;
+
+		let dayEvents: Array<AgendaEvent>;
+		try {
+			const schedule = await musicalProductService.getScheduleRange(
+				activeProduct.id,
+				reservation.date,
+				reservation.date
+			);
+			dayEvents = mapAgendaEventToFormData(schedule).filter(
+				(event) => format(event.date, "yyyy-MM-dd") === reservation.date
+			);
+		} catch {
+			toast.error("Não foi possível carregar a agenda deste dia.");
+			return;
+		}
+
+		const { proposal } = reservation;
+		const startTime = proposal.horaInicio?.slice(0, 5) ?? "";
+		const date = parseISO(reservation.date);
+
+		setCurrentMonth(date);
+		setSelectedDate(date);
+		setSelectedEventsDay(dayEvents.length > 0 ? dayEvents : null);
+		setCurrentEvent({
+			id: 0,
+			title: `${proposal.tipoEvento?.nome ?? "Evento"} · ${reservation.client}`,
+			description: `Reserva da proposta nº ${proposal.id}`,
+			date: parseISO(`${reservation.date}T${startTime || "00:00"}`),
+			startTime,
+			endTime: proposal.horaFim?.slice(0, 5) ?? "",
+			location: proposal.local ?? "",
+			// The date is sold: no other bookings that day
+			availabilityOtherEvents: false,
+		});
+		setModalMode("create");
+		setShowEventModal(true);
+	};
 
 	const loadSchedule = useCallback(() => {
 		if (!activeProduct?.id) return;
@@ -287,14 +341,72 @@ export const AgendaComponent = () => {
 						a disponibilidade da agenda clicando em uma data por vez.
 					</p>
 
+					{preReservations.length > 0 ? (
+						<div className="mb-6 rounded-lg border border-[#B2DDFF] bg-[#EFF8FF] p-4">
+							<p className="flex items-center gap-2 font-semibold text-[#175CD3]">
+								<CalendarClock size={20} className="shrink-0" />
+								{preReservations.length === 1
+									? "1 data pré-reservada aguardando confirmação"
+									: `${preReservations.length} datas pré-reservadas aguardando confirmação`}
+							</p>
+							<p className="mt-1 text-sm text-gray-700">
+								Estas datas têm proposta aceita. Confirme a reserva para
+								bloquear a agenda: até lá, outros contratantes ainda veem o dia
+								como disponível.
+							</p>
+							<ul className="mt-3 divide-y divide-[#D1E9FF] rounded-md bg-white">
+								{preReservations.map((reservation) => (
+									<li
+										key={reservation.proposal.id}
+										className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between"
+									>
+										<div className="min-w-0 text-sm">
+											<p className="font-medium text-gray-900">
+												{format(
+													parseISO(reservation.date),
+													"dd/MM/yyyy (EEEE)",
+													{ locale: ptBR }
+												)}
+											</p>
+											<p className="truncate text-gray-600">
+												{reservation.proposal.tipoEvento?.nome} ·{" "}
+												{reservation.client} ·{" "}
+												{proposalStatusLabel(reservation.proposal.status.nome)}
+											</p>
+										</div>
+										<Button
+											size="sm"
+											variant="primary"
+											className="shrink-0"
+											onClick={() => {
+												void confirmPreReservation(reservation);
+											}}
+										>
+											Confirmar reserva
+										</Button>
+									</li>
+								))}
+							</ul>
+						</div>
+					) : null}
+
 					{/* Agenda Component */}
 					<div className=" border border-gray-200 rounded-lg w-full">
 						<CalendarCustom
 							currentMonth={currentMonth}
 							setCurrentMonth={setCurrentMonth}
 							onSelectDate={setSelectedDate}
-							onHasDateForDay={(eventsOfDay) => {
+							onHasDateForDay={(eventsOfDay, date) => {
 								const hasEvents = eventsOfDay && eventsOfDay.length > 0;
+
+								// A free pre-reserved day goes straight to confirming it
+								const reservation = preReservations.find(
+									(item) => item.date === format(date, "yyyy-MM-dd")
+								);
+								if (reservation && !hasEvents) {
+									void confirmPreReservation(reservation);
+									return;
+								}
 
 								setSelectedEventsDay(hasEvents ? eventsOfDay : null);
 
@@ -308,6 +420,7 @@ export const AgendaComponent = () => {
 							}}
 							agendaData={agendaData}
 							eventsAgendaFormat={events}
+							preReservations={preReservations}
 						/>
 					</div>
 				</div>

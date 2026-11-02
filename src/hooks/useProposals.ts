@@ -228,6 +228,8 @@ export const useFilteredProposals = (filters: {
 	IdProdutoMusical?: number | null;
 	IdContratante?: number | null;
 	IdProdutoMusicalContratante?: number | null;
+	/** Off until the filter is known: without ids the API lists everything */
+	enabled?: boolean;
 }) => {
 	const IdContratante = filters.IdContratante;
 	const IdProdutoMusical = filters.IdProdutoMusical;
@@ -348,7 +350,7 @@ export const useFilteredProposals = (filters: {
 				},
 			};
 		},
-		enabled: true,
+		enabled: filters.enabled ?? true,
 		staleTime: 2 * 60 * 1000, // 2 minutes
 		retry: 2,
 		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),

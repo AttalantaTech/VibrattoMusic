@@ -286,7 +286,9 @@ export const ChatInput = ({
 								className:
 									"!min-h-0 !rounded-lg !border-gray-300 bg-white focus-within:!border-primary-500",
 							}}
-							className="max-h-[120px] min-h-[40px] !px-4 !py-2 text-sm leading-6 !outline-none [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+							// 16px on phones: iPhones zoom into any field with smaller
+							// text when it gets focus (and answering focuses it)
+							className="max-h-[120px] min-h-[40px] !px-4 !py-2 text-base sm:text-sm leading-6 !outline-none [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
 						/>
 					</div>
 
