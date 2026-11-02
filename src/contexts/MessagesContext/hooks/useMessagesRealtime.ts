@@ -143,14 +143,16 @@ export const useMessagesRealtime = ({
 		content: string,
 		senderType: number,
 		idMusicalProduct: number | null
-	) => {
-		if (!content.trim() || !currentConversationId) return;
+	): Promise<boolean> => {
+		if (!content.trim() || !currentConversationId) return false;
 		try {
 			await sendMessage(content, senderType, idMusicalProduct);
 			setMessageInput("");
+			return true;
 		} catch (error) {
 			console.error("Erro ao enviar mensagem:", error);
 			toast.error("Erro ao enviar mensagem");
+			return false;
 		}
 	};
 

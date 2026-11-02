@@ -37,7 +37,7 @@ export type MessagesContextType = {
 		content: string,
 		senderType: number,
 		idMusicalProduct: number | null
-	) => Promise<void>;
+	) => Promise<boolean>;
 	handleMarkMessageAsRead: (messageId: number) => Promise<void>;
 	newConversationParticipant: { id: number; name: string } | null;
 	setNewConversationParticipant: (
