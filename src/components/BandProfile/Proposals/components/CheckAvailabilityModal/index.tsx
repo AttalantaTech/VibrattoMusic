@@ -269,7 +269,7 @@ export const CheckAvailabilityModal = ({
 												htmlFor="availabilityOtherEvents"
 												className="text-sm font-medium text-gray-700 cursor-pointer"
 											>
-												Definir horário do inicio do show
+												Definir horário e duração do evento
 											</Label>
 										</div>
 									</div>
@@ -286,7 +286,10 @@ export const CheckAvailabilityModal = ({
 												name="horaInicio"
 												render={({ field }) => (
 													<>
-														<Label htmlFor="horaInicio">Hora de Início</Label>
+														<Label htmlFor="horaInicio">
+															Hora de Início{" "}
+															<span className="text-red-500">*</span>
+														</Label>
 														<Input
 															id="horaInicio"
 															type="time"
@@ -314,7 +317,9 @@ export const CheckAvailabilityModal = ({
 								{/* Quick duration buttons */}
 								{hasDefineEventTime && (
 									<div className="flex items-center gap-2 flex-wrap">
-										<span className="text-sm text-gray-600">Duração:</span>
+										<span className="text-sm text-gray-600">
+											Duração <span className="text-red-500">*</span>:
+										</span>
 										{quickTimeOptions.map((option) => (
 											<button
 												key={option.duration}
@@ -335,6 +340,12 @@ export const CheckAvailabilityModal = ({
 												{option.label}
 											</button>
 										))}
+									</div>
+								)}
+
+								{hasDefineEventTime && errors.duracao?.message && (
+									<div className="text-red-500 text-sm mt-2">
+										{errors.duracao.message}
 									</div>
 								)}
 							</div>

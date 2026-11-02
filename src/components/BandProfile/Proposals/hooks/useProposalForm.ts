@@ -152,6 +152,8 @@ export const useProposalForm = ({
 			dataEvento,
 			dataVencimentoAceite,
 			dataVencimentoSinalPagamento,
+			// Checked on its own when the proposal has a time (useProposalState)
+			definirHorarioEvento: !!proposal?.horaFim,
 			horaInicio: proposal?.horaInicio || "",
 			duracao: duration || "",
 			formaPagamento: proposal?.formaPagamento.map((item) => item.id) || [],
@@ -179,22 +181,22 @@ export const useProposalForm = ({
 	});
 
 	const setQuickDuration = (durationSeconds: number) => {
-		const startTime = form.getValues("horaInicio");
-
-		if (!startTime) return;
-
-		const duration = secondsToTime(durationSeconds);
-
-		form.setValue("duracao", duration);
+		form.setValue("duracao", secondsToTime(durationSeconds), {
+			shouldValidate: true,
+		});
 	};
 
 	const handleHasDefineEventTime = (state: boolean) => {
 		setHasDefineEventTime(state);
+		// The schema only requires the time fields while this is checked
+		form.setValue("definirHorarioEvento", state);
 
 		const currentStartTime = form.getValues("horaInicio");
 
 		if (!state) {
 			form.setValue("horaInicio", "");
+			form.setValue("duracao", "");
+			form.clearErrors(["horaInicio", "duracao"]);
 
 			return;
 		}
@@ -209,7 +211,7 @@ export const useProposalForm = ({
 		const startTime = currentStartTime || hourPtBR;
 
 		form.setValue("horaInicio", startTime);
-		form.setValue("duracao", "02:00:00");
+		// No preset duration: it is required and has to be picked
 	};
 
 	const isSectionComplete = (
@@ -232,8 +234,10 @@ export const useProposalForm = ({
 					form.watch("nomeContratante") &&
 					form.watch("local") &&
 					form.watch("dataEvento") &&
-					form.watch("horaInicio") &&
-					form.watch("duracao")
+					// The time is optional; once "Definir horário" is checked, both
+					// fields count
+					(!form.watch("definirHorarioEvento") ||
+						(form.watch("horaInicio") && form.watch("duracao")))
 				);
 			case "paymentConditions":
 				return !!(
