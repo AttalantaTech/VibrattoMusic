@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 const defaultValues: RegisterFormData = {
 	email: "",
 	nome: "",
+	razaoSocial: "",
 	tipoDocumento: "cpf",
 	cpfResponsavelLegal: "",
 	nomeResponsavelLegal: "",

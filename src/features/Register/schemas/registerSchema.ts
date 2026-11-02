@@ -9,7 +9,9 @@ import {
 export const registerSchema = z
 	.object({
 		email: z.string().email("Email inválido"),
+		// Full name (CPF) or trade name, "nome fantasia" (CNPJ)
 		nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+		razaoSocial: z.string().trim(),
 		tipoDocumento: z.enum(["cpf", "cnpj"]),
 		cpfOuCnpj: z.string(),
 		nomeResponsavelLegal: z.string().trim(),
@@ -36,7 +38,13 @@ export const registerSchema = z
 		path: ["confirmarSenha"],
 	})
 	.superRefine((data, context) => {
-		if (containsPersonalData(data.senha, [data.email, data.nome])) {
+		if (
+			containsPersonalData(data.senha, [
+				data.email,
+				data.nome,
+				data.razaoSocial,
+			])
+		) {
 			context.addIssue({
 				code: z.ZodIssueCode.custom,
 				path: ["senha"],
@@ -59,6 +67,13 @@ export const registerSchema = z
 				code: z.ZodIssueCode.custom,
 				path: ["cpfOuCnpj"],
 				message: "CNPJ inválido",
+			});
+		}
+		if (data.razaoSocial.length < 2) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["razaoSocial"],
+				message: "Informe a razão social",
 			});
 		}
 		if (data.nomeResponsavelLegal.length < 2) {

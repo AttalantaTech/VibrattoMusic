@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Controller } from "react-hook-form";
 import { Save, User } from "lucide-react";
 import { toast } from "sonner";
@@ -19,6 +20,9 @@ import {
 	onlyDigits,
 } from "@/utils/validation";
 import { showApiError } from "@/utils/showApiError";
+import { imageUploadService } from "@/api";
+import { ImageUploadArea } from "@/components/ImageUploadArea/ImageUploadArea";
+import { useProfilePhotoDraft } from "@/hooks/useProfilePhotoDraft";
 
 const FieldError = ({ message }: { message?: string }) =>
 	message ? <p className="text-red-600 text-sm mt-1">{message}</p> : null;
@@ -44,14 +48,44 @@ export const ProfileSection = () => {
 		formState: { errors, isDirty },
 	} = form;
 
+	const photo = useProfilePhotoDraft(userData?.fotoPerfil);
+	const [isSavingPhoto, setIsSavingPhoto] = useState(false);
+
 	const isCnpj = watch("tipoDocumento") === "cnpj";
-	const isBusy = isLoading || updateUserMutation.isPending;
+	const isBusy = isLoading || isSavingPhoto || updateUserMutation.isPending;
+
+	// The new photo goes up first, then the old one is deleted, so a failed
+	// upload never leaves the profile without its current photo
+	const savePhoto = async (): Promise<string | null> => {
+		if (!photo.isChanged) return photo.stored;
+
+		setIsSavingPhoto(true);
+		try {
+			const uploaded = photo.file
+				? await imageUploadService.uploadUserProfilePhoto(photo.file)
+				: null;
+			if (photo.stored) {
+				await imageUploadService.deleteImage({
+					evento: "UsuarioFotoPerfil",
+					idCadastro: 0,
+					idLista: null,
+				});
+			}
+			return uploaded;
+		} finally {
+			setIsSavingPhoto(false);
+		}
+	};
 
 	const onSubmit = async (data: ProfileSettingsFormData) => {
 		try {
-			// The API expects the full registration data on every update
+			const fotoPerfil = await savePhoto();
+			// The API expects the full registration data on every update, the
+			// photo included: leaving it out would erase it
 			await updateUserMutation.mutateAsync({
 				nome: data.nome,
+				razaoSocial: isCnpj ? data.razaoSocial : null,
+				fotoPerfil,
 				celular: onlyDigits(data.celular),
 				cpfOuCnpj: onlyAlphanumeric(data.cpfOuCnpj),
 				nomeResponsavelLegal: isCnpj ? data.nomeResponsavelLegal : "",
@@ -65,6 +99,7 @@ export const ProfileSection = () => {
 				estado: data.estado.toUpperCase(),
 			});
 			reset(data);
+			photo.clear();
 			toast.success("Dados atualizados com sucesso!");
 		} catch (error: unknown) {
 			showApiError(error, "Não foi possível salvar suas alterações.");
@@ -79,11 +114,33 @@ export const ProfileSection = () => {
 		>
 			<form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
 				<GroupTitle>Dados pessoais</GroupTitle>
+				<div className="w-full max-w-[160px]">
+					<ImageUploadArea
+						title="Foto de Perfil (opcional)"
+						description="JPG, PNG até 5MB"
+						currentImage={photo.currentImage}
+						isUploading={isSavingPhoto}
+						onFileSelect={photo.select}
+						onDelete={photo.remove}
+						aspectRatio="aspect-square"
+					/>
+				</div>
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					{isCnpj && (
+						<div className="md:col-span-2">
+							<InputField
+								{...register("razaoSocial")}
+								label="Razão Social"
+								placeholder="Ex: Maré Alta Gastronomia e Eventos LTDA"
+								disabled={isBusy}
+							/>
+							<FieldError message={errors.razaoSocial?.message} />
+						</div>
+					)}
 					<div className="md:col-span-2">
 						<InputField
 							{...register("nome")}
-							label={isCnpj ? "Razão Social" : "Nome Completo"}
+							label={isCnpj ? "Nome Fantasia" : "Nome Completo"}
 							disabled={isBusy}
 						/>
 						<FieldError message={errors.nome?.message} />
@@ -281,10 +338,12 @@ export const ProfileSection = () => {
 					<Button
 						type="submit"
 						className="flex items-center gap-2"
-						disabled={!isDirty || isBusy}
+						disabled={!(isDirty || photo.isChanged) || isBusy}
 					>
 						<Save size={18} />
-						{updateUserMutation.isPending ? "Salvando..." : "Salvar Alterações"}
+						{isSavingPhoto || updateUserMutation.isPending
+							? "Salvando..."
+							: "Salvar Alterações"}
 					</Button>
 				</div>
 			</form>
