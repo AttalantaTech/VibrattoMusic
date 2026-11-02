@@ -34,8 +34,7 @@ const defaultValues: ProfileSettingsFormData = {
 
 const toFormValues = (user: UserApiResponse): ProfileSettingsFormData => ({
 	nome: user.nome ?? "",
-	// GET usuario returns the phone as "telefone"; PUT expects "celular"
-	celular: formatPhone(user.celular ?? user.celular),
+	celular: formatPhone(user.celular),
 	tipoDocumento: getDocumentType(user.cpfOuCnpj),
 	cpfOuCnpj: formatDocument(user.cpfOuCnpj),
 	nomeResponsavelLegal: user.nomeResponsavelLegal ?? "",

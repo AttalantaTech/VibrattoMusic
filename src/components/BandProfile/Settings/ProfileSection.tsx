@@ -109,7 +109,7 @@ export const ProfileSection = () => {
 									{...field}
 									label="WhatsApp"
 									mask={PHONE_MASK}
-									maskPlaceholder="11 99999-9999"
+									maskPlaceholder="(11) 99999-9999"
 									disabled={isBusy}
 								/>
 							)}
