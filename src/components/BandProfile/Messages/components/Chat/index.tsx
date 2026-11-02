@@ -334,11 +334,15 @@ export const Chat = () => {
 								}}
 								onSend={(content: string) => {
 									if (handleSendMessage) {
+										// Like the text, the quote is cleared only once the message
+										// went out, so a failed send can be retried as it was
 										void handleSendMessage(
 											replyTo ? buildReplyQuote(replyTo) + content : content,
 											activeProduct?.id ? 2 : 1,
 											activeProduct?.id ? activeProduct.id : null
-										);
+										).then((sent) => {
+											if (sent) setReplyTo(null);
+										});
 									}
 								}}
 								disabled={isMessagesLoading}
