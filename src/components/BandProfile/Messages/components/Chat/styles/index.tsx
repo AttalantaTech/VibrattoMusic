@@ -45,9 +45,11 @@ export const ChatContainer = ({
 	children,
 	isInsideConversation,
 }: PropsWithChildren & { isInsideConversation: boolean }) => {
+	// min-w-0: without it the one-line excerpt of the message being answered
+	// stretched the whole chat past the phone's screen
 	return (
 		<div
-			className={`flex-1 ${isInsideConversation ? "flex" : "hidden"} md:flex flex-col`}
+			className={`min-w-0 flex-1 ${isInsideConversation ? "flex" : "hidden"} md:flex flex-col`}
 		>
 			{children}
 		</div>
@@ -74,7 +76,9 @@ export const ChatMessagesContainer = ({
 		<div
 			ref={messagesContainerRef}
 			onClick={onClick}
-			className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
+			// overflow-x-hidden: a message swiped to reply slides past the edge,
+			// and the list must not scroll sideways with it
+			className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 bg-gray-50"
 		>
 			{children}
 		</div>
