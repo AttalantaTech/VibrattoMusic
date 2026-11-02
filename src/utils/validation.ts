@@ -87,7 +87,7 @@ const formatWithPattern = (raw: string, pattern: string) => {
 };
 
 export const formatPhone = (value?: string | null) =>
-	formatWithPattern(onlyDigits(value ?? ""), "## #####-####");
+	formatWithPattern(onlyDigits(value ?? ""), "(##) #####-####");
 
 export const formatCep = (value?: string | null) =>
 	formatWithPattern(onlyDigits(value ?? ""), "#####-###");
