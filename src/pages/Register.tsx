@@ -2,8 +2,7 @@ import { Controller } from "react-hook-form";
 import { Briefcase, Eye, EyeOff, User } from "lucide-react";
 import { useRegisterUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/Button/Button";
-import LogoVibratto from "@/assets/images/Logo_Vibratto.png";
-import VibrattoName from "@/assets/images/Vibratto.png";
+import { BackToHomeLink, HomeLogoLink } from "@/components/auth/HomeLinks";
 import ShowImg from "@/assets/images/show.jpg";
 import { InputField } from "@/components/forms/InputField/InputField";
 import { Select } from "@/components/forms/Select/Select";
@@ -51,20 +50,10 @@ export const Register = () => {
 			{/* Content */}
 			<div className="flex flex-col w-full lg:w-1/2 lg:h-full justify-start items-center gap-6 px-4 lg:px-0 lg:overflow-y-auto py-6">
 				<div className="w-full max-w-md lg:w-[50%] flex flex-col my-auto">
+					<BackToHomeLink />
 					{/* Header */}
 					<div className="flex flex-col justify-center items-center gap-2 lg:gap-6 text-center">
-						<div className="flex items-center justify-around">
-							<img
-								alt="Vibratto logo"
-								className="w-auto h-5 sm:h-10"
-								src={LogoVibratto}
-							/>
-							<img
-								alt="Vibratto logo"
-								className="w-auto h-3 sm:h-4"
-								src={VibrattoName}
-							/>
-						</div>
+						<HomeLogoLink />
 						<div className="flex flex-col gap-2 lg:gap-3 w-full">
 							<h1 className="font-semibold text-2xl sm:text-3xl">
 								Cadastre-se
