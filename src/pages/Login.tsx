@@ -4,13 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { useLogin } from "../hooks/useUser";
+import { BackToHomeLink, HomeLogoLink } from "../components/auth/HomeLinks";
 import { useAuthStore } from "../store/authStore";
 import { Button } from "../components/ui/Button/Button";
 import { InputField } from "../components/forms/InputField/InputField";
 import { Link, useRouter } from "@tanstack/react-router";
 import { extractUserIdFromToken } from "../utils/jwt";
-import LogoVibratto from "../assets/images/Logo_Vibratto.png";
-import VibrattoName from "../assets/images/Vibratto.png";
 import ShowImg from "../assets/images/show.jpg";
 import { apiClient } from "@/api/core/client";
 import type { User } from "@/api/types";
@@ -156,20 +155,10 @@ export const Login = () => {
 			{/* Content */}
 			<div className="flex flex-col w-full lg:w-1/2 h-full justify-center items-center gap-6 px-4 lg:px-0">
 				<div className="w-full max-w-md lg:w-[50%] flex flex-col">
+					<BackToHomeLink />
 					{/* Header */}
 					<div className="flex flex-col justify-center items-center gap-2 lg:gap-6 text-center">
-						<div className="flex items-center justify-around">
-							<img
-								alt="Vibratto logo"
-								className="w-auto h-5 sm:h-10"
-								src={LogoVibratto}
-							/>
-							<img
-								alt="Vibratto logo"
-								className="w-auto h-3 sm:h-4"
-								src={VibrattoName}
-							/>
-						</div>
+						<HomeLogoLink />
 						<div className="flex flex-col gap-2 lg:gap-3 w-full">
 							<h1 className="font-semibold text-2xl sm:text-3xl">
 								Entre na sua conta

@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "../components/ui/Button/Button";
-import LogoVibratto from "../assets/images/Logo_Vibratto.png";
-import VibrattoName from "../assets/images/Vibratto.png";
+import { BackToHomeLink, HomeLogoLink } from "../components/auth/HomeLinks";
 import { useAuthStore } from "../store/authStore";
 import { setStoredUserType } from "../utils/userType";
 import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
@@ -69,20 +68,12 @@ export const UserTypeSelection = () => {
 	return (
 		<div className="flex flex-col min-h-[100dvh] w-full justify-center items-center bg-gradient-to-br from-blue-50 to-white px-4 py-8 sm:py-12">
 			<div className="w-full max-w-4xl">
+				<div className="mx-auto max-w-2xl">
+					<BackToHomeLink />
+				</div>
 				{/* Header */}
 				<div className="flex flex-col justify-center items-center gap-6 mb-8 sm:mb-12">
-					<div className="flex items-center justify-around">
-						<img
-							alt="Vibratto logo"
-							className="w-auto h-8"
-							src={LogoVibratto}
-						/>
-						<img
-							alt="Vibratto logo"
-							className="w-auto h-3 sm:h-4"
-							src={VibrattoName}
-						/>
-					</div>
+					<HomeLogoLink symbolClassName="h-8" />
 					<div className="text-center">
 						<h1 className="text-3xl font-bold text-gray-900 mb-3">
 							Como você quer usar a plataforma?
