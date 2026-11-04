@@ -112,6 +112,20 @@ export class ImageUploadService {
 	}
 
 	/**
+	 * Uploads the account's profile photo. The link comes from an endpoint
+	 * without login, as the photo is chosen while the account is being created
+	 */
+	async uploadUserProfilePhoto(file: File): Promise<string> {
+		const extensaoArquivo = file.name.split(".").pop()?.toLowerCase() || "jpg";
+		const sasUrl = await this.apiClient.post<string>(
+			"/imagem/gerar-url-usuario",
+			{ ExtensaoArquivo: extensaoArquivo }
+		);
+		const { blobUrl } = await this.uploadToAzureBlob(sasUrl, file);
+		return blobUrl;
+	}
+
+	/**
 	 * Delete an uploaded image
 	 */
 	public async deleteImage(data: ImageDeleteRequest): Promise<void> {

@@ -10,6 +10,8 @@ import { Select } from "@/components/forms/Select/Select";
 import { useRegisterForm } from "@/features/Register/hooks/useRegisterForm";
 import { useRegisterSubmit } from "@/features/Register/hooks/useRegisterSubmit";
 import { CNPJ_MASK, CPF_MASK, DOCUMENT_TYPE_OPTIONS } from "@/utils/validation";
+import { ImageUploadArea } from "@/components/ImageUploadArea/ImageUploadArea";
+import { useProfilePhotoDraft } from "@/hooks/useProfilePhotoDraft";
 import { FieldError } from "@/components/forms/FieldError";
 import { PasswordRequirements } from "@/components/forms/PasswordRequirements";
 
@@ -41,6 +43,8 @@ export const Register = () => {
 
 	const isCnpj = watch("tipoDocumento") === "cnpj";
 	const password = watch("senha");
+
+	const photo = useProfilePhotoDraft();
 
 	return (
 		<div className="flex flex-col lg:flex-row min-h-[100dvh] lg:h-screen w-full justify-center items-center">
@@ -74,9 +78,21 @@ export const Register = () => {
 					{/* Inputs */}
 					<form
 						className="flex flex-col w-full justify-center items-center gap-4 lg:gap-6 pt-4 lg:pt-6"
-						onSubmit={handleSubmit(onSubmit)}
+						onSubmit={handleSubmit((data) => onSubmit(data, photo.file))}
 					>
 						<div className="flex flex-col gap-4 lg:gap-5 w-full">
+							{/* Optional; uploaded only when the account is created */}
+							<div className="mx-auto w-full max-w-[160px]">
+								<ImageUploadArea
+									title="Foto de Perfil (opcional)"
+									description="JPG, PNG até 5MB"
+									currentImage={photo.currentImage}
+									isUploading={isSubmitting && !!photo.file}
+									onFileSelect={photo.select}
+									onDelete={photo.remove}
+									aspectRatio="aspect-square"
+								/>
+							</div>
 							<div>
 								<InputField
 									{...register("email")}
@@ -86,16 +102,6 @@ export const Register = () => {
 									required
 								/>
 								<FieldError message={errors.email?.message} />
-							</div>
-							<div>
-								<InputField
-									{...register("nome")}
-									label={isCnpj ? "Razão Social" : "Nome Completo"}
-									placeholder="João da Silva"
-									type="text"
-									required
-								/>
-								<FieldError message={errors.nome?.message} />
 							</div>
 							<div className="flex flex-col gap-2">
 								<label className="block text-sm font-medium text-gray-700">
@@ -155,6 +161,30 @@ export const Register = () => {
 									</div>
 								</div>
 							</div>
+							{/* Chosen after the document type, so the CNPJ fields show up
+							    right below it instead of above, already passed */}
+							{isCnpj && (
+								<div>
+									<InputField
+										{...register("razaoSocial")}
+										label="Razão Social"
+										placeholder="Ex: Maré Alta Gastronomia e Eventos LTDA"
+										type="text"
+										required
+									/>
+									<FieldError message={errors.razaoSocial?.message} />
+								</div>
+							)}
+							<div>
+								<InputField
+									{...register("nome")}
+									label={isCnpj ? "Nome Fantasia" : "Nome Completo"}
+									placeholder={isCnpj ? "Ex: Bistrô da Praia" : "João da Silva"}
+									type="text"
+									required
+								/>
+								<FieldError message={errors.nome?.message} />
+							</div>
 							{isCnpj && (
 								<>
 									<div className="col-span-3">
@@ -180,7 +210,7 @@ export const Register = () => {
 											required={isCnpj}
 											icon={<User size={20} />}
 											label="Nome do Responsável Legal"
-											placeholder="Ex: Banda LTDA"
+											placeholder="Ex: Fernanda Nogueira"
 											{...register("nomeResponsavelLegal")}
 										/>
 										<FieldError

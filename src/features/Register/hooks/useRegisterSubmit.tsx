@@ -5,6 +5,8 @@ import { useRouter } from "@tanstack/react-router";
 import { getStoredUserType, setStoredUserType } from "@/utils/userType";
 import { onlyAlphanumeric, onlyDigits } from "@/utils/validation";
 import { showApiError } from "@/utils/showApiError";
+import { imageUploadService } from "@/api";
+import { toast } from "sonner";
 
 export function useRegisterSubmit() {
 	const router = useRouter();
@@ -12,14 +14,29 @@ export function useRegisterSubmit() {
 	const loginMutation = useLogin();
 	const setAuth = useAuthStore((state) => state.setAuth);
 
-	const onSubmit = async (data: RegisterFormData) => {
+	const onSubmit = async (data: RegisterFormData, photo?: File | null) => {
 		try {
 			const isCnpj = data.tipoDocumento === "cnpj";
+
+			// The photo goes up only now, so giving up halfway leaves nothing
+			// stored. It is optional: if it fails, the account is created without it
+			let fotoPerfil: string | null = null;
+			if (photo) {
+				try {
+					fotoPerfil = await imageUploadService.uploadUserProfilePhoto(photo);
+				} catch {
+					toast.warning(
+						"Não foi possível enviar a foto. Seu cadastro seguirá sem ela; você pode adicioná-la depois nos Ajustes."
+					);
+				}
+			}
 
 			const finalRegisterData = {
 				email: data.email,
 				senha: data.senha,
 				nome: data.nome,
+				razaoSocial: isCnpj ? data.razaoSocial : null,
+				fotoPerfil,
 				cpfOuCnpj: onlyAlphanumeric(data.cpfOuCnpj),
 				cpfResponsavelLegal: isCnpj
 					? onlyDigits(data.cpfResponsavelLegal)
