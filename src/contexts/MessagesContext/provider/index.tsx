@@ -2,6 +2,7 @@
 import type { PropsWithChildren } from "react";
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
+import { useUser } from "@/hooks/useUser";
 
 import { MessagesContext } from "../context";
 import { useChatConnection } from "@/api/services/chat/useChatConnection";
@@ -24,6 +25,8 @@ export const MessagesProvider = ({ children }: PropsWithChildren) => {
 	const { user, token } = useAuthStore();
 	const { isProfileComplete } = useProfileStatus();
 	const { activeProduct } = useMusicalProductStore();
+	// The auth store keeps the login data only; the photo comes from GET usuario
+	const { data: userData } = useUser();
 
 	const currentUserId = user?.id;
 	const currentProductId = activeProduct?.id
@@ -35,12 +38,14 @@ export const MessagesProvider = ({ children }: PropsWithChildren) => {
 				id: activeProduct.id,
 				name: activeProduct.nome,
 				type: "product" as const,
+				profileImageUrl: activeProduct.fotoPerfil,
 			}
 		: {
 				id: user?.id || 0,
 				name: user?.nome || "Usuário",
 				type: "user" as const,
 				isContractor: true,
+				profileImageUrl: userData?.fotoPerfil,
 			};
 
 	const {
