@@ -21,7 +21,7 @@ import { SignatureProgress } from "@/components/BandProfile/Proposals/components
 import { DownPaymentNotice } from "@/components/BandProfile/Proposals/components/DownPaymentNotice";
 import { useProposalPDF } from "@/hooks/useProposals";
 import { Accordion } from "@/components/ui/Accordion";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
 
@@ -38,6 +38,8 @@ interface ProposalDetailsModalProps {
 	isLoadingAccept?: boolean;
 	isLoadingCancel?: boolean;
 	isLoadingPaidSign?: boolean;
+	/** Tabs to the progress and the contract; replaces "Ver o Contrato" */
+	navigation?: ReactNode;
 }
 
 export const ProposalDetailsModal = ({
@@ -53,6 +55,7 @@ export const ProposalDetailsModal = ({
 	isLoadingCancel = false,
 	isLoadingPaidSign = false,
 	mode,
+	navigation,
 }: ProposalDetailsModalProps) => {
 	const { data: proposalPdfUrl, isLoading: proposalPdfLoading } =
 		useProposalPDF(proposal?.identificadorUnico || "");
@@ -116,11 +119,12 @@ export const ProposalDetailsModal = ({
 			>
 				<div className="p-6">
 					{/* Header (the dialog's own X closes it) */}
-					<div className="mb-6 pr-8">
+					<div className={`${navigation ? "mb-4" : "mb-6"} pr-8`}>
 						<DialogTitle className="text-2xl font-bold text-gray-900">
 							Detalhes da Proposta
 						</DialogTitle>
 					</div>
+					{navigation}
 
 					{/* Status Badge */}
 					<div className="mb-6 flex flex-col gap-2">
@@ -236,7 +240,7 @@ export const ProposalDetailsModal = ({
 								)}
 
 								{/* Band (contracted) signature button */}
-								{isAcceptedStatus && (
+								{isAcceptedStatus && !navigation && (
 									<Button
 										className="bg-primary-600 hover:bg-primary-700 transition-all"
 										onClick={() => {
@@ -288,7 +292,7 @@ export const ProposalDetailsModal = ({
 									</Button>
 								)}
 								{/* Contractor signature button */}
-								{isAcceptedStatus && (
+								{isAcceptedStatus && !navigation && (
 									<Button
 										className="bg-primary-600 hover:bg-primary-700"
 										onClick={() => {
