@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import type { ProposalResponse } from "@/api/types";
 import { useProposalByNumber } from "@/hooks/useProposals";
@@ -7,30 +6,42 @@ import { ProposalDetailsModal } from "../ProposalDetailsModal";
 import { ProposalRejectionModal } from "../ProposalRejectionModal";
 import { ConfirmDownPaymentDialog } from "../ConfirmDownPaymentDialog";
 import { HiringProgressModal } from "../HiringProgressModal";
+import { ContractDetailsModal } from "../ContractDetailsModal";
+import { ProposalViewTabs, type ProposalView } from "../ProposalViewTabs";
 import { useProposalActions } from "../../hooks/useProposalActions";
 
-interface ChatProposalDialogProps {
-	/** Proposal number from the chat link; null keeps it closed */
+interface ProposalViewerProps {
+	/** Proposal number; null keeps it closed */
 	proposalId: number | null;
+	/** Which dialog it opens on */
+	initialView?: ProposalView;
 	/** The band (seller) gets the Vendas actions, the contractor Contratações' */
 	isSeller: boolean;
 	conversationId?: number | null;
-	/** Opens on the hiring progress ("Acompanhar contratação") */
-	showProgress?: boolean;
 	onClose: () => void;
 }
 
-// "Ver proposta" in the chat: the same details dialog as Vendas/Contratações,
-// actions included, over the conversation. "Acompanhar contratação" opens on
-// the hiring progress first, with a way into the details
-export const ChatProposalDialog = ({
+// The contract exists from the acceptance on
+const HAS_CONTRACT = new Set([
+	"Aceita",
+	"AguardandoPagamento",
+	"ContratacaoConcluida",
+]);
+
+/**
+ * The proposal's progress, details and contract over the current screen (chat,
+ * Vendas, Contratações), with tabs between the three and their actions.
+ * Closing it leaves the user where they were; the contract used to be a page
+ * of its own, and coming back closed the conversation. The proposal is read
+ * again when opened, so it shows what changed meanwhile (e.g. signatures)
+ */
+export const ProposalViewer = ({
 	proposalId,
+	initialView = "details",
 	isSeller,
 	conversationId,
-	showProgress = false,
 	onClose,
-}: ChatProposalDialogProps) => {
-	const navigate = useNavigate();
+}: ProposalViewerProps) => {
 	const { data: proposal, isError } = useProposalByNumber(proposalId);
 	const {
 		accept,
@@ -46,19 +57,10 @@ export const ChatProposalDialog = ({
 	const [proposalToConfirmPayment, setProposalToConfirmPayment] =
 		useState<ProposalResponse | null>(null);
 
-	// Each link opens on its own view; "Ver proposta" in the progress
-	// switches to the details
-	const [isDetailsView, setIsDetailsView] = useState(!showProgress);
+	const [view, setView] = useState<ProposalView>(initialView);
 	useEffect(() => {
-		setIsDetailsView(!showProgress);
-	}, [proposalId, showProgress]);
-
-	const seeContract = (identificadorUnico: string) => {
-		void navigate({
-			to: "/band/contract/$id",
-			params: { id: identificadorUnico },
-		});
-	};
+		setView(initialView);
+	}, [proposalId, initialView]);
 
 	useEffect(() => {
 		if (!isError) return;
@@ -66,27 +68,40 @@ export const ChatProposalDialog = ({
 		onClose();
 	}, [isError, onClose]);
 
+	const isOpen = !!proposalId && !!proposal;
+	const hasContract = HAS_CONTRACT.has(proposal?.status.nome ?? "");
+	// No contract yet (e.g. opened by an old link): the proposal instead
+	const shownView = view === "contract" && !hasContract ? "details" : view;
+
+	const navigation = (
+		<ProposalViewTabs
+			view={shownView}
+			hasContract={hasContract}
+			onChange={setView}
+		/>
+	);
+
+	// The confirmation takes over: the dialog closes behind it
+	const askDownPaymentConfirmation = (toConfirm: ProposalResponse | null) => {
+		setProposalToConfirmPayment(toConfirm);
+		onClose();
+	};
+
 	return (
 		<>
 			<HiringProgressModal
-				proposal={proposalId && !isDetailsView ? (proposal ?? null) : null}
+				proposal={isOpen && shownView === "progress" ? proposal : null}
 				isSeller={isSeller}
 				onClose={onClose}
-				onSeeProposal={() => {
-					setIsDetailsView(true);
-				}}
-				onSeeContract={seeContract}
-				// The confirmation takes over, as from the details
-				onConfirmDownPayment={(toConfirm) => {
-					setProposalToConfirmPayment(toConfirm);
-					onClose();
-				}}
+				navigation={navigation}
+				onConfirmDownPayment={askDownPaymentConfirmation}
 			/>
 
 			<ProposalDetailsModal
-				isOpen={!!proposalId && !!proposal && isDetailsView}
+				isOpen={isOpen && shownView === "details"}
 				mode={isSeller ? "Contracted" : "Contractor"}
 				proposal={proposal ?? null}
+				navigation={navigation}
 				onClose={onClose}
 				onAccept={async () => {
 					if (proposal) await accept(proposal);
@@ -95,13 +110,25 @@ export const ChatProposalDialog = ({
 				onCancel={async () => {
 					if (proposal) await cancel(proposal);
 				}}
-				// Asks first; the dialog closes and the confirmation takes over
 				onPaidSign={() => {
-					setProposalToConfirmPayment(proposal ?? null);
+					askDownPaymentConfirmation(proposal ?? null);
 					return Promise.resolve();
 				}}
-				onSeeContract={seeContract}
+				onSeeContract={() => {
+					setView("contract");
+				}}
 				isLoadingAccept={isLoadingAccept}
+				isLoadingCancel={isLoadingCancel}
+				isLoadingPaidSign={isLoadingPaidSign}
+			/>
+
+			<ContractDetailsModal
+				proposal={isOpen && shownView === "contract" ? proposal : null}
+				isSeller={isSeller}
+				navigation={navigation}
+				onClose={onClose}
+				onCancel={cancel}
+				onPaidSign={askDownPaymentConfirmation}
 				isLoadingCancel={isLoadingCancel}
 				isLoadingPaidSign={isLoadingPaidSign}
 			/>

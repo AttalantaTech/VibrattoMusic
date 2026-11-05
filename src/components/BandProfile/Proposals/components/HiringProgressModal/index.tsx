@@ -1,11 +1,5 @@
-import {
-	Ban,
-	CheckCircle2,
-	Clock,
-	DollarSign,
-	Eye,
-	PenLine,
-} from "lucide-react";
+import type { ReactNode } from "react";
+import { Ban, CheckCircle2, Clock, DollarSign } from "lucide-react";
 import type { ProposalResponse } from "@/api/types";
 import { Button } from "@/components/ui/Button/Button";
 import {
@@ -22,25 +16,18 @@ interface HiringProgressModalProps {
 	/** The band (seller) can confirm the down payment from here */
 	isSeller: boolean;
 	onClose: () => void;
-	onSeeProposal: () => void;
-	onSeeContract: (identificadorUnico: string) => void;
+	/** Tabs to the proposal and the contract, under the title */
+	navigation?: ReactNode;
 	onConfirmDownPayment: (proposal: ProposalResponse) => void;
 }
 
-const STEP_ICONS: Record<StepState, React.ReactNode> = {
+const STEP_ICONS: Record<StepState, ReactNode> = {
 	done: (
 		<CheckCircle2 className="h-5 w-5 text-green-600" aria-label="Concluído" />
 	),
 	pending: <Clock className="h-5 w-5 text-gray-400" aria-label="Pendente" />,
 	ended: <Ban className="h-5 w-5 text-red-600" aria-label="Encerrado" />,
 };
-
-// The contract exists from the acceptance on
-const HAS_CONTRACT = new Set([
-	"Aceita",
-	"AguardandoPagamento",
-	"ContratacaoConcluida",
-]);
 
 /**
  * "Acompanhar contratação" on the chat cards: the hiring's steps read from the
@@ -51,8 +38,7 @@ export const HiringProgressModal = ({
 	proposal,
 	isSeller,
 	onClose,
-	onSeeProposal,
-	onSeeContract,
+	navigation,
 	onConfirmDownPayment,
 }: HiringProgressModalProps) => {
 	if (!proposal) return null;
@@ -67,7 +53,9 @@ export const HiringProgressModal = ({
 				if (!open) onClose();
 			}}
 		>
-			<DialogContent className="max-w-lg">
+			{/* As wide as the proposal and contract ones: the tabs switch between
+			    them without the dialog changing size */}
+			<DialogContent className="max-w-4xl">
 				<div className="pr-8">
 					<DialogTitle className="text-xl font-bold text-gray-900">
 						Andamento da contratação
@@ -82,6 +70,7 @@ export const HiringProgressModal = ({
 							.join(" · ")}
 					</DialogDescription>
 				</div>
+				{navigation}
 
 				<ol className="flex flex-col">
 					{steps.map((step, index) => (
@@ -143,21 +132,8 @@ export const HiringProgressModal = ({
 							Confirmar Recebimento do Sinal
 						</Button>
 					) : null}
-					{HAS_CONTRACT.has(proposal.status.nome) ? (
-						<Button
-							size="sm"
-							variant="outline"
-							onClick={() => {
-								onSeeContract(proposal.identificadorUnico);
-							}}
-						>
-							<PenLine className="mr-2 h-4 w-4" />
-							Ver contrato
-						</Button>
-					) : null}
-					<Button size="sm" variant="outline" onClick={onSeeProposal}>
-						<Eye className="mr-2 h-4 w-4" />
-						Ver proposta
+					<Button size="sm" variant="secondary" onClick={onClose}>
+						Fechar
 					</Button>
 				</div>
 			</DialogContent>
