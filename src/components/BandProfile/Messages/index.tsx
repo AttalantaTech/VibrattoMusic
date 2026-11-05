@@ -22,7 +22,7 @@ const MessagesTab = () => {
 	} = useChat() || {};
 
 	useEffect(() => {
-		scrollToBottom?.();
+		scrollToBottom?.("instant");
 	}, [selectedConversation, scrollToBottom]);
 
 	useEffect(() => {
