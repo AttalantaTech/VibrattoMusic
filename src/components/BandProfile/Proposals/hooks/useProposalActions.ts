@@ -47,7 +47,7 @@ export const useProposalActions = (conversationId?: number | null) => {
 				...resolveStatusSender(proposalParties(proposal), "contratante"),
 				conversationId,
 				produtoMusicalName: proposal.produtoMusical.nome,
-				link: entityLinks.proposalTab(proposal.id),
+				link: entityLinks.hiringProgress(proposal.id),
 				errorMessage: "Erro ao enviar solicitação orçamento",
 				payload: {},
 			});
@@ -75,7 +75,7 @@ export const useProposalActions = (conversationId?: number | null) => {
 				...resolveStatusSender(proposalParties(proposal), "contratado"),
 				conversationId,
 				produtoMusicalName: proposal.produtoMusical.nome,
-				link: entityLinks.proposalTab(proposal.id),
+				link: entityLinks.hiringProgress(proposal.id),
 				errorMessage: "Erro ao enviar requisição",
 				payload: {},
 			});
@@ -101,9 +101,12 @@ export const useProposalActions = (conversationId?: number | null) => {
 				...resolveStatusSender(proposalParties(proposal), "contratado"),
 				conversationId,
 				produtoMusicalName: proposal.produtoMusical.nome,
-				link: entityLinks.proposalTab(proposal.id),
+				link: entityLinks.hiringProgress(proposal.id),
 				errorMessage: "Erro ao enviar sua requisição",
-				payload: {},
+				// Confirmed before the signatures ("Aceita") the hiring isn't done yet
+				payload: {
+					contractSigned: proposal.status.nome === "AguardandoPagamento",
+				},
 			});
 			return true;
 		} catch (error) {

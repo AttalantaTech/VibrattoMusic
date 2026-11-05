@@ -14,7 +14,9 @@ const requiredText = (message: string) => z.string().trim().min(1, message);
 
 export const profileSettingsSchema = z
 	.object({
+		// Full name (CPF) or nome fantasia (CNPJ)
 		nome: z.string().trim().min(2, "Nome deve ter pelo menos 2 caracteres"),
+		razaoSocial: z.string().trim(),
 		celular: z
 			.string()
 			.refine(
@@ -47,7 +49,14 @@ export const profileSettingsSchema = z
 			return;
 		}
 
-		// Legal representative only applies to companies (CNPJ)
+		// Razão social and legal representative only apply to companies (CNPJ)
+		if (data.razaoSocial.length < 2) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["razaoSocial"],
+				message: "Informe a razão social",
+			});
+		}
 		if (!validateAlphanumericCNPJ(data.cpfOuCnpj)) {
 			context.addIssue({
 				code: z.ZodIssueCode.custom,

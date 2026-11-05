@@ -43,14 +43,13 @@
 			</div> */
 }
 
-import { Check, ChevronDown, FileText, Plus } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 import { Button } from "../../ui/Button/Button";
 
 import { useCallback, useMemo, useState } from "react";
 
 import { EventsTable } from "../../EventsTable";
 import type { EventsTableSaleData } from "../../EventsTable/types";
-import { Dropdown } from "../../ui/Dropdown/Dropdown";
 import { useFilteredProposals } from "../../../hooks/useProposals";
 import { EmptyState, ErrorState, TableSkeleton } from "../../ui/LoadingStates";
 
@@ -65,13 +64,11 @@ import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProduct
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
 import { useProposalFromLink } from "@/components/BandProfile/Proposals/hooks/useProposalFromLink";
 import { useProposalActions } from "@/components/BandProfile/Proposals/hooks/useProposalActions";
-import {
-	proposalStatusFilters,
-	proposalStatusLabel,
-} from "@/components/BandProfile/Proposals/components/ProposalStatusCard/types";
+import { ProposalStatusFilter } from "@/components/BandProfile/Proposals/components/ProposalStatusFilter";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
 import { ShareLink } from "@/components/ui/ShareLink/ShareLink";
 import { proposalTitle } from "@/components/BandProfile/Proposals/utils/proposalTitle";
+import { awaitsDownPayment } from "@/components/BandProfile/Proposals/utils/proposalRoles";
 
 export const SalesTab = () => {
 	const navigate = useNavigate();
@@ -220,10 +217,9 @@ export const SalesTab = () => {
 						onSeeContract: handleSeeContract,
 						onEditContract: handleEditContract,
 						onShareProposal: setShareProposalId,
-						onConfirmDownPayment:
-							event.status.nome === "AguardandoPagamento"
-								? handleOpenConfirmPayment
-								: undefined,
+						onConfirmDownPayment: awaitsDownPayment(event)
+							? handleOpenConfirmPayment
+							: undefined,
 					};
 				}),
 			[
@@ -261,33 +257,10 @@ export const SalesTab = () => {
 			<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 				<div className="text-black mt-1 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-4">
 					<p className="font-bold whitespace-nowrap">Filtrar por status:</p>
-					<Dropdown
-						align="left"
-						className="p-0.5"
-						trigger={
-							<Button
-								variant="outline"
-								className="w-full sm:w-auto min-w-[180px] justify-between whitespace-nowrap"
-							>
-								{proposalStatusLabel(statusFilter)}
-								<ChevronDown className="h-4 w-4 ml-2" />
-							</Button>
-						}
-					>
-						{proposalStatusFilters.map((item) => (
-							<div className="flex w-full" key={item}>
-								<button
-									className="flex justify-between items-center rounded-md px-4 py-2 text-left hover:bg-gray-100 w-full"
-									onClick={() => {
-										setStatusFilter(item);
-									}}
-								>
-									{proposalStatusLabel(item)}
-									{item === statusFilter && <Check color="gray" size={16} />}
-								</button>
-							</div>
-						))}
-					</Dropdown>
+					<ProposalStatusFilter
+						value={statusFilter}
+						onChange={setStatusFilter}
+					/>
 				</div>
 				<p className="text-gray-600 text-sm">
 					{filteredProposals?.data.length} de{" "}

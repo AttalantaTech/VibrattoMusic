@@ -115,6 +115,8 @@ export const useBudgetForm = ({
 			dataEvento,
 			dataVencimentoAceite: 15,
 			dataVencimentoSinalPagamento: 30,
+			// Checked on its own when the budget has a duration (useBudgetState)
+			definirHorarioEvento: !!budget?.duracao,
 			horaInicio: budget?.horaInicio || "",
 			duracao: budget?.duracao || "",
 			formaPagamento: [],
@@ -134,22 +136,22 @@ export const useBudgetForm = ({
 	});
 
 	const setQuickDuration = (durationSeconds: number) => {
-		const startTime = form.getValues("horaInicio");
-
-		if (!startTime) return;
-
-		const duration = secondsToTime(durationSeconds);
-
-		form.setValue("duracao", duration);
+		form.setValue("duracao", secondsToTime(durationSeconds), {
+			shouldValidate: true,
+		});
 	};
 
 	const handleHasDefineEventTime = (state: boolean) => {
 		setHasDefineEventTime(state);
+		// The schema only requires the time fields while this is checked
+		form.setValue("definirHorarioEvento", state);
 
 		const currentStartTime = form.getValues("horaInicio");
 
 		if (!state) {
 			form.setValue("horaInicio", "");
+			form.setValue("duracao", "");
+			form.clearErrors(["horaInicio", "duracao"]);
 
 			return;
 		}
@@ -164,7 +166,7 @@ export const useBudgetForm = ({
 		const startTime = currentStartTime || hourPtBR;
 
 		form.setValue("horaInicio", startTime);
-		form.setValue("duracao", "02:00:00");
+		// No preset duration: it is required and has to be picked
 	};
 
 	const isSectionComplete = (
@@ -187,8 +189,10 @@ export const useBudgetForm = ({
 					form.watch("nomeContratante") &&
 					form.watch("local") &&
 					form.watch("dataEvento") &&
-					form.watch("horaInicio") &&
-					form.watch("duracao")
+					// The time is optional; once "Definir horário" is checked, both
+					// fields count
+					(!form.watch("definirHorarioEvento") ||
+						(form.watch("horaInicio") && form.watch("duracao")))
 				);
 			case "paymentConditions":
 				return !!(

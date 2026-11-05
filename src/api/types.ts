@@ -216,7 +216,11 @@ export interface ChangePasswordRequest {
 
 // PUT usuario: the API expects the full registration data
 export interface UpdateUserProfileRequest {
+	/** Full name (CPF) or nome fantasia (CNPJ) */
 	nome: string;
+	razaoSocial: string | null;
+	/** Blob URL, without the SAS query; null removes it */
+	fotoPerfil: string | null;
 	cpfOuCnpj: string;
 	cpfResponsavelLegal: string;
 	nomeResponsavelLegal: string;
@@ -475,6 +479,9 @@ export interface UserApiResponse {
 	celular: string;
 	cpfResponsavelLegal: string | null;
 	nomeResponsavelLegal: string | null;
+	// Optional: older API versions don't return them yet
+	razaoSocial?: string | null;
+	fotoPerfil?: string | null;
 }
 
 // ===== Musical Product Types =====
@@ -620,7 +627,9 @@ export type FileEventType =
 	| "ProdutoMusicalRider"
 	| "ProdutoMusicalInfraCamarim"
 	| "ProdutoMusicalMapaPalco"
-	| "ProdutoMusicalClipagem";
+	| "ProdutoMusicalClipagem"
+	// The logged user's own photo (IdCadastro 0: the token says who)
+	| "UsuarioFotoPerfil";
 
 export interface ImageUploadRequest {
 	evento: FileEventType;
@@ -930,6 +939,8 @@ export interface ProposalResponse {
 	} | null;
 	/** Whether the proposal asks for a down payment (the back-end works it out) */
 	possuiSinalPagamento?: boolean;
+	/** The professional confirmed receiving the down payment */
+	sinalPago?: boolean;
 	tipoSinalPagamento: "V" | "P" | null;
 	valorSinalPagamento: number | null;
 	dataVencimentoSinalPagamento: string | null;

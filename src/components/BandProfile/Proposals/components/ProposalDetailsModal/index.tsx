@@ -13,7 +13,10 @@ import { Button } from "../../../../ui/Button/Button";
 import { useAuthStore } from "@/store/authStore";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
-import { proposalRoles } from "@/components/BandProfile/Proposals/utils/proposalRoles";
+import {
+	awaitsDownPayment,
+	proposalRoles,
+} from "@/components/BandProfile/Proposals/utils/proposalRoles";
 import { SignatureProgress } from "@/components/BandProfile/Proposals/components/SignatureProgress";
 import { DownPaymentNotice } from "@/components/BandProfile/Proposals/components/DownPaymentNotice";
 import { useProposalPDF } from "@/hooks/useProposals";
@@ -78,7 +81,6 @@ export const ProposalDetailsModal = ({
 		isWaitingForResponse,
 		isContractor,
 		isAcceptedStatus,
-		needsContractorPaidSign,
 		signedContract,
 	} = proposalRoles({
 		proposal,
@@ -90,6 +92,11 @@ export const ProposalDetailsModal = ({
 	// contractor, Vendas = professional): someone who is both sides of a
 	// proposal got the contractor's notices in Vendas too
 	const viewerIsContractor = mode === "Contractor";
+
+	// Same here: opened from Vendas or the band's chat, the professional
+	// confirms the down payment, even when the same account also hired it
+	const canConfirmDownPayment =
+		!viewerIsContractor && awaitsDownPayment(proposal) && !!onPaidSign;
 
 	if (!isOpen) return null;
 
@@ -105,7 +112,7 @@ export const ProposalDetailsModal = ({
 			<DialogContent
 				aria-describedby={undefined}
 				// The action bar carries the bottom safe area itself (pinned there)
-				className="block max-w-2xl gap-0 p-0 max-sm:pb-0"
+				className="block max-w-4xl gap-0 p-0 max-sm:pb-0"
 			>
 				<div className="p-6">
 					{/* Header (the dialog's own X closes it) */}
@@ -137,10 +144,11 @@ export const ProposalDetailsModal = ({
 						isContractor={viewerIsContractor}
 					/>
 
-					{/* Contractor only; shown until the down payment is confirmed */}
-					{viewerIsContractor ? (
-						<DownPaymentNotice proposal={proposal} />
-					) : null}
+					{/* What to pay (contractor), or that it was received (both sides) */}
+					<DownPaymentNotice
+						proposal={proposal}
+						isContractor={viewerIsContractor}
+					/>
 
 					{/* Only the proposal; the contract opens from the menu (Visualizar Contrato) */}
 					<div className="mt-6">
@@ -188,7 +196,7 @@ export const ProposalDetailsModal = ({
 					{/* Actions pinned to the bottom so they stay in view while the PDF
 					    (often several pages) scrolls. Phones: stacked full width; in
 					    one row they ran off the left edge */}
-					<div className="sticky bottom-0 -mx-6 -mb-6 mt-6 flex flex-col gap-3 border-t border-gray-200 bg-white px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] [&>*]:w-full [&>*]:h-[38px] [&>*]:px-4 [&>*]:text-sm sm:flex-row sm:justify-end sm:pb-4 sm:[&>*]:w-auto">
+					<div className="sticky bottom-0 -mx-6 -mb-6 mt-6 flex flex-col gap-3 border-t border-gray-200 bg-white px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] [&>*]:w-full [&>*]:h-[38px] [&>*]:px-4 [&>*]:text-sm sm:flex-row sm:flex-wrap sm:justify-end sm:pb-4 sm:[&>*]:w-auto [&>*]:whitespace-nowrap">
 						{/* Band actions when proposal is pending */}
 						{mode === "Contractor" ? (
 							<>
@@ -243,8 +251,8 @@ export const ProposalDetailsModal = ({
 							</>
 						) : (
 							<>
-								{/* Contractor paid sign button */}
-								{needsContractorPaidSign && (
+								{/* The professional confirms the down payment was received */}
+								{canConfirmDownPayment && (
 									<Button
 										className="bg-green-600 hover:bg-green-700 border-green-600 disabled:hover:bg-green-600 disabled:opacity-50"
 										disabled={isLoadingPaidSign}

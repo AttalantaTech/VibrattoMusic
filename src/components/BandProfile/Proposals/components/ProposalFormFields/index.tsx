@@ -25,6 +25,7 @@ import type { FilterOption } from "@/api/types";
 import { PAYMENT_CONDITION } from "../../utils/calculateSignal";
 import { deadlineLabel } from "../../utils/deadlines";
 import { DateInput } from "@/components/forms/DateInput/DateInput";
+import { useCitySearch } from "@/hooks/useCitySearch";
 
 type SectionProposal =
 	| "eventData"
@@ -73,13 +74,21 @@ export function ProposalFormFields({
 }: ProposalFormFieldsProps) {
 	const {
 		control,
-		setValue,
 		watch,
 		formState: { errors },
 	} = form;
 
 	const duration = watch("duracao") || "";
 	const paymentConditionId = watch("idCondicoesPagamento");
+
+	// Rendered only while the proposal modal is open
+	const {
+		options: cityOptions,
+		search: citySearch,
+		setSearch: setCitySearch,
+		loadMore: loadMoreCities,
+		isFetching: isFetchingCities,
+	} = useCitySearch(true);
 
 	const eventTypeOptions: Array<Option> = eventTypes.map((type) => ({
 		value: String(type.Id),
@@ -189,31 +198,7 @@ export function ProposalFormFields({
 					/>
 				</div>
 
-				{/* Location */}
-				<div className="space-y-2">
-					<Controller
-						control={control}
-						name="local"
-						render={({ field }) => (
-							<>
-								<Label htmlFor="location">Local do Evento</Label>
-								<Input
-									id="location"
-									{...field}
-									placeholder="Endereço completo do evento"
-								/>
-
-								{errors.local?.message && (
-									<div className="text-red-500 text-sm">
-										{errors.local.message}
-									</div>
-								)}
-							</>
-						)}
-					/>
-				</div>
-
-				{/* Date fields */}
+				{/* Date and location */}
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div className="space-y-2">
 						<Controller
@@ -232,6 +217,48 @@ export function ProposalFormFields({
 									{errors.dataEvento?.message && (
 										<div className="text-red-500 text-sm">
 											{errors.dataEvento.message}
+										</div>
+									)}
+								</>
+							)}
+						/>
+					</div>
+					{/* Location, beside the date */}
+					<div className="space-y-2">
+						<Controller
+							control={control}
+							name="local"
+							render={({ field }) => (
+								<>
+									{/* Same city list as the availability check; `local` keeps
+									    the city name ("São Paulo - SP"). An older proposal with a
+									    typed address still shows it as the selection */}
+									<Select
+										label="Local do Evento *"
+										name="local"
+										options={cityOptions}
+										placeholder="Selecione a cidade"
+										selectedOptions={
+											field.value
+												? [
+														cityOptions.find(
+															(option) => option.label === field.value
+														) ?? { value: field.value, label: field.value },
+													]
+												: []
+										}
+										setSelectedOptions={(options) => {
+											field.onChange(options[0]?.label ?? "");
+										}}
+										searchTerm={citySearch}
+										setSearchTerm={setCitySearch}
+										onReachEnd={loadMoreCities}
+										isLoading={isFetchingCities}
+									/>
+
+									{errors.local?.message && (
+										<div className="text-red-500 text-sm">
+											{errors.local.message}
 										</div>
 									)}
 								</>
@@ -330,7 +357,6 @@ export function ProposalFormFields({
 						id="hasDefineEventTime"
 						checked={hasDefineEventTime}
 						onCheckedChange={(checked) => {
-							setValue("definirHorarioEvento", Boolean(checked));
 							handleHasDefineEventTime(Boolean(checked));
 						}}
 					/>
@@ -338,7 +364,7 @@ export function ProposalFormFields({
 						htmlFor="availabilityOtherEvents"
 						className="text-sm font-medium text-gray-700 cursor-pointer"
 					>
-						Definir horário do Evento
+						Definir horário e duração do evento
 					</Label>
 				</div>
 
@@ -352,7 +378,7 @@ export function ProposalFormFields({
 									name="horaInicio"
 									render={({ field }) => (
 										<>
-											<Label htmlFor="startTime">Hora de Início</Label>
+											<Label htmlFor="horaInicio">Hora de Início *</Label>
 											<Input
 												id="horaInicio"
 												type="time"
@@ -380,7 +406,7 @@ export function ProposalFormFields({
 					{/* Quick duration buttons */}
 					{hasDefineEventTime && (
 						<div className="flex items-center gap-2 flex-wrap">
-							<span className="text-sm text-gray-600">Duração:</span>
+							<span className="text-sm text-gray-600">Duração *:</span>
 							{quickTimeOptions.map((option) => (
 								<button
 									key={option.duration}
@@ -401,6 +427,12 @@ export function ProposalFormFields({
 									{option.label}
 								</button>
 							))}
+						</div>
+					)}
+
+					{hasDefineEventTime && errors.duracao?.message && (
+						<div className="text-red-500 text-sm mt-2">
+							{errors.duracao.message}
 						</div>
 					)}
 				</div>

@@ -41,12 +41,14 @@ export const Chat = () => {
 	const { isProfileComplete } = useProfileStatus();
 
 	const [openBudgetListModal, setOpenBudgetListModal] = useState(false);
-	// Proposal opened from a "Ver proposta" link (null = closed)
-	const [previewProposalId, setPreviewProposalId] = useState<number | null>(
-		null
-	);
+	// Proposal opened from a card link (null = closed): "Ver proposta" or,
+	// with progress, "Acompanhar contratação"
+	const [previewProposal, setPreviewProposal] = useState<{
+		id: number;
+		progress: boolean;
+	} | null>(null);
 	const closePreview = useCallback(() => {
-		setPreviewProposalId(null);
+		setPreviewProposal(null);
 	}, []);
 
 	const {
@@ -141,7 +143,10 @@ export const Chat = () => {
 		const proposalId = Number(url.searchParams.get("id"));
 		if (proposalId) {
 			// Shows the proposal right here, over the conversation
-			setPreviewProposalId(proposalId);
+			setPreviewProposal({
+				id: proposalId,
+				progress: url.searchParams.has("andamento"),
+			});
 			return;
 		}
 
@@ -334,11 +339,15 @@ export const Chat = () => {
 								}}
 								onSend={(content: string) => {
 									if (handleSendMessage) {
+										// Like the text, the quote is cleared only once the message
+										// went out, so a failed send can be retried as it was
 										void handleSendMessage(
 											replyTo ? buildReplyQuote(replyTo) + content : content,
 											activeProduct?.id ? 2 : 1,
 											activeProduct?.id ? activeProduct.id : null
-										);
+										).then((sent) => {
+											if (sent) setReplyTo(null);
+										});
 									}
 								}}
 								disabled={isMessagesLoading}
@@ -365,7 +374,8 @@ export const Chat = () => {
 			)}
 
 			<ChatProposalDialog
-				proposalId={previewProposalId}
+				proposalId={previewProposal?.id ?? null}
+				showProgress={previewProposal?.progress}
 				isSeller={isSeller}
 				conversationId={selectedConversation?.id}
 				onClose={closePreview}

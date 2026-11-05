@@ -18,6 +18,7 @@ import {
 
 const defaultValues: ProfileSettingsFormData = {
 	nome: "",
+	razaoSocial: "",
 	celular: "",
 	tipoDocumento: "cpf",
 	cpfOuCnpj: "",
@@ -34,8 +35,8 @@ const defaultValues: ProfileSettingsFormData = {
 
 const toFormValues = (user: UserApiResponse): ProfileSettingsFormData => ({
 	nome: user.nome ?? "",
-	// GET usuario returns the phone as "telefone"; PUT expects "celular"
-	celular: formatPhone(user.celular ?? user.celular),
+	razaoSocial: user.razaoSocial ?? "",
+	celular: formatPhone(user.celular),
 	tipoDocumento: getDocumentType(user.cpfOuCnpj),
 	cpfOuCnpj: formatDocument(user.cpfOuCnpj),
 	nomeResponsavelLegal: user.nomeResponsavelLegal ?? "",

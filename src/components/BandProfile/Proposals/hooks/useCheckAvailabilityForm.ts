@@ -20,6 +20,7 @@ export const useCheckAvailabilityForm = ({
 				local: "",
 				descricao: "",
 				dataEvento: format(toBR(new Date()), "yyyy-MM-dd"),
+				definirHorarioEvento: false,
 				horaInicio: "",
 				duracao: "",
 			};
@@ -31,22 +32,22 @@ export const useCheckAvailabilityForm = ({
 	});
 
 	const setQuickDuration = (durationSeconds: number) => {
-		const startTime = form.getValues("horaInicio");
-
-		if (!startTime) return;
-
-		const duration = secondsToTime(durationSeconds);
-
-		form.setValue("duracao", duration);
+		form.setValue("duracao", secondsToTime(durationSeconds), {
+			shouldValidate: true,
+		});
 	};
 
 	const handleHasDefineEventTime = (state: boolean) => {
 		setHasDefineEventTime(state);
+		// The schema only requires the time fields while this is checked
+		form.setValue("definirHorarioEvento", state);
 
 		const currentStartTime = form.getValues("horaInicio");
 
 		if (!state) {
 			form.setValue("horaInicio", "");
+			form.setValue("duracao", "");
+			form.clearErrors(["horaInicio", "duracao"]);
 
 			return;
 		}
@@ -61,7 +62,7 @@ export const useCheckAvailabilityForm = ({
 		const startTime = currentStartTime || hourPtBR;
 
 		form.setValue("horaInicio", startTime);
-		form.setValue("duracao", "02:00:00");
+		// No preset duration: it is required and has to be picked
 	};
 
 	useEffect(() => {

@@ -88,7 +88,13 @@ export const PreviewProfileModal = ({
 					<DialogDescription />
 				</DialogHeader>
 
-				<ProfileDetails musicalProduct={musicalProduct} />
+				{/* ProfileDetails is loose sections with order classes meant for the
+				    profile page. Straight in the dialog they were ordered after the
+				    footer (Publicar/Cancelar showed on top) and, with no min-w-0, the
+				    genres stretched it past the phone screen */}
+				<div className="flex min-w-0 flex-col items-center gap-4 lg:gap-8">
+					<ProfileDetails musicalProduct={musicalProduct} />
+				</div>
 
 				<DialogFooter className="gap-2">
 					<Button

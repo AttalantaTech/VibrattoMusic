@@ -194,6 +194,7 @@ export class MessagingService {
 					contratante: {
 						id: number;
 						nome: string;
+						fotoPerfil?: string | null;
 					};
 					produtoMusical: {
 						id: number;
@@ -267,6 +268,9 @@ export class MessagingService {
 								}
 								return null;
 							});
+					} else {
+						// A contractor talking as a person: the photo from Ajustes → Perfil
+						pair.profileImageUrl = item.contratante.fotoPerfil || null;
 					}
 
 					// Build conversation object

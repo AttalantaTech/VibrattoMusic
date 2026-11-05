@@ -31,9 +31,17 @@ export const SideBar = () => {
 			<SideBarHeaderContainer>
 				<UserInfoContainer>
 					<UserImageContainer>
-						{currentChatUser?.name
-							? getParticipantInitials(currentChatUser.name)
-							: "U"}
+						{currentChatUser?.profileImageUrl ? (
+							<img
+								src={currentChatUser.profileImageUrl}
+								alt={currentChatUser.name}
+								className="w-full h-full object-cover rounded-full"
+							/>
+						) : currentChatUser?.name ? (
+							getParticipantInitials(currentChatUser.name)
+						) : (
+							"U"
+						)}
 					</UserImageContainer>
 					<h3 className="font-medium text-gray-900">
 						{currentChatUser?.name || "Usuário"}

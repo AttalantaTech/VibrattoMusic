@@ -165,8 +165,14 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 					</span>
 				</div>
 
+				{/* The active profile's own photo: the band's when a professional
+				    profile is active, the contractor's (Ajustes → Perfil) otherwise */}
 				<Avatar
-					src={activeMusicalProduct?.fotoPerfil ?? ""}
+					src={
+						(activeMusicalProduct
+							? activeMusicalProduct.fotoPerfil
+							: userData?.fotoPerfil) ?? ""
+					}
 					alt={activeMusicalProduct?.nome ?? userData?.nome ?? ""}
 					size={32}
 				/>
@@ -193,7 +199,11 @@ export const BandProfileSwitcher: React.FC<BandProfileSwitcherProps> = ({
 							}}
 							className={`w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors ${activeMusicalProduct ? "" : "bg-gray-100"}`}
 						>
-							<Avatar src={""} alt={userData?.nome ?? ""} size={24} />
+							<Avatar
+								src={userData?.fotoPerfil ?? ""}
+								alt={userData?.nome ?? ""}
+								size={24}
+							/>
 							<span className="text-sm text-gray-700 truncate">
 								{userData?.nome ?? "Usuário"}
 							</span>
