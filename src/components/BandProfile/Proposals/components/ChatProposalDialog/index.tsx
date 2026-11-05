@@ -6,6 +6,7 @@ import { useProposalByNumber } from "@/hooks/useProposals";
 import { ProposalDetailsModal } from "../ProposalDetailsModal";
 import { ProposalRejectionModal } from "../ProposalRejectionModal";
 import { ConfirmDownPaymentDialog } from "../ConfirmDownPaymentDialog";
+import { HiringProgressModal } from "../HiringProgressModal";
 import { useProposalActions } from "../../hooks/useProposalActions";
 
 interface ChatProposalDialogProps {
@@ -14,15 +15,19 @@ interface ChatProposalDialogProps {
 	/** The band (seller) gets the Vendas actions, the contractor Contratações' */
 	isSeller: boolean;
 	conversationId?: number | null;
+	/** Opens on the hiring progress ("Acompanhar contratação") */
+	showProgress?: boolean;
 	onClose: () => void;
 }
 
 // "Ver proposta" in the chat: the same details dialog as Vendas/Contratações,
-// actions included, over the conversation
+// actions included, over the conversation. "Acompanhar contratação" opens on
+// the hiring progress first, with a way into the details
 export const ChatProposalDialog = ({
 	proposalId,
 	isSeller,
 	conversationId,
+	showProgress = false,
 	onClose,
 }: ChatProposalDialogProps) => {
 	const navigate = useNavigate();
@@ -41,6 +46,20 @@ export const ChatProposalDialog = ({
 	const [proposalToConfirmPayment, setProposalToConfirmPayment] =
 		useState<ProposalResponse | null>(null);
 
+	// Each link opens on its own view; "Ver proposta" in the progress
+	// switches to the details
+	const [isDetailsView, setIsDetailsView] = useState(!showProgress);
+	useEffect(() => {
+		setIsDetailsView(!showProgress);
+	}, [proposalId, showProgress]);
+
+	const seeContract = (identificadorUnico: string) => {
+		void navigate({
+			to: "/band/contract/$id",
+			params: { id: identificadorUnico },
+		});
+	};
+
 	useEffect(() => {
 		if (!isError) return;
 		toast.error("Não foi possível abrir esta proposta.");
@@ -49,8 +68,23 @@ export const ChatProposalDialog = ({
 
 	return (
 		<>
+			<HiringProgressModal
+				proposal={proposalId && !isDetailsView ? (proposal ?? null) : null}
+				isSeller={isSeller}
+				onClose={onClose}
+				onSeeProposal={() => {
+					setIsDetailsView(true);
+				}}
+				onSeeContract={seeContract}
+				// The confirmation takes over, as from the details
+				onConfirmDownPayment={(toConfirm) => {
+					setProposalToConfirmPayment(toConfirm);
+					onClose();
+				}}
+			/>
+
 			<ProposalDetailsModal
-				isOpen={!!proposalId && !!proposal}
+				isOpen={!!proposalId && !!proposal && isDetailsView}
 				mode={isSeller ? "Contracted" : "Contractor"}
 				proposal={proposal ?? null}
 				onClose={onClose}
@@ -66,12 +100,7 @@ export const ChatProposalDialog = ({
 					setProposalToConfirmPayment(proposal ?? null);
 					return Promise.resolve();
 				}}
-				onSeeContract={(identificadorUnico) => {
-					void navigate({
-						to: "/band/contract/$id",
-						params: { id: identificadorUnico },
-					});
-				}}
+				onSeeContract={seeContract}
 				isLoadingAccept={isLoadingAccept}
 				isLoadingCancel={isLoadingCancel}
 				isLoadingPaidSign={isLoadingPaidSign}
