@@ -34,7 +34,6 @@ interface UseProposalSubmitProps {
 	contractorProductId?: number | null;
 	userProductId?: number;
 	conversationId?: number;
-	hasDefineEventTime: boolean;
 	eventTypes: Array<FilterOption>;
 	paymentMethods: Array<FilterOption>;
 	paymentConditions: Array<FilterOption>;
@@ -94,7 +93,6 @@ export const useProposalSubmit = ({
 	userProductId,
 	conversationId,
 	handleClose,
-	hasDefineEventTime,
 	eventTypes,
 	standardDescription,
 }: UseProposalSubmitProps) => {
@@ -209,9 +207,10 @@ export const useProposalSubmit = ({
 			dataEvento: format(eventDate, "yyyy-MM-dd"),
 			dataVencimentoAceite,
 			dataVencimentoSinalPagamento,
-			duracao: hasDefineEventTime ? finalFormData.duracao : null,
-			horaInicio: hasDefineEventTime
-				? ensureHHMMSS(String(finalFormData.horaInicio || "").trim())
+			// The duration always; the start time only when filled in
+			duracao: finalFormData.duracao || null,
+			horaInicio: finalFormData.horaInicio.trim()
+				? ensureHHMMSS(finalFormData.horaInicio.trim())
 				: null,
 			formaPagamento: finalFormData.formaPagamento ?? [],
 			idCondicoesPagamento: finalFormData.idCondicoesPagamento,
@@ -265,8 +264,8 @@ export const useProposalSubmit = ({
 					description: standardDescription,
 					complement: data.descricao,
 					date: formatDate(data.dataEvento),
-					startTime: hasDefineEventTime ? data.horaInicio : null,
-					duration: hasDefineEventTime && data.duracao ? data.duracao : null,
+					startTime: data.horaInicio || null,
+					duration: data.duracao || null,
 					location: data.local,
 					counterProposal: !!counterProposalOf,
 				},

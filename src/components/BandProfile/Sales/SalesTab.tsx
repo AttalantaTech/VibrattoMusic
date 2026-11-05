@@ -54,10 +54,10 @@ import { useFilteredProposals } from "../../../hooks/useProposals";
 import { EmptyState, ErrorState, TableSkeleton } from "../../ui/LoadingStates";
 
 import { useAuthStore } from "../../../store/authStore";
-import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import type { ProposalResponse } from "../../../api/types";
-import { ProposalDetailsModal } from "../Proposals/components/ProposalDetailsModal";
+import { ProposalViewer } from "../Proposals/components/ProposalViewer";
+import type { ProposalView } from "../Proposals/components/ProposalViewTabs";
 import { SendProposalModal } from "../Proposals/components/SendProposalModal";
 import { ConfirmDownPaymentDialog } from "../Proposals/components/ConfirmDownPaymentDialog";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
@@ -71,19 +71,20 @@ import { proposalTitle } from "@/components/BandProfile/Proposals/utils/proposal
 import { awaitsDownPayment } from "@/components/BandProfile/Proposals/utils/proposalRoles";
 
 export const SalesTab = () => {
-	const navigate = useNavigate();
-
 	const { activeProduct } = useMusicalProductStore();
 	const currentUser = useAuthStore((state) => state.user);
-	const { cancel, confirmPaidSign, isLoadingCancel, isLoadingPaidSign } =
-		useProposalActions();
+	// The menu's "Confirmar Recebimento do Sinal"; the viewer has its own
+	const { confirmPaidSign, isLoadingPaidSign } = useProposalActions();
 
 	const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
 	// Rejected proposal being answered with a counter-proposal
 	const [counterProposalOf, setCounterProposalOf] =
 		useState<ProposalResponse | null>(null);
-	const [isProposalDetailsModalOpen, setIsProposalDetailsModalOpen] =
-		useState(false);
+	// Proposal shown in the viewer (progress/details/contract); null = closed
+	const [viewing, setViewing] = useState<{
+		id: number;
+		view: ProposalView;
+	} | null>(null);
 	const [proposalDetails, setProposalDetails] =
 		useState<ProposalResponse | null>(null);
 	// Proposal waiting for the "received the down payment?" confirmation
@@ -102,21 +103,31 @@ export const SalesTab = () => {
 		IdProdutoMusical: activeProduct?.id,
 	});
 
-	const handleSeeProposal = useCallback(
-		(proposalId: string) => {
-			setProposalDetails(
-				filteredProposals?.data.find(
-					(p) => p.identificadorUnico === proposalId
-				) || null
+	// The menu passes the identificadorUnico; the viewer reads the proposal
+	// again by its number, so it shows what changed meanwhile
+	const openViewer = useCallback(
+		(identificadorUnico: string, view: ProposalView) => {
+			const proposal = filteredProposals?.data.find(
+				(p) => p.identificadorUnico === identificadorUnico
 			);
-			setIsProposalDetailsModalOpen(true);
+			if (proposal) {
+				setViewing({ id: proposal.id, view });
+			} else {
+				toast.error("Não foi possível abrir esta proposta.");
+			}
 		},
 		[filteredProposals?.data]
 	);
 
+	const handleSeeProposal = useCallback(
+		(proposalId: string) => {
+			openViewer(proposalId, "details");
+		},
+		[openViewer]
+	);
+
 	const handleOpenLinkedProposal = useCallback((proposal: ProposalResponse) => {
-		setProposalDetails(proposal);
-		setIsProposalDetailsModalOpen(true);
+		setViewing({ id: proposal.id, view: "details" });
 	}, []);
 
 	useProposalFromLink({
@@ -126,19 +137,10 @@ export const SalesTab = () => {
 	});
 
 	const handleSeeContract = useCallback(
-		async (proposalId: string) => {
-			if (proposalId) {
-				await navigate({
-					to: "/band/contract/$id",
-					params: { id: proposalId },
-				});
-			} else {
-				toast.error(
-					"Não foi possível acessar o contrato. Identificador da proposta não encontrado."
-				);
-			}
+		(proposalId: string) => {
+			openViewer(proposalId, "contract");
 		},
-		[navigate]
+		[openViewer]
 	);
 
 	const handleEditContract = useCallback(
@@ -318,30 +320,13 @@ export const SalesTab = () => {
 				}}
 			/>
 
-			<ProposalDetailsModal
-				isOpen={isProposalDetailsModalOpen}
-				mode="Contracted"
+			<ProposalViewer
+				proposalId={viewing?.id ?? null}
+				initialView={viewing?.view}
+				isSeller
 				onClose={() => {
-					setIsProposalDetailsModalOpen(false);
-					setProposalDetails(null);
+					setViewing(null);
 				}}
-				proposal={proposalDetails}
-				onPaidSign={(proposalId) => {
-					handleOpenConfirmPayment(
-						filteredProposals?.data.find((p) => p.id === proposalId)
-							?.identificadorUnico ?? ""
-					);
-					return Promise.resolve();
-				}}
-				onCancel={async (proposalId) => {
-					const proposal = filteredProposals?.data.find(
-						(p) => p.id === proposalId
-					);
-					if (proposal) await cancel(proposal);
-				}}
-				onSeeContract={handleSeeContract}
-				isLoadingPaidSign={isLoadingPaidSign}
-				isLoadingCancel={isLoadingCancel}
 			/>
 
 			<ConfirmDownPaymentDialog

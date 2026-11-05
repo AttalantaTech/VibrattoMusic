@@ -20,7 +20,6 @@ interface UseBudgetSubmitProps {
 	musicalProductId: number | null;
 	musicalProductContractorId: number | null;
 	conversationId?: number;
-	hasDefineEventTime: boolean;
 	eventTypes: Array<FilterOption>;
 	/** Fixed text shown above the description; goes in the chat card */
 	standardDescription: string;
@@ -80,7 +79,6 @@ export const useBudgetSubmit = ({
 	contractorId,
 	musicalProductId,
 	handleClose,
-	hasDefineEventTime,
 	conversationId,
 	musicalProductContractorId,
 	eventTypes,
@@ -166,9 +164,10 @@ export const useBudgetSubmit = ({
 			dataEvento: format(eventDate, "yyyy-MM-dd"),
 			dataVencimentoAceite,
 			dataVencimentoSinalPagamento,
-			duracao: hasDefineEventTime ? finalFormData.duracao : null,
-			horaInicio: hasDefineEventTime
-				? ensureHHMMSS(String(finalFormData.horaInicio || "").trim())
+			// The duration always; the start time only when filled in
+			duracao: finalFormData.duracao || null,
+			horaInicio: finalFormData.horaInicio.trim()
+				? ensureHHMMSS(finalFormData.horaInicio.trim())
 				: null,
 			formaPagamento: finalFormData.formaPagamento ?? [],
 			idCondicoesPagamento: finalFormData.idCondicoesPagamento,
@@ -213,11 +212,8 @@ export const useBudgetSubmit = ({
 					description: standardDescription,
 					complement: budgetData.descricao,
 					date: formatDate(budgetData.dataEvento),
-					startTime: hasDefineEventTime ? budgetData.horaInicio : null,
-					duration:
-						hasDefineEventTime && budgetData.duracao
-							? budgetData.duracao
-							: null,
+					startTime: budgetData.horaInicio || null,
+					duration: budgetData.duracao || null,
 					location: budgetData.local,
 				},
 

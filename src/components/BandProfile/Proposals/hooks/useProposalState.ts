@@ -4,7 +4,6 @@ import type { Option } from "@/components/forms/Select/Select";
 import { useEffect, useState } from "react";
 
 export const useProposalState = (proposal: ProposalResponse | null) => {
-	const [hasDefineEventTime, setHasDefineEventTime] = useState(false);
 	const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<
 		Array<Option>
 	>([]);
@@ -62,15 +61,7 @@ export const useProposalState = (proposal: ProposalResponse | null) => {
 		setPaymentMethods,
 	]);
 
-	useEffect(() => {
-		if (proposal?.horaFim) {
-			setHasDefineEventTime(true);
-		}
-	}, [proposal?.horaFim]);
-
 	return {
-		hasDefineEventTime,
-		setHasDefineEventTime,
 		eventTypes,
 		paymentMethods,
 		paymentConditions,

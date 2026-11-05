@@ -19,7 +19,6 @@ import { Textarea } from "@/components/ui/Textarea/Textarea";
 import { Switch } from "@/components/ui/switch";
 import type { Option } from "@/components/forms/Select/Select";
 import { Select } from "@/components/forms/Select/Select";
-import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
 import type { CreateProposalForm } from "../../schemas/proposal.schema";
 import type { FilterOption } from "@/api/types";
 import { PAYMENT_CONDITION } from "../../utils/calculateSignal";
@@ -43,11 +42,9 @@ interface ExpandedSections {
 interface ProposalFormFieldsProps {
 	form: UseFormReturn<CreateProposalForm>;
 	setQuickDuration: (durationSeconds: number) => void;
-	handleHasDefineEventTime: (state: boolean) => void;
 	isSectionComplete: (section: SectionProposal) => boolean;
 	toggleSection: (section: SectionProposal) => void;
 	expandedSections: ExpandedSections;
-	hasDefineEventTime: boolean;
 	selectedPaymentMethods: Array<Option>;
 	setSelectedPaymentMethods: (value: Array<Option>) => void;
 	paymentMethods: Array<FilterOption>;
@@ -59,12 +56,10 @@ interface ProposalFormFieldsProps {
 
 export function ProposalFormFields({
 	form,
-	handleHasDefineEventTime,
 	isSectionComplete,
 	setQuickDuration,
 	toggleSection,
 	expandedSections,
-	hasDefineEventTime,
 	paymentMethods,
 	selectedPaymentMethods,
 	setSelectedPaymentMethods,
@@ -352,89 +347,74 @@ export function ProposalFormFields({
 					) : null}
 				</div>
 
-				<div className="flex items-center gap-3">
-					<Checkbox
-						id="hasDefineEventTime"
-						checked={hasDefineEventTime}
-						onCheckedChange={(checked) => {
-							handleHasDefineEventTime(Boolean(checked));
-						}}
-					/>
-					<Label
-						htmlFor="availabilityOtherEvents"
-						className="text-sm font-medium text-gray-700 cursor-pointer"
-					>
-						Definir horário e duração do evento
-					</Label>
-				</div>
-
-				{/* Time fields */}
+				{/* Duration: always required, the band quotes by the length of the event */}
 				<div>
-					{hasDefineEventTime && (
-						<div className="grid grid-cols-2 gap-4 mb-4">
-							<div className="space-y-2">
-								<Controller
-									control={control}
-									name="horaInicio"
-									render={({ field }) => (
-										<>
-											<Label htmlFor="horaInicio">Hora de Início *</Label>
-											<Input
-												id="horaInicio"
-												type="time"
-												{...field}
-												placeholder="--:--"
-												onChange={(event) => {
-													const startTime = event.target.value;
-
-													field.onChange(startTime);
-												}}
-											/>
-
-											{errors.horaInicio?.message && (
-												<div className="text-red-500 text-sm">
-													{errors.horaInicio.message}
-												</div>
-											)}
-										</>
-									)}
-								/>
-							</div>
-						</div>
-					)}
-
-					{/* Quick duration buttons */}
-					{hasDefineEventTime && (
-						<div className="flex items-center gap-2 flex-wrap">
-							<span className="text-sm text-gray-600">Duração *:</span>
-							{quickTimeOptions.map((option) => (
-								<button
-									key={option.duration}
-									type="button"
-									onClick={() => {
-										setQuickDuration(option.duration);
-									}}
-									className={`px-3 py-1.5 text-sm  border border-gray-200
-													rounded-md transition-colors
-												${
-													duration &&
-													timeToSeconds(duration) === option.duration
-														? "bg-primary-500 text-white"
-														: "bg-white hover:bg-primary-50 hover:border-primary-300"
-												}
-													`}
-								>
-									{option.label}
-								</button>
-							))}
-						</div>
-					)}
-
-					{hasDefineEventTime && errors.duracao?.message && (
+					<Label className="text-sm font-medium text-gray-700 mb-2 block">
+						Duração do evento <span className="text-red-500">*</span>
+					</Label>
+					<div className="flex items-center gap-2 flex-wrap">
+						{quickTimeOptions.map((option) => (
+							<button
+								key={option.duration}
+								type="button"
+								onClick={() => {
+									setQuickDuration(option.duration);
+								}}
+								className={`px-3 py-1.5 text-sm  border border-gray-200
+												rounded-md transition-colors
+											${
+												duration && timeToSeconds(duration) === option.duration
+													? "bg-primary-500 text-white"
+													: "bg-white hover:bg-primary-50 hover:border-primary-300"
+											}
+												`}
+							>
+								{option.label}
+							</button>
+						))}
+					</div>
+					{errors.duracao?.message && (
 						<div className="text-red-500 text-sm mt-2">
 							{errors.duracao.message}
 						</div>
 					)}
+				</div>
+
+				{/* Start time: optional */}
+				<div className="grid grid-cols-2 gap-4">
+					<div className="space-y-2">
+						<Controller
+							control={control}
+							name="horaInicio"
+							render={({ field }) => (
+								<>
+									<Label htmlFor="horaInicio">
+										Hora de início{" "}
+										<span className="font-normal text-gray-500">
+											(opcional)
+										</span>
+									</Label>
+									<Input
+										id="horaInicio"
+										type="time"
+										{...field}
+										placeholder="--:--"
+										onChange={(event) => {
+											const startTime = event.target.value;
+
+											field.onChange(startTime);
+										}}
+									/>
+
+									{errors.horaInicio?.message && (
+										<div className="text-red-500 text-sm">
+											{errors.horaInicio.message}
+										</div>
+									)}
+								</>
+							)}
+						/>
+					</div>
 				</div>
 			</Accordion>
 

@@ -16,7 +16,6 @@ import { useCitySearch } from "@/hooks/useCitySearch";
 import type { MusicalProduct } from "@/api/types";
 import { useSchedule } from "@/hooks/useMusicalProducts";
 
-import { Checkbox } from "@/components/ui/Checkbox/Checkbox";
 import { useCheckAvailabilityState } from "@/components/BandProfile/Proposals/hooks/useCheckAvailabilityState";
 import { useCheckAvailabilityForm } from "@/components/BandProfile/Proposals/hooks/useCheckAvailabilityForm";
 import { useCheckAvailabilitySubmit } from "@/components/BandProfile/Proposals/hooks/useCheckAvailabilitySubmit";
@@ -47,13 +46,10 @@ export const CheckAvailabilityModal = ({
 		setCurrentMonth,
 		selectedDate,
 		setSelectedDate,
-		hasDefineEventTime,
-		setHasDefineEventTime,
 	} = useCheckAvailabilityState();
 
 	const {
 		setQuickDuration,
-		handleHasDefineEventTime,
 		form: {
 			reset,
 			watch,
@@ -62,7 +58,7 @@ export const CheckAvailabilityModal = ({
 			handleSubmit,
 			formState: { errors },
 		},
-	} = useCheckAvailabilityForm({ setHasDefineEventTime });
+	} = useCheckAvailabilityForm();
 
 	const duration = watch("duracao") || "";
 
@@ -100,7 +96,6 @@ export const CheckAvailabilityModal = ({
 		produtoMusicalContratanteId,
 		musicalProduct,
 		tipoEventoOptions,
-		hasDefineEventTime,
 		handleClose,
 	});
 
@@ -250,84 +245,20 @@ export const CheckAvailabilityModal = ({
 								</div>
 							</div>
 
-							<div className="grid grid-cols-1 gap-4">
-								<div>
-									<Label className="text-sm font-medium text-gray-700 mb-2 block">
-										Horário
-									</Label>
-
-									<div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-										<div className="flex items-center gap-3">
-											<Checkbox
-												id="hasDefineEventTime"
-												checked={hasDefineEventTime}
-												onCheckedChange={(checked) => {
-													handleHasDefineEventTime(Boolean(checked));
-												}}
-											/>
-											<Label
-												htmlFor="availabilityOtherEvents"
-												className="text-sm font-medium text-gray-700 cursor-pointer"
-											>
-												Definir horário e duração do evento
-											</Label>
-										</div>
-									</div>
-								</div>
-							</div>
-
-							{/* Time fields */}
+							{/* Duration: always asked, the band needs it to quote */}
 							<div>
-								{hasDefineEventTime && (
-									<div className="grid grid-cols-2 gap-4 mb-4">
-										<div className="space-y-2">
-											<Controller
-												control={control}
-												name="horaInicio"
-												render={({ field }) => (
-													<>
-														<Label htmlFor="horaInicio">
-															Hora de Início{" "}
-															<span className="text-red-500">*</span>
-														</Label>
-														<Input
-															id="horaInicio"
-															type="time"
-															{...field}
-															placeholder="--:--"
-															onChange={(event) => {
-																const startTime = event.target.value;
-
-																field.onChange(startTime);
-															}}
-														/>
-
-														{errors.horaInicio?.message && (
-															<div className="text-red-500 text-sm">
-																{errors.horaInicio.message}
-															</div>
-														)}
-													</>
-												)}
-											/>
-										</div>
-									</div>
-								)}
-
-								{/* Quick duration buttons */}
-								{hasDefineEventTime && (
-									<div className="flex items-center gap-2 flex-wrap">
-										<span className="text-sm text-gray-600">
-											Duração <span className="text-red-500">*</span>:
-										</span>
-										{quickTimeOptions.map((option) => (
-											<button
-												key={option.duration}
-												type="button"
-												onClick={() => {
-													setQuickDuration(option.duration);
-												}}
-												className={`px-3 py-1.5 text-sm  border border-gray-200
+								<Label className="text-sm font-medium text-gray-700 mb-2 block">
+									Duração do evento <span className="text-red-500">*</span>
+								</Label>
+								<div className="flex items-center gap-2 flex-wrap">
+									{quickTimeOptions.map((option) => (
+										<button
+											key={option.duration}
+											type="button"
+											onClick={() => {
+												setQuickDuration(option.duration);
+											}}
+											className={`px-3 py-1.5 text-sm  border border-gray-200
 													rounded-md transition-colors
 												${
 													duration &&
@@ -336,18 +267,53 @@ export const CheckAvailabilityModal = ({
 														: "bg-white hover:bg-primary-50 hover:border-primary-300"
 												}
 													`}
-											>
-												{option.label}
-											</button>
-										))}
-									</div>
-								)}
-
-								{hasDefineEventTime && errors.duracao?.message && (
+										>
+											{option.label}
+										</button>
+									))}
+								</div>
+								{errors.duracao?.message && (
 									<div className="text-red-500 text-sm mt-2">
 										{errors.duracao.message}
 									</div>
 								)}
+							</div>
+
+							{/* Start time: optional, the contractor may not know it yet */}
+							<div className="grid grid-cols-2 gap-4">
+								<div className="space-y-2">
+									<Controller
+										control={control}
+										name="horaInicio"
+										render={({ field }) => (
+											<>
+												<Label htmlFor="horaInicio">
+													Hora de início{" "}
+													<span className="font-normal text-gray-500">
+														(opcional)
+													</span>
+												</Label>
+												<Input
+													id="horaInicio"
+													type="time"
+													{...field}
+													placeholder="--:--"
+													onChange={(event) => {
+														const startTime = event.target.value;
+
+														field.onChange(startTime);
+													}}
+												/>
+
+												{errors.horaInicio?.message && (
+													<div className="text-red-500 text-sm">
+														{errors.horaInicio.message}
+													</div>
+												)}
+											</>
+										)}
+									/>
+								</div>
 							</div>
 
 							{/* Footer */}

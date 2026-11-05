@@ -8,8 +8,9 @@ const base = {
 	valor: 5000,
 	local: "Teatro Municipal",
 	dataEvento: "2026-12-20",
+	// The start time is optional; the duration is always required
 	horaInicio: "",
-	duracao: null,
+	duracao: "03:00:00",
 	tipoSinalPagamento: null,
 	valorSinalPagamento: 0,
 	formaPagamento: [1],
@@ -38,6 +39,16 @@ describe("proposal form validation", () => {
 
 	it("accepts a complete proposal", () => {
 		expect(errorsFor({})).toEqual([]);
+	});
+
+	it("requires the duration, even without a start time", () => {
+		expect(errorsFor({ duracao: null })).toEqual(["duracao"]);
+		expect(errorsFor({ duracao: "" })).toEqual(["duracao"]);
+	});
+
+	it("the start time is optional, but checked when filled in", () => {
+		expect(errorsFor({ horaInicio: "20:00" })).toEqual([]);
+		expect(errorsFor({ horaInicio: "25:00" })).toEqual(["horaInicio"]);
 	});
 
 	describe("down payment due date", () => {

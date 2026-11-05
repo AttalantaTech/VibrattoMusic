@@ -4,28 +4,23 @@ import { useFilteredProposals } from "@/hooks/useProposals";
 import type { EventsTableHiresData } from "../../EventsTable/types";
 import { EventsTable } from "../../EventsTable";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { ProposalDetailsModal } from "../Proposals/components/ProposalDetailsModal";
+import { ProposalViewer } from "../Proposals/components/ProposalViewer";
+import type { ProposalView } from "../Proposals/components/ProposalViewTabs";
 import type { ProposalResponse } from "@/api/types";
 import { toast } from "sonner";
-import { useNavigate } from "@tanstack/react-router";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
 import { useProposalFromLink } from "@/components/BandProfile/Proposals/hooks/useProposalFromLink";
-import { useProposalActions } from "@/components/BandProfile/Proposals/hooks/useProposalActions";
 import { ProposalStatusFilter } from "@/components/BandProfile/Proposals/components/ProposalStatusFilter";
-import { ProposalRejectionModal } from "../Proposals/components/ProposalRejectionModal";
 import { proposalTitle } from "@/components/BandProfile/Proposals/utils/proposalTitle";
 
 export const MyHiresTab = () => {
-	const navigate = useNavigate();
-
 	const [statusFilter, setStatusFilter] = useState<string>("Todos os status");
-	const [proposalToReject, setProposalToReject] =
-		useState<ProposalResponse | null>(null);
-	const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
-	const [isProposalDetailsModalOpen, setIsProposalDetailsModalOpen] =
-		useState(false);
-	const [proposalDetails, setProposalDetails] =
-		useState<ProposalResponse | null>(null);
+	// Proposal shown in the viewer (progress/details/contract); null = closed.
+	// Accepting and rejecting happen there
+	const [viewing, setViewing] = useState<{
+		id: number;
+		view: ProposalView;
+	} | null>(null);
 
 	const currentUser = useAuthStore((state) => state.user);
 	const { activeProduct } = useMusicalProductStore();
@@ -37,55 +32,38 @@ export const MyHiresTab = () => {
 			IdProdutoMusicalContratante: activeProduct ? activeProduct.id : null,
 		});
 
-	const { accept, isLoadingAccept } = useProposalActions();
-
-	const handleRejectProposal = useCallback(
-		(proposal: ProposalResponse | string) => {
-			if (typeof proposal === "string") {
-				const foundProposal = filteredProposals?.data.find(
-					(p) => p.identificadorUnico === proposal
-				);
-				if (!foundProposal) return;
-				setProposalToReject(foundProposal);
+	// The menu passes the identificadorUnico; the viewer reads the proposal
+	// again by its number, so it shows what changed meanwhile
+	const openViewer = useCallback(
+		(identificadorUnico: string, view: ProposalView) => {
+			const proposal = filteredProposals?.data.find(
+				(p) => p.identificadorUnico === identificadorUnico
+			);
+			if (proposal) {
+				setViewing({ id: proposal.id, view });
 			} else {
-				setProposalToReject(proposal);
+				toast.error("Não foi possível abrir esta proposta.");
 			}
-			setIsRejectionModalOpen(true);
 		},
 		[filteredProposals?.data]
 	);
 
 	const handleSeeContract = useCallback(
-		async (proposalId: string) => {
-			if (proposalId) {
-				await navigate({
-					to: "/band/contract/$id",
-					params: { id: proposalId },
-				});
-			} else {
-				toast.error(
-					"Não foi possível acessar o contrato. Identificador da proposta não encontrado."
-				);
-			}
+		(proposalId: string) => {
+			openViewer(proposalId, "contract");
 		},
-		[navigate]
+		[openViewer]
 	);
 
 	const handleSeeProposal = useCallback(
 		(proposalId: string) => {
-			setProposalDetails(
-				filteredProposals?.data.find(
-					(p) => p.identificadorUnico === proposalId
-				) || null
-			);
-			setIsProposalDetailsModalOpen(true);
+			openViewer(proposalId, "details");
 		},
-		[filteredProposals?.data]
+		[openViewer]
 	);
 
 	const handleOpenLinkedProposal = useCallback((proposal: ProposalResponse) => {
-		setProposalDetails(proposal);
-		setIsProposalDetailsModalOpen(true);
+		setViewing({ id: proposal.id, view: "details" });
 	}, []);
 
 	useProposalFromLink({
@@ -176,29 +154,13 @@ export const MyHiresTab = () => {
 					)}
 				</div>
 			</div>
-			{/* Modals */}
-			<ProposalDetailsModal
-				isOpen={isProposalDetailsModalOpen}
-				mode="Contractor"
+			<ProposalViewer
+				proposalId={viewing?.id ?? null}
+				initialView={viewing?.view}
+				isSeller={false}
 				onClose={() => {
-					setIsProposalDetailsModalOpen(false);
+					setViewing(null);
 				}}
-				proposal={proposalDetails}
-				onAccept={async () => {
-					if (proposalDetails) await accept(proposalDetails);
-				}}
-				onReject={handleRejectProposal}
-				onSeeContract={handleSeeContract}
-				isLoadingAccept={isLoadingAccept}
-			/>
-
-			<ProposalRejectionModal
-				isOpen={isRejectionModalOpen}
-				onClose={() => {
-					setIsRejectionModalOpen(false);
-					setProposalToReject(null);
-				}}
-				proposal={proposalToReject}
 			/>
 		</div>
 	);

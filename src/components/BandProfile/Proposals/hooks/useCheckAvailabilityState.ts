@@ -6,7 +6,6 @@ import { filterService } from "@/api";
 import { toast } from "sonner";
 
 export const useCheckAvailabilityState = () => {
-	const [hasDefineEventTime, setHasDefineEventTime] = useState(false);
 	const [loadingEventTypes, setLoadingEventTypes] = useState(true);
 	const [eventTypes, setEventTypes] = useState<Array<FilterOption>>([]);
 	const [selectedEventTypes, setSelectedEventTypes] = useState<Array<Option>>(
@@ -48,7 +47,5 @@ export const useCheckAvailabilityState = () => {
 		setCurrentMonth,
 		selectedDate,
 		setSelectedDate,
-		hasDefineEventTime,
-		setHasDefineEventTime,
 	};
 };

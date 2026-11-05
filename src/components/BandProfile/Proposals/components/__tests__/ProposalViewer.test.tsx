@@ -25,6 +25,8 @@ vi.mock("@/hooks/useProposals", () => ({
 					tipoSinalPagamento: null,
 					valorSinalPagamento: null,
 					motivoRejeicao: null,
+					possuiSinalPagamento: true,
+					sinalPago: false,
 				}
 			: undefined,
 		isError: false,
@@ -55,7 +57,12 @@ vi.mock("@/store/musicalProduct/useMusicalProductStore", () => ({
 	useMusicalProductStore: () => ({ activeProduct }),
 }));
 
-import { ChatProposalDialog } from "../ChatProposalDialog";
+vi.mock("@/hooks/useContracts", () => ({
+	useContractPDF: () => ({ data: "blob:contrato", isLoading: false }),
+	useContractSections: () => ({ data: [] }),
+}));
+
+import { ProposalViewer } from "../ProposalViewer";
 
 const asContractor = () => {
 	user = { id: 7 };
@@ -66,8 +73,9 @@ const asBand = () => {
 	activeProduct = { id: 3 };
 };
 
-// "Ver proposta" in the chat opens the proposal with its actions
-describe("ChatProposalDialog", () => {
+// Progress, proposal and contract over the chat, Vendas and Contratações,
+// with tabs between them and each one's actions
+describe("ProposalViewer", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
@@ -76,7 +84,7 @@ describe("ChatProposalDialog", () => {
 		status = "Pendente";
 		asContractor();
 		render(
-			<ChatProposalDialog proposalId={10} isSeller={false} onClose={vi.fn()} />
+			<ProposalViewer proposalId={10} isSeller={false} onClose={vi.fn()} />
 		);
 
 		fireEvent.click(screen.getByText("Aceitar"));
@@ -90,7 +98,7 @@ describe("ChatProposalDialog", () => {
 		status = "Pendente";
 		asContractor();
 		render(
-			<ChatProposalDialog proposalId={10} isSeller={false} onClose={vi.fn()} />
+			<ProposalViewer proposalId={10} isSeller={false} onClose={vi.fn()} />
 		);
 
 		fireEvent.click(screen.getByText("Rejeitar Proposta"));
@@ -101,7 +109,7 @@ describe("ChatProposalDialog", () => {
 	it("the band confirms the down payment only after the confirmation", async () => {
 		status = "AguardandoPagamento";
 		asBand();
-		render(<ChatProposalDialog proposalId={11} isSeller onClose={vi.fn()} />);
+		render(<ProposalViewer proposalId={11} isSeller onClose={vi.fn()} />);
 
 		fireEvent.click(screen.getByText("Confirmar Recebimento do Sinal"));
 		expect(actions.confirmPaidSign).not.toHaveBeenCalled();
@@ -116,19 +124,79 @@ describe("ChatProposalDialog", () => {
 	it("the band doesn't see the contractor's buttons", () => {
 		status = "Pendente";
 		asBand();
-		render(<ChatProposalDialog proposalId={12} isSeller onClose={vi.fn()} />);
+		render(<ProposalViewer proposalId={12} isSeller onClose={vi.fn()} />);
 
 		expect(screen.queryByText("Aceitar")).toBeNull();
 		expect(screen.queryByText("Rejeitar Proposta")).toBeNull();
 	});
 
-	it("stays closed without a proposal", () => {
+	it("switches to the contract and back without leaving the screen", () => {
+		status = "Aceita";
+		asBand();
+		render(<ProposalViewer proposalId={13} isSeller onClose={vi.fn()} />);
+
+		fireEvent.click(screen.getByRole("tab", { name: /Contrato/ }));
+		expect(screen.getByText("Baixar Contrato")).toBeTruthy();
+
+		fireEvent.click(screen.getByRole("tab", { name: /Proposta/ }));
+		expect(screen.getByText("Detalhes da Proposta")).toBeTruthy();
+	});
+
+	it("before the acceptance there is no contract tab", () => {
+		status = "Pendente";
+		asContractor();
 		render(
-			<ChatProposalDialog
-				proposalId={null}
+			<ProposalViewer
+				proposalId={14}
+				initialView="contract"
 				isSeller={false}
 				onClose={vi.fn()}
 			/>
+		);
+
+		expect(screen.queryByRole("tab", { name: /Contrato/ })).toBeNull();
+		// An old "Ver contrato" link falls back to the proposal
+		expect(screen.getByText("Detalhes da Proposta")).toBeTruthy();
+	});
+
+	it("the band confirms the down payment from the contract too", async () => {
+		status = "Aceita";
+		asBand();
+		render(
+			<ProposalViewer
+				proposalId={15}
+				initialView="contract"
+				isSeller
+				onClose={vi.fn()}
+			/>
+		);
+
+		fireEvent.click(screen.getByText("Confirmar Recebimento do Sinal"));
+		fireEvent.click(await screen.findByText("Confirmar Recebimento"));
+
+		await waitFor(() => {
+			expect(actions.confirmPaidSign).toHaveBeenCalled();
+		});
+	});
+
+	it("opens on the progress from the chat card", () => {
+		status = "Aceita";
+		asContractor();
+		render(
+			<ProposalViewer
+				proposalId={16}
+				initialView="progress"
+				isSeller={false}
+				onClose={vi.fn()}
+			/>
+		);
+
+		expect(screen.getByText("Andamento da contratação")).toBeTruthy();
+	});
+
+	it("stays closed without a proposal", () => {
+		render(
+			<ProposalViewer proposalId={null} isSeller={false} onClose={vi.fn()} />
 		);
 
 		expect(screen.queryByText("Detalhes da Proposta")).toBeNull();

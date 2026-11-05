@@ -22,7 +22,6 @@ interface ProposalFormProps {
 	counterProposalOf?: ProposalResponse | null;
 	contractorId?: number;
 	contractorName?: string;
-	setHasDefineEventTime: (value: boolean) => void;
 }
 
 export const useProposalForm = ({
@@ -30,7 +29,6 @@ export const useProposalForm = ({
 	counterProposalOf,
 	contractorId,
 	contractorName,
-	setHasDefineEventTime,
 }: ProposalFormProps) => {
 	// A counter-proposal starts from every field of the rejected proposal
 	const proposal = editedProposal ?? counterProposalOf ?? null;
@@ -153,7 +151,6 @@ export const useProposalForm = ({
 			dataVencimentoAceite,
 			dataVencimentoSinalPagamento,
 			// Checked on its own when the proposal has a time (useProposalState)
-			definirHorarioEvento: !!proposal?.horaFim,
 			horaInicio: proposal?.horaInicio || "",
 			duracao: duration || "",
 			formaPagamento: proposal?.formaPagamento.map((item) => item.id) || [],
@@ -186,34 +183,6 @@ export const useProposalForm = ({
 		});
 	};
 
-	const handleHasDefineEventTime = (state: boolean) => {
-		setHasDefineEventTime(state);
-		// The schema only requires the time fields while this is checked
-		form.setValue("definirHorarioEvento", state);
-
-		const currentStartTime = form.getValues("horaInicio");
-
-		if (!state) {
-			form.setValue("horaInicio", "");
-			form.setValue("duracao", "");
-			form.clearErrors(["horaInicio", "duracao"]);
-
-			return;
-		}
-
-		const hourPtBR = new Date().toLocaleString("pt-BR", {
-			timeZone: "America/Sao_Paulo",
-			hour: "2-digit",
-			minute: "2-digit",
-			hour12: false,
-		});
-
-		const startTime = currentStartTime || hourPtBR;
-
-		form.setValue("horaInicio", startTime);
-		// No preset duration: it is required and has to be picked
-	};
-
 	const isSectionComplete = (
 		section:
 			| "eventData"
@@ -236,8 +205,8 @@ export const useProposalForm = ({
 					form.watch("dataEvento") &&
 					// The time is optional; once "Definir horário" is checked, both
 					// fields count
-					(!form.watch("definirHorarioEvento") ||
-						(form.watch("horaInicio") && form.watch("duracao")))
+					// The start time is optional; the duration is required
+					form.watch("duracao")
 				);
 			case "paymentConditions":
 				return !!(
@@ -267,6 +236,5 @@ export const useProposalForm = ({
 		standardDescription,
 		setQuickDuration,
 		isSectionComplete,
-		handleHasDefineEventTime,
 	};
 };

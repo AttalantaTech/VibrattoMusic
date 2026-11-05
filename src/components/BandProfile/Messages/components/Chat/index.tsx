@@ -21,7 +21,7 @@ import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProduct
 import { MoreOptionsDropdownItem } from "@/components/ui/MoreOptionsDropdownItem";
 import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
 import { BudgetListModal } from "@/components/BandProfile/Budgets/components/BudgetListModal";
-import { ChatProposalDialog } from "@/components/BandProfile/Proposals/components/ChatProposalDialog";
+import { ProposalViewer } from "@/components/BandProfile/Proposals/components/ProposalViewer";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -373,9 +373,9 @@ export const Chat = () => {
 				/>
 			)}
 
-			<ChatProposalDialog
+			<ProposalViewer
 				proposalId={previewProposal?.id ?? null}
-				showProgress={previewProposal?.progress}
+				initialView={previewProposal?.progress ? "progress" : "details"}
 				isSeller={isSeller}
 				conversationId={selectedConversation?.id}
 				onClose={closePreview}

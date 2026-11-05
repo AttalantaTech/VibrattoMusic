@@ -17,7 +17,6 @@ interface CheckAvailabilitySubmit {
 	contratanteId: number;
 	produtoMusicalContratanteId: number | null;
 	tipoEventoOptions: Array<Option>;
-	hasDefineEventTime: boolean;
 	handleClose: () => void;
 }
 
@@ -36,7 +35,6 @@ const formatTime = (timeString: string) => {
 export const useCheckAvailabilitySubmit = ({
 	musicalProduct,
 	tipoEventoOptions,
-	hasDefineEventTime,
 	handleClose,
 	contratanteId,
 	produtoMusicalContratanteId,
@@ -62,9 +60,11 @@ export const useCheckAvailabilitySubmit = ({
 				String(formData.dataEvento || "").trim(),
 				String(formData.horaInicio || "").trim()
 			),
-			duracao: hasDefineEventTime ? formData.duracao : null,
-			horaInicio: hasDefineEventTime
-				? ensureHHMMSS(String(formData.horaInicio || "").trim())
+			// Always asked: the band needs it to quote
+			duracao: formData.duracao || null,
+			// Optional: sent only when the contractor filled it in
+			horaInicio: formData.horaInicio.trim()
+				? ensureHHMMSS(formData.horaInicio.trim())
 				: null,
 		};
 
@@ -96,13 +96,10 @@ export const useCheckAvailabilitySubmit = ({
 					description: formData.descricao,
 					date: formatDate(formData.dataEvento),
 
-					startTime: hasDefineEventTime
+					startTime: formData.horaInicio.trim()
 						? formatTime(formData.horaInicio)
 						: null,
-					duration:
-						hasDefineEventTime && formData.duracao
-							? String(formData.duracao)
-							: null,
+					duration: formData.duracao ? String(formData.duracao) : null,
 					location: formData.local,
 				},
 				errorMessage: "Erro ao enviar solicitação orçamento",
