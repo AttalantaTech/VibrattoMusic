@@ -52,7 +52,7 @@ export type MessagesContextType = {
 	setIsProfileIncompleteModalOpen: (value: boolean) => void;
 	messagesContainerRef: RefObject<HTMLDivElement>;
 	messagesEndRef: RefObject<HTMLDivElement>;
-	scrollToBottom: () => void;
+	scrollToBottom: (behavior?: ScrollBehavior) => void;
 };
 
 export type ChatMessage = {
@@ -133,7 +133,7 @@ export type UseMessagesUIProps = {
 };
 
 export type UseMessagesUIReturn = {
-	scrollToBottom: () => void;
+	scrollToBottom: (behavior?: ScrollBehavior) => void;
 };
 
 export type UseMessagesObserverProps = {
