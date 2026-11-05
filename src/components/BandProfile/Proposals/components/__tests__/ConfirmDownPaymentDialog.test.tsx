@@ -9,9 +9,10 @@ const proposal = {
 	tipoSinalPagamento: "P",
 	valorSinalPagamento: 30,
 	contratante: { id: 1, nome: "Maria" },
+	status: { id: 1, nome: "AguardandoPagamento" },
 } as unknown as ProposalResponse;
 
-// Confirming concludes the hiring and notifies the client, so it asks first
+// Confirming notifies the client (and may conclude the hiring), so it asks first
 describe("ConfirmDownPaymentDialog", () => {
 	it("shows the amount and the client before confirming", () => {
 		render(
@@ -56,6 +57,32 @@ describe("ConfirmDownPaymentDialog", () => {
 
 		expect(onClose).toHaveBeenCalled();
 		expect(onConfirm).not.toHaveBeenCalled();
+	});
+
+	it("after both signed, says the hiring will be concluded", () => {
+		render(
+			<ConfirmDownPaymentDialog
+				proposal={proposal}
+				onConfirm={vi.fn()}
+				onClose={vi.fn()}
+			/>
+		);
+
+		expect(
+			screen.getByText(/a contratação será concluída e o cliente/)
+		).toBeTruthy();
+	});
+
+	it("before the signatures, says the hiring still waits for them", () => {
+		render(
+			<ConfirmDownPaymentDialog
+				proposal={{ ...proposal, status: { id: 2, nome: "Aceita" } }}
+				onConfirm={vi.fn()}
+				onClose={vi.fn()}
+			/>
+		);
+
+		expect(screen.getByText(/assinado pelas duas partes/)).toBeTruthy();
 	});
 
 	it("stays closed without a proposal", () => {

@@ -173,8 +173,7 @@ export const useUpdateProposalStatus = () => {
 					"Proposta aceita! O contrato será gerado e enviado em breve para o seu email.",
 				rejeitado: "Proposta rejeitada.",
 				cancelado: "Proposta cancelada.",
-				sinalPago:
-					"Recebimento do sinal confirmado. A contratação foi concluída.",
+				sinalPago: "Recebimento do sinal confirmado.",
 			};
 
 			toast.success(statusMessages[variables.status]);

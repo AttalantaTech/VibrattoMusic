@@ -939,6 +939,8 @@ export interface ProposalResponse {
 	} | null;
 	/** Whether the proposal asks for a down payment (the back-end works it out) */
 	possuiSinalPagamento?: boolean;
+	/** The professional confirmed receiving the down payment */
+	sinalPago?: boolean;
 	tipoSinalPagamento: "V" | "P" | null;
 	valorSinalPagamento: number | null;
 	dataVencimentoSinalPagamento: string | null;

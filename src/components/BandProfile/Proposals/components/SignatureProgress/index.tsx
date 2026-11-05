@@ -139,7 +139,7 @@ export const SignatureProgress = ({
 					{!isContractor ? (
 						<p className="mt-2 border-t border-primary-200 pt-2">
 							Como contratado, você é responsável por assinar o contrato.
-							{proposal.possuiSinalPagamento
+							{proposal.possuiSinalPagamento && !proposal.sinalPago
 								? " A assinatura pode ser feita antes ou depois do pagamento do sinal, como preferir."
 								: ""}
 						</p>

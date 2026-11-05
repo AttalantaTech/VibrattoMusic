@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ProposalResponse, User } from "@/api/types";
-import { proposalRoles } from "../proposalRoles";
+import { awaitsDownPayment, proposalRoles } from "../proposalRoles";
 
 const proposal = (status: string) =>
 	({
@@ -60,14 +60,40 @@ describe("proposalRoles", () => {
 		expect(forContractor.needsContractorPaidSign).toBe(false);
 	});
 
-	it("nobody confirms the down payment before the contract is signed", () => {
+	it("the band confirms the down payment already in Aceita, before the signatures", () => {
 		expect(
 			proposalRoles({
-				proposal: proposal("Aceita"),
+				proposal: { ...proposal("Aceita"), possuiSinalPagamento: true },
 				user: band,
 				productContractorId: 3,
 			}).needsContractorPaidSign
+		).toBe(true);
+	});
+
+	it("an accepted proposal without down payment has nothing to confirm", () => {
+		expect(
+			awaitsDownPayment({ ...proposal("Aceita"), possuiSinalPagamento: false })
 		).toBe(false);
+	});
+
+	it("a paid down payment is not confirmed again", () => {
+		for (const status of ["Aceita", "AguardandoPagamento"]) {
+			expect(
+				awaitsDownPayment({
+					...proposal(status),
+					possuiSinalPagamento: true,
+					sinalPago: true,
+				})
+			).toBe(false);
+		}
+	});
+
+	it("no confirmation while pending or after the hiring", () => {
+		for (const status of ["Pendente", "ContratacaoConcluida", "Vencida"]) {
+			expect(
+				awaitsDownPayment({ ...proposal(status), possuiSinalPagamento: true })
+			).toBe(false);
+		}
 	});
 
 	it("'Contratação Concluída' is the signed and paid hiring", () => {

@@ -281,8 +281,8 @@ export const ContractSignaturePage = ({
 				{/* Who has signed and who is missing, while the contract is signed */}
 				<SignatureProgress proposal={proposal} isContractor={!!isContractor} />
 
-				{/* Contractor only; shown until the down payment is confirmed */}
-				{isContractor ? <DownPaymentNotice proposal={proposal} /> : null}
+				{/* What to pay (contractor), or that it was received (both sides) */}
+				<DownPaymentNotice proposal={proposal} isContractor={!!isContractor} />
 
 				{/* PDF Viewer Section */}
 				<div className="bg-white rounded-lg shadow-sm mb-6">

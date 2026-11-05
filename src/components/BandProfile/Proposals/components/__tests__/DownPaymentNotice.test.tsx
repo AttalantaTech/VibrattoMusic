@@ -20,15 +20,38 @@ const proposal = (
 		...extra,
 	}) as unknown as ProposalResponse;
 
-const noticeText = (p: ProposalResponse) =>
-	render(<DownPaymentNotice proposal={p} />).container.textContent;
+const noticeText = (p: ProposalResponse, isContractor = true) =>
+	render(<DownPaymentNotice proposal={p} isContractor={isContractor} />)
+		.container.textContent;
 
-// The contractor's notice: from the acceptance until the payment is confirmed
+// The contractor's notice: from the acceptance until the payment is confirmed,
+// before or after the signatures; then both sides see it was received
 describe("DownPaymentNotice", () => {
-	it("while signing, says to pay after both parties sign, with amount and due date", () => {
-		expect(noticeText(proposal("Aceita", PAYMENT_CONDITION.SIGNAL_50))).toMatch(
-			/Depois que o contrato for assinado.*R\$ 2\.500,00 até 28\/11\/2026/
+	it("while signing, asks for the payment now, with amount and due date", () => {
+		const text = noticeText(proposal("Aceita", PAYMENT_CONDITION.SIGNAL_50));
+		expect(text).toMatch(
+			/^Pagamento do sinal:Efetue o pagamento do sinal de R\$ 2\.500,00 até 28\/11\/2026/
 		);
+		expect(text).toMatch(/antes ou depois da assinatura do contrato/);
+	});
+
+	it("the professional has no notice before the payment", () => {
+		expect(
+			noticeText(proposal("Aceita", PAYMENT_CONDITION.SIGNAL_50), false)
+		).toBe("");
+	});
+
+	it("once paid while signing, both sides see it was received", () => {
+		const paid = proposal("Aceita", PAYMENT_CONDITION.SIGNAL_50, {
+			sinalPago: true,
+		});
+		expect(noticeText(paid)).toMatch(
+			/^Sinal recebidoBanda X confirmou o recebimento do sinal/
+		);
+		expect(noticeText(paid, false)).toMatch(
+			/^Sinal recebidoVocê confirmou o recebimento do sinal/
+		);
+		expect(noticeText(paid)).not.toMatch(/Efetue o pagamento/);
 	});
 
 	it("in 'Aguardando Pagamento' asks for the payment", () => {
