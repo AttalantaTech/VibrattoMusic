@@ -18,14 +18,12 @@ interface BudgetFormProps {
 	budget?: CreateProposalForm | null;
 	contractorId?: number;
 	contractorName?: string;
-	setHasDefineEventTime: (value: boolean) => void;
 }
 
 export const useBudgetForm = ({
 	budget,
 	contractorId,
 	contractorName,
-	setHasDefineEventTime,
 }: BudgetFormProps) => {
 	const { user } = useAuthStore();
 	const { data: userData } = useUser();
@@ -116,7 +114,6 @@ export const useBudgetForm = ({
 			dataVencimentoAceite: 15,
 			dataVencimentoSinalPagamento: 30,
 			// Checked on its own when the budget has a duration (useBudgetState)
-			definirHorarioEvento: !!budget?.duracao,
 			horaInicio: budget?.horaInicio || "",
 			duracao: budget?.duracao || "",
 			formaPagamento: [],
@@ -141,34 +138,6 @@ export const useBudgetForm = ({
 		});
 	};
 
-	const handleHasDefineEventTime = (state: boolean) => {
-		setHasDefineEventTime(state);
-		// The schema only requires the time fields while this is checked
-		form.setValue("definirHorarioEvento", state);
-
-		const currentStartTime = form.getValues("horaInicio");
-
-		if (!state) {
-			form.setValue("horaInicio", "");
-			form.setValue("duracao", "");
-			form.clearErrors(["horaInicio", "duracao"]);
-
-			return;
-		}
-
-		const hourPtBR = new Date().toLocaleString("pt-BR", {
-			timeZone: "America/Sao_Paulo",
-			hour: "2-digit",
-			minute: "2-digit",
-			hour12: false,
-		});
-
-		const startTime = currentStartTime || hourPtBR;
-
-		form.setValue("horaInicio", startTime);
-		// No preset duration: it is required and has to be picked
-	};
-
 	const isSectionComplete = (
 		section:
 			| "eventData"
@@ -191,8 +160,8 @@ export const useBudgetForm = ({
 					form.watch("dataEvento") &&
 					// The time is optional; once "Definir horário" is checked, both
 					// fields count
-					(!form.watch("definirHorarioEvento") ||
-						(form.watch("horaInicio") && form.watch("duracao")))
+					// The start time is optional; the duration is required
+					form.watch("duracao")
 				);
 			case "paymentConditions":
 				return !!(
@@ -222,6 +191,5 @@ export const useBudgetForm = ({
 		standardDescription,
 		setQuickDuration,
 		isSectionComplete,
-		handleHasDefineEventTime,
 	};
 };

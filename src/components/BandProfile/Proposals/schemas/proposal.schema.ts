@@ -4,7 +4,7 @@ import {
 	requiresDownPayment,
 } from "../utils/calculateSignal";
 import { isDeadlineAfterEvent } from "../utils/deadlines";
-import { addEventTimeIssues } from "./eventTime";
+import { eventTimeFields } from "./eventTime";
 
 const createProposalSchema = z
 	.object({
@@ -14,7 +14,6 @@ const createProposalSchema = z
 		descricao: z.string().optional(),
 		valor: z.number().min(0.01, "Valor deve ser maior que zero"),
 		local: z.string().trim().min(3, "Local é obrigatório"),
-		definirHorarioEvento: z.boolean().optional(),
 		// Required only when the condition has a down payment (see superRefine);
 		// a cleared field becomes 0 instead of failing while it's hidden
 		dataVencimentoSinalPagamento: z.coerce.number().catch(0),
@@ -31,8 +30,7 @@ const createProposalSchema = z
 			})
 			.min(1, "Data de vencimento Aceite é obrigatória"),
 		dataEvento: z.string().min(1, "Data do Evento é obrigatória"),
-		horaInicio: z.string(),
-		duracao: z.string().nullable(),
+		...eventTimeFields,
 		transporteIncluso: z.boolean().optional(),
 		acomodacaoInclusa: z.boolean().optional(),
 		tipoSinalPagamento: z.enum(["V", "P"]).nullable(),
@@ -96,8 +94,6 @@ const createProposalSchema = z
 				});
 			}
 		}
-
-		addEventTimeIssues(data, context);
 	});
 
 export type CreateProposalForm = z.infer<typeof createProposalSchema>;
