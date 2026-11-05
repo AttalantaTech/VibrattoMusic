@@ -64,12 +64,22 @@ describe("chat messages", () => {
 		expect(html).not.toContain("Contraproposta");
 	});
 
-	it("confirming the down payment says the hiring is complete", () => {
+	it("confirming the down payment after both signed says the hiring is complete", () => {
 		const html = buildStatusMessage("proposalPaidSign", {
 			recipientName: "Maria",
+			contractSigned: true,
 		});
 		expect(html).toContain("A contratação está concluída");
 		expect(html).not.toContain("precisa ser assinado");
+	});
+
+	it("confirming it before the signatures says the hiring still waits for them", () => {
+		const html = buildStatusMessage("proposalPaidSign", {
+			recipientName: "Maria",
+			contractSigned: false,
+		});
+		expect(html).not.toContain("A contratação está concluída");
+		expect(html).toContain("assinado pelas duas partes");
 	});
 
 	it("budget cards carry the title that identifies older ones", () => {

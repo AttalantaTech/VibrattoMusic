@@ -103,7 +103,10 @@ export const useProposalActions = (conversationId?: number | null) => {
 				produtoMusicalName: proposal.produtoMusical.nome,
 				link: entityLinks.proposalTab(proposal.id),
 				errorMessage: "Erro ao enviar sua requisição",
-				payload: {},
+				// Confirmed before the signatures ("Aceita") the hiring isn't done yet
+				payload: {
+					contractSigned: proposal.status.nome === "AguardandoPagamento",
+				},
 			});
 			return true;
 		} catch (error) {

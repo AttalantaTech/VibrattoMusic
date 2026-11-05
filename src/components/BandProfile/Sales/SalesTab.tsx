@@ -68,6 +68,7 @@ import { ProposalStatusFilter } from "@/components/BandProfile/Proposals/compone
 import { entityLinks } from "@/features/message/utils/messageTemplates";
 import { ShareLink } from "@/components/ui/ShareLink/ShareLink";
 import { proposalTitle } from "@/components/BandProfile/Proposals/utils/proposalTitle";
+import { awaitsDownPayment } from "@/components/BandProfile/Proposals/utils/proposalRoles";
 
 export const SalesTab = () => {
 	const navigate = useNavigate();
@@ -216,10 +217,9 @@ export const SalesTab = () => {
 						onSeeContract: handleSeeContract,
 						onEditContract: handleEditContract,
 						onShareProposal: setShareProposalId,
-						onConfirmDownPayment:
-							event.status.nome === "AguardandoPagamento"
-								? handleOpenConfirmPayment
-								: undefined,
+						onConfirmDownPayment: awaitsDownPayment(event)
+							? handleOpenConfirmPayment
+							: undefined,
 					};
 				}),
 			[

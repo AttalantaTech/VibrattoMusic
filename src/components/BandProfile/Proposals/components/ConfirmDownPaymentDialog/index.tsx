@@ -44,7 +44,9 @@ export const ConfirmDownPaymentDialog = ({
 						Confirma que recebeu o sinal
 						{amount ? ` de R$ ${handleCurrencyFormatting(amount)}` : ""} de{" "}
 						<span className="font-semibold text-gray-900">{clientName}</span>?
-						Ao confirmar, a contratação será concluída e o cliente será avisado.
+						{proposal?.status.nome === "AguardandoPagamento"
+							? " Ao confirmar, a contratação será concluída e o cliente será avisado."
+							: " Ao confirmar, o cliente será avisado. A contratação será concluída assim que o contrato for assinado pelas duas partes."}
 					</DialogDescription>
 				</DialogHeader>
 

@@ -33,7 +33,8 @@ export interface StatusPayloads {
 	};
 
 	proposalAccepted: Record<string, never>;
-	proposalPaidSign: Record<string, never>;
+	/** Both had signed: the payment concludes the hiring (else it waits for the signatures) */
+	proposalPaidSign: { contractSigned?: boolean };
 	proposalRejected: { reason: string };
 	proposalCanceled: { reason?: string };
 	contractCreated: Record<string, never>;
@@ -186,7 +187,11 @@ const statusTemplates: { [K in StatusMessageType]: Template<K> } = {
 		renderCard({
 			variant: "success",
 			title: "🎉 Pagamento do sinal confirmado!",
-			subtitle: `${greeting(c.recipientName)}, o contratado confirmou o recebimento do sinal. A contratação está concluída.`,
+			subtitle: `${greeting(c.recipientName)}, o contratado confirmou o recebimento do sinal. ${
+				c.contractSigned
+					? "A contratação está concluída."
+					: "A contratação será concluída assim que o contrato for assinado pelas duas partes."
+			}`,
 			link: c.link,
 		}),
 
