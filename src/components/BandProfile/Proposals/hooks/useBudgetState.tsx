@@ -2,10 +2,8 @@ import { filterService } from "@/api";
 import type { FilterOption } from "@/api/types";
 import type { Option } from "@/components/forms/Select/Select";
 import { useEffect, useState } from "react";
-import type { CreateProposalForm } from "../schemas/proposal.schema";
 
-export const useBudgetState = (budget: CreateProposalForm | null) => {
-	const [hasDefineEventTime, setHasDefineEventTime] = useState(false);
+export const useBudgetState = () => {
 	const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<
 		Array<Option>
 	>([]);
@@ -44,15 +42,7 @@ export const useBudgetState = (budget: CreateProposalForm | null) => {
 		void loadOptions();
 	}, [setEventTypes, setPaymentConditions, setPaymentMethods]);
 
-	useEffect(() => {
-		if (budget?.duracao) {
-			setHasDefineEventTime(true);
-		}
-	}, [budget?.duracao]);
-
 	return {
-		hasDefineEventTime,
-		setHasDefineEventTime,
 		eventTypes,
 		paymentMethods,
 		paymentConditions,

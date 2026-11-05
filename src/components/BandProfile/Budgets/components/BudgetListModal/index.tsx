@@ -47,7 +47,6 @@ const getInitialFormValues = (
 			idCondicoesPagamento: 0,
 			transporteIncluso: false,
 			acomodacaoInclusa: false,
-			definirHorarioEvento: false,
 			tipoSinalPagamento: null,
 			valorSinalPagamento: 0,
 		};
@@ -69,7 +68,6 @@ const getInitialFormValues = (
 			idCondicoesPagamento: 2,
 			transporteIncluso: false,
 			acomodacaoInclusa: false,
-			definirHorarioEvento: Boolean(proposal.horaInicio),
 			idOrcamento: proposal.id,
 			tipoSinalPagamento: null,
 			valorSinalPagamento: 0,
@@ -91,7 +89,6 @@ const getInitialFormValues = (
 		idCondicoesPagamento: proposal.idCondicoesPagamento || 0,
 		transporteIncluso: Boolean(proposal.transporteIncluso),
 		acomodacaoInclusa: Boolean(proposal.acomodacaoInclusa),
-		definirHorarioEvento: Boolean(proposal.horaInicio),
 		tipoSinalPagamento: proposal.tipoSinalPagamento,
 		valorSinalPagamento: proposal.valorSinalPagamento || 0,
 	};

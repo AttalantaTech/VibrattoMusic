@@ -9,7 +9,6 @@ const check: CheckAvailabilityForm = {
 	descricao: "",
 	local: "Rio de Janeiro - RJ",
 	dataEvento: "2026-12-12",
-	definirHorarioEvento: false,
 	horaInicio: "",
 	duracao: "",
 };
@@ -23,32 +22,26 @@ const errorsOf = (data: CheckAvailabilityForm) => {
 			);
 };
 
-// "Definir horário e duração": start time and duration required; no preset
-describe("event time (availability check and proposal)", () => {
-	it("without a defined time, neither field is required", () => {
-		expect(errorsOf(check)).toEqual([]);
+// Availability check: the duration always (the band needs it to quote); the
+// start time is optional
+describe("event time (availability check)", () => {
+	it("the duration is required", () => {
+		expect(errorsOf(check)).toEqual(["duracao: Duração é obrigatória"]);
 	});
 
-	it("with a defined time, a missing duration is refused", () => {
-		expect(
-			errorsOf({ ...check, definirHorarioEvento: true, horaInicio: "20:00" })
-		).toEqual(["duracao: Duração é obrigatória"]);
+	it("a duration without a start time is valid", () => {
+		expect(errorsOf({ ...check, duracao: "03:00:00" })).toEqual([]);
 	});
 
-	it("with a defined time, a missing start time is refused", () => {
-		expect(
-			errorsOf({ ...check, definirHorarioEvento: true, duracao: "02:00:00" })
-		).toEqual(["horaInicio: Hora de início é obrigatória"]);
+	it("a start time without a duration is refused", () => {
+		expect(errorsOf({ ...check, horaInicio: "20:00" })).toEqual([
+			"duracao: Duração é obrigatória",
+		]);
 	});
 
 	it("start time and duration picked: valid", () => {
 		expect(
-			errorsOf({
-				...check,
-				definirHorarioEvento: true,
-				horaInicio: "20:00",
-				duracao: "01:30:00",
-			})
+			errorsOf({ ...check, horaInicio: "20:00", duracao: "01:30:00" })
 		).toEqual([]);
 	});
 });

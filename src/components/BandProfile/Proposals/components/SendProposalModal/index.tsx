@@ -59,28 +59,19 @@ export const SendProposalModal = ({
 		setExpandedSections,
 		selectedPaymentMethods,
 		setSelectedPaymentMethods,
-		hasDefineEventTime,
-		setHasDefineEventTime,
 	} = useProposalState(proposal || counterProposalOf || null);
 
-	const {
-		form,
-		handleHasDefineEventTime,
-		setQuickDuration,
-		isSectionComplete,
-		standardDescription,
-	} = useProposalForm({
-		proposal,
-		counterProposalOf,
-		contractorId,
-		contractorName,
-		setHasDefineEventTime,
-	});
+	const { form, setQuickDuration, isSectionComplete, standardDescription } =
+		useProposalForm({
+			proposal,
+			counterProposalOf,
+			contractorId,
+			contractorName,
+		});
 	const { handleSubmit } = form;
 
 	const handleClose = () => {
 		onClose();
-		setHasDefineEventTime(false);
 		setSelectedPaymentMethods([]);
 	};
 
@@ -96,7 +87,6 @@ export const SendProposalModal = ({
 		contractorProductId,
 		conversationId,
 		userProductId,
-		hasDefineEventTime,
 		standardDescription,
 	});
 
@@ -141,12 +131,10 @@ export const SendProposalModal = ({
 					<ProposalFormFields
 						form={form}
 						standardDescription={standardDescription}
-						handleHasDefineEventTime={handleHasDefineEventTime}
 						isSectionComplete={isSectionComplete}
 						setQuickDuration={setQuickDuration}
 						toggleSection={toggleSection}
 						expandedSections={expandedSections}
-						hasDefineEventTime={hasDefineEventTime}
 						paymentMethods={paymentMethods}
 						paymentConditions={paymentConditions}
 						selectedPaymentMethods={selectedPaymentMethods}

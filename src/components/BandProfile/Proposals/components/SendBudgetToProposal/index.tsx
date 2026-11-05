@@ -44,28 +44,19 @@ export const SendBudgetToProposal = ({
 		setExpandedSections,
 		selectedPaymentMethods,
 		setSelectedPaymentMethods,
-		hasDefineEventTime,
-		setHasDefineEventTime,
 		paymentConditions,
 		paymentMethods,
-	} = useBudgetState(budget || null);
+	} = useBudgetState();
 
-	const {
-		form,
-		setQuickDuration,
-		handleHasDefineEventTime,
-		isSectionComplete,
-		standardDescription,
-	} = useBudgetForm({
-		budget,
-		contractorId,
-		setHasDefineEventTime,
-	});
+	const { form, setQuickDuration, isSectionComplete, standardDescription } =
+		useBudgetForm({
+			budget,
+			contractorId,
+		});
 	const { handleSubmit } = form;
 
 	const handleClose = () => {
 		onClose();
-		setHasDefineEventTime(false);
 		setSelectedPaymentMethods([]);
 	};
 
@@ -74,7 +65,6 @@ export const SendBudgetToProposal = ({
 		contractorId,
 		conversationId,
 		musicalProductId,
-		hasDefineEventTime,
 		musicalProductContractorId,
 		setShowProfileIncompleteModal,
 		eventTypes,
@@ -107,12 +97,10 @@ export const SendBudgetToProposal = ({
 					<ProposalFormFields
 						form={form}
 						standardDescription={standardDescription}
-						handleHasDefineEventTime={handleHasDefineEventTime}
 						isSectionComplete={isSectionComplete}
 						setQuickDuration={setQuickDuration}
 						toggleSection={toggleSection}
 						expandedSections={expandedSections}
-						hasDefineEventTime={hasDefineEventTime}
 						paymentMethods={paymentMethods}
 						paymentConditions={paymentConditions}
 						selectedPaymentMethods={selectedPaymentMethods}
