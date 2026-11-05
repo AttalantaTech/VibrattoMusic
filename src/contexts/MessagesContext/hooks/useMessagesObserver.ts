@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import type { Message } from "@/api/services/messages/types";
 import { isOwnMessage } from "@/components/BandProfile/Messages/utils/Message";
 import type { UseMessagesObserverProps } from "../types";
@@ -67,22 +67,29 @@ export const useMessagesObserver = ({
 	]);
 
 	// Scrolls only the messages box: scrollIntoView also scrolled the page,
-	// which jumped down every time a conversation was opened
-	const scrollToBottom = () => {
-		try {
-			const container = messagesContainerRef.current;
-			if (container) {
-				container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
-				return;
+	// which jumped down every time a conversation was opened. "instant" when
+	// opening a conversation (a smooth one rolled through the whole history),
+	// "smooth" for a message that arrives. Stable, so effects that depend on
+	// it don't run on every render
+	const scrollToBottom = useCallback(
+		(behavior: ScrollBehavior = "smooth") => {
+			try {
+				const container = messagesContainerRef.current;
+				if (container) {
+					container.scrollTo({ top: container.scrollHeight, behavior });
+					return;
+				}
+				messagesEndRef.current?.scrollIntoView({ behavior });
+			} catch {
+				// Fallback for test environments where scrollIntoView might not be available
+				if (messagesEndRef.current) {
+					messagesEndRef.current.scrollTop =
+						messagesEndRef.current.scrollHeight;
+				}
 			}
-			messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-		} catch {
-			// Fallback for test environments where scrollIntoView might not be available
-			if (messagesEndRef.current) {
-				messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
-			}
-		}
-	};
+		},
+		[messagesContainerRef, messagesEndRef]
+	);
 
 	return { scrollToBottom };
 };

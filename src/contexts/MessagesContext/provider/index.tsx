@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import type { PropsWithChildren } from "react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useUser } from "@/hooks/useUser";
 
@@ -160,9 +160,20 @@ export const MessagesProvider = ({ children }: PropsWithChildren) => {
 		conversationsRef.current = conversations;
 	}, [conversations]);
 
-	// Auto-scroll to bottom when new messages arrive
+	// Opening a conversation lands on its last message at once; after that,
+	// a message that arrives scrolls down smoothly. Until the new history
+	// loads, the messages are still the previous conversation's
+	const scrolledConversationRef = useRef<number | null>(null);
 	useEffect(() => {
-		scrollToBottom();
+		if (!messages.length || messages[0]?.idConversa !== currentConversationId) {
+			return;
+		}
+		if (scrolledConversationRef.current === currentConversationId) {
+			scrollToBottom("smooth");
+			return;
+		}
+		scrolledConversationRef.current = currentConversationId;
+		scrollToBottom("instant");
 	}, [messages]);
 
 	// Enter existing conversation when selected
