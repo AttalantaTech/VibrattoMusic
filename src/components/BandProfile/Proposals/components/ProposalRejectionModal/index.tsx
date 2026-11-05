@@ -129,7 +129,7 @@ export const ProposalRejectionModal = ({
 				...resolveStatusSender(proposalParties(proposal), "contratante"),
 				produtoMusicalId: proposal.produtoMusical.id,
 				produtoMusicalName: proposal.produtoMusical.nome,
-				link: entityLinks.proposalTab(proposal.id),
+				link: entityLinks.hiringProgress(proposal.id),
 				errorMessage: "Erro ao enviar solicitação orçamento",
 				payload: { reason: selectedReason?.Nome || "-" },
 				onSuccess() {

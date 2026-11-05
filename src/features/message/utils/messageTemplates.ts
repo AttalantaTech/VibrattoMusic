@@ -236,6 +236,11 @@ export const entityLinks = {
 		label: "Ver proposta",
 		url: appUrl(`band/me?tab=hires&id=${id}`),
 	}),
+	// Opens the hiring progress over the chat (older apps open the proposal)
+	hiringProgress: (id: number | string): MessageLink => ({
+		label: "Acompanhar contratação",
+		url: appUrl(`band/me?tab=hires&id=${id}&andamento=1`),
+	}),
 	// Opens without login, for people who don't have an account
 	proposalPublic: (identificadorUnico: string): MessageLink => ({
 		label: "Ver proposta",
