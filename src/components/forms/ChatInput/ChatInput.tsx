@@ -220,7 +220,12 @@ export const ChatInput = ({
 				) : null}
 
 				<div className="flex w-full items-end gap-1">
-					<div ref={emojiRef} className="flex">
+					<div
+						ref={emojiRef}
+						className="flex"
+						// Tells the chat's Esc that the picker closes first
+						data-emoji-open={showEmoji ? "" : undefined}
+					>
 						<button
 							type="button"
 							aria-label="Inserir emoji"

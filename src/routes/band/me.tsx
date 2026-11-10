@@ -21,6 +21,8 @@ const bandProfileSearchSchema = z.object({
 		.default("messages"), // Changed default to messages
 	// Proposal to open, from the "Ver proposta" link of a chat message
 	id: z.coerce.number().int().positive().optional().catch(undefined),
+	// Conversation open in the chat, so the back button closes it
+	conversa: z.coerce.number().int().positive().optional().catch(undefined),
 });
 
 const ProtectedBandProfile = () => (
