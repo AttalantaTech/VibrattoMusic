@@ -11,6 +11,7 @@ import {
 import type { FilePropsLocal } from "@/api/types";
 import { TextAreaField } from "@/components/forms/TextAreaField/TextAreaField";
 import { EpsFilePreview } from "@/components/cards/EpsFilePreview/EpsFilePreview";
+import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
 
 type ClippingSectionProps = {
 	clipping: Array<FilePropsLocal>;
@@ -74,17 +75,17 @@ export function ClippingSection({
 							{isEpsFile(file.link) ? (
 								<EpsFilePreview link={file.link} showDownload />
 							) : isPdfFile(file.link) ? (
-								<div className="w-full">
-									<embed
-										src={`${file.link}#toolbar=0`}
-										onLoad={() => {
-											markAsLoaded(file.link);
-										}}
-										className={`w-full h-full object-contain transition-opacity duration-300 ${
-											loadingMap[file.link] ? "opacity-100" : "opacity-0"
-										}`}
-									/>
-								</div>
+								<PdfViewer
+									preview
+									title={`Arquivo PDF ${index + 1}`}
+									src={`${file.link}#toolbar=0`}
+									onLoad={() => {
+										markAsLoaded(file.link);
+									}}
+									className={`w-full h-full transition-opacity duration-300 ${
+										loadingMap[file.link] ? "opacity-100" : "opacity-0"
+									}`}
+								/>
 							) : isMP4File(file.link) ? (
 								<div className="w-full">
 									<video
