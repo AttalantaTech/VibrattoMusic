@@ -11,6 +11,7 @@ import { DialogDescription } from "@radix-ui/react-dialog";
 import type { FileProps } from "@/api/types";
 import { isEpsFile, isMP4File, isPdfFile } from "@/utils/validation";
 import { EpsFilePreview } from "../cards/EpsFilePreview/EpsFilePreview";
+import { PdfViewer } from "../PdfViewer/PdfViewer";
 import { LazyImage } from "../ui/LazyImage/LazyImage";
 
 interface ViewFileModalProps {
@@ -55,10 +56,11 @@ export const ViewFileModal = ({
 							<EpsFilePreview link={file.link} showDownload />
 						</div>
 					) : isPdfFile(file.link) ? (
-						<div className="max-w-[100vw] h-[75vh]">
-							<embed
+						<div className="w-full overflow-hidden rounded-md border border-gray-500">
+							<PdfViewer
 								key={file.id}
-								className="w-full h-full rounded-md border border-gray-500"
+								title={file.legenda || "Arquivo PDF"}
+								className="block h-[75vh] w-full"
 								src={`${file.link}#toolbar=0`}
 							/>
 						</div>
