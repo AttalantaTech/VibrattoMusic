@@ -5,6 +5,7 @@ import {
 	FileText,
 	Loader2,
 	PenLine,
+	Repeat,
 	XCircle,
 } from "lucide-react";
 import type { ProposalResponse } from "../../../../../api/types";
@@ -14,6 +15,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ProposalStatusCard } from "@/components/BandProfile/Proposals/components/ProposalStatusCard";
 import {
+	acceptsCounterProposal,
 	awaitsDownPayment,
 	proposalRoles,
 } from "@/components/BandProfile/Proposals/utils/proposalRoles";
@@ -35,6 +37,8 @@ interface ProposalDetailsModalProps {
 	onReject?: (proposal: ProposalResponse) => void;
 	onCancel?: (proposalId: number | null) => Promise<void>;
 	onPaidSign?: (proposalId: number) => Promise<void>;
+	/** The band answers a refused proposal that asked for another one */
+	onCounterProposal?: (proposal: ProposalResponse) => void;
 	isLoadingAccept?: boolean;
 	isLoadingCancel?: boolean;
 	isLoadingPaidSign?: boolean;
@@ -49,6 +53,7 @@ export const ProposalDetailsModal = ({
 	onSeeContract,
 	onAccept,
 	onPaidSign,
+	onCounterProposal,
 	onReject,
 	onCancel,
 	isLoadingAccept = false,
@@ -101,6 +106,11 @@ export const ProposalDetailsModal = ({
 	const canConfirmDownPayment =
 		!viewerIsContractor && awaitsDownPayment(proposal) && !!onPaidSign;
 
+	const canCounterPropose =
+		!viewerIsContractor &&
+		acceptsCounterProposal(proposal) &&
+		!!onCounterProposal;
+
 	if (!isOpen) return null;
 
 	return (
@@ -137,6 +147,11 @@ export const ProposalDetailsModal = ({
 									{proposal.motivoRejeicao?.nome}
 								</span>
 							</div>
+						)}
+						{acceptsCounterProposal(proposal) && (
+							<p className="text-xs text-gray-500">
+								O contratante aceita receber uma contraproposta.
+							</p>
 						)}
 					</div>
 
@@ -271,6 +286,17 @@ export const ProposalDetailsModal = ({
 											<DollarSign className="h-4 w-4 mr-2" />
 										)}
 										Confirmar Recebimento do Sinal
+									</Button>
+								)}
+								{canCounterPropose && proposal && (
+									<Button
+										className="bg-primary-600 hover:bg-primary-700"
+										onClick={() => {
+											onCounterProposal?.(proposal);
+										}}
+									>
+										<Repeat className="h-4 w-4 mr-2" />
+										Fazer Contraproposta
 									</Button>
 								)}
 								{(isWaitingForResponse || isAcceptedStatus) && (

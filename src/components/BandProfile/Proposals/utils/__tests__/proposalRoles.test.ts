@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { ProposalResponse, User } from "@/api/types";
-import { awaitsDownPayment, proposalRoles } from "../proposalRoles";
+import {
+	acceptsCounterProposal,
+	awaitsDownPayment,
+	proposalRoles,
+} from "../proposalRoles";
 
 const proposal = (status: string) =>
 	({
@@ -11,6 +15,26 @@ const proposal = (status: string) =>
 
 const contractor = { id: 7 } as User;
 const band = { id: 99 } as User;
+
+// Offers "Fazer Contraproposta" to the band, in Vendas and in the chat
+describe("acceptsCounterProposal", () => {
+	const refused = (status: string, aceitaContraProposta: boolean) => ({
+		...proposal(status),
+		aceitaContraProposta,
+	});
+
+	it("a refused proposal that asked for another one can be answered", () => {
+		expect(acceptsCounterProposal(refused("Rejeitada", true))).toBe(true);
+	});
+
+	it("a plain refusal can't", () => {
+		expect(acceptsCounterProposal(refused("Rejeitada", false))).toBe(false);
+	});
+
+	it("once answered (replaced) it can't be answered again", () => {
+		expect(acceptsCounterProposal(refused("Substituida", true))).toBe(false);
+	});
+});
 
 describe("proposalRoles", () => {
 	it("recognizes the contractor by the user", () => {

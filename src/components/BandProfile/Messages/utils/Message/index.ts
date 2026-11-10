@@ -49,16 +49,22 @@ export const getParticipantInitials = (name: string): string => {
 export type MessageSender = {
 	userId?: number | null;
 	productId?: number | null;
+	/** The product on the contratante side of the conversation, if any */
+	contractorProductId?: number | null;
 };
 
 // Professionals send as their musical product (type 2), contractors as the
 // user (type 1), so "my message" depends on which profile is active
 export const isOwnMessage = (
 	message: Message,
-	{ userId, productId }: MessageSender
+	{ userId, productId, contractorProductId }: MessageSender
 ): boolean => {
 	const ownId = productId || userId;
 	if (!ownId || message.idRemetente !== ownId) return false;
+
+	// Cards a professional profile sent while hiring another one used to be
+	// saved as "user" with the product's id: still its own in that conversation
+	if (productId && productId === contractorProductId) return true;
 
 	// User and product ids come from different tables and can coincide;
 	// realtime messages may arrive without the sender type

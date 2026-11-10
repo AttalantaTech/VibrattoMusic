@@ -10,10 +10,8 @@ import { ptBR } from "date-fns/locale";
 import { CalendarClock } from "lucide-react";
 import { musicalProductService } from "@/api";
 import { Button } from "@/components/ui/Button/Button";
-import {
-	usePreReservations,
-	type PreReservation,
-} from "@/hooks/usePreReservations";
+import { usePreReservationReminders } from "@/hooks/useDismissedPreReservations";
+import type { PreReservation } from "@/hooks/usePreReservations";
 import { proposalStatusLabel } from "@/components/BandProfile/Proposals/components/ProposalStatusCard/types";
 import { EventModal } from "../BandProfile/Agenda/EventModal/EventModal";
 import { toast } from "sonner";
@@ -49,7 +47,12 @@ export const AgendaComponent = () => {
 		currentMonth
 	);
 
-	const preReservations = usePreReservations(activeProduct?.id);
+	const {
+		preReservations,
+		removed: removedReservations,
+		remove: removeReservation,
+		restoreAll: restoreReservations,
+	} = usePreReservationReminders(activeProduct?.id);
 
 	// Opens "Novo Evento" filled with the proposal, on top of that day's other
 	// events: saving sends the whole day, so they must be loaded first or the
@@ -374,20 +377,49 @@ export const AgendaComponent = () => {
 												{proposalStatusLabel(reservation.proposal.status.nome)}
 											</p>
 										</div>
-										<Button
-											size="sm"
-											variant="primary"
-											className="shrink-0"
-											onClick={() => {
-												void confirmPreReservation(reservation);
-											}}
-										>
-											Confirmar reserva
-										</Button>
+										<div className="flex shrink-0 gap-2">
+											<Button
+												size="sm"
+												variant="secondary"
+												className="flex-1 sm:flex-none"
+												onClick={() => {
+													removeReservation(reservation);
+												}}
+											>
+												Excluir
+											</Button>
+											<Button
+												size="sm"
+												variant="primary"
+												className="flex-1 sm:flex-none"
+												onClick={() => {
+													void confirmPreReservation(reservation);
+												}}
+											>
+												Confirmar reserva
+											</Button>
+										</div>
 									</li>
 								))}
 							</ul>
 						</div>
+					) : null}
+
+					{/* The way back for a reminder removed by mistake, once the
+					    "Desfazer" of the toast is gone */}
+					{removedReservations.length > 0 ? (
+						<p className="mb-6 text-sm text-gray-600">
+							{removedReservations.length === 1
+								? "1 lembrete de pré-reserva excluído."
+								: `${removedReservations.length} lembretes de pré-reserva excluídos.`}{" "}
+							<button
+								type="button"
+								className="font-medium text-primary-600 underline hover:text-primary-800"
+								onClick={restoreReservations}
+							>
+								Restaurar
+							</button>
+						</p>
 					) : null}
 
 					{/* Agenda Component */}

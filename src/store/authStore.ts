@@ -65,9 +65,10 @@ export const useAuthStore = create<AuthState>()(
 						const keys = Object.keys(localStorage);
 
 						// Keys to KEEP (global app settings, not user-specific)
-						const keysToKeep: string[] = [
-							// Add any truly global keys here that should persist across users
-							// Currently none, as all data should be user-specific
+						const keysToKeep: Array<string> = [
+							// Otherwise all user-specific. Kept: the reminders removed from the
+							// bell (proposal ids only), which would all come back at every login
+							"dismissed-pre-reservations",
 						];
 
 						// Remove ALL keys except the ones we want to keep

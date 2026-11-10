@@ -12,6 +12,7 @@ import type {
 	Message,
 	StartConversation,
 } from "./types";
+import { buildSenderPayload } from "./senderPayload";
 import type { ChatUser } from "@/contexts/MessagesContext/types";
 import { musicalProductService } from "@/api";
 
@@ -344,14 +345,10 @@ export class MessagingService {
 		await this.apiClient.post<Message>("chat/mensagem", {
 			IdConversa: conversationId,
 			Conteudo: conteudo,
-			IdProdutoMusical:
-				recipient === "contratante" || recipient === "produtoContratante"
-					? produtoMusicalId
-					: null,
-			TipoRemetente:
-				recipient === "contratante" || recipient === "produtoContratante"
-					? 2
-					: 1,
+			...buildSenderPayload(recipient, {
+				produtoMusicalId,
+				produtoMusicalContratanteId,
+			}),
 		});
 
 		// Return a minimal conversation object for compatibility

@@ -1,10 +1,10 @@
-import { Bell, CalendarClock } from "lucide-react";
+import { Bell, CalendarClock, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { format, parseISO } from "date-fns";
 import { useAuthStore } from "../../../store/authStore";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
-import { usePreReservations } from "@/hooks/usePreReservations";
+import { usePreReservationReminders } from "@/hooks/useDismissedPreReservations";
 
 interface Notification {
 	id: string;
@@ -25,9 +25,10 @@ export const NotificationBell = () => {
 
 	// Pending tasks, not messages: dates promised by accepted proposals that
 	// the professional hasn't blocked in the agenda. They leave the list once
-	// the event is saved, so they can't be marked as read
+	// the event is saved, so they can't be marked as read; the professional
+	// can remove one, here or in the agenda
 	const { activeProduct } = useMusicalProductStore();
-	const preReservations = usePreReservations(
+	const { preReservations, remove } = usePreReservationReminders(
 		isAuthenticated ? activeProduct?.id : undefined
 	);
 	const badgeCount = unreadCount + preReservations.length;
@@ -145,33 +146,48 @@ export const NotificationBell = () => {
 						{/* Notifications list */}
 						<div className="max-h-64 sm:max-h-80 overflow-y-auto">
 							{preReservations.map((reservation) => (
-								<button
+								<div
 									key={reservation.proposal.id}
-									type="button"
-									className="flex w-full items-start gap-3 border-b border-gray-100 bg-[#EFF8FF] p-3 text-left transition-colors hover:bg-[#D1E9FF] sm:p-4"
-									onClick={() => {
-										setShowNotificationDropdown(false);
-										void navigate({
-											to: "/band/me",
-											search: { tab: "bookings" },
-										});
-									}}
+									className="flex items-start border-b border-gray-100 bg-[#EFF8FF] transition-colors hover:bg-[#D1E9FF]"
 								>
-									<CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-[#175CD3]" />
-									<span className="min-w-0 flex-1">
-										<span className="block text-sm font-medium text-gray-900">
-											Pré-reserva em{" "}
-											{format(parseISO(reservation.date), "dd/MM/yyyy")}
+									<button
+										type="button"
+										className="flex min-w-0 flex-1 items-start gap-3 p-3 text-left sm:p-4"
+										onClick={() => {
+											setShowNotificationDropdown(false);
+											void navigate({
+												to: "/band/me",
+												search: { tab: "bookings" },
+											});
+										}}
+									>
+										<CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-[#175CD3]" />
+										<span className="min-w-0 flex-1">
+											<span className="block text-sm font-medium text-gray-900">
+												Pré-reserva em{" "}
+												{format(parseISO(reservation.date), "dd/MM/yyyy")}
+											</span>
+											<span className="block truncate text-xs text-gray-600">
+												{reservation.proposal.tipoEvento?.nome} ·{" "}
+												{reservation.client}
+											</span>
+											<span className="mt-1 block text-xs font-medium text-[#175CD3]">
+												Confirme a reserva na agenda
+											</span>
 										</span>
-										<span className="block truncate text-xs text-gray-600">
-											{reservation.proposal.tipoEvento?.nome} ·{" "}
-											{reservation.client}
-										</span>
-										<span className="mt-1 block text-xs font-medium text-[#175CD3]">
-											Confirme a reserva na agenda
-										</span>
-									</span>
-								</button>
+									</button>
+									<button
+										type="button"
+										className="m-1 shrink-0 rounded-full p-2 text-gray-500 hover:bg-white hover:text-gray-800"
+										aria-label={`Excluir lembrete da pré-reserva de ${format(parseISO(reservation.date), "dd/MM/yyyy")}`}
+										title="Excluir lembrete"
+										onClick={() => {
+											remove(reservation);
+										}}
+									>
+										<X className="h-4 w-4" />
+									</button>
+								</div>
 							))}
 							{notifications.length === 0 && preReservations.length === 0 ? (
 								<div className="p-6 sm:p-8 text-center text-gray-500">
