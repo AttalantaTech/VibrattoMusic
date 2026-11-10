@@ -1,4 +1,4 @@
-import { ArrowLeft, Circle, FileText, MessageSquare } from "lucide-react";
+import { ArrowLeft, Circle, FileText, MessageSquare, X } from "lucide-react";
 import { useProfileStatus } from "@/hooks/useProfileStatus";
 import { Loading } from "@/shared/components/Loading";
 import { useAuthStore } from "@/store/authStore";
@@ -78,6 +78,33 @@ export const Chat = () => {
 	useEffect(() => {
 		setReplyTo(null);
 	}, [conversationId]);
+
+	// Esc leaves the conversation (computers). Whatever is open on top of it
+	// closes first: a dialog, a list, the emoji picker, the reply being written
+	useEffect(() => {
+		if (!conversationId) return;
+
+		const handleEscape = (event: KeyboardEvent) => {
+			if (event.key !== "Escape" || event.defaultPrevented) return;
+			if (
+				document.querySelector(
+					'[role="dialog"], [role="listbox"], [role="menu"], [data-emoji-open]'
+				)
+			) {
+				return;
+			}
+			if (replyTo) {
+				setReplyTo(null);
+				return;
+			}
+			setSelectedConversation?.(null);
+		};
+
+		window.addEventListener("keydown", handleEscape);
+		return () => {
+			window.removeEventListener("keydown", handleEscape);
+		};
+	}, [conversationId, replyTo, setSelectedConversation]);
 
 	const replyToMessage = (message: Message, author: string) => {
 		setReplyTo({
@@ -176,14 +203,16 @@ export const Chat = () => {
 					<ChatHeaderContainer>
 						<div className="flex items-center space-x-1 md:space-x-3">
 							{selectedConversation && (
-								<div
+								<button
+									type="button"
+									aria-label="Voltar para as conversas"
 									className="p-1 md:p-2 rounded-full transition-colors hover:bg-gray-200 bg-white flex md:hidden"
 									onClick={() => {
 										setSelectedConversation?.(null);
 									}}
 								>
 									<ArrowLeft />
-								</div>
+								</button>
 							)}
 							<div className="relative">
 								<UserImageContainer>
@@ -207,6 +236,19 @@ export const Chat = () => {
 								{selectedConversation.pair.name ?? "Usuário"}
 							</h2>
 						</div>
+						{/* Computers: the list stays beside the chat, so closing is an
+						    "x" (phones have the arrow on the left) */}
+						<button
+							type="button"
+							aria-label="Fechar conversa"
+							title="Fechar conversa (Esc)"
+							className="hidden rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 md:flex"
+							onClick={() => {
+								setSelectedConversation?.(null);
+							}}
+						>
+							<X className="h-5 w-5" />
+						</button>
 					</ChatHeaderContainer>
 
 					<ChatMessagesContainer
