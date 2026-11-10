@@ -131,7 +131,10 @@ export const ProposalRejectionModal = ({
 				produtoMusicalName: proposal.produtoMusical.nome,
 				link: entityLinks.hiringProgress(proposal.id),
 				errorMessage: "Erro ao enviar solicitação orçamento",
-				payload: { reason: selectedReason?.Nome || "-" },
+				payload: {
+					reason: selectedReason?.Nome || "-",
+					acceptsCounterProposal,
+				},
 				onSuccess() {
 					handleInvalidateProposalQuery();
 				},
@@ -280,7 +283,7 @@ export const ProposalRejectionModal = ({
 										}}
 									/>
 									<Label
-										htmlFor="availabilityOtherEvents"
+										htmlFor="acceptsCounterProposal"
 										className="text-sm font-medium text-gray-700 cursor-pointer"
 									>
 										Aceita contraproposta

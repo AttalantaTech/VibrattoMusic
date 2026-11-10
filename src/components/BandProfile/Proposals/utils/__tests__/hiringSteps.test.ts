@@ -110,4 +110,14 @@ describe("hiringSteps", () => {
 		expect(result.ended).toBe(true);
 		expect(result.nextStep).toBeNull();
 	});
+
+	it("a refused proposal that asks for another one waits for the counter-proposal", () => {
+		const result = hiringSteps(
+			proposal("Rejeitada", { aceitaContraProposta: true })
+		);
+		expect(result.ended).toBe(false);
+		expect(result.nextStep).toBe(
+			"Maria aceita receber uma contraproposta de DJ Danilo."
+		);
+	});
 });

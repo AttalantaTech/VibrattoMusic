@@ -35,7 +35,8 @@ export interface StatusPayloads {
 	proposalAccepted: Record<string, never>;
 	/** Both had signed: the payment concludes the hiring (else it waits for the signatures) */
 	proposalPaidSign: { contractSigned?: boolean };
-	proposalRejected: { reason: string };
+	/** The contractor asked for another proposal when refusing this one */
+	proposalRejected: { reason: string; acceptsCounterProposal?: boolean };
 	proposalCanceled: { reason?: string };
 	contractCreated: Record<string, never>;
 }
@@ -200,7 +201,18 @@ const statusTemplates: { [K in StatusMessageType]: Template<K> } = {
 			variant: "danger",
 			title: "❌ Proposta recusada",
 			subtitle: `${greeting(c.recipientName)}, infelizmente uma proposta foi recusada.`,
-			rows: [{ icon: "📝", label: "Motivo", value: c.reason }],
+			rows: [
+				{ icon: "📝", label: "Motivo", value: c.reason },
+				// The band answers from the card's link (or from Vendas)
+				c.acceptsCounterProposal
+					? {
+							icon: "🔁",
+							label: "Contraproposta",
+							value:
+								"o contratante aceita receber uma contraproposta. Abra o link abaixo para enviar.",
+						}
+					: null,
+			],
 			link: c.link,
 		}),
 

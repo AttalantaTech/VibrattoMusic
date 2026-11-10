@@ -17,6 +17,15 @@ export const awaitsDownPayment = (
 };
 
 /**
+ * The contractor refused the proposal but asked for another one: the
+ * professional can answer with a counter-proposal. Once it is sent the
+ * refused one becomes "Substituida", so the offer is made only once
+ */
+export const acceptsCounterProposal = (
+	proposal: ProposalResponse | null | undefined
+) => proposal?.status.nome === "Rejeitada" && !!proposal.aceitaContraProposta;
+
+/**
  * Who is looking at the proposal and which actions its status allows. Used by
  * the details dialog and the contract page so both show the same buttons.
  */
