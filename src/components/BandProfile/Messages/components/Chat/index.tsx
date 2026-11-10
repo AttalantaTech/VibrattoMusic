@@ -245,6 +245,8 @@ export const Chat = () => {
 									const isOwn = isOwnMessage(message, {
 										userId: user?.id,
 										productId: activeProduct?.id,
+										contractorProductId:
+											selectedConversation.produtoMusicalContratanteId,
 									});
 									const pairName = selectedConversation.pair.name || "Usuário";
 									const onReply = () => {
