@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useChat } from "@/hooks/useChat";
 import { ProfileIncompleteModal } from "../../ui/ProfileIncompleteModal/ProfileIncompleteModal";
 import { SideBar } from "./components/SideBar";
 import { Chat } from "./components/Chat";
 import { SendProposalModal } from "../Proposals/components/SendProposalModal";
 import { StartConversationModal } from "./components/StartConversationModal";
+import { useConversationInUrl } from "./hooks/useConversationInUrl";
 
 const MessagesTab = () => {
 	const {
@@ -20,6 +21,11 @@ const MessagesTab = () => {
 		setIsProfileIncompleteModalOpen,
 		scrollToBottom,
 	} = useChat() || {};
+
+	const closeConversation = useCallback(() => {
+		setSelectedConversation?.(null);
+	}, [setSelectedConversation]);
+	useConversationInUrl(selectedConversation?.id, closeConversation);
 
 	useEffect(() => {
 		scrollToBottom?.("instant");
