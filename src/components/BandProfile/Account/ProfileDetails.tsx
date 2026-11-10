@@ -5,6 +5,7 @@ import { CarouselItem } from "@/components/ui/carousel";
 import { Carousel } from "@/components/ui/Carousel/Carousel";
 import { LazyImage } from "@/components/ui/LazyImage/LazyImage";
 import { TabNavigation } from "@/components/ui/TabNavigation/TabNavigation";
+import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
 import { ViewFileModal } from "@/components/ViewFileModal/ViewFileModal";
 import { useInstrumentos } from "@/hooks/useFilters";
 import {
@@ -115,10 +116,15 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 															</div>
 														) : isPdfFile(file.link) ? (
 															<div className="relative group">
-																<iframe
+																<PdfViewer
 																	key={freshLink}
+																	preview
+																	title={file.legenda || "Arquivo PDF"}
 																	className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] pointer-events-none"
 																	src={`${file.link}#toolbar=0`}
+																	onLoad={() => {
+																		handleFileLoad(file.link);
+																	}}
 																/>
 
 																<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
@@ -171,9 +177,12 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 					const freshLink = getBustUrl(musicalProduct.mapaPalcoLink);
 
 					return (
-						<div className="flex w-full min-h-[680px]">
-							<embed key={freshLink} className="w-full" src={freshLink} />
-						</div>
+						<PdfViewer
+							key={freshLink}
+							title="Mapa de palco"
+							className="block h-[680px] w-full"
+							src={freshLink}
+						/>
 					);
 				} else {
 					return (
@@ -189,9 +198,12 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 					const freshLink = getBustUrl(musicalProduct.rider);
 
 					return (
-						<div className="flex w-full min-h-[680px]">
-							<embed key={freshLink} className="w-full" src={freshLink} />
-						</div>
+						<PdfViewer
+							key={freshLink}
+							title="Rider técnico"
+							className="block h-[680px] w-full"
+							src={freshLink}
+						/>
 					);
 				} else if (musicalProduct?.riderTexto) {
 					return (
@@ -226,9 +238,12 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 					const freshLink = getBustUrl(musicalProduct.infraCamarim);
 
 					return (
-						<div className="flex w-full min-h-[680px]">
-							<embed key={freshLink} className="w-full" src={freshLink} />
-						</div>
+						<PdfViewer
+							key={freshLink}
+							title="Camarim"
+							className="block h-[680px] w-full"
+							src={freshLink}
+						/>
 					);
 				} else if (musicalProduct?.infraCamarimTexto) {
 					return (
