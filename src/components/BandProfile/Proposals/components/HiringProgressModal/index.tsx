@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Ban, CheckCircle2, Clock, DollarSign } from "lucide-react";
+import { Ban, CheckCircle2, Clock, DollarSign, Repeat } from "lucide-react";
 import type { ProposalResponse } from "@/api/types";
 import { Button } from "@/components/ui/Button/Button";
 import {
@@ -9,7 +9,10 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { day, hiringSteps, type StepState } from "../../utils/hiringSteps";
-import { awaitsDownPayment } from "../../utils/proposalRoles";
+import {
+	acceptsCounterProposal,
+	awaitsDownPayment,
+} from "../../utils/proposalRoles";
 
 interface HiringProgressModalProps {
 	proposal: ProposalResponse | null;
@@ -19,6 +22,8 @@ interface HiringProgressModalProps {
 	/** Tabs to the proposal and the contract, under the title */
 	navigation?: ReactNode;
 	onConfirmDownPayment: (proposal: ProposalResponse) => void;
+	/** The band answers a refused proposal that asked for another one */
+	onCounterProposal?: (proposal: ProposalResponse) => void;
 }
 
 const STEP_ICONS: Record<StepState, ReactNode> = {
@@ -40,11 +45,14 @@ export const HiringProgressModal = ({
 	onClose,
 	navigation,
 	onConfirmDownPayment,
+	onCounterProposal,
 }: HiringProgressModalProps) => {
 	if (!proposal) return null;
 
 	const { steps, nextStep, concluded, ended } = hiringSteps(proposal);
 	const canConfirmDownPayment = isSeller && awaitsDownPayment(proposal);
+	const canCounterPropose =
+		isSeller && acceptsCounterProposal(proposal) && !!onCounterProposal;
 
 	return (
 		<Dialog
@@ -130,6 +138,17 @@ export const HiringProgressModal = ({
 						>
 							<DollarSign className="mr-2 h-4 w-4" />
 							Confirmar Recebimento do Sinal
+						</Button>
+					) : null}
+					{canCounterPropose ? (
+						<Button
+							size="sm"
+							onClick={() => {
+								onCounterProposal?.(proposal);
+							}}
+						>
+							<Repeat className="mr-2 h-4 w-4" />
+							Fazer Contraproposta
 						</Button>
 					) : null}
 					<Button size="sm" variant="secondary" onClick={onClose}>

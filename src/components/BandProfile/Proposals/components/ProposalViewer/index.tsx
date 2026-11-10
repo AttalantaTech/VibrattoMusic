@@ -7,6 +7,7 @@ import { ProposalRejectionModal } from "../ProposalRejectionModal";
 import { ConfirmDownPaymentDialog } from "../ConfirmDownPaymentDialog";
 import { HiringProgressModal } from "../HiringProgressModal";
 import { ContractDetailsModal } from "../ContractDetailsModal";
+import { SendProposalModal } from "../SendProposalModal";
 import { ProposalViewTabs, type ProposalView } from "../ProposalViewTabs";
 import { useProposalActions } from "../../hooks/useProposalActions";
 
@@ -57,6 +58,10 @@ export const ProposalViewer = ({
 	const [proposalToConfirmPayment, setProposalToConfirmPayment] =
 		useState<ProposalResponse | null>(null);
 
+	// Refused proposal being answered with a counter-proposal
+	const [counterProposalOf, setCounterProposalOf] =
+		useState<ProposalResponse | null>(null);
+
 	const [view, setView] = useState<ProposalView>(initialView);
 	useEffect(() => {
 		setView(initialView);
@@ -87,6 +92,12 @@ export const ProposalViewer = ({
 		onClose();
 	};
 
+	// Same for the counter-proposal form, which starts from the refused one
+	const startCounterProposal = (refused: ProposalResponse) => {
+		setCounterProposalOf(refused);
+		onClose();
+	};
+
 	return (
 		<>
 			<HiringProgressModal
@@ -95,6 +106,7 @@ export const ProposalViewer = ({
 				onClose={onClose}
 				navigation={navigation}
 				onConfirmDownPayment={askDownPaymentConfirmation}
+				onCounterProposal={startCounterProposal}
 			/>
 
 			<ProposalDetailsModal
@@ -114,6 +126,7 @@ export const ProposalViewer = ({
 					askDownPaymentConfirmation(proposal ?? null);
 					return Promise.resolve();
 				}}
+				onCounterProposal={startCounterProposal}
 				onSeeContract={() => {
 					setView("contract");
 				}}
@@ -140,6 +153,18 @@ export const ProposalViewer = ({
 				}}
 				proposal={proposalToReject}
 			/>
+
+			{/* Mounted only while answering: the form loads its own lists */}
+			{counterProposalOf ? (
+				<SendProposalModal
+					isOpen
+					counterProposalOf={counterProposalOf}
+					conversationId={conversationId ?? undefined}
+					onClose={() => {
+						setCounterProposalOf(null);
+					}}
+				/>
+			) : null}
 
 			<ConfirmDownPaymentDialog
 				proposal={proposalToConfirmPayment}

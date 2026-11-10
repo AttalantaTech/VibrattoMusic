@@ -1,5 +1,6 @@
 import { format, parseISO } from "date-fns";
 import type { ProposalResponse } from "@/api/types";
+import { acceptsCounterProposal } from "./proposalRoles";
 import { handleCurrencyFormatting } from "@/utils";
 import { proposalDownPayment, requiresDownPayment } from "./calculateSignal";
 
@@ -57,6 +58,15 @@ export const hiringSteps = (proposal: ProposalResponse) => {
 			detail:
 				status === "Rejeitada" ? proposal.motivoRejeicao?.nome : undefined,
 		});
+		// Refused, but still open: the contractor asked for another proposal
+		if (acceptsCounterProposal(proposal)) {
+			return {
+				steps,
+				nextStep: `${contractorName(proposal)} aceita receber uma contraproposta de ${proposal.produtoMusical.nome}.`,
+				concluded: false,
+				ended: false,
+			};
+		}
 		return { steps, nextStep: null, concluded: false, ended: true };
 	}
 
