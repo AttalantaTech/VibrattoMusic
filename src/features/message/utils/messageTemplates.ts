@@ -1,4 +1,5 @@
 import { onlyAlphanumeric } from "@/utils/validation";
+import { HIRING_CONCLUDED_TITLE } from "./hiringConcluded";
 
 export interface MessageLink {
 	label: string;
@@ -33,8 +34,10 @@ export interface StatusPayloads {
 	};
 
 	proposalAccepted: Record<string, never>;
-	/** Both had signed: the payment concludes the hiring (else it waits for the signatures) */
+	/** Both had signed: the conclusion card follows (else it waits for the signatures) */
 	proposalPaidSign: { contractSigned?: boolean };
+	/** Both signed and, when there is one, the down payment was confirmed */
+	hiringConcluded: { downPayment?: boolean };
 	/** The contractor asked for another proposal when refusing this one */
 	proposalRejected: { reason: string; acceptsCounterProposal?: boolean };
 	proposalCanceled: { reason?: string };
@@ -188,11 +191,21 @@ const statusTemplates: { [K in StatusMessageType]: Template<K> } = {
 		renderCard({
 			variant: "success",
 			title: "🎉 Pagamento do sinal confirmado!",
-			subtitle: `${greeting(c.recipientName)}, o contratado confirmou o recebimento do sinal. ${
+			subtitle: `${greeting(c.recipientName)}, o contratado confirmou o recebimento do sinal.${
 				c.contractSigned
-					? "A contratação está concluída."
-					: "A contratação será concluída assim que o contrato for assinado pelas duas partes."
+					? ""
+					: " A contratação será concluída assim que o contrato for assinado pelas duas partes."
 			}`,
+			link: c.link,
+		}),
+	// Read by both sides, so it greets nobody
+	hiringConcluded: (c) =>
+		renderCard({
+			variant: "success",
+			title: `✅ ${HIRING_CONCLUDED_TITLE}`,
+			subtitle: `O contrato foi assinado pelas duas partes${
+				c.downPayment ? " e o sinal foi confirmado" : ""
+			}. Está tudo certo para o evento.`,
 			link: c.link,
 		}),
 

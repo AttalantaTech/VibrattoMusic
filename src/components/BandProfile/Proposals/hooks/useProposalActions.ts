@@ -7,6 +7,7 @@ import {
 } from "@/hooks/useProposals";
 import { useSendStatusMessage } from "@/features/message/hooks/useSendStatusMessage";
 import { entityLinks } from "@/features/message/utils/messageTemplates";
+import { markConclusionAnnounced } from "@/features/message/utils/hiringConcluded";
 import {
 	proposalParties,
 	resolveStatusSender,
@@ -96,17 +97,32 @@ export const useProposalActions = (conversationId?: number | null) => {
 			});
 			refreshProposals();
 
-			sendStatusMessage({
-				type: "proposalPaidSign",
+			// Confirmed before the signatures ("Aceita") the hiring isn't done yet
+			const concluded = proposal.status.nome === "AguardandoPagamento";
+			const message = {
 				...resolveStatusSender(proposalParties(proposal), "contratado"),
 				conversationId,
 				produtoMusicalName: proposal.produtoMusical.nome,
 				link: entityLinks.hiringProgress(proposal.id),
 				errorMessage: "Erro ao enviar sua requisição",
-				// Confirmed before the signatures ("Aceita") the hiring isn't done yet
-				payload: {
-					contractSigned: proposal.status.nome === "AguardandoPagamento",
-				},
+			};
+			// Sent from here, so the open chat doesn't send it again
+			if (concluded) markConclusionAnnounced(proposal.id);
+
+			sendStatusMessage({
+				...message,
+				type: "proposalPaidSign",
+				payload: { contractSigned: concluded },
+				// The payment was the last step: the conclusion card follows it
+				onSuccess: concluded
+					? () => {
+							sendStatusMessage({
+								...message,
+								type: "hiringConcluded",
+								payload: { downPayment: true },
+							});
+						}
+					: undefined,
 			});
 			return true;
 		} catch (error) {

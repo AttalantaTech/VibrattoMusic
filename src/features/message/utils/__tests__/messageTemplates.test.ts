@@ -75,7 +75,8 @@ describe("chat messages", () => {
 			recipientName: "Maria",
 			contractSigned: true,
 		});
-		expect(html).toContain("A contratação está concluída");
+		// The conclusion has its own card, sent right after
+		expect(html).not.toContain("será concluída");
 		expect(html).not.toContain("precisa ser assinado");
 	});
 
@@ -84,7 +85,7 @@ describe("chat messages", () => {
 			recipientName: "Maria",
 			contractSigned: false,
 		});
-		expect(html).not.toContain("A contratação está concluída");
+		expect(html).toContain("será concluída assim que o contrato for assinado");
 		expect(html).toContain("assinado pelas duas partes");
 	});
 
