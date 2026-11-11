@@ -12,6 +12,7 @@ import {
 	MessageElement,
 	MessageLine,
 	OwnMessageElement,
+	SystemNoticeElement,
 } from "./styles";
 import { useChat } from "@/hooks/useChat";
 import { getParticipantInitials, isOwnMessage } from "../../utils/Message";
@@ -23,9 +24,11 @@ import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
 import { BudgetListModal } from "@/components/BandProfile/Budgets/components/BudgetListModal";
 import { ProposalViewer } from "@/components/BandProfile/Proposals/components/ProposalViewer";
 import { useCallback, useEffect, useState } from "react";
+import { useAnnounceHiringConcluded } from "../../hooks/useAnnounceHiringConcluded";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { BUDGET_REQUEST_TITLE } from "@/features/message/utils/messageTemplates";
+import { isHiringConcludedCard } from "@/features/message/utils/hiringConcluded";
 import {
 	buildReplyQuote,
 	replyExcerpt,
@@ -78,6 +81,13 @@ export const Chat = () => {
 	useEffect(() => {
 		setReplyTo(null);
 	}, [conversationId]);
+
+	// "Contratação concluída" card, when it was concluded outside the screen
+	useAnnounceHiringConcluded({
+		conversationId,
+		messages,
+		isLoading: isMessagesLoading,
+	});
 
 	// Esc leaves the conversation (computers). Whatever is open on top of it
 	// closes first: a dialog, a list, the emoji picker, the reply being written
@@ -284,6 +294,12 @@ export const Chat = () => {
 						{!isMessagesLoading && !messagesError && (
 							<>
 								{messages?.map((message: Message) => {
+									if (isHiringConcludedCard(message.conteudo)) {
+										return (
+											<SystemNoticeElement key={message.id} message={message} />
+										);
+									}
+
 									const isOwn = isOwnMessage(message, {
 										userId: user?.id,
 										productId: activeProduct?.id,
