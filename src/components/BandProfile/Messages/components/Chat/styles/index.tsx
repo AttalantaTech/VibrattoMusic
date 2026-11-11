@@ -206,6 +206,24 @@ export const OwnMessageElement = ({
 	);
 };
 
+/**
+ * A card that speaks for the platform ("Contratação concluída"): in the
+ * middle of the conversation, the same for both sides
+ */
+export const SystemNoticeElement = ({ message }: { message: Message }) => (
+	<div
+		className="flex flex-col items-center px-2 py-1"
+		data-message-id={message.id}
+	>
+		<div className="w-full max-w-sm rounded-2xl border border-primary-200 bg-primary-100 px-3 py-3 shadow-sm sm:px-4">
+			<MessageHtml html={message.conteudo} className={MESSAGE_TEXT} />
+		</div>
+		<p className="mt-1 text-xs text-gray-500">
+			{formatMessageTime(message.dataEnvio, { long: true })}
+		</p>
+	</div>
+);
+
 export const MessageElement = ({
 	message,
 	userName,

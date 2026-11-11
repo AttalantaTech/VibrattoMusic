@@ -27,13 +27,17 @@ export const useMessagesQueries = ({
 	const {
 		data: historyMessages,
 		isLoading: isMessagesLoading,
-		error: messagesError,
+		error: messagesQueryError,
 		refetch: refetchMessages,
 	} = useConversationMessages(
 		currentConversationId || 0,
 		undefined,
 		shouldLoadCurrentConversation
 	);
+
+	// A refresh that fails keeps the messages already loaded on screen; the
+	// error only shows when there is nothing to show
+	const messagesError = historyMessages ? null : messagesQueryError;
 
 	const invalidateConversationMessages = async (conversationId: number) => {
 		await queryClient.invalidateQueries({

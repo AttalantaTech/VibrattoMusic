@@ -62,6 +62,8 @@ export const useConversations = ({
 		enabled,
 		staleTime: 30 * 1000, // 30 seconds
 		refetchInterval: 10 * 1000, // Refetch every 10 seconds
+		// The next refresh is the retry; until then the list on screen stays
+		retry: false,
 	});
 };
 
@@ -96,6 +98,8 @@ export const useConversationMessages = (
 		initialPageParam: 0,
 		staleTime: 30 * 1000, // 30 seconds
 		refetchInterval: 3 * 1000, // Refetch every 3 seconds
+		// The next refresh is the retry; until then the messages on screen stay
+		retry: false,
 		enabled: enabled && conversationId > 0,
 	});
 };
