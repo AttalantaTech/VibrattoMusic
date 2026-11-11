@@ -15,6 +15,16 @@ import type {
 import { buildSenderPayload } from "./senderPayload";
 import type { ChatUser } from "@/contexts/MessagesContext/types";
 import { musicalProductService } from "@/api";
+import { createPhotoCache } from "./profilePhotoCache";
+
+// Photo of the musical product on the other side of each conversation
+const productPhoto = createPhotoCache(
+	(productId) =>
+		musicalProductService
+			.getProductById(productId)
+			.then((products) => products[0]?.fotoPerfil || null),
+	10 * 60 * 1000
+);
 
 type RecipientIds = Pick<
 	StartConversation,
@@ -261,14 +271,7 @@ export class MessagingService {
 					};
 
 					if (pair.type === "product") {
-						pair.profileImageUrl = await musicalProductService
-							.getProductById(pair.id)
-							.then((products) => {
-								if (products.length > 0) {
-									return products[0]?.fotoPerfil || null;
-								}
-								return null;
-							});
+						pair.profileImageUrl = await productPhoto(pair.id);
 					} else {
 						// A contractor talking as a person: the photo from Ajustes → Perfil
 						pair.profileImageUrl = item.contratante.fotoPerfil || null;
@@ -299,9 +302,10 @@ export class MessagingService {
 
 			return transformedConversations;
 		} catch (error) {
+			// Passed on, not turned into an empty list: an empty list made the
+			// screen drop the conversations it had on any passing failure
 			console.error("Error fetching conversations:", error);
-			// Return empty list on error
-			return [];
+			throw error;
 		}
 	}
 
@@ -413,9 +417,9 @@ export class MessagingService {
 
 			return transformedMessages;
 		} catch (error) {
+			// Passed on (see getConversations): the chat keeps the messages it had
 			console.error("Error fetching conversation messages:", error);
-			// Return empty response on error
-			return [];
+			throw error;
 		}
 	}
 

@@ -161,9 +161,12 @@ export const useProposalSubmit = ({
 		let conversation: Conversation | undefined | null = null;
 
 		if (baseProposal) {
-			const conversations = await messagingService.getConversations({
-				IdProdutoMusical: baseProposal.produtoMusical.id,
-			});
+			// Not finding it isn't a reason to stop: chat/obter finds it later
+			const conversations = await messagingService
+				.getConversations({
+					IdProdutoMusical: baseProposal.produtoMusical.id,
+				})
+				.catch(() => []);
 
 			conversation =
 				conversations.find((c) =>
