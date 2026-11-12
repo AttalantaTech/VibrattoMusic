@@ -378,6 +378,8 @@ export default function TechnicalSection({
 			});
 
 			toast.success("Rider e Configurações Técnicas salvos com sucesso");
+			// Back to the top, where "Visualizar Perfil" leaves the editor
+			window.scrollTo({ top: 0, behavior: "smooth" });
 		} catch (error) {
 			if (error instanceof VibrattoApiError) {
 				const errorMessage = error.data?.erros.find((error_) => error_);

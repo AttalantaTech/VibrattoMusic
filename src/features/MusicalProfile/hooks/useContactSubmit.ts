@@ -168,6 +168,8 @@ export function useContactStepSubmit({
 			await updateMusicalProductMutation.mutateAsync({ ...contact });
 
 			toast.success("Informações de contato salvas com sucesso");
+			// Back to the top, where "Visualizar Perfil" leaves the editor
+			window.scrollTo({ top: 0, behavior: "smooth" });
 		} catch (error: unknown) {
 			console.error("Error saving contact data:", error);
 			toast.error("Erro ao salvar informações de contato");

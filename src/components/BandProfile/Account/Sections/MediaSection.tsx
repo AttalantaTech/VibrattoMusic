@@ -19,6 +19,7 @@ import { ProfileImageSection } from "@/features/MediaSection/components/ProfileI
 import { ClippingSection } from "@/features/MediaSection/components/ClippingSection";
 import { SocialNetworksSection } from "@/features/MediaSection/components/SocialNetworksSection";
 import { CarouselSection } from "@/features/MediaSection/components/CarouselSection";
+import { uploadsOf } from "@/features/MediaSection/utils/uploadProgress";
 import { MainMediaSection } from "@/features/MediaSection/components/MainMediaSection";
 import { PriceSection } from "@/features/MediaSection/components/PriceSection";
 import {
@@ -58,9 +59,12 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 	const {
 		profilePhoto,
 		carouselImages,
+		setCarouselImages,
+		setClippings,
 		uploadImage,
 		removeImage,
 		uploadingType,
+		uploads,
 		clippings,
 		handleLegendImage,
 		handleLegendClipping,
@@ -160,6 +164,18 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 		}
 	};
 
+	// The new order shows at once and is saved with the whole list, as the
+	// profile shows the files in the order they are saved
+	const handleReorderCarousel = (ordered: Array<FilePropsLocal>) => {
+		setCarouselImages(ordered);
+		void addCarouselImage(ordered);
+	};
+
+	const handleReorderClipping = (ordered: Array<FilePropsLocal>) => {
+		setClippings(ordered);
+		void addClippingFile(ordered);
+	};
+
 	const handleUploadClipping = async (files: Array<File>) => {
 		const newClippings = await uploadFiles(files, "ProdutoMusicalClipagem");
 
@@ -186,11 +202,13 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 
 						{/* CAROUSEL */}
 						<CarouselSection
+							uploads={uploadsOf(uploads, "carousel")}
 							carousel={carouselImages}
 							onLegendCarousel={handleLegendImage}
 							loadingMap={loadedItems}
 							markAsLoaded={markAsLoaded}
 							onUpload={handleUploadCarouselImage}
+							onReorder={handleReorderCarousel}
 							onRemove={(id: number | null, index: number) =>
 								removeImage("ProdutoMusicalCarrossel", id, index)
 							}
@@ -224,11 +242,13 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 
 						{/* CLIPPINGS */}
 						<ClippingSection
+							uploads={uploadsOf(uploads, "clipping")}
 							clipping={clippings}
 							onLegendClipping={handleLegendClipping}
 							loadingMap={loadedItems}
 							markAsLoaded={markAsLoaded}
 							onUpload={handleUploadClipping}
+							onReorder={handleReorderClipping}
 							onRemove={(id: number | null, index: number) =>
 								removeImage("ProdutoMusicalClipagem", id, index)
 							}

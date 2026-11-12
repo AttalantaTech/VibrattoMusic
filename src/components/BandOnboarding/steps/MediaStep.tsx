@@ -11,6 +11,7 @@ import { useOnboardingData } from "@/hooks/useOnboarding";
 import { decryptValue, encryptValue } from "@/utils/encryptValue";
 import type {
 	FileEventType,
+	FilePropsLocal,
 	MusicalProductImages,
 	OnboardingApiResponse,
 } from "@/api/types";
@@ -26,6 +27,7 @@ import { ProfileImageSection } from "@/features/MediaSection/components/ProfileI
 import { ClippingSection } from "@/features/MediaSection/components/ClippingSection";
 import { SocialNetworksSection } from "@/features/MediaSection/components/SocialNetworksSection";
 import { CarouselSection } from "@/features/MediaSection/components/CarouselSection";
+import { uploadsOf } from "@/features/MediaSection/utils/uploadProgress";
 import { MainMediaSection } from "@/features/MediaSection/components/MainMediaSection";
 import { PriceSection } from "@/features/MediaSection/components/PriceSection";
 import {
@@ -78,9 +80,12 @@ export default function MediaStep() {
 	const {
 		profilePhoto,
 		carouselImages,
+		setCarouselImages,
+		setClippings,
 		uploadImage,
 		removeImage,
 		uploadingType,
+		uploads,
 		clippings,
 		handleLegendImage,
 		handleLegendClipping,
@@ -197,34 +202,53 @@ export default function MediaStep() {
 		}
 	};
 
+	// The promotional files are saved together with the rest of the media
+	const saveClippings = async (clipagem: Array<FilePropsLocal>) => {
+		const exibirValorServico = watch("exibirValorServico");
+		const redeSocial = watch("redeSocial");
+		const videosYouTube = watch("videosYouTube");
+		const valor = watch("valorServico");
+
+		const valorServico = exibirValorServico
+			? valor
+				? Number(valor)
+				: null
+			: null;
+
+		await addMediaOnboarding({
+			exibirValorServico,
+			redeSocial: redeSocial || [],
+			videosYouTube: videosYouTube || [],
+			spotifyPlaylistId,
+			valorServico,
+			clipagem,
+		});
+	};
+
 	const handleUploadClipping = async (files: Array<File>) => {
 		const links = await uploadFiles(files, "ProdutoMusicalOnboardingClipagem");
 
 		if (links.length > 0) {
-			const exibirValorServico = watch("exibirValorServico");
-			const redeSocial = watch("redeSocial");
-			const videosYouTube = watch("videosYouTube");
-			const valor = watch("valorServico");
-
-			const valorServico = exibirValorServico
-				? valor
-					? Number(valor)
-					: null
-				: null;
-
-			await addMediaOnboarding({
-				exibirValorServico,
-				redeSocial: redeSocial || [],
-				videosYouTube: videosYouTube || [],
-				spotifyPlaylistId,
-				valorServico,
-
-				clipagem: [
-					...clippings,
-					...links.map((link) => ({ id: null, link, legenda: "" })),
-				],
-			});
+			await saveClippings([
+				...clippings,
+				...links.map((link) => ({ id: null, link, legenda: "" })),
+			]);
 		}
+	};
+
+	// The new order shows at once and is saved with the whole list, as the
+	// profile shows the files in the order they are saved
+	const handleReorderCarousel = (ordered: Array<FilePropsLocal>) => {
+		setCarouselImages(ordered);
+		void addImageOnboarding({
+			FotoPerfil: profilePhoto ?? null,
+			ImagensCarrossel: ordered,
+		});
+	};
+
+	const handleReorderClipping = (ordered: Array<FilePropsLocal>) => {
+		setClippings(ordered);
+		void saveClippings(ordered);
 	};
 
 	return (
@@ -248,11 +272,13 @@ export default function MediaStep() {
 
 						{/* CAROUSEL */}
 						<CarouselSection
+							uploads={uploadsOf(uploads, "carousel")}
 							carousel={carouselImages}
 							onLegendCarousel={handleLegendImage}
 							loadingMap={loadedItems}
 							markAsLoaded={markAsLoaded}
 							onUpload={handleUploadCarousel}
+							onReorder={handleReorderCarousel}
 							onRemove={(id: number | null, index: number) =>
 								removeImage("ProdutoMusicalOnboardingCarrossel", id, index)
 							}
@@ -286,11 +312,13 @@ export default function MediaStep() {
 
 						{/* CLIPPINGS */}
 						<ClippingSection
+							uploads={uploadsOf(uploads, "clipping")}
 							clipping={clippings}
 							onLegendClipping={handleLegendClipping}
 							loadingMap={loadedItems}
 							markAsLoaded={markAsLoaded}
 							onUpload={handleUploadClipping}
+							onReorder={handleReorderClipping}
 							onRemove={(id: number | null, index: number) =>
 								removeImage("ProdutoMusicalOnboardingClipagem", id, index)
 							}
