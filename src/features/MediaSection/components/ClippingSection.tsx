@@ -7,6 +7,7 @@ import {
 	isMP4File,
 	isPdfFile,
 	isPngImage,
+	videoThumbnailSource,
 } from "@/utils/validation";
 import type { FilePropsLocal } from "@/api/types";
 import { TextAreaField } from "@/components/forms/TextAreaField/TextAreaField";
@@ -89,12 +90,16 @@ export function ClippingSection({
 							) : isMP4File(file.link) ? (
 								<div className="w-full">
 									<video
+										preload="metadata"
 										className="w-full h-full aspect-square"
 										onLoadedMetadata={() => {
 											markAsLoaded(file.link);
 										}}
 									>
-										<source src={file.link} type="video/mp4" />
+										<source
+											src={videoThumbnailSource(file.link)}
+											type="video/mp4"
+										/>
 									</video>
 								</div>
 							) : (

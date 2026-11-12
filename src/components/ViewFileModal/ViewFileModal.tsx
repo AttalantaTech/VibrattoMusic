@@ -68,6 +68,7 @@ export const ViewFileModal = ({
 						<div className="w-full h-full">
 							<video
 								controls
+								preload="metadata"
 								className="w-full h-full aspect-square rounded-md border border-gray-500"
 							>
 								<source src={file.link} type="video/mp4" />
