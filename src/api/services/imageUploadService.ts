@@ -1,6 +1,9 @@
 import type { ApiClient } from "../core/client";
 import type { FileEventType, ImageDeleteRequest } from "../types";
 
+/** Told as the file goes up: bytes sent so far and the size of the file */
+export type UploadProgressListener = (loaded: number, total: number) => void;
+
 interface GenerateImageUrlRequest {
 	Evento: string;
 	IdCadastro: string;
@@ -46,7 +49,8 @@ export class ImageUploadService {
 	 */
 	async uploadToAzureBlob(
 		sasUrl: string,
-		file: File
+		file: File,
+		onProgress?: UploadProgressListener
 	): Promise<{ blobUrl: string }> {
 		// Extract the blob URL without the SAS token (everything before the '?')
 		const blobUrl = sasUrl.split("?")[0] || sasUrl;
@@ -59,23 +63,42 @@ export class ImageUploadService {
 			? "application/postscript"
 			: file.type || "image/jpeg";
 
-		// Upload the file directly to Azure Blob Storage
-		// We use fetch instead of the ApiClient because this is a direct upload to Azure
-		const response = await fetch(sasUrl, {
-			method: "PUT",
-			headers: {
-				"x-ms-blob-type": "BlockBlob",
-				"Content-Type": contentType,
-			},
-			body: file,
-		});
+		// Upload the file directly to Azure Blob Storage, not through the
+		// ApiClient. With XMLHttpRequest and not fetch: fetch doesn't tell how
+		// much of the file was sent, and a heavy one takes minutes
+		await new Promise<void>((resolve, reject) => {
+			const request = new XMLHttpRequest();
+			request.open("PUT", sasUrl);
+			request.setRequestHeader("x-ms-blob-type", "BlockBlob");
+			request.setRequestHeader("Content-Type", contentType);
 
-		if (!response.ok) {
-			const errorText = await response.text();
-			throw new Error(
-				`Failed to upload image to Azure: ${response.status} ${response.statusText}. ${errorText}`
-			);
-		}
+			if (onProgress) {
+				request.upload.onprogress = (event) => {
+					if (event.lengthComputable) onProgress(event.loaded, event.total);
+				};
+			}
+
+			request.onload = () => {
+				if (request.status >= 200 && request.status < 300) {
+					onProgress?.(file.size, file.size);
+					resolve();
+					return;
+				}
+				reject(
+					new Error(
+						`Failed to upload image to Azure: ${request.status} ${request.statusText}. ${request.responseText}`
+					)
+				);
+			};
+			request.onerror = () => {
+				reject(new Error("Failed to upload image to Azure: network error"));
+			};
+			request.onabort = () => {
+				reject(new Error("Failed to upload image to Azure: aborted"));
+			};
+
+			request.send(file);
+		});
 
 		return { blobUrl };
 	}
@@ -91,6 +114,7 @@ export class ImageUploadService {
 		evento: FileEventType;
 		idCadastro: number;
 		idLista?: number;
+		onProgress?: UploadProgressListener;
 	}): Promise<string> {
 		// Get file extension from the file name
 		const fileExtension =
@@ -105,7 +129,11 @@ export class ImageUploadService {
 		});
 
 		// Step 2: Upload to Azure
-		const { blobUrl } = await this.uploadToAzureBlob(sasUrl, parameters.file);
+		const { blobUrl } = await this.uploadToAzureBlob(
+			sasUrl,
+			parameters.file,
+			parameters.onProgress
+		);
 
 		// Step 3: Return the blob URL (without SAS token) for saving
 		return blobUrl;

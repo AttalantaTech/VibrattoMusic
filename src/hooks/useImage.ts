@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 
 import { imageUploadService } from "@/api";
 import type { FileEventType } from "@/api/types";
+import type { UploadProgressListener } from "@/api/services/imageUploadService";
 
 /**
  * Hook to upload image
@@ -13,17 +14,20 @@ export const useUploadImage = () => {
 			tipoEvento,
 			idCadastro,
 			idLista,
+			onProgress,
 		}: {
 			file: File;
 			tipoEvento: FileEventType;
 			idCadastro: number;
 			idLista?: number;
+			onProgress?: UploadProgressListener;
 		}) =>
 			imageUploadService.uploadImage({
 				file,
 				evento: tipoEvento,
 				idCadastro,
 				idLista,
+				onProgress,
 			}),
 	});
 };

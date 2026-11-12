@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { toast } from "sonner";
 
@@ -9,6 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { profileKeys, useProfileStatus } from "@/hooks/useProfileStatus";
 import { useDeleteImage, useUploadImage } from "@/hooks/useImage";
 import { onboardingKeys } from "@/hooks/useOnboarding";
+import type { FileUpload } from "../utils/uploadProgress";
 
 interface Props {
 	activeProductId?: number;
@@ -32,6 +33,10 @@ export function useImageUpload({
 	const [uploadingType, setUploadingType] = useState<FileEventType | null>(
 		null
 	);
+
+	// Files on their way to the storage, with how much of each was sent
+	const [uploads, setUploads] = useState<Array<FileUpload>>([]);
+	const nextUploadId = useRef(1);
 
 	const [profilePhoto, setProfilePhoto] = useState<string | null>(
 		initialProfilePhoto
@@ -78,6 +83,12 @@ export function useImageUpload({
 			return null;
 		}
 
+		const uploadId = nextUploadId.current++;
+		setUploads((previous) => [
+			...previous,
+			{ id: uploadId, name: file.name, type, loaded: 0, total: file.size },
+		]);
+
 		try {
 			setUploadingType(type);
 
@@ -97,6 +108,13 @@ export function useImageUpload({
 				file,
 				tipoEvento: type,
 				idCadastro: activeProductId,
+				onProgress: (loaded, total) => {
+					setUploads((previous) =>
+						previous.map((upload) =>
+							upload.id === uploadId ? { ...upload, loaded, total } : upload
+						)
+					);
+				},
 				idLista:
 					type === "ProdutoMusicalCarrossel" ||
 					type === "ProdutoMusicalOnboardingCarrossel"
@@ -161,6 +179,10 @@ export function useImageUpload({
 			return null;
 		} finally {
 			setUploadingType(null);
+			// Sent or failed, it leaves the grid: the file itself takes its place
+			setUploads((previous) =>
+				previous.filter((upload) => upload.id !== uploadId)
+			);
 		}
 	};
 
@@ -257,6 +279,7 @@ export function useImageUpload({
 		clippings,
 		setClippings,
 		uploadingType,
+		uploads,
 		handleLegendImage,
 		handleLegendClipping,
 	};

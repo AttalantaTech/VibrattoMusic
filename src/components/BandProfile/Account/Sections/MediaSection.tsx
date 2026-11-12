@@ -19,6 +19,7 @@ import { ProfileImageSection } from "@/features/MediaSection/components/ProfileI
 import { ClippingSection } from "@/features/MediaSection/components/ClippingSection";
 import { SocialNetworksSection } from "@/features/MediaSection/components/SocialNetworksSection";
 import { CarouselSection } from "@/features/MediaSection/components/CarouselSection";
+import { uploadsOf } from "@/features/MediaSection/utils/uploadProgress";
 import { MainMediaSection } from "@/features/MediaSection/components/MainMediaSection";
 import { PriceSection } from "@/features/MediaSection/components/PriceSection";
 import {
@@ -61,6 +62,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 		uploadImage,
 		removeImage,
 		uploadingType,
+		uploads,
 		clippings,
 		handleLegendImage,
 		handleLegendClipping,
@@ -186,6 +188,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 
 						{/* CAROUSEL */}
 						<CarouselSection
+							uploads={uploadsOf(uploads, "carousel")}
 							carousel={carouselImages}
 							onLegendCarousel={handleLegendImage}
 							loadingMap={loadedItems}
@@ -224,6 +227,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 
 						{/* CLIPPINGS */}
 						<ClippingSection
+							uploads={uploadsOf(uploads, "clipping")}
 							clipping={clippings}
 							onLegendClipping={handleLegendClipping}
 							loadingMap={loadedItems}
