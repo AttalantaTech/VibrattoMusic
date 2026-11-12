@@ -6,6 +6,7 @@ import { Carousel } from "@/components/ui/Carousel/Carousel";
 import { LazyImage } from "@/components/ui/LazyImage/LazyImage";
 import { TabNavigation } from "@/components/ui/TabNavigation/TabNavigation";
 import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
+import { needsFreshPdfAddress, needsOwnPdfRenderer } from "@/utils/pdfDocument";
 import { ViewFileModal } from "@/components/ViewFileModal/ViewFileModal";
 import { useInstrumentos } from "@/hooks/useFilters";
 import {
@@ -13,6 +14,7 @@ import {
 	isMP4File,
 	isPdfFile,
 	isPngImage,
+	videoThumbnailSource,
 } from "@/utils/validation";
 import { EpsFilePreview } from "@/components/cards/EpsFilePreview/EpsFilePreview";
 import { CheckCircle2, Disc, Loader2, MapPin, Verified } from "lucide-react";
@@ -58,10 +60,13 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 	}>({ isOpen: false, file: null });
 	const [loadedFiles, setLoadedFiles] = useState<Record<string, boolean>>({});
 
+	// A new address for each visit to a tab, where the browser needs it; the
+	// others keep the address and reuse the file they already downloaded
 	const getBustUrl = useMemo(() => {
 		const timestamp = new Date().getTime();
 		return (url: string) => {
 			if (!url) return "";
+			if (!needsFreshPdfAddress()) return url;
 			const separator = url.includes("?") ? "&" : "?";
 			return `${url}${separator}safariBust=${timestamp}`;
 		};
@@ -123,12 +128,17 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 																<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
 															</div>
 														) : isPdfFile(file.link) ? (
-															<div className="relative group">
+															<div className="relative group h-full">
 																<PdfViewer
 																	key={freshLink}
 																	preview
+																	previewHint={
+																		needsOwnPdfRenderer()
+																			? "Toque para abrir"
+																			: "Clique para abrir"
+																	}
 																	title={file.legenda || "Arquivo PDF"}
-																	className="rounded-lg w-full h-48 sm:h-64 lg:h-[280px] pointer-events-none"
+																	className="rounded-lg w-full h-full pointer-events-none"
 																	src={`${file.link}#toolbar=0`}
 																	onLoad={() => {
 																		handleFileLoad(file.link);
@@ -140,12 +150,16 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 														) : isMP4File(file.link) ? (
 															<div className="relative group rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200">
 																<video
+																	preload="metadata"
 																	className="w-full h-full aspect-square"
 																	onLoadedMetadata={() => {
 																		handleFileLoad(file.link);
 																	}}
 																>
-																	<source src={file.link} type="video/mp4" />
+																	<source
+																		src={videoThumbnailSource(file.link)}
+																		type="video/mp4"
+																	/>
 																</video>
 
 																<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />

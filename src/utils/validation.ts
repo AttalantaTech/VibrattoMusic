@@ -424,6 +424,15 @@ export const isMP4File = (link: string): boolean => {
 	return regex.test(link);
 };
 
+/**
+ * Address of a video shown as a thumbnail: the "#t=0.1" asks for the frame
+ * right after the start, which phones only draw when told where to stop.
+ * With preload="metadata" the browser reads the beginning of the file, not
+ * the whole video
+ */
+export const videoThumbnailSource = (link: string): string =>
+	link.includes("#") ? link : `${link}#t=0.1`;
+
 // EPS (vector/PostScript): browsers cannot preview it, only download
 export const isEpsFile = (link: string): boolean => {
 	const regex = /\.eps$/i;
