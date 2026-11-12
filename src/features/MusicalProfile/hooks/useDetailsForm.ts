@@ -132,6 +132,8 @@ export function useDetailsForm({ musicalProduct }: UseDetailsFormProps) {
 			});
 
 			toast.success("Informações da Banda salvas com sucesso");
+			// Back to the top, where "Visualizar Perfil" leaves the editor
+			window.scrollTo({ top: 0, behavior: "smooth" });
 		} catch (error) {
 			if (error instanceof VibrattoApiError) {
 				const errorMessage = error.data?.erros.find((error_) => error_);

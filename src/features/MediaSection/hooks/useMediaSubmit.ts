@@ -220,6 +220,8 @@ export function useMediaSubmit({ musicalProductId, mode }: Props) {
 			});
 
 			toast.success("Informações atualizadas com sucesso");
+			// Back to the top, where "Visualizar Perfil" leaves the editor
+			window.scrollTo({ top: 0, behavior: "smooth" });
 		} else {
 			const imagesData = {
 				FotoPerfil: profilePhoto ?? null,
