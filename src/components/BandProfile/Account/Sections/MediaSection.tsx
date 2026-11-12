@@ -59,6 +59,8 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 	const {
 		profilePhoto,
 		carouselImages,
+		setCarouselImages,
+		setClippings,
 		uploadImage,
 		removeImage,
 		uploadingType,
@@ -162,6 +164,18 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 		}
 	};
 
+	// The new order shows at once and is saved with the whole list, as the
+	// profile shows the files in the order they are saved
+	const handleReorderCarousel = (ordered: Array<FilePropsLocal>) => {
+		setCarouselImages(ordered);
+		void addCarouselImage(ordered);
+	};
+
+	const handleReorderClipping = (ordered: Array<FilePropsLocal>) => {
+		setClippings(ordered);
+		void addClippingFile(ordered);
+	};
+
 	const handleUploadClipping = async (files: Array<File>) => {
 		const newClippings = await uploadFiles(files, "ProdutoMusicalClipagem");
 
@@ -194,6 +208,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 							loadingMap={loadedItems}
 							markAsLoaded={markAsLoaded}
 							onUpload={handleUploadCarouselImage}
+							onReorder={handleReorderCarousel}
 							onRemove={(id: number | null, index: number) =>
 								removeImage("ProdutoMusicalCarrossel", id, index)
 							}
@@ -233,6 +248,7 @@ export default function MediaSection({ onActiveSection }: MediaSectionProps) {
 							loadingMap={loadedItems}
 							markAsLoaded={markAsLoaded}
 							onUpload={handleUploadClipping}
+							onReorder={handleReorderClipping}
 							onRemove={(id: number | null, index: number) =>
 								removeImage("ProdutoMusicalClipagem", id, index)
 							}
