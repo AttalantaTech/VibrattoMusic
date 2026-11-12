@@ -40,6 +40,14 @@ const styles = {
 	section: "flex flex-col w-full gap-[6px] items-start justify-start",
 };
 
+// Caption under the image or file, readable without opening it
+const MediaCaption = ({ text }: { text?: string }) =>
+	text?.trim() ? (
+		<p className="mt-2 px-1 text-sm text-gray-600 text-center break-words">
+			{text}
+		</p>
+	) : null;
+
 export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 	const { data: instrumentsData } = useInstrumentos();
 
@@ -157,6 +165,8 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 														)}
 													</div>
 												</div>
+
+												<MediaCaption text={file.legenda} />
 											</CarouselItem>
 										);
 									})}
@@ -421,6 +431,8 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 
 										<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/20 transition-colors rounded-lg" />
 									</div>
+
+									<MediaCaption text={image.legenda} />
 								</CarouselItem>
 							))}
 						</Carousel>
