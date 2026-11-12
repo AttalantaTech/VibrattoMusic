@@ -32,8 +32,20 @@ export const needsOwnPdfRenderer = (): boolean => {
 	);
 };
 
+// Safari leaves the PDF box blank when a file it already showed comes back
+// (e.g. returning to a tab of the profile) unless the address changes. Only
+// Safari: a changed address makes every browser download the file again
+export const needsFreshPdfAddress = (): boolean => {
+	if (typeof navigator === "undefined") return false;
+
+	return (
+		/safari/i.test(navigator.userAgent) &&
+		!/chrome|chromium|crios|fxios|edg|opr|android/i.test(navigator.userAgent)
+	);
+};
+
 // Size of a file in the storage, when it tells (a HEAD, no content)
-const remoteLength = async (url: string): Promise<number | null> => {
+export const pdfFileLength = async (url: string): Promise<number | null> => {
 	if (!/^https?:/i.test(url)) return null;
 
 	try {
@@ -50,16 +62,30 @@ const remoteLength = async (url: string): Promise<number | null> => {
  * pieces (HTTP Range), only what the pages on screen need: a media kit can
  * have tens of MB, too much to download for a thumbnail on a phone. pdf.js
  * would do it by itself, but the storage doesn't expose Accept-Ranges to it.
- * maxLength refuses a larger file (thumbnails: not worth the download)
+ *
+ * readLimit is for thumbnails: what counts is how much the first page asks
+ * for, not the size of the file (the first page of a 60 MB media kit usually
+ * takes a fraction of it). Past maxBytes the reading stops and onExceeded
+ * is called
  */
-export const openPdf = async (link: string, maxLength?: number) => {
+export const openPdf = async (
+	link: string,
+	options: {
+		readLimit?: { maxBytes: number; onExceeded: () => void };
+		/** The size of the file, when the caller has already asked for it */
+		fileLength?: number | null;
+	} = {}
+) => {
+	const { readLimit } = options;
 	const library = await loadPdfjs();
 	// The #toolbar=0 some links carry is for the browser's own viewer
 	const url = link.split("#")[0] ?? link;
 
-	const length = await remoteLength(url);
+	const length =
+		options.fileLength === undefined
+			? await pdfFileLength(url)
+			: options.fileLength;
 	if (!length) return library.getDocument({ url });
-	if (maxLength && length > maxLength) throw new Error("PDF too large");
 
 	const transport = new library.PDFDataRangeTransport(length, null);
 	const loadingTask = library.getDocument({
@@ -68,7 +94,16 @@ export const openPdf = async (link: string, maxLength?: number) => {
 		disableStream: true,
 	});
 
+	let bytesRead = 0;
+
 	transport.requestDataRange = (begin, end) => {
+		bytesRead += end - begin;
+		if (readLimit && bytesRead > readLimit.maxBytes) {
+			readLimit.onExceeded();
+			loadingTask.destroy().catch(() => undefined);
+			return;
+		}
+
 		fetch(url, { headers: { Range: `bytes=${begin}-${end - 1}` } })
 			.then((response) => {
 				// A server that ignores Range answers 200 with the whole file

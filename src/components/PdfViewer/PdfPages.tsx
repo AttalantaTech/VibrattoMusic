@@ -1,7 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import type { PDFDocumentProxy } from "pdfjs-dist";
-import { openPdf } from "@/utils/pdfDocument";
+import {
+	needsOwnPdfRenderer,
+	openPdf,
+	pdfFileLength,
+} from "@/utils/pdfDocument";
+import {
+	LONG_PAGE_RATIO,
+	readPdfThumbnail,
+	savePdfThumbnail,
+	type PdfThumbnail,
+} from "@/utils/pdfThumbnailCache";
 
 interface PdfPagesProps {
 	src: string;
@@ -10,15 +20,25 @@ interface PdfPagesProps {
 	firstPageOnly?: boolean;
 	className?: string;
 	onLoad?: () => void;
-	/** The file couldn't be read (e.g. the storage refused the request) */
-	onError: () => void;
+	/**
+	 * The file couldn't be read (e.g. the storage refused the request) or, for
+	 * a thumbnail, is too large to be worth reading (its size comes along)
+	 */
+	onError: (
+		reason: "too-large" | "unreadable",
+		fileLength?: number | null
+	) => void;
 }
 
 // Sharp on phone screens without drawing more pixels than they can hold
 const MAX_PIXEL_RATIO = 2;
-// A thumbnail isn't worth a heavy download on a phone: past this the file
-// shows as a card and is only read when opened
-const MAX_THUMBNAIL_BYTES = 10 * 1024 * 1024;
+// The most a thumbnail may download. A first page that asks for more (a
+// media kit's cover can take tens of MB) isn't worth it on a phone's data
+// plan: there the file shows as a card and is only read when opened.
+// Computers draw it anyway, up to a size no first page should reach
+const MEGABYTE = 1024 * 1024;
+const maxThumbnailBytes = () =>
+	needsOwnPdfRenderer() ? 10 * MEGABYTE : 100 * MEGABYTE;
 
 interface PdfPageProps {
 	document: PDFDocumentProxy;
@@ -26,7 +46,7 @@ interface PdfPageProps {
 	width: number;
 	label: string;
 	fit?: boolean;
-	onRendered?: () => void;
+	onRendered?: (drawn: HTMLCanvasElement) => void;
 }
 
 // One page, drawn when it gets near the screen: a long file would otherwise
@@ -94,7 +114,7 @@ const PdfPage = ({
 			await task.promise;
 			if (cancelled) return;
 			setIsDrawn(true);
-			onRendered?.();
+			onRendered?.(canvas);
 		};
 
 		// A cancelled drawing (the page left, the width changed) rejects too
@@ -115,7 +135,11 @@ const PdfPage = ({
 				aria-label={label}
 				className={
 					fit
-						? "h-full w-full bg-white object-contain"
+						? // A whole media kit laid out as one very long page would be
+							// a thin strip: its top fills the box instead
+							ratio > LONG_PAGE_RATIO
+							? "h-full w-full bg-white object-cover object-top"
+							: "h-full w-full bg-white object-contain"
 						: "block w-full bg-white shadow-sm"
 				}
 				style={fit ? undefined : { aspectRatio: `1 / ${ratio}` }}
@@ -154,14 +178,56 @@ export const PdfPages = ({
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [document, setDocument] = useState<PDFDocumentProxy | null>(null);
 	const [width, setWidth] = useState(0);
+	// The thumbnail this device already drew for the file, shown as a picture
+	const [thumbnail, setThumbnail] = useState<PdfThumbnail | null>(null);
+	const fileLength = useRef<number | null>(null);
+	// The #toolbar=0 some links carry is not part of the file's address
+	const fileUrl = src.split("#")[0] ?? src;
 
 	useEffect(() => {
 		let cancelled = false;
 		let loadingTask: { destroy: () => Promise<void> } | undefined;
+		let shownThumbnail: PdfThumbnail | null = null;
 		setDocument(null);
+		setThumbnail(null);
 
-		openPdf(src, firstPageOnly ? MAX_THUMBNAIL_BYTES : undefined)
+		// Reported once, whether it happens while opening or while drawing
+		let tooLarge = false;
+		const readLimit = {
+			maxBytes: maxThumbnailBytes(),
+			onExceeded: () => {
+				if (tooLarge) return;
+				tooLarge = true;
+				if (!cancelled) onError("too-large", fileLength.current);
+			},
+		};
+
+		const open = async () => {
+			if (!firstPageOnly) return openPdf(src);
+
+			const length = await pdfFileLength(fileUrl);
+			fileLength.current = length;
+
+			const kept = await readPdfThumbnail(fileUrl, length);
+			if (kept) {
+				if (cancelled) {
+					URL.revokeObjectURL(kept.src);
+				} else {
+					shownThumbnail = kept;
+					setThumbnail(kept);
+					onLoad?.();
+				}
+				return undefined;
+			}
+
+			return openPdf(src, { readLimit, fileLength: length });
+		};
+
+		open()
 			.then((task) => {
+				// The kept thumbnail is on screen: the file isn't opened
+				if (!task) return undefined;
+
 				loadingTask = task;
 				// Left before the file was opened: nothing to wait for
 				if (cancelled) {
@@ -174,12 +240,13 @@ export const PdfPages = ({
 				if (loaded && !cancelled) setDocument(loaded);
 			})
 			.catch(() => {
-				if (!cancelled) onError();
+				if (!cancelled && !tooLarge) onError("unreadable");
 			});
 
 		return () => {
 			cancelled = true;
 			loadingTask?.destroy().catch(() => undefined);
+			if (shownThumbnail) URL.revokeObjectURL(shownThumbnail.src);
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [src]);
@@ -215,14 +282,28 @@ export const PdfPages = ({
 				ref={containerRef}
 				className={`flex items-center justify-center overflow-hidden bg-white ${className}`}
 			>
-				{document ? (
+				{thumbnail ? (
+					<img
+						src={thumbnail.src}
+						alt={title}
+						className={
+							thumbnail.isLongPage
+								? "h-full w-full bg-white object-cover object-top"
+								: "h-full w-full bg-white object-contain"
+						}
+					/>
+				) : document ? (
 					<PdfPage
 						document={document}
 						pageNumber={1}
 						width={width}
 						label={title}
 						fit
-						onRendered={onLoad}
+						onRendered={(drawn) => {
+							onLoad?.();
+							// Kept for the next visit, which then downloads nothing
+							void savePdfThumbnail(fileUrl, fileLength.current, drawn);
+						}}
 					/>
 				) : (
 					<Loader2 className="h-5 w-5 animate-spin text-gray-400" />
@@ -244,7 +325,7 @@ export const PdfPages = ({
 						pageNumber={pageNumber}
 						width={width}
 						label={`${title}, página ${pageNumber} de ${document.numPages}`}
-						onRendered={pageNumber === 1 ? onLoad : undefined}
+						onRendered={pageNumber === 1 ? () => onLoad?.() : undefined}
 					/>
 				))
 			) : (

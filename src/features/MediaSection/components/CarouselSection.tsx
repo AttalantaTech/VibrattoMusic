@@ -1,7 +1,11 @@
 import { FileUploadBox } from "@/components/forms/FileUploadBox/FileUploadBox";
 import { SectionHeader } from "./shared/SectionHeader";
 import { Loader2, X } from "lucide-react";
-import { isMP4File, isPngImage } from "@/utils/validation";
+import {
+	isMP4File,
+	isPngImage,
+	videoThumbnailSource,
+} from "@/utils/validation";
 import { TextAreaField } from "@/components/forms/TextAreaField/TextAreaField";
 import type { FilePropsLocal } from "@/api/types";
 import { UploadingTile } from "./shared/UploadingTile";
@@ -68,12 +72,16 @@ export function CarouselSection({
 									{isMP4File(file.link) ? (
 										<div className="w-full">
 											<video
+												preload="metadata"
 												className="w-full h-full aspect-square"
 												onLoadedMetadata={() => {
 													markAsLoaded(file.link);
 												}}
 											>
-												<source src={file.link} type="video/mp4" />
+												<source
+													src={videoThumbnailSource(file.link)}
+													type="video/mp4"
+												/>
 											</video>
 										</div>
 									) : (
