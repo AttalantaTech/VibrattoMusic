@@ -10,6 +10,8 @@ import {
 	videoThumbnailSource,
 } from "@/utils/validation";
 import type { FilePropsLocal } from "@/api/types";
+import { UploadingTile } from "./shared/UploadingTile";
+import type { FileUpload } from "../utils/uploadProgress";
 import { TextAreaField } from "@/components/forms/TextAreaField/TextAreaField";
 import { EpsFilePreview } from "@/components/cards/EpsFilePreview/EpsFilePreview";
 import { PdfViewer } from "@/components/PdfViewer/PdfViewer";
@@ -18,6 +20,8 @@ type ClippingSectionProps = {
 	clipping: Array<FilePropsLocal>;
 	loadingMap: Record<string, boolean>;
 	markAsLoaded: (url: string) => void;
+	/** Files being sent, shown after the ones already added */
+	uploads?: Array<FileUpload>;
 	onUpload: (files: Array<File>) => Promise<void>;
 	onRemove: (id: number | null, index: number) => Promise<void>;
 	onLegendClipping: (file: FilePropsLocal, legend: string) => void;
@@ -26,6 +30,7 @@ type ClippingSectionProps = {
 export function ClippingSection({
 	clipping,
 	loadingMap,
+	uploads = [],
 	onUpload,
 	onRemove,
 	markAsLoaded,
@@ -140,6 +145,9 @@ export function ClippingSection({
 							}}
 						/>
 					</div>
+				))}
+				{uploads.map((upload) => (
+					<UploadingTile key={upload.id} upload={upload} />
 				))}
 			</div>
 		</div>

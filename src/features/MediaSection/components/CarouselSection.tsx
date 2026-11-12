@@ -8,11 +8,15 @@ import {
 } from "@/utils/validation";
 import { TextAreaField } from "@/components/forms/TextAreaField/TextAreaField";
 import type { FilePropsLocal } from "@/api/types";
+import { UploadingTile } from "./shared/UploadingTile";
+import type { FileUpload } from "../utils/uploadProgress";
 
 type CarouselSectionProps = {
 	carousel: Array<FilePropsLocal>;
 	loadingMap: Record<string, boolean>;
 	markAsLoaded: (url: string) => void;
+	/** Files being sent, shown after the ones already added */
+	uploads?: Array<FileUpload>;
 	onUpload: (files: Array<File>) => Promise<void>;
 	onRemove: (id: number | null, index: number) => Promise<void>;
 	onLegendCarousel: (file: FilePropsLocal, legend: string) => void;
@@ -21,6 +25,7 @@ type CarouselSectionProps = {
 export function CarouselSection({
 	carousel,
 	loadingMap,
+	uploads = [],
 	onUpload,
 	onRemove,
 	markAsLoaded,
@@ -108,6 +113,9 @@ export function CarouselSection({
 							}}
 						/>
 					</div>
+				))}
+				{uploads.map((upload) => (
+					<UploadingTile key={upload.id} upload={upload} />
 				))}
 			</div>
 		</div>
