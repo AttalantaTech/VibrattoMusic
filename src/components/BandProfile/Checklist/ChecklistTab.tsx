@@ -1,7 +1,324 @@
+import { useMemo, useState } from "react";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import {
+	AlertTriangle,
+	ArrowLeft,
+	CalendarX,
+	ListChecks,
+	Loader2,
+	Settings2,
+} from "lucide-react";
+import { Button } from "@/components/ui/Button/Button";
+import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
+import { useChecklistEvents } from "@/features/Checklist/hooks/useChecklistEvents";
+import {
+	eventStateOf,
+	templateOf,
+	useChecklistStore,
+} from "@/features/Checklist/hooks/useChecklistStore";
+import {
+	buildChecklist,
+	isDueSoon,
+	progressOf,
+} from "@/features/Checklist/utils/buildChecklist";
+import { EventChecklist } from "@/features/Checklist/components/EventChecklist";
+import { ProgressBar } from "@/features/Checklist/components/ProgressBar";
+import { TemplateEditor } from "@/features/Checklist/components/TemplateEditor";
+import { ShareChecklistDialog } from "@/features/Checklist/components/ShareChecklistDialog";
+import type {
+	ChecklistEvent,
+	ChecklistItem,
+	ProfileReadiness,
+} from "@/features/Checklist/types";
+
+const shortDate = (date: string) =>
+	format(parseISO(date), "dd/MM · EEE", { locale: ptBR });
+
 export const ChecklistTab = () => {
+	const { activeProduct } = useMusicalProductStore();
+	const profileId = activeProduct?.id;
+	const { events, isLoading } = useChecklistEvents(profileId);
+
+	const byProfile = useChecklistStore((state) => state.byProfile);
+	const toggle = useChecklistStore((state) => state.toggle);
+	const addToEvent = useChecklistStore((state) => state.addToEvent);
+	const removeFromEvent = useChecklistStore((state) => state.removeFromEvent);
+	const saveTemplate = useChecklistStore((state) => state.saveTemplate);
+
+	const [selectedKey, setSelectedKey] = useState<string | null>(null);
+	const [showPast, setShowPast] = useState(false);
+	const [isEditingTemplate, setIsEditingTemplate] = useState(false);
+	const [isSharing, setIsSharing] = useState(false);
+
+	const today = format(new Date(), "yyyy-MM-dd");
+	const template = templateOf(byProfile, profileId ?? 0);
+
+	const profile: ProfileReadiness = {
+		rider: !!(activeProduct?.rider || activeProduct?.riderTexto),
+		stageMap: !!(
+			activeProduct?.mapaPalcoLink || activeProduct?.mapaPalco?.length
+		),
+		dressingRoom: !!(
+			activeProduct?.camarimIncluso ||
+			activeProduct?.infraCamarim ||
+			activeProduct?.infraCamarimTexto
+		),
+	};
+
+	const withItems = useMemo(
+		() =>
+			events.map((event) => ({
+				event,
+				items: buildChecklist(
+					event,
+					template,
+					eventStateOf(byProfile, profileId ?? 0, event.key),
+					profile
+				),
+			})),
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[events, template, byProfile, profileId, JSON.stringify(profile)]
+	);
+
+	const upcoming = withItems.filter(({ event }) => event.date >= today);
+	const past = withItems.filter(({ event }) => event.date < today).reverse();
+	const listed = showPast ? past : upcoming;
+	const dueSoon = upcoming.filter(({ event, items }) =>
+		isDueSoon(event, items, today)
+	);
+
+	const selected =
+		withItems.find(({ event }) => event.key === selectedKey) ??
+		(selectedKey === null ? upcoming[0] : undefined);
+
+	if (!profileId) return null;
+
+	const openEvent = (event: ChecklistEvent) => {
+		setSelectedKey(event.key);
+	};
+
+	const handleRemove = (event: ChecklistEvent, item: ChecklistItem) => {
+		removeFromEvent(profileId, event.key, item.id, item.source === "evento");
+	};
+
 	return (
-		<div className="flex justify-center items-center h-96 w-full">
-			<h4 className="font-medium text-gray-500">Em Construção...</h4>
+		<div className="flex w-full flex-col gap-5 pb-10">
+			<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+				<div>
+					<h2 className="flex items-center gap-2 text-xl font-semibold text-gray-900">
+						<ListChecks
+							className="h-6 w-6 text-primary-700"
+							aria-hidden="true"
+						/>
+						Checklist dos eventos
+					</h2>
+					<p className="text-sm text-gray-600">
+						O que precisa estar pronto para cada show, da Vibratto ou de fora.
+					</p>
+				</div>
+				<Button
+					variant="outline"
+					size="sm"
+					className="flex gap-2"
+					onClick={() => {
+						setIsEditingTemplate(true);
+					}}
+				>
+					<Settings2 className="h-4 w-4" aria-hidden="true" />
+					Editar meu modelo
+				</Button>
+			</div>
+
+			<p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+				Versão de demonstração: as marcações e o seu modelo ficam salvos só
+				neste navegador até o servidor passar a guardá-los.
+			</p>
+
+			{dueSoon.length > 0 && (
+				<div
+					className="flex flex-col gap-2 rounded-lg border border-orange-200 bg-orange-50 p-3"
+					role="status"
+				>
+					{dueSoon.map(({ event, items }) => {
+						const open = items.filter((item) => !item.done).length;
+						return (
+							<button
+								key={event.key}
+								type="button"
+								className="flex items-start gap-2 text-left text-sm text-orange-900 hover:underline"
+								onClick={() => {
+									openEvent(event);
+									setShowPast(false);
+								}}
+							>
+								<AlertTriangle
+									className="mt-0.5 h-4 w-4 shrink-0"
+									aria-hidden="true"
+								/>
+								<span>
+									<strong>{event.title}</strong> é em{" "}
+									{event.date === today ? "hoje" : shortDate(event.date)}:
+									faltam {open} {open === 1 ? "item" : "itens"}.
+								</span>
+							</button>
+						);
+					})}
+				</div>
+			)}
+
+			{isLoading ? (
+				<div className="flex h-60 items-center justify-center">
+					<Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+				</div>
+			) : (
+				<div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+					{/* List: on phones it gives way to the chosen event */}
+					<div
+						className={`flex w-full flex-col gap-2 lg:w-80 lg:shrink-0 ${
+							selectedKey ? "hidden lg:flex" : ""
+						}`}
+					>
+						<div className="flex gap-1 rounded-lg bg-gray-100 p-1 text-sm">
+							{[
+								{ value: false, label: `Próximos (${upcoming.length})` },
+								{ value: true, label: `Anteriores (${past.length})` },
+							].map((tab) => (
+								<button
+									key={tab.label}
+									type="button"
+									className={`flex-1 rounded-md px-3 py-1.5 font-medium ${
+										showPast === tab.value
+											? "bg-white text-gray-900 shadow-sm"
+											: "text-gray-600"
+									}`}
+									onClick={() => {
+										setShowPast(tab.value);
+									}}
+								>
+									{tab.label}
+								</button>
+							))}
+						</div>
+
+						{listed.length === 0 ? (
+							<div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-600">
+								<CalendarX className="h-6 w-6 text-gray-400" />
+								{showPast
+									? "Nenhum evento anterior."
+									: "Nenhum evento pela frente. Propostas aceitas e eventos da sua agenda aparecem aqui."}
+							</div>
+						) : (
+							<ul className="flex flex-col gap-2">
+								{listed.map(({ event, items }) => {
+									const { done, total } = progressOf(items);
+									const isSelected = selected?.event.key === event.key;
+									return (
+										<li key={event.key}>
+											<button
+												type="button"
+												className={`flex w-full flex-col gap-2 rounded-lg border p-3 text-left transition-colors ${
+													isSelected
+														? "border-primary-400 bg-primary-50"
+														: "border-gray-200 bg-white hover:border-gray-300"
+												}`}
+												onClick={() => {
+													openEvent(event);
+												}}
+											>
+												<div className="flex items-center justify-between gap-2">
+													<span className="text-xs font-medium capitalize text-gray-500">
+														{shortDate(event.date)}
+													</span>
+													<span className="text-xs text-gray-500">
+														{event.origin === "vibratto"
+															? "Vibratto"
+															: "Fora da plataforma"}
+													</span>
+												</div>
+												<span className="line-clamp-2 text-sm font-semibold text-gray-900">
+													{event.title}
+												</span>
+												<div className="flex items-center gap-2">
+													<ProgressBar done={done} total={total} />
+													<span className="shrink-0 text-xs text-gray-600">
+														{done}/{total}
+													</span>
+												</div>
+											</button>
+										</li>
+									);
+								})}
+							</ul>
+						)}
+					</div>
+
+					{/* The chosen event */}
+					<div
+						className={`min-w-0 flex-1 rounded-lg border border-gray-200 bg-white p-4 sm:p-5 ${
+							selectedKey ? "" : "hidden lg:block"
+						}`}
+					>
+						{selected ? (
+							<>
+								<button
+									type="button"
+									className="mb-4 inline-flex items-center gap-1 text-sm text-gray-600 hover:text-primary-600 lg:hidden"
+									onClick={() => {
+										setSelectedKey(null);
+									}}
+								>
+									<ArrowLeft className="h-4 w-4" aria-hidden="true" />
+									Todos os eventos
+								</button>
+								<EventChecklist
+									event={selected.event}
+									items={selected.items}
+									onToggle={(itemId) => {
+										toggle(profileId, selected.event.key, itemId);
+									}}
+									onAdd={(item) => {
+										addToEvent(profileId, selected.event.key, item);
+									}}
+									onRemove={(item) => {
+										handleRemove(selected.event, item);
+									}}
+									onShare={() => {
+										setIsSharing(true);
+									}}
+								/>
+							</>
+						) : (
+							<p className="py-10 text-center text-sm text-gray-500">
+								Escolha um evento para ver o checklist.
+							</p>
+						)}
+					</div>
+				</div>
+			)}
+
+			<TemplateEditor
+				isOpen={isEditingTemplate}
+				template={template}
+				onClose={() => {
+					setIsEditingTemplate(false);
+				}}
+				onSave={(items) => {
+					saveTemplate(profileId, items);
+				}}
+			/>
+
+			{selected && (
+				<ShareChecklistDialog
+					isOpen={isSharing}
+					event={selected.event}
+					items={selected.items}
+					professional={activeProduct?.nome ?? ""}
+					onClose={() => {
+						setIsSharing(false);
+					}}
+				/>
+			)}
 		</div>
 	);
 };
