@@ -1,5 +1,6 @@
 import type { ProposalResponse, ScheduleApiResponse } from "@/api/types";
 import type {
+	ManualEvent,
 	ChecklistEvent,
 	ChecklistItem,
 	EventChecklistState,
@@ -98,6 +99,29 @@ export const buildEvents = (
 	);
 };
 
+/** A standalone checklist, as an event of the list */
+export const manualToEvent = (manual: ManualEvent): ChecklistEvent => ({
+	key: `avulso-${manual.id}`,
+	origin: "avulso",
+	date: manual.date,
+	startTime: manual.startTime ? `${manual.startTime}:00` : null,
+	title: manual.title.trim() || "Evento",
+	client: manual.client.trim() || null,
+	place: manual.place.trim() || null,
+	eventType: null,
+	inAgenda: false,
+});
+
+/** Every event of the list, by date and time */
+export const sortEvents = (
+	events: Array<ChecklistEvent>
+): Array<ChecklistEvent> =>
+	[...events].sort(
+		(a, b) =>
+			a.date.localeCompare(b.date) ||
+			(a.startTime ?? "").localeCompare(b.startTime ?? "")
+	);
+
 /**
  * What the system checks by itself. Only what it can know for sure: a
  * missing signature or down payment stays unchecked with the reason
@@ -153,12 +177,14 @@ const automaticItems = (
 		);
 	}
 
-	add(
-		"agenda",
-		"Data bloqueada na agenda",
-		event.inAgenda,
-		event.inAgenda ? "Ocupada na sua agenda" : "Salve o evento na agenda"
-	);
+	// A standalone checklist isn't tied to the agenda
+	if (event.origin !== "avulso")
+		add(
+			"agenda",
+			"Data bloqueada na agenda",
+			event.inAgenda,
+			event.inAgenda ? "Ocupada na sua agenda" : "Salve o evento na agenda"
+		);
 	add(
 		"rider",
 		"Rider técnico no perfil",

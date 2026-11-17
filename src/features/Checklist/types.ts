@@ -54,11 +54,38 @@ export const emptyEventState = (): EventChecklistState => ({
 	removed: [],
 });
 
+export type EventOrigin = "vibratto" | "fora" | "avulso";
+
+export const ORIGIN_LABEL: Record<
+	EventOrigin,
+	{ long: string; short: string }
+> = {
+	vibratto: { long: "Contratado pela Vibratto", short: "Vibratto" },
+	fora: { long: "Fora da plataforma", short: "Fora da plataforma" },
+	avulso: { long: "Checklist avulso", short: "Avulso" },
+};
+
+/**
+ * A checklist made by hand on the Checklist screen, like a standalone
+ * proposal: for an event that isn't a proposal nor in the agenda
+ */
+export interface ManualEvent {
+	id: string;
+	title: string;
+	/** yyyy-MM-dd */
+	date: string;
+	/** HH:mm, or empty */
+	startTime: string;
+	client: string;
+	place: string;
+}
+
 /** An event of the agenda: hired through Vibratto or added by hand */
 export interface ChecklistEvent {
 	/** "proposta-123" or "agenda-45": the key of its checklist */
 	key: string;
-	origin: "vibratto" | "fora";
+	/** "avulso": created on the Checklist screen, not tied to the agenda */
+	origin: EventOrigin;
 	/** Event day, yyyy-MM-dd */
 	date: string;
 	startTime: string | null;

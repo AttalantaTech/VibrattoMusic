@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import {
 	emptyEventState,
 	type EventChecklistState,
+	type ManualEvent,
 	type TemplateItem,
 } from "../types";
 import { DEFAULT_TEMPLATE } from "../utils/defaultTemplate";
@@ -16,6 +17,8 @@ interface ProfileChecklists {
 	/** null: still the suggested model */
 	template: Array<TemplateItem> | null;
 	events: Record<string, EventChecklistState>;
+	/** Standalone checklists made on the screen */
+	manual?: Array<ManualEvent>;
 }
 
 interface ChecklistStore {
@@ -29,6 +32,9 @@ interface ChecklistStore {
 		isExtra: boolean
 	) => void;
 	saveTemplate: (profileId: number, template: Array<TemplateItem>) => void;
+	/** Adds a standalone checklist, or replaces the one with the same id */
+	saveManualEvent: (profileId: number, event: ManualEvent) => void;
+	removeManualEvent: (profileId: number, eventId: string) => void;
 }
 
 const profileOf = (
@@ -88,6 +94,39 @@ export const useChecklistStore = create<ChecklistStore>()(
 							: { ...event, removed: [...event.removed, itemId] }
 					)
 				);
+			},
+			saveManualEvent: (profileId, event) => {
+				set((state) => {
+					const profile = profileOf(state, profileId);
+					const others = (profile.manual ?? []).filter(
+						(item) => item.id !== event.id
+					);
+					return {
+						byProfile: {
+							...state.byProfile,
+							[profileId]: { ...profile, manual: [...others, event] },
+						},
+					};
+				});
+			},
+			removeManualEvent: (profileId, eventId) => {
+				set((state) => {
+					const profile = profileOf(state, profileId);
+					const events = { ...profile.events };
+					delete events[`avulso-${eventId}`];
+					return {
+						byProfile: {
+							...state.byProfile,
+							[profileId]: {
+								...profile,
+								events,
+								manual: (profile.manual ?? []).filter(
+									(item) => item.id !== eventId
+								),
+							},
+						},
+					};
+				});
 			},
 			saveTemplate: (profileId, template) => {
 				set((state) => ({

@@ -6,13 +6,16 @@ import {
 	Circle,
 	Lock,
 	MapPin,
+	Pencil,
 	Plus,
 	Share2,
+	Trash2,
 	X,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button/Button";
 import {
 	GROUPS,
+	ORIGIN_LABEL,
 	type ChecklistEvent,
 	type ChecklistItem,
 	type TemplateItem,
@@ -28,6 +31,9 @@ interface EventChecklistProps {
 	onAdd: (item: TemplateItem) => void;
 	onRemove: (item: ChecklistItem) => void;
 	onShare: () => void;
+	/** Only standalone checklists can have their data changed or be deleted */
+	onEditEvent?: () => void;
+	onDeleteEvent?: () => void;
 }
 
 const AddItem = ({
@@ -98,6 +104,8 @@ export const EventChecklist = ({
 	onAdd,
 	onRemove,
 	onShare,
+	onEditEvent,
+	onDeleteEvent,
 }: EventChecklistProps) => {
 	const { done, total } = progressOf(items);
 	const when = format(parseISO(event.date), "EEEE, dd 'de' MMMM 'de' yyyy", {
@@ -116,13 +124,35 @@ export const EventChecklist = ({
 							className={`rounded-full px-2 py-0.5 text-xs font-medium ${
 								event.origin === "vibratto"
 									? "bg-primary-100 text-primary-800"
-									: "bg-gray-100 text-gray-700"
+									: event.origin === "avulso"
+										? "bg-blue-100 text-blue-800"
+										: "bg-gray-100 text-gray-700"
 							}`}
 						>
-							{event.origin === "vibratto"
-								? "Contratado pela Vibratto"
-								: "Fora da plataforma"}
+							{ORIGIN_LABEL[event.origin].long}
 						</span>
+						{onEditEvent && (
+							<button
+								type="button"
+								aria-label="Editar dados do checklist avulso"
+								title="Editar dados"
+								className="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+								onClick={onEditEvent}
+							>
+								<Pencil className="h-4 w-4" />
+							</button>
+						)}
+						{onDeleteEvent && (
+							<button
+								type="button"
+								aria-label="Excluir checklist avulso"
+								title="Excluir checklist"
+								className="rounded p-1 text-gray-500 hover:bg-red-50 hover:text-red-600"
+								onClick={onDeleteEvent}
+							>
+								<Trash2 className="h-4 w-4" />
+							</button>
+						)}
 					</div>
 					<p className="mt-1 text-sm text-gray-600 first-letter:uppercase">
 						{when}

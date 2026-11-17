@@ -4,6 +4,8 @@ import {
 	buildChecklist,
 	buildEvents,
 	isDueSoon,
+	manualToEvent,
+	sortEvents,
 	progressOf,
 } from "../buildChecklist";
 import { clientShareText } from "../shareText";
@@ -220,5 +222,50 @@ describe("reminder and sharing", () => {
 		expect(text).toContain("▫️ Ponto de energia próximo ao palco");
 		expect(text).toContain("▫️ Camarim pronto conforme o combinado");
 		expect(text).not.toContain("Cabos e pedestais");
+	});
+});
+
+describe("standalone checklist (avulso)", () => {
+	const manual = {
+		id: "x1",
+		title: "  Show na praça ",
+		date: "2026-12-05",
+		startTime: "19:30",
+		client: "Prefeitura",
+		place: "",
+	};
+
+	it("becomes an event of the list", () => {
+		expect(manualToEvent(manual)).toMatchObject({
+			key: "avulso-x1",
+			origin: "avulso",
+			title: "Show na praça",
+			date: "2026-12-05",
+			startTime: "19:30:00",
+			client: "Prefeitura",
+			place: null,
+		});
+	});
+
+	it("has no agenda item, only the profile's", () => {
+		const items = buildChecklist(
+			manualToEvent(manual),
+			[],
+			emptyEventState(),
+			fullProfile
+		);
+		expect(items.filter((i) => i.auto).map((i) => i.id)).toEqual([
+			"auto-rider",
+			"auto-mapa",
+			"auto-camarim",
+		]);
+	});
+
+	it("is listed by date with the other events", () => {
+		const [hired] = buildEvents([proposal()], []);
+		if (!hired) throw new Error("no event");
+		expect(
+			sortEvents([manualToEvent(manual), hired]).map((e) => e.origin)
+		).toEqual(["vibratto", "avulso"]);
 	});
 });

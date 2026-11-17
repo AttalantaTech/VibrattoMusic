@@ -5,6 +5,7 @@ import {
 	AlertTriangle,
 	ArrowLeft,
 	CalendarX,
+	Plus,
 	ListChecks,
 	Loader2,
 	Settings2,
@@ -20,16 +21,29 @@ import {
 import {
 	buildChecklist,
 	isDueSoon,
+	manualToEvent,
 	progressOf,
+	sortEvents,
 } from "@/features/Checklist/utils/buildChecklist";
+import { ManualEventDialog } from "@/features/Checklist/components/ManualEventDialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { EventChecklist } from "@/features/Checklist/components/EventChecklist";
 import { ProgressBar } from "@/features/Checklist/components/ProgressBar";
 import { TemplateEditor } from "@/features/Checklist/components/TemplateEditor";
 import { ShareChecklistDialog } from "@/features/Checklist/components/ShareChecklistDialog";
-import type {
-	ChecklistEvent,
-	ChecklistItem,
-	ProfileReadiness,
+import {
+	ORIGIN_LABEL,
+	type ChecklistEvent,
+	type ChecklistItem,
+	type ManualEvent,
+	type ProfileReadiness,
 } from "@/features/Checklist/types";
 
 const shortDate = (date: string) =>
@@ -38,21 +52,44 @@ const shortDate = (date: string) =>
 export const ChecklistTab = () => {
 	const { activeProduct } = useMusicalProductStore();
 	const profileId = activeProduct?.id;
-	const { events, isLoading } = useChecklistEvents(profileId);
+	const { events: agendaEvents, isLoading } = useChecklistEvents(profileId);
 
 	const byProfile = useChecklistStore((state) => state.byProfile);
 	const toggle = useChecklistStore((state) => state.toggle);
 	const addToEvent = useChecklistStore((state) => state.addToEvent);
 	const removeFromEvent = useChecklistStore((state) => state.removeFromEvent);
 	const saveTemplate = useChecklistStore((state) => state.saveTemplate);
+	const saveManualEvent = useChecklistStore((state) => state.saveManualEvent);
+	const removeManualEvent = useChecklistStore(
+		(state) => state.removeManualEvent
+	);
 
 	const [selectedKey, setSelectedKey] = useState<string | null>(null);
 	const [showPast, setShowPast] = useState(false);
 	const [isEditingTemplate, setIsEditingTemplate] = useState(false);
 	const [isSharing, setIsSharing] = useState(false);
+	// null: closed; undefined inside: creating; a ManualEvent: editing it
+	const [manualDialog, setManualDialog] = useState<{
+		event?: ManualEvent;
+	} | null>(null);
+	const [deletingManual, setDeletingManual] = useState<ManualEvent | null>(
+		null
+	);
 
 	const today = format(new Date(), "yyyy-MM-dd");
 	const template = templateOf(byProfile, profileId ?? 0);
+	const manualEvents = useMemo(
+		() => byProfile[profileId ?? 0]?.manual ?? [],
+		[byProfile, profileId]
+	);
+	const events = useMemo(
+		() => sortEvents([...agendaEvents, ...manualEvents.map(manualToEvent)]),
+		[agendaEvents, manualEvents]
+	);
+	const manualOf = (event: ChecklistEvent): ManualEvent | undefined =>
+		event.origin === "avulso"
+			? manualEvents.find((item) => `avulso-${item.id}` === event.key)
+			: undefined;
 
 	const profile: ProfileReadiness = {
 		rider: !!(activeProduct?.rider || activeProduct?.riderTexto),
@@ -117,17 +154,29 @@ export const ChecklistTab = () => {
 						O que precisa estar pronto para cada show, da Vibratto ou de fora.
 					</p>
 				</div>
-				<Button
-					variant="outline"
-					size="sm"
-					className="flex gap-2"
-					onClick={() => {
-						setIsEditingTemplate(true);
-					}}
-				>
-					<Settings2 className="h-4 w-4" aria-hidden="true" />
-					Editar meu modelo
-				</Button>
+				<div className="flex flex-col gap-2 sm:flex-row">
+					<Button
+						variant="outline"
+						size="sm"
+						className="flex gap-2"
+						onClick={() => {
+							setIsEditingTemplate(true);
+						}}
+					>
+						<Settings2 className="h-4 w-4" aria-hidden="true" />
+						Editar meu modelo
+					</Button>
+					<Button
+						size="sm"
+						className="flex gap-2"
+						onClick={() => {
+							setManualDialog({});
+						}}
+					>
+						<Plus className="h-4 w-4" aria-hidden="true" />
+						Criar checklist avulso
+					</Button>
+				</div>
 			</div>
 
 			<p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
@@ -206,7 +255,7 @@ export const ChecklistTab = () => {
 								<CalendarX className="h-6 w-6 text-gray-400" />
 								{showPast
 									? "Nenhum evento anterior."
-									: "Nenhum evento pela frente. Propostas aceitas e eventos da sua agenda aparecem aqui."}
+									: "Nenhum evento pela frente. Propostas aceitas e eventos da sua agenda aparecem aqui, ou crie um checklist avulso."}
 							</div>
 						) : (
 							<ul className="flex flex-col gap-2">
@@ -231,9 +280,7 @@ export const ChecklistTab = () => {
 														{shortDate(event.date)}
 													</span>
 													<span className="text-xs text-gray-500">
-														{event.origin === "vibratto"
-															? "Vibratto"
-															: "Fora da plataforma"}
+														{ORIGIN_LABEL[event.origin].short}
 													</span>
 												</div>
 												<span className="line-clamp-2 text-sm font-semibold text-gray-900">
@@ -286,6 +333,16 @@ export const ChecklistTab = () => {
 									onShare={() => {
 										setIsSharing(true);
 									}}
+									{...(manualOf(selected.event)
+										? {
+												onEditEvent: () => {
+													setManualDialog({ event: manualOf(selected.event) });
+												},
+												onDeleteEvent: () => {
+													setDeletingManual(manualOf(selected.event) ?? null);
+												},
+											}
+										: {})}
 								/>
 							</>
 						) : (
@@ -296,6 +353,59 @@ export const ChecklistTab = () => {
 					</div>
 				</div>
 			)}
+
+			<ManualEventDialog
+				isOpen={!!manualDialog}
+				event={manualDialog?.event}
+				onClose={() => {
+					setManualDialog(null);
+				}}
+				onSave={(manual) => {
+					saveManualEvent(profileId, manual);
+					setSelectedKey(`avulso-${manual.id}`);
+					setShowPast(manual.date < today);
+				}}
+			/>
+
+			<Dialog
+				open={!!deletingManual}
+				onOpenChange={(open) => {
+					if (!open) setDeletingManual(null);
+				}}
+			>
+				<DialogContent className="w-full sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>Excluir "{deletingManual?.title}"?</DialogTitle>
+						<DialogDescription>
+							O checklist avulso e as marcações dele serão apagados.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter className="gap-2">
+						<Button
+							variant="secondary"
+							size="sm"
+							onClick={() => {
+								setDeletingManual(null);
+							}}
+						>
+							Cancelar
+						</Button>
+						<Button
+							variant="danger"
+							size="sm"
+							onClick={() => {
+								if (deletingManual) {
+									removeManualEvent(profileId, deletingManual.id);
+									setSelectedKey(null);
+								}
+								setDeletingManual(null);
+							}}
+						>
+							Excluir
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 
 			<TemplateEditor
 				isOpen={isEditingTemplate}
