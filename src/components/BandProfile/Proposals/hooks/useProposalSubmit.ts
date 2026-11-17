@@ -23,6 +23,7 @@ import {
 import { formatDate } from "@/utils/validation";
 import { calculateSignal, requiresDownPayment } from "../utils/calculateSignal";
 import { deadlineDate } from "../utils/deadlines";
+import { CONTRACT_MODELS_LIVE } from "@/features/ContractModels/config";
 
 interface UseProposalSubmitProps {
 	setShowProfileIncompleteModal: (value: boolean) => void;
@@ -228,6 +229,11 @@ export const useProposalSubmit = ({
 			),
 			// geradorIncluso: Boolean(finalFormData.geradorIncluso),
 			idPropostaGerouContraProposta: counterProposalOf?.id ?? null,
+			// Only once the models come from the API: a demo model exists only
+			// in this browser
+			...(CONTRACT_MODELS_LIVE
+				? { idModeloContrato: finalFormData.idModeloContrato ?? null }
+				: {}),
 		};
 
 		try {

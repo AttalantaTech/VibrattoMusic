@@ -856,6 +856,8 @@ export interface CreateProposalRequest {
 	geradorIncluso?: boolean;
 	idOrcamento?: number | null;
 	idPropostaGerouContraProposta?: number | null;
+	/** Contract model of the professional; null = Vibratto's contract */
+	idModeloContrato?: number | null;
 }
 
 // Proposal types
@@ -953,6 +955,8 @@ export interface ProposalResponse {
 	dataVencimentoSinalPagamento: string | null;
 	dataVencimentoAceite: string | null;
 	idPropostaGerouContraProposta?: number | null;
+	/** The contract model the proposal goes with (null: Vibratto's) */
+	modeloContrato?: { id: number; nome: string } | null;
 	aceitaContraProposta: boolean;
 	status: {
 		id: number;

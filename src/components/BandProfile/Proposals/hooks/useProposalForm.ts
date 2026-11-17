@@ -160,6 +160,8 @@ export const useProposalForm = ({
 			camarimIncluso: proposal?.camarimIncluso || false,
 			estruturaPalcoSomIluminacaoInclusa:
 				proposal?.estruturaPalcoSomIluminacaoInclusa || false,
+			// An edited or countered proposal keeps its contract model
+			idModeloContrato: proposal?.modeloContrato?.id,
 			// geradorIncluso: proposal?.geradorIncluso || false
 		};
 	}, [

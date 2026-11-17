@@ -8,7 +8,7 @@ import { useTabWithUrl } from "../../hooks/useTabWithUrl";
 import { MyHiresTab } from "../../components/BandProfile/Hires/MyHiresTab";
 import MessagesTab from "../../components/BandProfile/Messages";
 import { ProposalsTab } from "../../components/BandProfile/Proposals/ProposalsTab";
-import { ContractsTab } from "../../components/BandProfile/Contracts/ContractsTab";
+import { ContractModelsTab } from "@/features/ContractModels/components/ContractModelsTab";
 import { SalesTab } from "../../components/BandProfile/Sales/SalesTab";
 import { ProfileTab } from "@/components/BandProfile/Account/ProfileTab";
 import { useOnboardingData } from "@/hooks/useOnboarding";
@@ -86,7 +86,7 @@ export const BandProfile = () => {
 			case "proposals":
 				return <ProposalsTab productId={activeProductId} />;
 			case "contracts":
-				return <ContractsTab />;
+				return <ContractModelsTab />;
 			case "checklist":
 				return <ChecklistTab />;
 			case "favorites":
