@@ -1,5 +1,6 @@
 import type { ApiClient } from "../core/client";
 import type { FileEventType, ImageDeleteRequest } from "../types";
+import { maxSideFor, shrinkImage } from "@/utils/shrinkImage";
 
 /** Told as the file goes up: bytes sent so far and the size of the file */
 export type UploadProgressListener = (loaded: number, total: number) => void;
@@ -116,9 +117,14 @@ export class ImageUploadService {
 		idLista?: number;
 		onProgress?: UploadProgressListener;
 	}): Promise<string> {
-		// Get file extension from the file name
-		const fileExtension =
-			parameters.file.name.split(".").pop()?.toLowerCase() || "jpg";
+		// Photos go no bigger than the screen needs; documents as they are
+		const maxSide = maxSideFor(parameters.evento);
+		const file = maxSide
+			? await shrinkImage(parameters.file, maxSide)
+			: parameters.file;
+
+		// Get file extension from the file name (it may have changed above)
+		const fileExtension = file.name.split(".").pop()?.toLowerCase() || "jpg";
 
 		// Step 1: Generate SAS URL
 		const sasUrl = await this.generateSasUrl({
@@ -131,7 +137,7 @@ export class ImageUploadService {
 		// Step 2: Upload to Azure
 		const { blobUrl } = await this.uploadToAzureBlob(
 			sasUrl,
-			parameters.file,
+			file,
 			parameters.onProgress
 		);
 
@@ -143,7 +149,13 @@ export class ImageUploadService {
 	 * Uploads the account's profile photo. The link comes from an endpoint
 	 * without login, as the photo is chosen while the account is being created
 	 */
-	async uploadUserProfilePhoto(file: File): Promise<string> {
+	async uploadUserProfilePhoto(photo: File): Promise<string> {
+		// Shown at 32 px in the header of every page: a phone photo as it
+		// comes (1–5 MB) was downloaded on each of them
+		const file = await shrinkImage(
+			photo,
+			maxSideFor("UsuarioFotoPerfil") ?? 800
+		);
 		const extensaoArquivo = file.name.split(".").pop()?.toLowerCase() || "jpg";
 		const sasUrl = await this.apiClient.post<string>(
 			"/imagem/gerar-url-usuario",
