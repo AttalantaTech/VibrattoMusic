@@ -25,6 +25,7 @@ import { PAYMENT_CONDITION } from "../../utils/calculateSignal";
 import { deadlineLabel } from "../../utils/deadlines";
 import { DateInput } from "@/components/forms/DateInput/DateInput";
 import { useCitySearch } from "@/hooks/useCitySearch";
+import { ContractModelField } from "@/features/ContractModels/components/ContractModelField";
 
 type SectionProposal =
 	| "eventData"
@@ -743,7 +744,7 @@ export function ProposalFormFields({
 			{/* Digital Contract Section */}
 			<Accordion
 				title="Contrato Digital Incluído"
-				description="Contrato padrão será automaticamente anexado à proposta"
+				description="Escolha o contrato que vai com a proposta"
 				icon={<FileTextIcon className="h-5 w-5 text-gray-600" />}
 				isExpanded={expandedSections.digitalContract}
 				isComplete={isSectionComplete("digitalContract")}
@@ -751,20 +752,7 @@ export function ProposalFormFields({
 					toggleSection("digitalContract");
 				}}
 			>
-				<div className="bg-green-50 border border-green-200 rounded-lg p-4">
-					<div className="flex items-start space-x-3">
-						<FileTextIcon className="h-5 w-5 text-green-600 mt-0.5" />
-						<div>
-							<h4 className="font-medium text-green-900">
-								Contrato Digital Incluído
-							</h4>
-							<p className="text-sm text-green-700 mt-1">
-								Ao aceitar esta proposta, o cliente será direcionado para
-								assinatura do contrato.
-							</p>
-						</div>
-					</div>
-				</div>
+				<ContractModelField form={form} />
 			</Accordion>
 
 			{/* Required Fields Notice */}

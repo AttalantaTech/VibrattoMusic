@@ -46,6 +46,8 @@ const createProposalSchema = z
 			.min(1, "O campo Condição de Pagamento é obrigatório."),
 		idOrcamento: z.number().optional().nullable(),
 		idPropostaGerouContraProposta: z.number().optional().nullable(),
+		/** null: Vibratto's contract; undefined: not chosen yet (default) */
+		idModeloContrato: z.number().optional().nullable(),
 	})
 
 	.superRefine((data, context) => {
