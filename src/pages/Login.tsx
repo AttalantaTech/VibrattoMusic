@@ -12,7 +12,8 @@ import { Link, useRouter } from "@tanstack/react-router";
 import { extractUserIdFromToken } from "../utils/jwt";
 import ShowImg from "../assets/images/show.jpg";
 import { apiClient } from "@/api/core/client";
-import type { User } from "@/api/types";
+import type { LoginResponse, User } from "@/api/types";
+import { LoginWithCode } from "../components/auth/LoginWithCode";
 
 const loginSchema = z.object({
 	email: z.string().email("Email inválido"),
@@ -23,6 +24,8 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export const Login = () => {
 	const [showPassword, setShowPassword] = useState(false);
+	// Two ways in: password (as always) or a code sent to the e-mail
+	const [method, setMethod] = useState<"password" | "code">("password");
 	const router = useRouter();
 	const setAuth = useAuthStore((state) => state.setAuth);
 	const loginMutation = useLogin();
@@ -36,9 +39,54 @@ export const Login = () => {
 		handleSubmit,
 		formState: { errors, isSubmitting },
 		setError,
+		getValues,
+		setValue,
 	} = useForm<LoginFormData>({
 		resolver: zodResolver(loginSchema),
 	});
+	/**
+	 * The end of both logins: the user's data, the session and the page the
+	 * person came from. Throws when the user's data can't be read
+	 */
+	const completeLogin = async (response: LoginResponse): Promise<void> => {
+		if (!response.token) throw new Error("Invalid token received from API");
+
+		// Extract user ID from JWT token
+		const userIdFromToken = extractUserIdFromToken(response.token);
+		const user = await apiClient.get<User>("usuario", {
+			headers: { Authorization: `Bearer ${response.token}` },
+		});
+
+		// Set auth with the data from login response
+		setAuth(
+			{
+				id: userIdFromToken || 0, // Use extracted ID from token
+				email: user.email,
+				nome: user.nome,
+				ativo: true,
+				userType: response.userType,
+			},
+			response.token,
+			response.refreshToken
+		);
+
+		// Wait a moment for the auth state to stabilize
+		await new Promise((resolve) => {
+			setTimeout(() => {
+				resolve(undefined);
+			}, 100);
+		});
+
+		// Determine redirect - always go to home page for unified experience
+		let redirectTo = customRedirect;
+		if (!redirectTo) {
+			// Unified routing: all users go to home page with musician list
+			redirectTo = "/";
+		}
+
+		await router.navigate({ to: redirectTo });
+	};
+
 	const onSubmit = async (data: LoginFormData) => {
 		try {
 			const response = await loginMutation.mutateAsync(data);
@@ -51,40 +99,7 @@ export const Login = () => {
 				return;
 			}
 
-			// Extract user ID from JWT token
-			const userIdFromToken = extractUserIdFromToken(response.token);
-			const user = await apiClient.get<User>("usuario", {
-				headers: { Authorization: `Bearer ${response.token}` },
-			});
-
-			// Set auth with the data from login response
-			setAuth(
-				{
-					id: userIdFromToken || 0, // Use extracted ID from token
-					email: user.email,
-					nome: user.nome,
-					ativo: true,
-					userType: response.userType,
-				},
-				response.token,
-				response.refreshToken
-			);
-
-			// Wait a moment for the auth state to stabilize
-			await new Promise((resolve) => {
-				setTimeout(() => {
-					resolve(undefined);
-				}, 100);
-			});
-
-			// Determine redirect - always go to home page for unified experience
-			let redirectTo = customRedirect;
-			if (!redirectTo) {
-				// Unified routing: all users go to home page with musician list
-				redirectTo = "/";
-			}
-
-			await router.navigate({ to: redirectTo });
+			await completeLogin(response);
 		} catch (error: unknown) {
 			console.error("❌ Login error details:", error);
 
@@ -164,83 +179,113 @@ export const Login = () => {
 								Entre na sua conta
 							</h1>
 							<h2 className="font-normal text-sm sm:text-base text-gray-500">
-								Bem-vindo de volta!
+								{method === "code"
+									? "Entrar com código"
+									: "Bem-vindo de volta!"}
 							</h2>
 						</div>
 					</div>
 
-					{/* Inputs */}
-					<form
-						className="flex flex-col w-full justify-center items-center gap-4 lg:gap-6 pt-4 lg:pt-6"
-						onSubmit={handleSubmit(onSubmit)}
-					>
-						<div className="flex flex-col gap-4 lg:gap-5 w-full">
-							<div>
-								<InputField
-									{...register("email")}
-									autoComplete="email"
-									icon={<Mail size={20} />}
-									label="Email"
-									placeholder="exemplo@vibratto.com"
-									type="email"
-								/>
-								{errors.email && (
-									<p className="text-red-600 text-sm mt-1">
-										{errors.email.message}
-									</p>
+					{method === "code" ? (
+						<LoginWithCode
+							initialEmail={getValues("email")}
+							onLoggedIn={completeLogin}
+							onUsePassword={(email) => {
+								if (email) setValue("email", email);
+								setMethod("password");
+							}}
+						/>
+					) : (
+						/* Inputs */
+						<form
+							className="flex flex-col w-full justify-center items-center gap-4 lg:gap-6 pt-4 lg:pt-6"
+							onSubmit={handleSubmit(onSubmit)}
+						>
+							<div className="flex flex-col gap-4 lg:gap-5 w-full">
+								<div>
+									<InputField
+										{...register("email")}
+										autoComplete="email"
+										icon={<Mail size={20} />}
+										label="Email"
+										placeholder="exemplo@vibratto.com"
+										type="email"
+									/>
+									{errors.email && (
+										<p className="text-red-600 text-sm mt-1">
+											{errors.email.message}
+										</p>
+									)}
+								</div>
+								<div className="relative">
+									<InputField
+										{...register("senha")}
+										autoComplete="current-password"
+										icon={<Lock size={20} />}
+										label="Senha"
+										type={showPassword ? "text" : "password"}
+									/>
+									<button
+										className="absolute inset-y-0 right-0 pr-3 flex items-center top-6"
+										type="button"
+										onClick={() => {
+											setShowPassword(!showPassword);
+										}}
+									>
+										{showPassword ? (
+											<EyeOff className="h-5 w-5 text-gray-400" />
+										) : (
+											<Eye className="h-5 w-5 text-gray-400" />
+										)}
+									</button>
+									{errors.senha && (
+										<p className="text-red-600 text-sm mt-1">
+											{errors.senha.message}
+										</p>
+									)}
+								</div>
+								{errors.root && (
+									<div className="text-red-600 text-sm text-center">
+										{errors.root.message}
+									</div>
 								)}
-							</div>
-							<div className="relative">
-								<InputField
-									{...register("senha")}
-									autoComplete="current-password"
-									icon={<Lock size={20} />}
-									label="Senha"
-									type={showPassword ? "text" : "password"}
-								/>
-								<button
-									className="absolute inset-y-0 right-0 pr-3 flex items-center top-6"
+								<div className="flex items-center justify-end">
+									<Link
+										className="text-xs sm:text-sm text-primary-600 hover:text-primary-500"
+										to="/forgot-password"
+									>
+										Esqueceu sua senha?
+									</Link>
+								</div>
+								<Button
+									className="w-full font-semibold"
+									disabled={isSubmitting || loginMutation.isPending}
+									type="submit"
+								>
+									{isSubmitting || loginMutation.isPending
+										? "Entrando..."
+										: "Entrar"}
+								</Button>
+
+								<div className="flex items-center gap-3 text-xs text-gray-400">
+									<span className="h-px flex-1 bg-gray-200" />
+									ou
+									<span className="h-px flex-1 bg-gray-200" />
+								</div>
+
+								<Button
+									className="w-full font-semibold"
+									variant="outline"
 									type="button"
 									onClick={() => {
-										setShowPassword(!showPassword);
+										setMethod("code");
 									}}
 								>
-									{showPassword ? (
-										<EyeOff className="h-5 w-5 text-gray-400" />
-									) : (
-										<Eye className="h-5 w-5 text-gray-400" />
-									)}
-								</button>
-								{errors.senha && (
-									<p className="text-red-600 text-sm mt-1">
-										{errors.senha.message}
-									</p>
-								)}
+									Entrar com código por e-mail
+								</Button>
 							</div>
-							{errors.root && (
-								<div className="text-red-600 text-sm text-center">
-									{errors.root.message}
-								</div>
-							)}
-							<div className="flex items-center justify-end">
-								<Link
-									className="text-xs sm:text-sm text-primary-600 hover:text-primary-500"
-									to="/forgot-password"
-								>
-									Esqueceu sua senha?
-								</Link>
-							</div>
-							<Button
-								className="w-full font-semibold"
-								disabled={isSubmitting || loginMutation.isPending}
-								type="submit"
-							>
-								{isSubmitting || loginMutation.isPending
-									? "Entrando..."
-									: "Entrar"}
-							</Button>
-						</div>
-					</form>
+						</form>
+					)}
 
 					<div className="flex flex-col gap-4 lg:gap-6 w-full mt-3">
 						<div className="text-xs sm:text-sm flex items-center justify-center text-center">

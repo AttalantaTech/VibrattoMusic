@@ -4,6 +4,7 @@ import { registerSchema } from "../schemas/registerSchema";
 import { addressService } from "@/api/services/addressService";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { readSignupEmail } from "@/utils/signupEmail";
 
 const defaultValues: RegisterFormData = {
 	email: "",
@@ -32,7 +33,8 @@ export function useRegisterForm() {
 	const [isLoadingAddress, setIsLoadingAddress] = useState(false);
 
 	const form = useForm<RegisterFormData>({
-		defaultValues,
+		// Came from the login with an e-mail that had no account
+		defaultValues: { ...defaultValues, email: readSignupEmail() },
 		resolver: zodResolver(registerSchema),
 	});
 
