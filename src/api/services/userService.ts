@@ -2,6 +2,7 @@ import type { ApiClient } from "../core/client";
 import type {
 	User,
 	LoginRequest,
+	LoginCodeRequest,
 	LoginResponse,
 	FavoriteRequest,
 	MusicalProductApiResponse,
@@ -92,6 +93,41 @@ export class UserService {
 		}
 
 		return normalizedResponse;
+	}
+
+	/**
+	 * Sends a login code to the e-mail (valid for 10 minutes, used once).
+	 * The answer is a message to show, e.g. "Código enviado para o seu e-mail."
+	 */
+	public async requestLoginCode(email: string): Promise<ApiMessageResponse> {
+		return this.apiClient.post<ApiMessageResponse>(
+			"usuario/solicitarCodigoLogin",
+			{ email }
+		);
+	}
+
+	/**
+	 * Logs in with the code from the e-mail. The answer has the same token as
+	 * the login with password, so the rest of the login is shared
+	 */
+	public async loginWithCode(
+		request: LoginCodeRequest
+	): Promise<LoginResponse> {
+		const response = await this.apiClient.post<
+			{ token?: string; Token?: string } | string
+		>("usuario/loginCodigo", request);
+
+		const token =
+			typeof response === "string"
+				? response
+				: (response?.token ?? response?.Token);
+		if (!token) throw new Error("Invalid token received from API");
+
+		return {
+			...(typeof response === "object" ? response : {}),
+			Token: token,
+			token,
+		};
 	}
 
 	/**
