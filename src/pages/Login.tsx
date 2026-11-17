@@ -14,6 +14,7 @@ import ShowImg from "../assets/images/show.jpg";
 import { apiClient } from "@/api/core/client";
 import type { LoginResponse, User } from "@/api/types";
 import { LoginWithCode } from "../components/auth/LoginWithCode";
+import { loginErrorMessage } from "@/utils/loginError";
 
 const loginSchema = z.object({
 	email: z.string().email("Email inválido"),
@@ -102,66 +103,7 @@ export const Login = () => {
 			await completeLogin(response);
 		} catch (error: unknown) {
 			console.error("❌ Login error details:", error);
-
-			if (error && typeof error === "object" && "response" in error) {
-				const responseError = error as {
-					response?: { status?: number; data?: { mensagem?: string } };
-				};
-
-				const status = responseError.response?.status;
-				const message = responseError.response?.data?.mensagem;
-
-				// Map specific error codes to user-friendly messages
-				switch (status) {
-					case 400:
-						setError("root", {
-							message:
-								message ?? "Dados inválidos. Verifique os campos preenchidos.",
-						});
-						break;
-					case 401:
-						setError("root", {
-							message: "Email ou senha incorretos.",
-						});
-						break;
-					case 409:
-						setError("root", {
-							message: "Conflito nos dados. Tente novamente.",
-						});
-						break;
-					case 500:
-						setError("root", {
-							message:
-								"Erro interno do servidor. Tente novamente em alguns minutos.",
-						});
-						break;
-					default:
-						setError("root", {
-							message: message ?? "Erro ao entrar na conta. Tente novamente.",
-						});
-				}
-			} else {
-				// Handle network errors or URL construction errors - but avoid "Invalid request format" confusion
-				const errorMessage =
-					error instanceof Error
-						? error.message
-						: "Erro ao entrar na conta. Tente novamente.";
-
-				// Don't prefix with "Erro de conexão:" for authentication-related errors
-				if (
-					errorMessage.includes("Invalid") ||
-					errorMessage.includes("request")
-				) {
-					setError("root", {
-						message:
-							"Erro ao entrar na conta. Verifique seus dados e tente novamente.",
-					});
-				} else {
-					setError("root", {
-						message: `${errorMessage}`,
-					});
-				}
-			}
+			setError("root", { message: loginErrorMessage(error) });
 		}
 	};
 
