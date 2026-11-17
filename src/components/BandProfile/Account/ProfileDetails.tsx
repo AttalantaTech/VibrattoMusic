@@ -17,7 +17,14 @@ import {
 	videoThumbnailSource,
 } from "@/utils/validation";
 import { EpsFilePreview } from "@/components/cards/EpsFilePreview/EpsFilePreview";
-import { CheckCircle2, Disc, Loader2, MapPin, Verified } from "lucide-react";
+import {
+	CheckCircle2,
+	Disc,
+	Loader2,
+	MapPin,
+	Play,
+	Verified,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { SafeHtml } from "@/components/ui/SafeHtml/SafeHtml";
@@ -49,6 +56,36 @@ const MediaCaption = ({ text }: { text?: string }) =>
 			{text}
 		</p>
 	) : null;
+
+// A video of the gallery or of the promotional files: its first frame, with
+// a play sign so it doesn't pass for a picture. It plays in the viewer
+const VideoTile = ({
+	link,
+	onLoaded,
+}: {
+	link: string;
+	onLoaded?: () => void;
+}) => (
+	<div className="relative group rounded-lg w-full h-48 sm:h-64 lg:h-[280px] overflow-hidden border border-gray-200 bg-black">
+		<video
+			preload="metadata"
+			muted
+			playsInline
+			className="w-full h-full object-contain"
+			onLoadedMetadata={onLoaded}
+		>
+			<source src={videoThumbnailSource(link)} type="video/mp4" />
+		</video>
+
+		<div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+			<span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/60 text-white">
+				<Play className="h-6 w-6 translate-x-0.5" fill="currentColor" />
+			</span>
+		</div>
+
+		<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
+	</div>
+);
 
 export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 	const { data: instrumentsData } = useInstrumentos();
@@ -148,22 +185,12 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 																<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
 															</div>
 														) : isMP4File(file.link) ? (
-															<div className="relative group rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200">
-																<video
-																	preload="metadata"
-																	className="w-full h-full aspect-square"
-																	onLoadedMetadata={() => {
-																		handleFileLoad(file.link);
-																	}}
-																>
-																	<source
-																		src={videoThumbnailSource(file.link)}
-																		type="video/mp4"
-																	/>
-																</video>
-
-																<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/10 transition-colors rounded-lg" />
-															</div>
+															<VideoTile
+																link={file.link}
+																onLoaded={() => {
+																	handleFileLoad(file.link);
+																}}
+															/>
 														) : (
 															<div className="relative group">
 																<LazyImage
@@ -434,17 +461,21 @@ export const ProfileDetails = ({ musicalProduct }: ProfileDetailsProps) => {
 										});
 									}}
 								>
-									<div className="relative group">
-										<LazyImage
-											key={image.id || index}
-											alt="Band clipping photo"
-											className={`rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200
+									{isMP4File(image.link) ? (
+										<VideoTile link={image.link} />
+									) : (
+										<div className="relative group">
+											<LazyImage
+												key={image.id || index}
+												alt="Band clipping photo"
+												className={`rounded-lg w-full h-48 sm:h-64 lg:h-[280px] object-contain border border-gray-200
 														${isPngImage(image.link) ? "bg-white" : "bg-black"}`}
-											src={image.link}
-										/>
+												src={image.link}
+											/>
 
-										<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/20 transition-colors rounded-lg" />
-									</div>
+											<div className="absolute inset-0 z-10 cursor-pointer bg-transparent hover:bg-gray-900/20 transition-colors rounded-lg" />
+										</div>
+									)}
 
 									<MediaCaption text={image.legenda} />
 								</CarouselItem>

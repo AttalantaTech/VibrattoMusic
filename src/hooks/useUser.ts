@@ -4,6 +4,7 @@ import { userService } from "../api";
 import type {
 	User,
 	LoginRequest,
+	LoginCodeRequest,
 	FavoriteRequest,
 	ForgotPasswordRequest,
 	ResetPasswordRequest,
@@ -50,6 +51,29 @@ export const useLogin = () => {
 		},
 		onError: (error) => {
 			console.error("❌ Login failed:", error);
+		},
+	});
+};
+
+/**
+ * Hook to send a login code to the e-mail
+ */
+export const useRequestLoginCode = () =>
+	useMutation({
+		mutationFn: (email: string) => userService.requestLoginCode(email),
+	});
+
+/**
+ * Hook to log in with the code sent by e-mail
+ */
+export const useLoginWithCode = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (request: LoginCodeRequest) =>
+			userService.loginWithCode(request),
+		onSuccess: () => {
+			void queryClient.invalidateQueries({ queryKey: userKeys.all });
 		},
 	});
 };

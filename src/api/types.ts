@@ -187,6 +187,13 @@ export interface LoginRequest {
 	senha: string;
 }
 
+/** Login with the code sent by e-mail (usuario/solicitarCodigoLogin) */
+export interface LoginCodeRequest {
+	email: string;
+	/** 6 digits, as text: it may start with zero */
+	codigo: string;
+}
+
 export interface LoginResponse {
 	Token: string; // Changed to match API response format
 	token?: string; // Keep for backward compatibility
