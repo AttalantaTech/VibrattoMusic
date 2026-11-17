@@ -8,13 +8,14 @@ import {
 	Plus,
 	ListChecks,
 	Loader2,
-	Settings2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button/Button";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useChecklistEvents } from "@/features/Checklist/hooks/useChecklistEvents";
 import {
+	brandingOf,
 	eventStateOf,
+	scheduleOf,
 	templateOf,
 	useChecklistStore,
 } from "@/features/Checklist/hooks/useChecklistStore";
@@ -38,6 +39,15 @@ import { EventChecklist } from "@/features/Checklist/components/EventChecklist";
 import { ProgressBar } from "@/features/Checklist/components/ProgressBar";
 import { TemplateEditor } from "@/features/Checklist/components/TemplateEditor";
 import { ShareChecklistDialog } from "@/features/Checklist/components/ShareChecklistDialog";
+import { useNavigate } from "@tanstack/react-router";
+import { EventDetails } from "@/features/Checklist/components/EventDetails";
+import { ScheduleTemplateEditor } from "@/features/Checklist/components/ScheduleTemplateEditor";
+import { calculateSchedule } from "@/features/Checklist/utils/schedule";
+import { useEventForecast } from "@/features/Checklist/hooks/useEventForecast";
+import {
+	forecastText,
+	weatherSymbol,
+} from "@/features/Checklist/utils/weather";
 import {
 	ORIGIN_LABEL,
 	type ChecklistEvent,
@@ -68,6 +78,10 @@ export const ChecklistTab = () => {
 	const [showPast, setShowPast] = useState(false);
 	const [isEditingTemplate, setIsEditingTemplate] = useState(false);
 	const [isSharing, setIsSharing] = useState(false);
+	const navigate = useNavigate();
+	const [isEditingSchedule, setIsEditingSchedule] = useState(false);
+	const saveSchedule = useChecklistStore((state) => state.saveSchedule);
+	const setEventDetails = useChecklistStore((state) => state.setEventDetails);
 	// null: closed; undefined inside: creating; a ManualEvent: editing it
 	const [manualDialog, setManualDialog] = useState<{
 		event?: ManualEvent;
@@ -78,6 +92,10 @@ export const ChecklistTab = () => {
 
 	const today = format(new Date(), "yyyy-MM-dd");
 	const template = templateOf(byProfile, profileId ?? 0);
+	const branding = brandingOf(byProfile, profileId ?? 0);
+	const scheduleModel = scheduleOf(byProfile, profileId ?? 0);
+	// The profile's own logomarca wins; then the demo logo; else no logo
+	const logo = activeProduct?.logomarca?.trim() || branding.logo || null;
 	const manualEvents = useMemo(
 		() => byProfile[profileId ?? 0]?.manual ?? [],
 		[byProfile, profileId]
@@ -129,6 +147,17 @@ export const ChecklistTab = () => {
 		withItems.find(({ event }) => event.key === selectedKey) ??
 		(selectedKey === null ? upcoming[0] : undefined);
 
+	const selectedState = selected
+		? eventStateOf(byProfile, profileId ?? 0, selected.event.key)
+		: undefined;
+	// Calculated from the show's time until the person changes it
+	const selectedSchedule = selected
+		? (selectedState?.schedule ??
+			calculateSchedule(scheduleModel, selected.event))
+		: [];
+	const selectedNotes = selectedState?.notes ?? branding.defaultNotes;
+	const weather = useEventForecast(selected?.event ?? null);
+
 	if (!profileId) return null;
 
 	const openEvent = (event: ChecklistEvent) => {
@@ -155,17 +184,6 @@ export const ChecklistTab = () => {
 					</p>
 				</div>
 				<div className="flex flex-col gap-2 sm:flex-row">
-					<Button
-						variant="outline"
-						size="sm"
-						className="flex gap-2"
-						onClick={() => {
-							setIsEditingTemplate(true);
-						}}
-					>
-						<Settings2 className="h-4 w-4" aria-hidden="true" />
-						Editar meu modelo
-					</Button>
 					<Button
 						size="sm"
 						className="flex gap-2"
@@ -333,6 +351,9 @@ export const ChecklistTab = () => {
 									onShare={() => {
 										setIsSharing(true);
 									}}
+									onEditModel={() => {
+										setIsEditingTemplate(true);
+									}}
 									{...(manualOf(selected.event)
 										? {
 												onEditEvent: () => {
@@ -343,7 +364,39 @@ export const ChecklistTab = () => {
 												},
 											}
 										: {})}
-								/>
+								>
+									<EventDetails
+										event={selected.event}
+										schedule={selectedSchedule}
+										isScheduleCustom={!!selectedState?.schedule}
+										audience={selectedState?.audience ?? ""}
+										notes={selectedNotes}
+										onScheduleChange={(rows) => {
+											setEventDetails(profileId, selected.event.key, {
+												schedule: rows,
+											});
+										}}
+										onScheduleReset={() => {
+											setEventDetails(profileId, selected.event.key, {
+												schedule: undefined,
+											});
+										}}
+										onEditScheduleModel={() => {
+											setIsEditingSchedule(true);
+										}}
+										onAudienceChange={(audience) => {
+											setEventDetails(profileId, selected.event.key, {
+												audience,
+											});
+										}}
+										weather={weather}
+										onNotesChange={(notes) => {
+											setEventDetails(profileId, selected.event.key, {
+												notes,
+											});
+										}}
+									/>
+								</EventChecklist>
 							</>
 						) : (
 							<p className="py-10 text-center text-sm text-gray-500">
@@ -424,11 +477,39 @@ export const ChecklistTab = () => {
 					event={selected.event}
 					items={selected.items}
 					professional={activeProduct?.nome ?? ""}
+					branding={branding}
+					logo={logo}
+					schedule={selectedSchedule}
+					audience={selectedState?.audience ?? ""}
+					notes={selectedNotes}
+					weather={
+						weather.forecast
+							? {
+									text: forecastText(weather.forecast),
+									symbol: weatherSymbol(weather.forecast.code),
+								}
+							: null
+					}
 					onClose={() => {
 						setIsSharing(false);
 					}}
+					onCustomize={() => {
+						setIsSharing(false);
+						void navigate({ to: "/band/me", search: { tab: "checklist-pdf" } });
+					}}
 				/>
 			)}
+
+			<ScheduleTemplateEditor
+				isOpen={isEditingSchedule}
+				steps={scheduleModel}
+				onClose={() => {
+					setIsEditingSchedule(false);
+				}}
+				onSave={(steps) => {
+					saveSchedule(profileId, steps);
+				}}
+			/>
 		</div>
 	);
 };

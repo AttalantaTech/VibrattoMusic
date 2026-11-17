@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -7,6 +7,7 @@ import {
 	Lock,
 	MapPin,
 	Pencil,
+	Settings2,
 	Plus,
 	Share2,
 	Trash2,
@@ -31,9 +32,13 @@ interface EventChecklistProps {
 	onAdd: (item: TemplateItem) => void;
 	onRemove: (item: ChecklistItem) => void;
 	onShare: () => void;
+	/** "Editar meu modelo": the items every event starts with */
+	onEditModel: () => void;
 	/** Only standalone checklists can have their data changed or be deleted */
 	onEditEvent?: () => void;
 	onDeleteEvent?: () => void;
+	/** Schedule and event details, shown above the checklist */
+	children?: ReactNode;
 }
 
 const AddItem = ({
@@ -104,8 +109,10 @@ export const EventChecklist = ({
 	onAdd,
 	onRemove,
 	onShare,
+	onEditModel,
 	onEditEvent,
 	onDeleteEvent,
+	children,
 }: EventChecklistProps) => {
 	const { done, total } = progressOf(items);
 	const when = format(parseISO(event.date), "EEEE, dd 'de' MMMM 'de' yyyy", {
@@ -166,15 +173,21 @@ export const EventChecklist = ({
 					)}
 				</div>
 
-				<Button
-					variant="outline"
-					size="sm"
-					className="flex shrink-0 gap-2"
-					onClick={onShare}
-				>
-					<Share2 className="h-4 w-4" aria-hidden="true" />
-					Compartilhar
-				</Button>
+				<div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+					<Button
+						variant="outline"
+						size="sm"
+						className="flex gap-2"
+						onClick={onEditModel}
+					>
+						<Settings2 className="h-4 w-4" aria-hidden="true" />
+						Editar meu modelo
+					</Button>
+					<Button size="sm" className="flex gap-2" onClick={onShare}>
+						<Share2 className="h-4 w-4" aria-hidden="true" />
+						Compartilhar
+					</Button>
+				</div>
 			</div>
 
 			<div>
@@ -186,6 +199,15 @@ export const EventChecklist = ({
 				</div>
 				<ProgressBar done={done} total={total} />
 			</div>
+
+			{children && (
+				<>
+					{children}
+					<h3 className="-mb-2 border-t border-gray-100 pt-4 text-base font-semibold text-gray-900">
+						Checklist
+					</h3>
+				</>
+			)}
 
 			{GROUPS.map((group) => {
 				const groupItems = items.filter((item) => item.group === group.id);

@@ -46,6 +46,47 @@ export interface EventChecklistState {
 	extra: Array<TemplateItem>;
 	/** Model items removed only from this event */
 	removed: Array<string>;
+	/** The event's schedule, once the person changed it (else calculated) */
+	schedule?: Array<ScheduleRow>;
+	/** Expected audience, as typed ("200", "150 convidados") */
+	audience?: string;
+	/** "Informações importantes" of this event (figurino, som, técnico) */
+	notes?: string;
+}
+
+/**
+ * A step of the professional's schedule model, in relation to the show:
+ * "Passagem de som, 45 min before the start". The times of each event are
+ * calculated from the show's start and end
+ */
+export interface ScheduleStep {
+	id: string;
+	label: string;
+	anchor: "inicio" | "fim";
+	/** Minutes from the anchor: -45 is 45 min before */
+	offset: number;
+}
+
+/** A line of an event's schedule: "17:15 Passagem de som" */
+export interface ScheduleRow {
+	id: string;
+	/** HH:mm, or "" while the show's time isn't known */
+	time: string;
+	label: string;
+}
+
+/**
+ * The band's look on the PDFs: one main color, the logo (only when the
+ * band has one) and the producer's contact in the footer
+ */
+export interface Branding {
+	/** #RRGGBB */
+	color: string;
+	/** DEMO: logo sent on this screen, as data; the profile's logomarca wins */
+	logo: string | null;
+	producer: { name: string; email: string; phone: string };
+	/** Text that every new event starts with in "Informações importantes" */
+	defaultNotes: string;
 }
 
 export const emptyEventState = (): EventChecklistState => ({
@@ -76,6 +117,8 @@ export interface ManualEvent {
 	date: string;
 	/** HH:mm, or empty */
 	startTime: string;
+	/** HH:mm, or empty */
+	endTime?: string;
 	client: string;
 	place: string;
 }
@@ -89,6 +132,8 @@ export interface ChecklistEvent {
 	/** Event day, yyyy-MM-dd */
 	date: string;
 	startTime: string | null;
+	/** End of the show (HH:mm:ss), when known */
+	endTime: string | null;
 	title: string;
 	/** Who hired, when known */
 	client: string | null;

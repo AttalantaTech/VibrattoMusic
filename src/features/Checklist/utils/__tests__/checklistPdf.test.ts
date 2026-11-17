@@ -80,3 +80,42 @@ describe("checklist PDF", () => {
 		expect(head).toBe("%PDF-");
 	});
 });
+
+describe("team schedule PDF", () => {
+	it("is named as a schedule", () => {
+		expect(checklistFileName(event, "equipe")).toBe(
+			"cronograma-2026-11-22-casamento-ana-joao.pdf"
+		);
+	});
+
+	it("is a real PDF with the band's color, logo and schedule", async () => {
+		// A 1x1 PNG as the band's logo
+		const logo =
+			"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+		const pdf = await buildChecklistPdf({
+			event,
+			items,
+			professional: "DJ Danilo",
+			scope: "equipe",
+			branding: {
+				color: "#E91E8C",
+				logo,
+				producer: {
+					name: "Franklin Agra",
+					email: "",
+					phone: "(82) 9.8202-8490",
+				},
+				defaultNotes: "",
+			},
+			logo,
+			schedule: [
+				{ id: "a", time: "17:15", label: "Passagem de som" },
+				{ id: "b", time: "18:00", label: "SHOW-TIME" },
+			],
+			audience: "200",
+			notes: "Figurino: preto\nTécnico: Lekinho",
+			includeItems: true,
+		});
+		expect(pdf.type).toBe("application/pdf");
+	});
+});

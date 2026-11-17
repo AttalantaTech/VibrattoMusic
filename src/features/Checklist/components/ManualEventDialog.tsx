@@ -24,6 +24,7 @@ const empty = (): ManualEvent => ({
 	title: "",
 	date: "",
 	startTime: "",
+	endTime: "",
 	client: "",
 	place: "",
 });
@@ -110,8 +111,8 @@ export const ManualEventDialog = ({
 							/>
 						</div>
 
-						<div className="grid grid-cols-2 gap-3">
-							<div className="flex flex-col gap-1">
+						<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+							<div className="col-span-2 flex flex-col gap-1 sm:col-span-1">
 								<label
 									htmlFor="manual-date"
 									className="text-sm font-medium text-gray-700"
@@ -133,7 +134,7 @@ export const ManualEventDialog = ({
 									htmlFor="manual-time"
 									className="text-sm font-medium text-gray-700"
 								>
-									Horário{" "}
+									Início{" "}
 									<span className="font-normal text-gray-400">(opcional)</span>
 								</label>
 								<input
@@ -143,6 +144,24 @@ export const ManualEventDialog = ({
 									value={draft.startTime}
 									onChange={(input) => {
 										set("startTime", input.target.value);
+									}}
+								/>
+							</div>
+							<div className="flex flex-col gap-1">
+								<label
+									htmlFor="manual-end"
+									className="text-sm font-medium text-gray-700"
+								>
+									Término{" "}
+									<span className="font-normal text-gray-400">(opcional)</span>
+								</label>
+								<input
+									id="manual-end"
+									type="time"
+									className={fieldClass}
+									value={draft.endTime ?? ""}
+									onChange={(input) => {
+										set("endTime", input.target.value);
 									}}
 								/>
 							</div>

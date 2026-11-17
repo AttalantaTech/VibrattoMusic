@@ -18,6 +18,7 @@ import { OnboardingsPedingModal } from "@/components/BandProfile/Account/Onboard
 import { useState } from "react";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { ChecklistTab } from "@/components/BandProfile/Checklist/ChecklistTab";
+import { ChecklistBrandingTab } from "@/features/Checklist/components/ChecklistBrandingTab";
 import { BandRegistrationProvider } from "@/contexts/BandRegistrationContext";
 
 export const BandProfile = () => {
@@ -52,7 +53,14 @@ export const BandProfile = () => {
 					],
 				},
 				{ label: "Contratações", value: "hires" },
-				{ label: "Checklist", value: "checklist" },
+				{
+					label: "Checklist",
+					value: "checklist",
+					subTabs: [
+						{ label: "Meus checklists", value: "checklist" },
+						{ label: "Personalizar PDF", value: "checklist-pdf" },
+					],
+				},
 				{ label: "Ajustes", value: "settings" },
 			]
 		: [
@@ -89,6 +97,8 @@ export const BandProfile = () => {
 				return <ContractsTab />;
 			case "checklist":
 				return <ChecklistTab />;
+			case "checklist-pdf":
+				return <ChecklistBrandingTab />;
 			case "favorites":
 				return <FavoritesTab />;
 			case "account":

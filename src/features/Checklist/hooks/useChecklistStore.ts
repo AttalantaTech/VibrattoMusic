@@ -2,10 +2,13 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
 	emptyEventState,
+	type Branding,
 	type EventChecklistState,
 	type ManualEvent,
+	type ScheduleStep,
 	type TemplateItem,
 } from "../types";
+import { DEFAULT_BRANDING, DEFAULT_SCHEDULE } from "../utils/schedule";
 import { DEFAULT_TEMPLATE } from "../utils/defaultTemplate";
 
 /**
@@ -19,6 +22,10 @@ interface ProfileChecklists {
 	events: Record<string, EventChecklistState>;
 	/** Standalone checklists made on the screen */
 	manual?: Array<ManualEvent>;
+	/** The band's look on the PDFs ("Personalizar PDF") */
+	branding?: Branding;
+	/** The schedule model; absent while it's the suggested one */
+	schedule?: Array<ScheduleStep>;
 }
 
 interface ChecklistStore {
@@ -34,6 +41,16 @@ interface ChecklistStore {
 	saveTemplate: (profileId: number, template: Array<TemplateItem>) => void;
 	/** Adds a standalone checklist, or replaces the one with the same id */
 	saveManualEvent: (profileId: number, event: ManualEvent) => void;
+	saveBranding: (profileId: number, branding: Branding) => void;
+	saveSchedule: (profileId: number, steps: Array<ScheduleStep>) => void;
+	/** Schedule, audience and notes of one event */
+	setEventDetails: (
+		profileId: number,
+		eventKey: string,
+		details: Partial<
+			Pick<EventChecklistState, "schedule" | "audience" | "notes">
+		>
+	) => void;
 	removeManualEvent: (profileId: number, eventId: string) => void;
 }
 
@@ -93,6 +110,30 @@ export const useChecklistStore = create<ChecklistStore>()(
 								}
 							: { ...event, removed: [...event.removed, itemId] }
 					)
+				);
+			},
+			saveBranding: (profileId, branding) => {
+				set((state) => ({
+					byProfile: {
+						...state.byProfile,
+						[profileId]: { ...profileOf(state, profileId), branding },
+					},
+				}));
+			},
+			saveSchedule: (profileId, schedule) => {
+				set((state) => ({
+					byProfile: {
+						...state.byProfile,
+						[profileId]: { ...profileOf(state, profileId), schedule },
+					},
+				}));
+			},
+			setEventDetails: (profileId, eventKey, details) => {
+				set((state) =>
+					withEvent(state, profileId, eventKey, (event) => ({
+						...event,
+						...details,
+					}))
 				);
 			},
 			saveManualEvent: (profileId, event) => {
@@ -157,3 +198,13 @@ export const eventStateOf = (
 /** A new id for an item typed by the person */
 export const newItemId = (): string =>
 	`item-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+
+export const brandingOf = (
+	byProfile: ChecklistStore["byProfile"],
+	profileId: number
+): Branding => byProfile[profileId]?.branding ?? DEFAULT_BRANDING;
+
+export const scheduleOf = (
+	byProfile: ChecklistStore["byProfile"],
+	profileId: number
+): Array<ScheduleStep> => byProfile[profileId]?.schedule ?? DEFAULT_SCHEDULE;
