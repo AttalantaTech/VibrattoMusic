@@ -6,13 +6,46 @@ import {
 	DialogTitle,
 } from "../ui/dialog";
 import { Button } from "../ui/Button/Button";
-import type { Dispatch, SetStateAction } from "react";
+import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import type { FileProps } from "@/api/types";
 import { isEpsFile, isMP4File, isPdfFile } from "@/utils/validation";
 import { EpsFilePreview } from "../cards/EpsFilePreview/EpsFilePreview";
 import { PdfViewer } from "../PdfViewer/PdfViewer";
 import { LazyImage } from "../ui/LazyImage/LazyImage";
+
+/**
+ * The video starts as soon as the viewer opens: the click on the thumbnail
+ * already said "play". Browsers may refuse to start a video with sound by
+ * itself (iPhone, mostly); then it starts muted, and the sound is one tap
+ * away on its controls
+ */
+const ViewerVideo = ({ link }: { link: string }) => {
+	const videoRef = useRef<HTMLVideoElement>(null);
+
+	useEffect(() => {
+		const video = videoRef.current;
+		if (!video) return;
+
+		video.play().catch(() => {
+			video.muted = true;
+			video.play().catch(() => undefined);
+		});
+	}, [link]);
+
+	return (
+		<video
+			ref={videoRef}
+			controls
+			autoPlay
+			playsInline
+			preload="auto"
+			className="w-full max-h-[70vh] rounded-md border border-gray-500 bg-black object-contain"
+		>
+			<source src={link} type="video/mp4" />
+		</video>
+	);
+};
 
 interface ViewFileModalProps {
 	isOpen: boolean;
@@ -65,14 +98,8 @@ export const ViewFileModal = ({
 							/>
 						</div>
 					) : isMP4File(file.link) ? (
-						<div className="w-full h-full">
-							<video
-								controls
-								preload="metadata"
-								className="w-full h-full aspect-square rounded-md border border-gray-500"
-							>
-								<source src={file.link} type="video/mp4" />
-							</video>
+						<div className="w-full">
+							<ViewerVideo key={file.link} link={file.link} />
 						</div>
 					) : (
 						<LazyImage
