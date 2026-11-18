@@ -92,7 +92,7 @@ export const EventDetails = ({
 							<input
 								type="time"
 								aria-label={`Horário de ${row.label}`}
-								className={`${inputClass} w-[6.5rem] shrink-0 font-semibold`}
+								className={`${inputClass} w-[9rem] shrink-0 font-semibold`}
 								value={row.time}
 								onChange={(input) => {
 									update(row.id, { time: input.target.value });

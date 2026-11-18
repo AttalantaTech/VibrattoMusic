@@ -111,8 +111,8 @@ export const ManualEventDialog = ({
 							/>
 						</div>
 
-						<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-							<div className="col-span-2 flex flex-col gap-1 sm:col-span-1">
+						<div className="grid grid-cols-2 gap-3">
+							<div className="col-span-2 flex flex-col gap-1">
 								<label
 									htmlFor="manual-date"
 									className="text-sm font-medium text-gray-700"
