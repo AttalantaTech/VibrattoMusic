@@ -5,6 +5,7 @@ import type { EventForecast } from "../hooks/useEventForecast";
 import { forecastText, weatherSymbol } from "../utils/weather";
 import { transportLabel } from "../utils/schedule";
 import { newItemId } from "../hooks/useChecklistStore";
+import { TimeInput } from "@/components/forms/TimeInput/TimeInput";
 
 interface EventDetailsProps {
 	event: ChecklistEvent;
@@ -89,13 +90,12 @@ export const EventDetails = ({
 				<ul className="flex flex-col gap-1.5">
 					{schedule.map((row) => (
 						<li key={row.id} className="flex items-center gap-2">
-							<input
-								type="time"
+							<TimeInput
 								aria-label={`Horário de ${row.label}`}
-								className={`${inputClass} w-[9rem] shrink-0 font-semibold`}
+								className={`${inputClass} w-[6rem] font-semibold`}
 								value={row.time}
-								onChange={(input) => {
-									update(row.id, { time: input.target.value });
+								onChange={(time) => {
+									update(row.id, { time });
 								}}
 							/>
 							<input

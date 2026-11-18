@@ -8,6 +8,8 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/Button/Button";
+import { DateInput } from "@/components/forms/DateInput/DateInput";
+import { TimeInput } from "@/components/forms/TimeInput/TimeInput";
 import type { ManualEvent } from "../types";
 import { newItemId } from "../hooks/useChecklistStore";
 
@@ -64,7 +66,7 @@ export const ManualEventDialog = ({
 			return;
 		}
 		if (!draft.date) {
-			setError("Informe a data do evento.");
+			setError("Informe a data do evento (dd/mm/aaaa).");
 			return;
 		}
 		onSave({ ...draft, title: draft.title.trim() });
@@ -119,13 +121,11 @@ export const ManualEventDialog = ({
 								>
 									Data <span className="text-red-500">*</span>
 								</label>
-								<input
+								<DateInput
 									id="manual-date"
-									type="date"
-									className={fieldClass}
 									value={draft.date}
-									onChange={(input) => {
-										set("date", input.target.value);
+									onChange={(date) => {
+										set("date", date);
 									}}
 								/>
 							</div>
@@ -137,13 +137,12 @@ export const ManualEventDialog = ({
 									Início{" "}
 									<span className="font-normal text-gray-400">(opcional)</span>
 								</label>
-								<input
+								<TimeInput
 									id="manual-time"
-									type="time"
 									className={fieldClass}
 									value={draft.startTime}
-									onChange={(input) => {
-										set("startTime", input.target.value);
+									onChange={(time) => {
+										set("startTime", time);
 									}}
 								/>
 							</div>
@@ -155,13 +154,12 @@ export const ManualEventDialog = ({
 									Término{" "}
 									<span className="font-normal text-gray-400">(opcional)</span>
 								</label>
-								<input
+								<TimeInput
 									id="manual-end"
-									type="time"
 									className={fieldClass}
 									value={draft.endTime ?? ""}
-									onChange={(input) => {
-										set("endTime", input.target.value);
+									onChange={(time) => {
+										set("endTime", time);
 									}}
 								/>
 							</div>
