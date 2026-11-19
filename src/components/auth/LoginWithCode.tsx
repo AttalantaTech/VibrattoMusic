@@ -15,25 +15,39 @@ import {
 	normalizeLoginCode,
 } from "@/utils/loginCode";
 import { CreateAccountButton } from "./CreateAccountButton";
+import {
+	DEMO_SIGNUP_CODE,
+	EMAIL_CONFIRMATION_LIVE,
+} from "@/features/EmailConfirmation/config";
 
 const emailSchema = z.string().trim().email("Email inválido");
 
 interface LoginWithCodeProps {
 	/** The e-mail already typed in the login with password, if any */
 	initialEmail?: string;
+	/**
+	 * "login": the login page. "signup": the first step of the sign-up, to
+	 * confirm the e-mail (an e-mail that already has an account just enters)
+	 */
+	purpose?: "login" | "signup";
 	/** Same ending as the login with password: user, session and redirect */
 	onLoggedIn: (response: LoginResponse) => Promise<void>;
+	/** A new e-mail was confirmed: the sign-up goes on with this token */
+	onSignupConfirmed: (email: string, signupToken: string) => void;
 	/** Back to the login with password, carrying the e-mail typed here */
-	onUsePassword: (email: string) => void;
+	onUsePassword?: (email: string) => void;
 }
 
 /**
  * Login without password: the e-mail gets a 6-digit code (valid for 10
- * minutes, used once) and the code opens the session
+ * minutes, used once) and the code opens the session. For an e-mail without
+ * account the same code confirms it, and the sign-up goes on
  */
 export const LoginWithCode = ({
 	initialEmail = "",
+	purpose = "login",
 	onLoggedIn,
+	onSignupConfirmed,
 	onUsePassword,
 }: LoginWithCodeProps) => {
 	const [step, setStep] = useState<"email" | "code">("email");
@@ -45,6 +59,9 @@ export const LoginWithCode = ({
 	const [isFinishing, setIsFinishing] = useState(false);
 	// The e-mail has no account: offer the sign-up with it
 	const [hasNoAccount, setHasNoAccount] = useState(false);
+	// Demonstration: the API doesn't send codes to new e-mails yet, so the
+	// code is simulated (see EmailConfirmation/config)
+	const [isDemoSignup, setIsDemoSignup] = useState(false);
 	const codeRef = useRef<HTMLInputElement>(null);
 	// The code tried last: a full code is sent by itself only once
 	const triedCode = useRef("");
@@ -77,17 +94,26 @@ export const LoginWithCode = ({
 			return;
 		}
 
-		setError(null);
-		setHasNoAccount(false);
-		try {
-			await requestCode.mutateAsync(parsed.data);
+		const goToCode = (isDemo: boolean) => {
+			setIsDemoSignup(isDemo);
 			setEmail(parsed.data);
 			setCode("");
 			triedCode.current = "";
 			setStep("code");
 			setResendAt(Date.now() + RESEND_WAIT_SECONDS * 1000);
 			setNow(Date.now());
+		};
+
+		setError(null);
+		setHasNoAccount(false);
+		try {
+			await requestCode.mutateAsync(parsed.data);
+			goToCode(false);
 		} catch (failure) {
+			if (!EMAIL_CONFIRMATION_LIVE && isNoAccountError(failure)) {
+				goToCode(true);
+				return;
+			}
 			setError(loginCodeErrorMessage(failure, "request"));
 			setHasNoAccount(isNoAccountError(failure));
 		}
@@ -98,13 +124,25 @@ export const LoginWithCode = ({
 
 		triedCode.current = value;
 		setError(null);
+
+		if (isDemoSignup) {
+			if (value === DEMO_SIGNUP_CODE) onSignupConfirmed(email, "demo");
+			else
+				setError(`Código incorreto. Na demonstração, use ${DEMO_SIGNUP_CODE}.`);
+			return;
+		}
+
 		try {
-			const response = await loginWithCode.mutateAsync({
+			const result = await loginWithCode.mutateAsync({
 				email,
 				codigo: value,
 			});
+			if (result.type === "signup") {
+				onSignupConfirmed(email, result.signupToken);
+				return;
+			}
 			setIsFinishing(true);
-			await onLoggedIn(response);
+			await onLoggedIn(result.response);
 		} catch (failure) {
 			setIsFinishing(false);
 			setError(loginCodeErrorMessage(failure, "verify"));
@@ -136,8 +174,9 @@ export const LoginWithCode = ({
 			{step === "email" ? (
 				<>
 					<p className="text-sm text-gray-600 text-center">
-						Enviaremos um código de {LOGIN_CODE_LENGTH} dígitos para o seu
-						e-mail. Não precisa de senha.
+						{purpose === "signup"
+							? `Antes do cadastro, confirme o seu e-mail: enviaremos um código de ${LOGIN_CODE_LENGTH} dígitos.`
+							: `Enviaremos um código de ${LOGIN_CODE_LENGTH} dígitos para o seu e-mail. Não precisa de senha.`}
 					</p>
 					<InputField
 						autoComplete="email"
@@ -161,6 +200,16 @@ export const LoginWithCode = ({
 						<span className="font-semibold">{email}</span>. Ele vale por 10
 						minutos. Não chegou? Confira o spam.
 					</div>
+					{isDemoSignup && (
+						<div
+							className="rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-xs text-yellow-900"
+							role="note"
+						>
+							<strong>Modo demonstração:</strong> o código para e-mail sem conta
+							ainda depende do back-end, então nenhum e-mail foi enviado. Use o
+							código <strong>{DEMO_SIGNUP_CODE}</strong>.
+						</div>
+					)}
 					<InputField
 						ref={codeRef}
 						autoComplete="one-time-code"
@@ -185,7 +234,7 @@ export const LoginWithCode = ({
 				</div>
 			)}
 
-			{step === "email" && hasNoAccount && (
+			{step === "email" && hasNoAccount && purpose === "login" && (
 				<CreateAccountButton email={email} />
 			)}
 
@@ -204,7 +253,13 @@ export const LoginWithCode = ({
 						disabled={isBusy || !isCompleteLoginCode(code)}
 						type="submit"
 					>
-						{isBusy ? "Entrando..." : "Entrar"}
+						{purpose === "signup"
+							? isBusy
+								? "Confirmando..."
+								: "Confirmar e-mail"
+							: isBusy
+								? "Entrando..."
+								: "Entrar"}
 					</Button>
 
 					<div className="flex items-center justify-between gap-3 text-xs sm:text-sm">
@@ -237,15 +292,17 @@ export const LoginWithCode = ({
 				</>
 			)}
 
-			<button
-				type="button"
-				className="text-xs sm:text-sm text-primary-600 hover:text-primary-500 self-center"
-				onClick={() => {
-					onUsePassword(email);
-				}}
-			>
-				Entrar com senha
-			</button>
+			{onUsePassword && (
+				<button
+					type="button"
+					className="text-xs sm:text-sm text-primary-600 hover:text-primary-500 self-center"
+					onClick={() => {
+						onUsePassword(email);
+					}}
+				>
+					Entrar com senha
+				</button>
+			)}
 		</form>
 	);
 };

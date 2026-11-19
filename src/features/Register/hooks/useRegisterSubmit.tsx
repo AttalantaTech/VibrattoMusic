@@ -7,9 +7,22 @@ import { onlyAlphanumeric, onlyDigits } from "@/utils/validation";
 import { showApiError } from "@/utils/showApiError";
 import { imageUploadService } from "@/api";
 import { toast } from "sonner";
-import { clearSignupEmail } from "@/utils/signupEmail";
+import {
+	clearConfirmedSignup,
+	clearSignupEmail,
+	readConfirmedSignup,
+} from "@/utils/signupEmail";
+import { isSignupTokenError } from "@/utils/loginCode";
+import { EMAIL_CONFIRMATION_LIVE } from "@/features/EmailConfirmation/config";
 
-export function useRegisterSubmit() {
+interface RegisterSubmitOptions {
+	/** The API refused the e-mail confirmation: it has to be done again */
+	onConfirmationRejected?: () => void;
+}
+
+export function useRegisterSubmit({
+	onConfirmationRejected,
+}: RegisterSubmitOptions = {}) {
 	const router = useRouter();
 	const registerMutation = useRegisterUser();
 	const loginMutation = useLogin();
@@ -51,6 +64,10 @@ export function useRegisterSubmit() {
 				cidade: data.cidade,
 				estado: data.estado.toUpperCase(),
 				complemento: data.complemento,
+				// Proof that the e-mail was confirmed with the code
+				...(EMAIL_CONFIRMATION_LIVE
+					? { tokenCadastro: readConfirmedSignup()?.token ?? null }
+					: {}),
 			};
 
 			const registeredUser =
@@ -105,6 +122,14 @@ export function useRegisterSubmit() {
 				await router.navigate({ to: "/band/profile-type" });
 			}
 		} catch (error: unknown) {
+			if (EMAIL_CONFIRMATION_LIVE && isSignupTokenError(error)) {
+				clearConfirmedSignup();
+				onConfirmationRejected?.();
+				toast.error(
+					"A confirmação do e-mail venceu. Confirme de novo para concluir o cadastro."
+				);
+				return;
+			}
 			showApiError(
 				error,
 				"Erro ao criar conta. Preencha os campos obrigatórios e tente novamente."
