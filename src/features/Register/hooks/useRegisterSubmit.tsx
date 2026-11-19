@@ -7,6 +7,7 @@ import { onlyAlphanumeric, onlyDigits } from "@/utils/validation";
 import { showApiError } from "@/utils/showApiError";
 import { imageUploadService } from "@/api";
 import { toast } from "sonner";
+import { clearSignupEmail } from "@/utils/signupEmail";
 
 export function useRegisterSubmit() {
 	const router = useRouter();
@@ -54,6 +55,7 @@ export function useRegisterSubmit() {
 
 			const registeredUser =
 				await registerMutation.mutateAsync(finalRegisterData);
+			clearSignupEmail();
 
 			// Automatically log in the user after registration
 			const loginResponse = await loginMutation.mutateAsync({

@@ -13,6 +13,15 @@ export const saveSignupEmail = (email: string): void => {
 	}
 };
 
+/** The account was created: the next sign-up in this tab starts empty */
+export const clearSignupEmail = (): void => {
+	try {
+		sessionStorage.removeItem(KEY);
+	} catch {
+		// Nothing was stored
+	}
+};
+
 export const readSignupEmail = (): string => {
 	try {
 		return sessionStorage.getItem(KEY) ?? "";

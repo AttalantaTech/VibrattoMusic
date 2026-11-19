@@ -15,6 +15,8 @@ import { apiClient } from "@/api/core/client";
 import type { LoginResponse, User } from "@/api/types";
 import { LoginWithCode } from "../components/auth/LoginWithCode";
 import { loginErrorMessage } from "@/utils/loginError";
+import { isNoAccountError } from "@/utils/loginCode";
+import { CreateAccountButton } from "../components/auth/CreateAccountButton";
 
 const loginSchema = z.object({
 	email: z.string().email("Email inválido"),
@@ -27,6 +29,8 @@ export const Login = () => {
 	const [showPassword, setShowPassword] = useState(false);
 	// Two ways in: password (as always) or a code sent to the e-mail
 	const [method, setMethod] = useState<"password" | "code">("password");
+	// The e-mail has no account: offer the sign-up with it
+	const [hasNoAccount, setHasNoAccount] = useState(false);
 	const router = useRouter();
 	const setAuth = useAuthStore((state) => state.setAuth);
 	const loginMutation = useLogin();
@@ -89,6 +93,7 @@ export const Login = () => {
 	};
 
 	const onSubmit = async (data: LoginFormData) => {
+		setHasNoAccount(false);
 		try {
 			const response = await loginMutation.mutateAsync(data);
 
@@ -104,6 +109,7 @@ export const Login = () => {
 		} catch (error: unknown) {
 			console.error("❌ Login error details:", error);
 			setError("root", { message: loginErrorMessage(error) });
+			setHasNoAccount(isNoAccountError(error));
 		}
 	};
 
@@ -146,7 +152,11 @@ export const Login = () => {
 							<div className="flex flex-col gap-4 lg:gap-5 w-full">
 								<div>
 									<InputField
-										{...register("email")}
+										{...register("email", {
+											onChange: () => {
+												setHasNoAccount(false);
+											},
+										})}
 										autoComplete="email"
 										icon={<Mail size={20} />}
 										label="Email"
@@ -190,6 +200,9 @@ export const Login = () => {
 									<div className="text-red-600 text-sm text-center">
 										{errors.root.message}
 									</div>
+								)}
+								{hasNoAccount && (
+									<CreateAccountButton email={getValues("email")} />
 								)}
 								<div className="flex items-center justify-end">
 									<Link
