@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Controller } from "react-hook-form";
-import { Briefcase, Eye, EyeOff, User } from "lucide-react";
+import { BadgeCheck, Briefcase, Eye, EyeOff, User } from "lucide-react";
+import { toast } from "sonner";
 import { useRegisterUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/Button/Button";
 import { BackToHomeLink, HomeLogoLink } from "@/components/auth/HomeLinks";
@@ -13,11 +15,26 @@ import { ImageUploadArea } from "@/components/ImageUploadArea/ImageUploadArea";
 import { useProfilePhotoDraft } from "@/hooks/useProfilePhotoDraft";
 import { FieldError } from "@/components/forms/FieldError";
 import { PasswordRequirements } from "@/components/forms/PasswordRequirements";
+import { LoginWithCode } from "@/components/auth/LoginWithCode";
+import { useCompleteLogin } from "@/hooks/useCompleteLogin";
+import {
+	clearConfirmedSignup,
+	clearSignupEmail,
+	readConfirmedSignup,
+	readSignupEmail,
+	saveConfirmedSignup,
+	type ConfirmedSignup,
+} from "@/utils/signupEmail";
 
 type DocumentType = "cpf" | "cnpj";
 
 export const Register = () => {
 	const registerMutation = useRegisterUser();
+	const completeLogin = useCompleteLogin();
+	// The e-mail is confirmed with a code before the rest of the sign-up
+	const [confirmed, setConfirmed] = useState<ConfirmedSignup | null>(
+		readConfirmedSignup
+	);
 
 	const {
 		form,
@@ -38,7 +55,11 @@ export const Register = () => {
 		control,
 	} = form;
 
-	const { onSubmit } = useRegisterSubmit();
+	const { onSubmit } = useRegisterSubmit({
+		onConfirmationRejected: () => {
+			setConfirmed(null);
+		},
+	});
 
 	const isCnpj = watch("tipoDocumento") === "cnpj";
 	const password = watch("senha");
@@ -64,320 +85,364 @@ export const Register = () => {
 						</div>
 					</div>
 
-					{/* Inputs */}
-					<form
-						className="flex flex-col w-full justify-center items-center gap-4 lg:gap-6 pt-4 lg:pt-6"
-						onSubmit={handleSubmit((data) => onSubmit(data, photo.file))}
-					>
-						<div className="flex flex-col gap-4 lg:gap-5 w-full">
-							{/* Optional; uploaded only when the account is created */}
-							<div className="mx-auto w-full max-w-[160px]">
-								<ImageUploadArea
-									title="Foto de Perfil (opcional)"
-									description="JPG, PNG até 5MB"
-									currentImage={photo.currentImage}
-									isUploading={isSubmitting && !!photo.file}
-									onFileSelect={photo.select}
-									onDelete={photo.remove}
-									aspectRatio="aspect-square"
-								/>
-							</div>
-							<div>
-								<InputField
-									{...register("email")}
-									label="Email"
-									placeholder="exemplo@vibratto.com"
-									type="email"
-									required
-								/>
-								<FieldError message={errors.email?.message} />
-							</div>
-							<div className="flex flex-col gap-2">
-								<label className="block text-sm font-medium text-gray-700">
-									Documento de identificação{" "}
-									<span className="text-red-500">*</span>
-								</label>
-								<span className="text-gray-400 text-xs">
-									{isCnpj ? "O CNPJ pode conter letras e números." : undefined}
-								</span>
-
-								<div className="grid grid-cols-4 gap-1 w-full mt-1">
-									<div className="col-span-1">
-										<Controller
-											name="tipoDocumento"
-											control={control}
-											render={({ field }) => (
-												<Select
-													name="tipoDocumento"
-													options={DOCUMENT_TYPE_OPTIONS}
-													placeholder="Selecione..."
-													clearable={false}
-													className="px-3"
-													selectedOptions={DOCUMENT_TYPE_OPTIONS.filter(
-														(option) => option.value === field.value
-													)}
-													setSelectedOptions={(options) => {
-														const value = options[0]?.value as
-															| DocumentType
-															| undefined;
-														if (!value || value === field.value) return;
-														field.onChange(value);
-														setValue("cpfOuCnpj", "", { shouldDirty: true });
-													}}
-												/>
-											)}
-										/>
-
-										{/* Documento */}
-									</div>
-									<div className="col-span-3">
-										<Controller
-											name="cpfOuCnpj"
-											control={control}
-											render={({ field }) => (
-												<InputField
-													{...field}
-													key={isCnpj ? "cnpj" : "cpf"}
-													mask={isCnpj ? CNPJ_MASK : CPF_MASK}
-													placeholder={
-														isCnpj ? "XX.XXX.XXX/XXXX-00" : "000.000.000-00"
-													}
-													required
-												/>
-											)}
-										/>
-										<FieldError message={errors.cpfOuCnpj?.message} />
-									</div>
+					{!confirmed ? (
+						<LoginWithCode
+							purpose="signup"
+							initialEmail={readSignupEmail()}
+							onSignupConfirmed={(email, signupToken) => {
+								saveConfirmedSignup(email, signupToken);
+								setValue("email", email);
+								setConfirmed({ email, token: signupToken });
+							}}
+							onLoggedIn={async (response) => {
+								// The e-mail already had an account: the code opened it
+								clearSignupEmail();
+								toast.info(
+									"Este e-mail já tem conta na Vibratto: você entrou nela."
+								);
+								await completeLogin(response);
+							}}
+						/>
+					) : (
+						/* Inputs */
+						<form
+							className="flex flex-col w-full justify-center items-center gap-4 lg:gap-6 pt-4 lg:pt-6"
+							onSubmit={handleSubmit((data) => onSubmit(data, photo.file))}
+						>
+							<div className="flex flex-col gap-4 lg:gap-5 w-full">
+								{/* Optional; uploaded only when the account is created */}
+								<div className="mx-auto w-full max-w-[160px]">
+									<ImageUploadArea
+										title="Foto de Perfil (opcional)"
+										description="JPG, PNG até 5MB"
+										currentImage={photo.currentImage}
+										isUploading={isSubmitting && !!photo.file}
+										onFileSelect={photo.select}
+										onDelete={photo.remove}
+										aspectRatio="aspect-square"
+									/>
 								</div>
-							</div>
-							{/* Chosen after the document type, so the CNPJ fields show up
-							    right below it instead of above, already passed */}
-							{isCnpj && (
 								<div>
 									<InputField
-										{...register("razaoSocial")}
-										label="Razão Social"
-										placeholder="Ex: Maré Alta Gastronomia e Eventos LTDA"
+										{...register("email")}
+										label="Email"
+										placeholder="exemplo@vibratto.com"
+										type="email"
+										readOnly
+										className="bg-gray-50 text-gray-700"
+										required
+									/>
+									<div className="mt-1 flex items-center justify-between gap-2 text-xs">
+										<span className="inline-flex items-center gap-1 text-green-700">
+											<BadgeCheck className="h-4 w-4" aria-hidden="true" />
+											E-mail confirmado
+										</span>
+										<button
+											type="button"
+											className="text-primary-600 hover:text-primary-500"
+											onClick={() => {
+												clearConfirmedSignup();
+												setConfirmed(null);
+											}}
+										>
+											Trocar e-mail
+										</button>
+									</div>
+									<FieldError message={errors.email?.message} />
+								</div>
+								<div className="flex flex-col gap-2">
+									<label className="block text-sm font-medium text-gray-700">
+										Documento de identificação{" "}
+										<span className="text-red-500">*</span>
+									</label>
+									<span className="text-gray-400 text-xs">
+										{isCnpj
+											? "O CNPJ pode conter letras e números."
+											: undefined}
+									</span>
+
+									<div className="grid grid-cols-4 gap-1 w-full mt-1">
+										<div className="col-span-1">
+											<Controller
+												name="tipoDocumento"
+												control={control}
+												render={({ field }) => (
+													<Select
+														name="tipoDocumento"
+														options={DOCUMENT_TYPE_OPTIONS}
+														placeholder="Selecione..."
+														clearable={false}
+														className="px-3"
+														selectedOptions={DOCUMENT_TYPE_OPTIONS.filter(
+															(option) => option.value === field.value
+														)}
+														setSelectedOptions={(options) => {
+															const value = options[0]?.value as
+																| DocumentType
+																| undefined;
+															if (!value || value === field.value) return;
+															field.onChange(value);
+															setValue("cpfOuCnpj", "", { shouldDirty: true });
+														}}
+													/>
+												)}
+											/>
+
+											{/* Documento */}
+										</div>
+										<div className="col-span-3">
+											<Controller
+												name="cpfOuCnpj"
+												control={control}
+												render={({ field }) => (
+													<InputField
+														{...field}
+														key={isCnpj ? "cnpj" : "cpf"}
+														mask={isCnpj ? CNPJ_MASK : CPF_MASK}
+														placeholder={
+															isCnpj ? "XX.XXX.XXX/XXXX-00" : "000.000.000-00"
+														}
+														required
+													/>
+												)}
+											/>
+											<FieldError message={errors.cpfOuCnpj?.message} />
+										</div>
+									</div>
+								</div>
+								{/* Chosen after the document type, so the CNPJ fields show up
+							    right below it instead of above, already passed */}
+								{isCnpj && (
+									<div>
+										<InputField
+											{...register("razaoSocial")}
+											label="Razão Social"
+											placeholder="Ex: Maré Alta Gastronomia e Eventos LTDA"
+											type="text"
+											required
+										/>
+										<FieldError message={errors.razaoSocial?.message} />
+									</div>
+								)}
+								<div>
+									<InputField
+										{...register("nome")}
+										label={isCnpj ? "Nome Fantasia" : "Nome Completo"}
+										placeholder={
+											isCnpj ? "Ex: Bistrô da Praia" : "João da Silva"
+										}
 										type="text"
 										required
 									/>
-									<FieldError message={errors.razaoSocial?.message} />
+									<FieldError message={errors.nome?.message} />
 								</div>
-							)}
-							<div>
-								<InputField
-									{...register("nome")}
-									label={isCnpj ? "Nome Fantasia" : "Nome Completo"}
-									placeholder={isCnpj ? "Ex: Bistrô da Praia" : "João da Silva"}
-									type="text"
-									required
-								/>
-								<FieldError message={errors.nome?.message} />
-							</div>
-							{isCnpj && (
-								<>
-									<div className="col-span-3">
-										<Controller
-											name="cpfResponsavelLegal"
-											control={control}
-											render={({ field }) => (
-												<InputField
-													{...field}
-													value={field.value ?? ""}
-													required={isCnpj}
-													icon={<Briefcase size={20} />}
-													label="CPF do Responsável Legal"
-													mask={CPF_MASK}
-													placeholder="000.000.000-00"
-												/>
-											)}
-										/>
-										<FieldError message={errors.cpfResponsavelLegal?.message} />
-									</div>
-									<div className="col-span-3">
-										<InputField
-											required={isCnpj}
-											icon={<User size={20} />}
-											label="Nome do Responsável Legal"
-											placeholder="Ex: Fernanda Nogueira"
-											{...register("nomeResponsavelLegal")}
-										/>
-										<FieldError
-											message={errors.nomeResponsavelLegal?.message}
-										/>
-									</div>
-								</>
-							)}
-							<div className="col-span-3">
-								<Controller
-									name="celular"
-									control={control}
-									render={({ field }) => (
-										<InputField
-											{...field}
-											label="Celular"
-											mask="(00) 00000-0000"
-											placeholder="(00) 00000-0000"
-											type="text"
-											required
-										/>
-									)}
-								/>
-								<FieldError message={errors.celular?.message} />
-							</div>
-							{/* CEP Field */}
-							<div>
-								<InputField
-									{...register("cep")}
-									label="CEP"
-									placeholder="00000-000"
-									type="text"
-									maxLength={9}
-									required
-								/>
-								<FieldError message={errors.cep?.message} />
-
-								{isLoadingAddress && (
-									<p className="text-primary-600 text-sm mt-1">
-										Buscando endereço...
-									</p>
+								{isCnpj && (
+									<>
+										<div className="col-span-3">
+											<Controller
+												name="cpfResponsavelLegal"
+												control={control}
+												render={({ field }) => (
+													<InputField
+														{...field}
+														value={field.value ?? ""}
+														required={isCnpj}
+														icon={<Briefcase size={20} />}
+														label="CPF do Responsável Legal"
+														mask={CPF_MASK}
+														placeholder="000.000.000-00"
+													/>
+												)}
+											/>
+											<FieldError
+												message={errors.cpfResponsavelLegal?.message}
+											/>
+										</div>
+										<div className="col-span-3">
+											<InputField
+												required={isCnpj}
+												icon={<User size={20} />}
+												label="Nome do Responsável Legal"
+												placeholder="Ex: Fernanda Nogueira"
+												{...register("nomeResponsavelLegal")}
+											/>
+											<FieldError
+												message={errors.nomeResponsavelLegal?.message}
+											/>
+										</div>
+									</>
 								)}
-							</div>
-							{/* Address Fields - Show only after CEP is filled */}
-							{showAddressFields && (
-								<>
-									<div>
-										<InputField
-											{...register("logradouro")}
-											label="Logradouro"
-											placeholder="Rua, Avenida, etc."
-											type="text"
-											required
-										/>
-										<FieldError message={errors.logradouro?.message} />
-									</div>
-
-									<div>
-										<InputField
-											{...register("numero")}
-											label="Número"
-											placeholder="123"
-											type="text"
-											required
-										/>
-										<FieldError message={errors.numero?.message} />
-									</div>
-
-									<div>
-										<InputField
-											{...register("complemento")}
-											label="Complemento (opcional)"
-											placeholder="Apto 123, Bloco B"
-											type="text"
-										/>
-										<FieldError message={errors.complemento?.message} />
-									</div>
-
-									<div>
-										<InputField
-											{...register("bairro")}
-											label="Bairro"
-											placeholder="Centro"
-											type="text"
-											required
-										/>
-										<FieldError message={errors.bairro?.message} />
-									</div>
-
-									<div>
-										<InputField
-											{...register("cidade")}
-											label="Cidade"
-											placeholder="São Paulo"
-											type="text"
-											required
-										/>
-										<FieldError message={errors.cidade?.message} />
-									</div>
-
-									<div>
-										<InputField
-											{...register("estado")}
-											label="Estado"
-											placeholder="SP"
-											type="text"
-											required
-										/>
-										<FieldError message={errors.estado?.message} />
-									</div>
-								</>
-							)}
-							<div>
-								<div className="relative">
-									<InputField
-										{...register("senha")}
-										label="Senha"
-										type={showPassword ? "text" : "password"}
-										required
-									/>{" "}
-									<button
-										className="absolute inset-y-0 right-0 pr-3 flex items-center top-7"
-										type="button"
-										onClick={() => {
-											setShowPassword(!showPassword);
-										}}
-									>
-										{showPassword ? (
-											<EyeOff className="h-5 w-5 text-gray-400" />
-										) : (
-											<Eye className="h-5 w-5 text-gray-400" />
+								<div className="col-span-3">
+									<Controller
+										name="celular"
+										control={control}
+										render={({ field }) => (
+											<InputField
+												{...field}
+												label="Celular"
+												mask="(00) 00000-0000"
+												placeholder="(00) 00000-0000"
+												type="text"
+												required
+											/>
 										)}
-									</button>
+									/>
+									<FieldError message={errors.celular?.message} />
 								</div>
-								<PasswordRequirements password={password} />
-								<FieldError message={errors.senha?.message} />
-							</div>
-							<div>
-								<div className="relative">
+								{/* CEP Field */}
+								<div>
 									<InputField
-										{...register("confirmarSenha")}
-										label="Repita sua Senha"
-										type={showConfirmPassword ? "text" : "password"}
+										{...register("cep")}
+										label="CEP"
+										placeholder="00000-000"
+										type="text"
+										maxLength={9}
 										required
-									/>{" "}
-									<button
-										className="absolute inset-y-0 right-0 pr-3 flex items-center top-7"
-										type="button"
-										onClick={() => {
-											setShowConfirmPassword(!showConfirmPassword);
-										}}
-									>
-										{showConfirmPassword ? (
-											<EyeOff className="h-5 w-5 text-gray-400" />
-										) : (
-											<Eye className="h-5 w-5 text-gray-400" />
-										)}
-									</button>
-								</div>
-								<FieldError message={errors.confirmarSenha?.message} />
-							</div>
-							{errors.root && (
-								<div className="text-red-600 text-sm text-center">
-									{errors.root.message}
-								</div>
-							)}
+									/>
+									<FieldError message={errors.cep?.message} />
 
-							<Button
-								className="w-full font-semibold"
-								disabled={isSubmitting || registerMutation.isPending}
-								type="submit"
-							>
-								{isSubmitting || registerMutation.isPending
-									? "Criando conta..."
-									: "Realizar cadastro"}
-							</Button>
-						</div>
-					</form>
+									{isLoadingAddress && (
+										<p className="text-primary-600 text-sm mt-1">
+											Buscando endereço...
+										</p>
+									)}
+								</div>
+								{/* Address Fields - Show only after CEP is filled */}
+								{showAddressFields && (
+									<>
+										<div>
+											<InputField
+												{...register("logradouro")}
+												label="Logradouro"
+												placeholder="Rua, Avenida, etc."
+												type="text"
+												required
+											/>
+											<FieldError message={errors.logradouro?.message} />
+										</div>
+
+										<div>
+											<InputField
+												{...register("numero")}
+												label="Número"
+												placeholder="123"
+												type="text"
+												required
+											/>
+											<FieldError message={errors.numero?.message} />
+										</div>
+
+										<div>
+											<InputField
+												{...register("complemento")}
+												label="Complemento (opcional)"
+												placeholder="Apto 123, Bloco B"
+												type="text"
+											/>
+											<FieldError message={errors.complemento?.message} />
+										</div>
+
+										<div>
+											<InputField
+												{...register("bairro")}
+												label="Bairro"
+												placeholder="Centro"
+												type="text"
+												required
+											/>
+											<FieldError message={errors.bairro?.message} />
+										</div>
+
+										<div>
+											<InputField
+												{...register("cidade")}
+												label="Cidade"
+												placeholder="São Paulo"
+												type="text"
+												required
+											/>
+											<FieldError message={errors.cidade?.message} />
+										</div>
+
+										<div>
+											<InputField
+												{...register("estado")}
+												label="Estado"
+												placeholder="SP"
+												type="text"
+												required
+											/>
+											<FieldError message={errors.estado?.message} />
+										</div>
+									</>
+								)}
+								<div>
+									<div className="relative">
+										<InputField
+											{...register("senha")}
+											label="Senha"
+											type={showPassword ? "text" : "password"}
+											required
+										/>{" "}
+										<button
+											className="absolute inset-y-0 right-0 pr-3 flex items-center top-7"
+											type="button"
+											onClick={() => {
+												setShowPassword(!showPassword);
+											}}
+										>
+											{showPassword ? (
+												<EyeOff className="h-5 w-5 text-gray-400" />
+											) : (
+												<Eye className="h-5 w-5 text-gray-400" />
+											)}
+										</button>
+									</div>
+									<PasswordRequirements password={password} />
+									<FieldError message={errors.senha?.message} />
+								</div>
+								<div>
+									<div className="relative">
+										<InputField
+											{...register("confirmarSenha")}
+											label="Repita sua Senha"
+											type={showConfirmPassword ? "text" : "password"}
+											required
+										/>{" "}
+										<button
+											className="absolute inset-y-0 right-0 pr-3 flex items-center top-7"
+											type="button"
+											onClick={() => {
+												setShowConfirmPassword(!showConfirmPassword);
+											}}
+										>
+											{showConfirmPassword ? (
+												<EyeOff className="h-5 w-5 text-gray-400" />
+											) : (
+												<Eye className="h-5 w-5 text-gray-400" />
+											)}
+										</button>
+									</div>
+									<FieldError message={errors.confirmarSenha?.message} />
+								</div>
+								{errors.root && (
+									<div className="text-red-600 text-sm text-center">
+										{errors.root.message}
+									</div>
+								)}
+
+								<Button
+									className="w-full font-semibold"
+									disabled={isSubmitting || registerMutation.isPending}
+									type="submit"
+								>
+									{isSubmitting || registerMutation.isPending
+										? "Criando conta..."
+										: "Realizar cadastro"}
+								</Button>
+							</div>
+						</form>
+					)}
 				</div>
 			</div>
 
