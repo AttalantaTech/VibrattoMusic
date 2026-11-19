@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { KeyRound, Mail, UserPlus } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
+import { KeyRound, Mail } from "lucide-react";
 import { z } from "zod";
 import type { LoginResponse } from "@/api/types";
 import { Button } from "@/components/ui/Button/Button";
@@ -15,7 +14,7 @@ import {
 	loginCodeErrorMessage,
 	normalizeLoginCode,
 } from "@/utils/loginCode";
-import { saveSignupEmail } from "@/utils/signupEmail";
+import { CreateAccountButton } from "./CreateAccountButton";
 
 const emailSchema = z.string().trim().email("Email inválido");
 
@@ -46,7 +45,6 @@ export const LoginWithCode = ({
 	const [isFinishing, setIsFinishing] = useState(false);
 	// The e-mail has no account: offer the sign-up with it
 	const [hasNoAccount, setHasNoAccount] = useState(false);
-	const navigate = useNavigate();
 	const codeRef = useRef<HTMLInputElement>(null);
 	// The code tried last: a full code is sent by itself only once
 	const triedCode = useRef("");
@@ -188,18 +186,7 @@ export const LoginWithCode = ({
 			)}
 
 			{step === "email" && hasNoAccount && (
-				<Button
-					className="w-full font-semibold flex gap-2"
-					variant="outline"
-					type="button"
-					onClick={() => {
-						saveSignupEmail(email);
-						void navigate({ to: "/welcome" });
-					}}
-				>
-					<UserPlus className="h-5 w-5" aria-hidden="true" />
-					Criar conta com este e-mail
-				</Button>
+				<CreateAccountButton email={email} />
 			)}
 
 			{step === "email" ? (
