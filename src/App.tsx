@@ -7,6 +7,7 @@ import { AuthProvider } from "./components/auth/AuthProvider";
 import { NotificationContainer } from "./components/ui/Notification/Notification";
 import { MessagesProvider } from "./contexts/MessagesContext";
 import { FloatingWhatsApp } from "./components/FloatingWhatsApp";
+import { TermsOfUseGate } from "./features/Terms/components/TermsOfUseGate";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = ({ router }: AppProps): FunctionComponent => {
 						<Toaster position="top-right" richColors />
 						<NotificationContainer />
 						<FloatingWhatsApp router={router} />
+						<TermsOfUseGate router={router} />
 					</MessagesProvider>
 				</AuthProvider>
 			</QueryClientProvider>

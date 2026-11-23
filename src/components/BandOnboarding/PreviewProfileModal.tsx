@@ -17,6 +17,11 @@ import { profileKeys, useProfileStatus } from "@/hooks/useProfileStatus";
 import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProductStore";
 import { useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
+import { TERM_CODES } from "@/features/Terms/types";
+import { useSignTerm, useTermStatus } from "@/features/Terms/hooks/useTerm";
+import { needsAcceptance } from "@/features/Terms/utils/termStatus";
+import { termErrorMessage } from "@/features/Terms/utils/termError";
+import { TermsDialog } from "@/features/Terms/components/TermsDialog";
 
 interface PreviewProfileModalProps {
 	isOpen: boolean;
@@ -37,6 +42,16 @@ export const PreviewProfileModal = ({
 	const navigate = useNavigate();
 	const { user } = useProfileStatus();
 	const { setNewProductCreated } = useMusicalProductStore();
+	// The publication term is accepted before publishing (only when the
+	// current version isn't accepted yet)
+	const publicationTerm = useTermStatus(
+		TERM_CODES.publication,
+		user?.id,
+		isOpen
+	);
+	const signPublicationTerm = useSignTerm(TERM_CODES.publication, user?.id);
+	const [isTermOpen, setIsTermOpen] = useState(false);
+	const [termError, setTermError] = useState<string | null>(null);
 
 	const [loading, setLoading] = useState(false);
 
@@ -77,6 +92,23 @@ export const PreviewProfileModal = ({
 		}
 	};
 
+	const handlePublishClick = async () => {
+		const term =
+			publicationTerm.data === undefined
+				? (await publicationTerm.refetch()).data
+				: publicationTerm.data;
+		if (needsAcceptance(term)) {
+			setTermError(null);
+			setIsTermOpen(true);
+			return;
+		}
+		await handlePublish();
+	};
+
+	const termToAccept = needsAcceptance(publicationTerm.data)
+		? publicationTerm.data
+		: null;
+
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
 			<DialogContent className="max-w-[900px] max-h-[85vh] overflow-auto">
@@ -106,7 +138,13 @@ export const PreviewProfileModal = ({
 						Cancelar
 					</Button>
 
-					<Button variant="primary" onClick={handlePublish}>
+					<Button
+						variant="primary"
+						disabled={loading}
+						onClick={() => {
+							void handlePublishClick();
+						}}
+					>
 						{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 						<div className="flex items-center gap-1">
 							{loading ? "Publicando..." : "Publicar"}
@@ -114,6 +152,34 @@ export const PreviewProfileModal = ({
 					</Button>
 				</DialogFooter>
 			</DialogContent>
+
+			{termToAccept && (
+				<TermsDialog
+					isOpen={isTermOpen}
+					code={TERM_CODES.publication}
+					version={termToAccept.versao}
+					html={termToAccept.texto ?? ""}
+					isSigning={signPublicationTerm.isPending}
+					error={termError}
+					secondaryLabel="Cancelar"
+					onSecondary={() => {
+						setIsTermOpen(false);
+					}}
+					onAccept={() => {
+						setTermError(null);
+						signPublicationTerm.mutate(termToAccept.versao, {
+							onSuccess: () => {
+								setIsTermOpen(false);
+								void handlePublish();
+							},
+							onError: (failure) => {
+								setTermError(termErrorMessage(failure));
+								void publicationTerm.refetch();
+							},
+						});
+					}}
+				/>
+			)}
 		</Dialog>
 	);
 };
