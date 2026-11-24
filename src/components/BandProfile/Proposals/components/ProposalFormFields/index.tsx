@@ -24,6 +24,7 @@ import type { FilterOption } from "@/api/types";
 import { PAYMENT_CONDITION } from "../../utils/calculateSignal";
 import { deadlineLabel } from "../../utils/deadlines";
 import { DateInput } from "@/components/forms/DateInput/DateInput";
+import { TimeInput } from "@/components/forms/TimeInput/TimeInput";
 import { useCitySearch } from "@/hooks/useCitySearch";
 
 type SectionProposal =
@@ -380,8 +381,8 @@ export function ProposalFormFields({
 					)}
 				</div>
 
-				{/* Start time: optional */}
-				<div className="grid grid-cols-2 gap-4">
+				{/* Start time: optional. Same columns as the date above */}
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div className="space-y-2">
 						<Controller
 							control={control}
@@ -394,16 +395,11 @@ export function ProposalFormFields({
 											(opcional)
 										</span>
 									</Label>
-									<Input
+									<TimeInput
 										id="horaInicio"
-										type="time"
-										{...field}
-										placeholder="--:--"
-										onChange={(event) => {
-											const startTime = event.target.value;
-
-											field.onChange(startTime);
-										}}
+										value={field.value ?? ""}
+										onChange={field.onChange}
+										onBlur={field.onBlur}
 									/>
 
 									{errors.horaInicio?.message && (
@@ -699,6 +695,36 @@ export function ProposalFormFields({
 									onBlur={field.onBlur}
 									id="estruturaPalcoSomIluminacaoInclusa"
 									checked={field.value}
+									onCheckedChange={(checked) => {
+										field.onChange(checked);
+									}}
+								/>
+							</>
+						)}
+					/>
+				</div>
+
+				<div className="flex items-center justify-between">
+					<Controller
+						control={control}
+						name="notaFiscalInclusa"
+						render={({ field }) => (
+							<>
+								<div>
+									<Label
+										htmlFor="notaFiscalInclusa"
+										className="text-base font-medium"
+									>
+										Nota Fiscal Inclusa
+									</Label>
+									<p className="text-sm text-gray-500">
+										Emissão de nota fiscal do serviço já incluída no valor
+									</p>
+								</div>
+								<Switch
+									onBlur={field.onBlur}
+									id="notaFiscalInclusa"
+									checked={Boolean(field.value)}
 									onCheckedChange={(checked) => {
 										field.onChange(checked);
 									}}

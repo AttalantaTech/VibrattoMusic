@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Clock } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { Button } from "../../../ui/Button/Button";
 import { Input } from "../../../ui/Input/Input";
 import { Label } from "../../../ui/Label/Label";
@@ -23,6 +23,7 @@ import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { DateInput } from "@/components/forms/DateInput/DateInput";
+import { TimeInput } from "@/components/forms/TimeInput/TimeInput";
 
 // Quick time options
 const quickTimeOptions = [
@@ -147,20 +148,14 @@ export const CreateEventForm = ({
 							>
 								Data <span className="text-red-500">*</span>
 							</Label>
-							<div className="relative">
-								<Calendar
-									className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-									size={18}
-								/>
-								{/* Read-only: the date comes from the day picked in the agenda */}
-								<DateInput
-									id="date"
-									value={watch("date") || ""}
-									onChange={() => undefined}
-									disabled
-									className={`pl-10 ${errors.date ? "border-red-500" : ""}`}
-								/>
-							</div>
+							{/* Read-only: the date comes from the day picked in the agenda */}
+							<DateInput
+								id="date"
+								value={watch("date") || ""}
+								onChange={() => undefined}
+								disabled
+								className={errors.date ? "border-red-500" : ""}
+							/>
 							{errors.date && (
 								<p className="mt-1 text-sm text-red-600">
 									{errors.date.message}
@@ -192,16 +187,16 @@ export const CreateEventForm = ({
 
 								{hasDefineEventTime && (
 									<div className="flex items-center gap-2">
-										<div className="relative flex-1">
-											<Clock
-												className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-												size={18}
-											/>
-											<Input
-												type="time"
-												value={watch("startTime")}
-												onChange={(event) => {
-													const startTime = event.target.value;
+										<div className="flex-1">
+											<TimeInput
+												aria-label="Início do evento"
+												value={watch("startTime") ?? ""}
+												onChange={(startTime) => {
+													// Incomplete time: keep it empty until the 4 digits are typed
+													if (!startTime) {
+														setValue("startTime", "");
+														return;
+													}
 
 													const [hours = 0, minutes = 0] = startTime
 														.split(":")
@@ -216,15 +211,20 @@ export const CreateEventForm = ({
 													setValue("startTime", format(startDate, "HH:mm"));
 													setValue("endTime", format(endDate, "HH:mm"));
 												}}
-												className={`pl-10 ${errors.startTime ? "border-red-500" : ""}`}
+												className={errors.startTime ? "border-red-500" : ""}
 											/>
 										</div>
 										<span className="text-gray-500">até</span>
-										<Input
-											type="time"
-											{...register("endTime")}
-											className={`flex-1 ${errors["endTime"] ? "border-red-500" : ""}`}
-										/>
+										<div className="flex-1">
+											<TimeInput
+												aria-label="Fim do evento"
+												value={watch("endTime") ?? ""}
+												onChange={(endTime) => {
+													setValue("endTime", endTime, { shouldDirty: true });
+												}}
+												className={errors["endTime"] ? "border-red-500" : ""}
+											/>
+										</div>
 									</div>
 								)}
 							</div>

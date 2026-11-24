@@ -33,6 +33,7 @@ export const proposalService = {
 			transporteIncluso: data.transporteIncluso ?? false,
 			acomodacaoInclusa: data.acomodacaoInclusa ?? false,
 			camarimIncluso: data.camarimIncluso ?? false,
+			notaFiscalInclusa: data.notaFiscalInclusa ?? false,
 		};
 
 		const response = await apiClient.post<{ proposta: number }>(

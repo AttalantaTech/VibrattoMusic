@@ -176,7 +176,13 @@ export const useBudgetSubmit = ({
 			valorSinalPagamento,
 			transporteIncluso: Boolean(finalFormData.transporteIncluso),
 			acomodacaoInclusa: Boolean(finalFormData.acomodacaoInclusa),
-			camarimIncluso: false,
+			// The same switches as the proposal form (camarim and stage were
+			// always sent as not included, whatever was chosen)
+			camarimIncluso: Boolean(finalFormData.camarimIncluso),
+			estruturaPalcoSomIluminacaoInclusa: Boolean(
+				finalFormData.estruturaPalcoSomIluminacaoInclusa
+			),
+			notaFiscalInclusa: Boolean(finalFormData.notaFiscalInclusa),
 			idPropostaGerouContraProposta: null,
 			idOrcamento: finalFormData.idOrcamento,
 		};

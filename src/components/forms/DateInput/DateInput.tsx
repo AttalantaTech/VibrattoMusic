@@ -85,10 +85,14 @@ export const DateInput = ({
 					setText(masked);
 					onChange(toIso(masked));
 				}}
-				className={cn(!disabled && "pr-10", className)}
+				className={cn("pr-10", className)}
 			/>
 
-			{disabled ? null : (
+			{disabled ? (
+				<span className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+					<CalendarDays size={18} aria-hidden="true" />
+				</span>
+			) : (
 				<>
 					<button
 						type="button"
