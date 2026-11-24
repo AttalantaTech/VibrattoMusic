@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/Button/Button";
-import { Input } from "@/components/ui/Input/Input";
 import { Label } from "@/components/ui/Label/Label";
 import {
 	DialogDescription,
@@ -24,6 +23,7 @@ import { Controller } from "react-hook-form";
 import { format } from "date-fns";
 import { quickTimeOptions, timeToSeconds } from "@/utils";
 import { DateInput } from "@/components/forms/DateInput/DateInput";
+import { TimeInput } from "@/components/forms/TimeInput/TimeInput";
 
 export interface CheckAvailabilityModalProps {
 	isOpen: boolean;
@@ -279,8 +279,9 @@ export const CheckAvailabilityModal = ({
 								)}
 							</div>
 
-							{/* Start time: optional, the contractor may not know it yet */}
-							<div className="grid grid-cols-2 gap-4">
+							{/* Start time: optional, the contractor may not know it yet.
+							    Same columns as the date above */}
+							<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 								<div className="space-y-2">
 									<Controller
 										control={control}
@@ -293,16 +294,11 @@ export const CheckAvailabilityModal = ({
 														(opcional)
 													</span>
 												</Label>
-												<Input
+												<TimeInput
 													id="horaInicio"
-													type="time"
-													{...field}
-													placeholder="--:--"
-													onChange={(event) => {
-														const startTime = event.target.value;
-
-														field.onChange(startTime);
-													}}
+													value={field.value ?? ""}
+													onChange={field.onChange}
+													onBlur={field.onBlur}
 												/>
 
 												{errors.horaInicio?.message && (
