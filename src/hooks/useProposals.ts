@@ -359,24 +359,33 @@ export const useFilteredProposals = (filters: {
 /**
  * Hook to fetch filtered proposals with local filtering/sorting/pagination
  */
-export const useFilteredBudgets = (filters: {
-	searchTerm?: string;
-	ordenacao?: {
-		campo: "data" | "cliente" | "evento";
-		direcao: "asc" | "desc";
-	};
-	pagina?: number;
-	limite?: number;
-	IdProdutoMusical?: number | null;
-	IdContratante?: number | null;
-	IdProdutoMusicalContratante?: number | null;
-}) => {
+export const useFilteredBudgets = (
+	filters: {
+		searchTerm?: string;
+		ordenacao?: {
+			campo: "data" | "cliente" | "evento";
+			direcao: "asc" | "desc";
+		};
+		pagina?: number;
+		limite?: number;
+		IdProdutoMusical?: number | null;
+		IdContratante?: number | null;
+		IdProdutoMusicalContratante?: number | null;
+		/**
+		 * Only the requests the client made as themselves, not through one of
+		 * their professional profiles (IdContratante alone brings both)
+		 */
+		onlyDirectRequests?: boolean;
+	},
+	options: { enabled?: boolean } = {}
+) => {
 	const IdContratante = filters.IdContratante;
 	const IdProdutoMusical = filters.IdProdutoMusical;
 	const IdProdutoMusicalContratante = filters.IdProdutoMusicalContratante;
 
 	return useQuery({
 		queryKey: ["filtered-budgets", filters, IdProdutoMusical],
+		enabled: options.enabled ?? true,
 		queryFn: async () => {
 			// Server supports only basic filters. Fetch and filter locally.
 			const payload: ProposalFilterRequest = {
@@ -390,7 +399,10 @@ export const useFilteredBudgets = (filters: {
 				Enviado: true,
 			};
 
-			const results = await proposalService.listBudgets(payload);
+			const results = (await proposalService.listBudgets(payload)).filter(
+				(budget) =>
+					!filters.onlyDirectRequests || !budget.produtoMusicalContratante?.id
+			);
 
 			let filtered: Array<BudgetResponse> = results;
 
@@ -465,7 +477,6 @@ export const useFilteredBudgets = (filters: {
 				},
 			};
 		},
-		enabled: true,
 		staleTime: 2 * 60 * 1000, // 2 minutes
 		retry: 2,
 		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),

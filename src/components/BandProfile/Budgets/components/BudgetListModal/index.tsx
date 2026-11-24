@@ -16,6 +16,7 @@ import {
 	TableSkeleton,
 } from "@/components/ui/LoadingStates";
 import { useFilteredBudgets } from "@/hooks/useProposals";
+import { budgetRequestFilters } from "../../utils/budgetRequestFilters";
 import { FileText } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
@@ -109,15 +110,13 @@ export const BudgetListModal = ({
 		data: filteredBudgets,
 		isLoading,
 		error,
-	} = useFilteredBudgets({
-		IdContratante: produtoMusicalContratanteId
-			? null
-			: produtoMusicalId
-				? null
-				: contratanteId,
-		IdProdutoMusicalContratante: produtoMusicalContratanteId,
-		IdProdutoMusical: produtoMusicalId,
-	});
+	} = useFilteredBudgets(
+		budgetRequestFilters({
+			produtoMusicalId,
+			produtoMusicalContratanteId,
+			contratanteId,
+		})
+	);
 
 	const budgetDetails = useMemo<CreateProposalForm>(
 		() => getInitialFormValues(budget),
