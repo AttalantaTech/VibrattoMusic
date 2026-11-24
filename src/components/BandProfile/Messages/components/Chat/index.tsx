@@ -22,6 +22,11 @@ import { useMusicalProductStore } from "@/store/musicalProduct/useMusicalProduct
 import { MoreOptionsDropdownItem } from "@/components/ui/MoreOptionsDropdownItem";
 import { Dropdown } from "@/components/ui/Dropdown/Dropdown";
 import { BudgetListModal } from "@/components/BandProfile/Budgets/components/BudgetListModal";
+import {
+	budgetRequestFilters,
+	pendingBadgeLabel,
+} from "@/components/BandProfile/Budgets/utils/budgetRequestFilters";
+import { useFilteredBudgets } from "@/hooks/useProposals";
 import { ProposalViewer } from "@/components/BandProfile/Proposals/components/ProposalViewer";
 import { useCallback, useEffect, useState } from "react";
 import { useAnnounceHiringConcluded } from "../../hooks/useAnnounceHiringConcluded";
@@ -67,6 +72,27 @@ export const Chat = () => {
 		messagesContainerRef,
 		messagesEndRef,
 	} = useChat() || {};
+
+	// The band, in its own conversation, gets the "Propostas" menu; the badge
+	// counts this conversation's budget requests still without a proposal
+	// (same list as the "Solicitações de Orçamentos" window, sharing its
+	// cached answer)
+	const canMakeProposals =
+		!!selectedConversation &&
+		currentProductId === selectedConversation.produtoMusicalId &&
+		isProfileComplete;
+	const { data: pendingBudgetList } = useFilteredBudgets(
+		budgetRequestFilters({
+			produtoMusicalId: selectedConversation?.produtoMusicalId ?? null,
+			produtoMusicalContratanteId:
+				selectedConversation?.produtoMusicalContratanteId ?? null,
+			contratanteId: selectedConversation?.contratanteId || 0,
+		}),
+		{ enabled: canMakeProposals }
+	);
+	const pendingBudgets = canMakeProposals
+		? (pendingBudgetList?.pagination.total ?? 0)
+		: 0;
 
 	// The same "Ver proposta" link is shown to both sides of the conversation:
 	// the seller (the conversation's musical product) goes to "Minhas Vendas",
@@ -359,10 +385,23 @@ export const Chat = () => {
 											<button
 												type="button"
 												aria-haspopup="menu"
-												className="inline-flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-primary-300 bg-primary-100/50 px-3 text-sm font-medium text-primary-900 transition-colors hover:bg-primary-100/75"
+												aria-label={
+													pendingBudgets > 0
+														? `Propostas, ${pendingBudgets} ${pendingBudgets === 1 ? "solicitação" : "solicitações"} de orçamento sem proposta`
+														: undefined
+												}
+												className="relative inline-flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-primary-300 bg-primary-100/50 px-3 text-sm font-medium text-primary-900 transition-colors hover:bg-primary-100/75"
 											>
 												<FileText size={16} />
 												Propostas
+												{pendingBudgets > 0 && (
+													<span
+														aria-hidden="true"
+														className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-semibold leading-none text-white ring-2 ring-white"
+													>
+														{pendingBadgeLabel(pendingBudgets)}
+													</span>
+												)}
 											</button>
 										}
 									>
@@ -384,6 +423,14 @@ export const Chat = () => {
 											<span className="text-sm font-medium">
 												Solicitações de Orçamentos
 											</span>
+											{pendingBudgets > 0 && (
+												<span
+													className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-semibold leading-none text-white"
+													aria-label={`${pendingBudgets} sem proposta`}
+												>
+													{pendingBadgeLabel(pendingBudgets)}
+												</span>
+											)}
 										</MoreOptionsDropdownItem>
 									</Dropdown>
 								)}
