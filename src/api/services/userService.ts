@@ -195,7 +195,7 @@ export class UserService {
 	}
 
 	/**
-	 * Reset password with token
+	 * Reset password with the code sent by e-mail
 	 */
 	public async resetPassword(request: ResetPasswordRequest): Promise<void> {
 		return this.apiClient.post<void>("usuario/redefinirSenha", request);
