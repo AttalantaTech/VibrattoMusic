@@ -21,19 +21,29 @@ const emailSchema = z.string().trim().email("Email inválido");
 interface LoginWithCodeProps {
 	/** The e-mail already typed in the login with password, if any */
 	initialEmail?: string;
+	/**
+	 * "login": the login page. "signup": the first step of the sign-up, to
+	 * confirm the e-mail (an e-mail that already has an account just enters)
+	 */
+	purpose?: "login" | "signup";
 	/** Same ending as the login with password: user, session and redirect */
 	onLoggedIn: (response: LoginResponse) => Promise<void>;
+	/** A new e-mail was confirmed: the sign-up goes on with this token */
+	onSignupConfirmed: (email: string, signupToken: string) => void;
 	/** Back to the login with password, carrying the e-mail typed here */
-	onUsePassword: (email: string) => void;
+	onUsePassword?: (email: string) => void;
 }
 
 /**
  * Login without password: the e-mail gets a 6-digit code (valid for 10
- * minutes, used once) and the code opens the session
+ * minutes, used once) and the code opens the session. For an e-mail without
+ * account the same code confirms it, and the sign-up goes on
  */
 export const LoginWithCode = ({
 	initialEmail = "",
+	purpose = "login",
 	onLoggedIn,
+	onSignupConfirmed,
 	onUsePassword,
 }: LoginWithCodeProps) => {
 	const [step, setStep] = useState<"email" | "code">("email");
@@ -77,16 +87,20 @@ export const LoginWithCode = ({
 			return;
 		}
 
-		setError(null);
-		setHasNoAccount(false);
-		try {
-			await requestCode.mutateAsync(parsed.data);
+		const goToCode = () => {
 			setEmail(parsed.data);
 			setCode("");
 			triedCode.current = "";
 			setStep("code");
 			setResendAt(Date.now() + RESEND_WAIT_SECONDS * 1000);
 			setNow(Date.now());
+		};
+
+		setError(null);
+		setHasNoAccount(false);
+		try {
+			await requestCode.mutateAsync(parsed.data);
+			goToCode();
 		} catch (failure) {
 			setError(loginCodeErrorMessage(failure, "request"));
 			setHasNoAccount(isNoAccountError(failure));
@@ -98,13 +112,18 @@ export const LoginWithCode = ({
 
 		triedCode.current = value;
 		setError(null);
+
 		try {
-			const response = await loginWithCode.mutateAsync({
+			const result = await loginWithCode.mutateAsync({
 				email,
 				codigo: value,
 			});
+			if (result.type === "signup") {
+				onSignupConfirmed(email, result.signupToken);
+				return;
+			}
 			setIsFinishing(true);
-			await onLoggedIn(response);
+			await onLoggedIn(result.response);
 		} catch (failure) {
 			setIsFinishing(false);
 			setError(loginCodeErrorMessage(failure, "verify"));
@@ -136,8 +155,9 @@ export const LoginWithCode = ({
 			{step === "email" ? (
 				<>
 					<p className="text-sm text-gray-600 text-center">
-						Enviaremos um código de {LOGIN_CODE_LENGTH} dígitos para o seu
-						e-mail. Não precisa de senha.
+						{purpose === "signup"
+							? `Antes do cadastro, confirme o seu e-mail: enviaremos um código de ${LOGIN_CODE_LENGTH} dígitos.`
+							: `Enviaremos um código de ${LOGIN_CODE_LENGTH} dígitos para o seu e-mail. Não precisa de senha.`}
 					</p>
 					<InputField
 						autoComplete="email"
@@ -185,7 +205,7 @@ export const LoginWithCode = ({
 				</div>
 			)}
 
-			{step === "email" && hasNoAccount && (
+			{step === "email" && hasNoAccount && purpose === "login" && (
 				<CreateAccountButton email={email} />
 			)}
 
@@ -204,7 +224,13 @@ export const LoginWithCode = ({
 						disabled={isBusy || !isCompleteLoginCode(code)}
 						type="submit"
 					>
-						{isBusy ? "Entrando..." : "Entrar"}
+						{purpose === "signup"
+							? isBusy
+								? "Confirmando..."
+								: "Confirmar e-mail"
+							: isBusy
+								? "Entrando..."
+								: "Entrar"}
 					</Button>
 
 					<div className="flex items-center justify-between gap-3 text-xs sm:text-sm">
@@ -237,15 +263,17 @@ export const LoginWithCode = ({
 				</>
 			)}
 
-			<button
-				type="button"
-				className="text-xs sm:text-sm text-primary-600 hover:text-primary-500 self-center"
-				onClick={() => {
-					onUsePassword(email);
-				}}
-			>
-				Entrar com senha
-			</button>
+			{onUsePassword && (
+				<button
+					type="button"
+					className="text-xs sm:text-sm text-primary-600 hover:text-primary-500 self-center"
+					onClick={() => {
+						onUsePassword(email);
+					}}
+				>
+					Entrar com senha
+				</button>
+			)}
 		</form>
 	);
 };

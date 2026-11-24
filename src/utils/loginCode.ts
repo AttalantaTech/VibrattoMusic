@@ -75,3 +75,43 @@ export const isNoAccountError = (error: unknown): boolean => {
 	const message = apiMessage(error) ?? "";
 	return /n[ãa]o (est[áa] )?cadastrad/i.test(message);
 };
+
+/**
+ * What usuario/loginCodigo answers: the session ({ token }) when the e-mail
+ * has an account, or the proof that a new e-mail was confirmed
+ * ({ tokenCadastro }), to be sent in the sign-up. The second one is what was
+ * asked of the back-end on 19/11/2026
+ */
+export type LoginCodeResult =
+	| { type: "login"; token: string }
+	| { type: "signup"; signupToken: string };
+
+export const parseLoginCodeResponse = (
+	response: unknown
+): LoginCodeResult | null => {
+	if (typeof response === "string" && response.trim())
+		return { type: "login", token: response.trim() };
+	if (!response || typeof response !== "object") return null;
+
+	const data = response as {
+		token?: unknown;
+		Token?: unknown;
+		tokenCadastro?: unknown;
+	};
+	const token = data.token ?? data.Token;
+	if (typeof token === "string" && token) return { type: "login", token };
+	if (typeof data.tokenCadastro === "string" && data.tokenCadastro)
+		return { type: "signup", signupToken: data.tokenCadastro };
+	return null;
+};
+
+/**
+ * The sign-up refused the tokenCadastro (expired, used or for another
+ * e-mail): the e-mail has to be confirmed again
+ */
+export const isSignupTokenError = (error: unknown): boolean => {
+	if (!(error instanceof VibrattoApiError)) return false;
+	if (error.statusCode !== 400 && error.statusCode !== 401) return false;
+
+	return /token|confirma/i.test(apiMessage(error) ?? "");
+};
