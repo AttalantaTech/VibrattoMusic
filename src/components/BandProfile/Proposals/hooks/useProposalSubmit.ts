@@ -226,6 +226,7 @@ export const useProposalSubmit = ({
 			estruturaPalcoSomIluminacaoInclusa: Boolean(
 				finalFormData.estruturaPalcoSomIluminacaoInclusa
 			),
+			notaFiscalInclusa: Boolean(finalFormData.notaFiscalInclusa),
 			// geradorIncluso: Boolean(finalFormData.geradorIncluso),
 			idPropostaGerouContraProposta: counterProposalOf?.id ?? null,
 		};

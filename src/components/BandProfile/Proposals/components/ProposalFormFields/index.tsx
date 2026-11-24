@@ -704,6 +704,36 @@ export function ProposalFormFields({
 					/>
 				</div>
 
+				<div className="flex items-center justify-between">
+					<Controller
+						control={control}
+						name="notaFiscalInclusa"
+						render={({ field }) => (
+							<>
+								<div>
+									<Label
+										htmlFor="notaFiscalInclusa"
+										className="text-base font-medium"
+									>
+										Nota Fiscal Inclusa
+									</Label>
+									<p className="text-sm text-gray-500">
+										Emissão de nota fiscal do serviço já incluída no valor
+									</p>
+								</div>
+								<Switch
+									onBlur={field.onBlur}
+									id="notaFiscalInclusa"
+									checked={Boolean(field.value)}
+									onCheckedChange={(checked) => {
+										field.onChange(checked);
+									}}
+								/>
+							</>
+						)}
+					/>
+				</div>
+
 				{/* <div className="flex items-center justify-between">
 								<Controller
 									control={control}

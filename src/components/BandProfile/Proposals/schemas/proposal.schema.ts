@@ -37,6 +37,7 @@ const createProposalSchema = z
 		valorSinalPagamento: z.number(),
 		camarimIncluso: z.boolean().optional(),
 		estruturaPalcoSomIluminacaoInclusa: z.boolean().optional(),
+		notaFiscalInclusa: z.boolean().optional(),
 		geradorIncluso: z.boolean().optional(),
 		formaPagamento: z
 			.array(z.number().min(1))
