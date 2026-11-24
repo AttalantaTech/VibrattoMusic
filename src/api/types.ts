@@ -211,8 +211,10 @@ export interface ForgotPasswordRequest {
 	email: string;
 }
 
+/** The code sent by e-mail (usuario/esqueciSenha), since 24/11/2026 */
 export interface ResetPasswordRequest {
-	token: string;
+	email: string;
+	codigo: string;
 	novaSenha: string;
 }
 

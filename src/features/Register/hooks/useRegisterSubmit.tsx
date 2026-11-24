@@ -7,8 +7,21 @@ import { onlyAlphanumeric, onlyDigits } from "@/utils/validation";
 import { showApiError } from "@/utils/showApiError";
 import { imageUploadService } from "@/api";
 import { toast } from "sonner";
+import {
+	clearConfirmedSignup,
+	clearSignupEmail,
+	readConfirmedSignup,
+} from "@/utils/signupEmail";
+import { isSignupTokenError } from "@/utils/loginCode";
 
-export function useRegisterSubmit() {
+interface RegisterSubmitOptions {
+	/** The API refused the e-mail confirmation: it has to be done again */
+	onConfirmationRejected?: () => void;
+}
+
+export function useRegisterSubmit({
+	onConfirmationRejected,
+}: RegisterSubmitOptions = {}) {
 	const router = useRouter();
 	const registerMutation = useRegisterUser();
 	const loginMutation = useLogin();
@@ -50,10 +63,13 @@ export function useRegisterSubmit() {
 				cidade: data.cidade,
 				estado: data.estado.toUpperCase(),
 				complemento: data.complemento,
+				// Proof that the e-mail was confirmed with the code
+				tokenCadastro: readConfirmedSignup()?.token ?? null,
 			};
 
 			const registeredUser =
 				await registerMutation.mutateAsync(finalRegisterData);
+			clearSignupEmail();
 
 			// Automatically log in the user after registration
 			const loginResponse = await loginMutation.mutateAsync({
@@ -103,6 +119,14 @@ export function useRegisterSubmit() {
 				await router.navigate({ to: "/band/profile-type" });
 			}
 		} catch (error: unknown) {
+			if (isSignupTokenError(error)) {
+				clearConfirmedSignup();
+				onConfirmationRejected?.();
+				toast.error(
+					"A confirmação do e-mail venceu. Confirme de novo para concluir o cadastro."
+				);
+				return;
+			}
 			showApiError(
 				error,
 				"Erro ao criar conta. Preencha os campos obrigatórios e tente novamente."

@@ -1,4 +1,5 @@
 import type { ApiClient } from "../core/client";
+import { parseLoginCodeResponse } from "@/utils/loginCode";
 import type {
 	User,
 	LoginRequest,
@@ -107,26 +108,32 @@ export class UserService {
 	}
 
 	/**
-	 * Logs in with the code from the e-mail. The answer has the same token as
-	 * the login with password, so the rest of the login is shared
+	 * Enters with the code from the e-mail. An e-mail with account gets the
+	 * same token as the login with password, so the rest of the login is
+	 * shared; a new e-mail gets the tokenCadastro that proves it was confirmed
 	 */
 	public async loginWithCode(
 		request: LoginCodeRequest
-	): Promise<LoginResponse> {
-		const response = await this.apiClient.post<
-			{ token?: string; Token?: string } | string
-		>("usuario/loginCodigo", request);
+	): Promise<
+		| { type: "login"; response: LoginResponse }
+		| { type: "signup"; signupToken: string }
+	> {
+		const response = await this.apiClient.post<unknown>(
+			"usuario/loginCodigo",
+			request
+		);
 
-		const token =
-			typeof response === "string"
-				? response
-				: (response?.token ?? response?.Token);
-		if (!token) throw new Error("Invalid token received from API");
+		const result = parseLoginCodeResponse(response);
+		if (!result) throw new Error("Invalid token received from API");
+		if (result.type === "signup") return result;
 
 		return {
-			...(typeof response === "object" ? response : {}),
-			Token: token,
-			token,
+			type: "login",
+			response: {
+				...(typeof response === "object" && response ? response : {}),
+				Token: result.token,
+				token: result.token,
+			},
 		};
 	}
 
@@ -195,7 +202,7 @@ export class UserService {
 	}
 
 	/**
-	 * Reset password with token
+	 * Reset password with the code sent by e-mail
 	 */
 	public async resetPassword(request: ResetPasswordRequest): Promise<void> {
 		return this.apiClient.post<void>("usuario/redefinirSenha", request);

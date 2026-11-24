@@ -5,16 +5,17 @@ import { z } from "zod";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { useLogin } from "../hooks/useUser";
 import { BackToHomeLink, HomeLogoLink } from "../components/auth/HomeLinks";
-import { useAuthStore } from "../store/authStore";
 import { Button } from "../components/ui/Button/Button";
 import { InputField } from "../components/forms/InputField/InputField";
 import { Link, useRouter } from "@tanstack/react-router";
-import { extractUserIdFromToken } from "../utils/jwt";
 import ShowImg from "../assets/images/show.jpg";
-import { apiClient } from "@/api/core/client";
-import type { LoginResponse, User } from "@/api/types";
 import { LoginWithCode } from "../components/auth/LoginWithCode";
 import { loginErrorMessage } from "@/utils/loginError";
+import { isNoAccountError } from "@/utils/loginCode";
+import { CreateAccountButton } from "../components/auth/CreateAccountButton";
+import { useCompleteLogin } from "@/hooks/useCompleteLogin";
+import { saveConfirmedSignup } from "@/utils/signupEmail";
+import { toast } from "sonner";
 
 const loginSchema = z.object({
 	email: z.string().email("Email inválido"),
@@ -27,13 +28,11 @@ export const Login = () => {
 	const [showPassword, setShowPassword] = useState(false);
 	// Two ways in: password (as always) or a code sent to the e-mail
 	const [method, setMethod] = useState<"password" | "code">("password");
+	// The e-mail has no account: offer the sign-up with it
+	const [hasNoAccount, setHasNoAccount] = useState(false);
 	const router = useRouter();
-	const setAuth = useAuthStore((state) => state.setAuth);
 	const loginMutation = useLogin();
-
-	// Get redirect URL from query params
-	const urlParameters = new URLSearchParams(window.location.search);
-	const customRedirect = urlParameters.get("redirect");
+	const completeLogin = useCompleteLogin();
 
 	const {
 		register,
@@ -45,50 +44,9 @@ export const Login = () => {
 	} = useForm<LoginFormData>({
 		resolver: zodResolver(loginSchema),
 	});
-	/**
-	 * The end of both logins: the user's data, the session and the page the
-	 * person came from. Throws when the user's data can't be read
-	 */
-	const completeLogin = async (response: LoginResponse): Promise<void> => {
-		if (!response.token) throw new Error("Invalid token received from API");
-
-		// Extract user ID from JWT token
-		const userIdFromToken = extractUserIdFromToken(response.token);
-		const user = await apiClient.get<User>("usuario", {
-			headers: { Authorization: `Bearer ${response.token}` },
-		});
-
-		// Set auth with the data from login response
-		setAuth(
-			{
-				id: userIdFromToken || 0, // Use extracted ID from token
-				email: user.email,
-				nome: user.nome,
-				ativo: true,
-				userType: response.userType,
-			},
-			response.token,
-			response.refreshToken
-		);
-
-		// Wait a moment for the auth state to stabilize
-		await new Promise((resolve) => {
-			setTimeout(() => {
-				resolve(undefined);
-			}, 100);
-		});
-
-		// Determine redirect - always go to home page for unified experience
-		let redirectTo = customRedirect;
-		if (!redirectTo) {
-			// Unified routing: all users go to home page with musician list
-			redirectTo = "/";
-		}
-
-		await router.navigate({ to: redirectTo });
-	};
 
 	const onSubmit = async (data: LoginFormData) => {
+		setHasNoAccount(false);
 		try {
 			const response = await loginMutation.mutateAsync(data);
 
@@ -104,6 +62,7 @@ export const Login = () => {
 		} catch (error: unknown) {
 			console.error("❌ Login error details:", error);
 			setError("root", { message: loginErrorMessage(error) });
+			setHasNoAccount(isNoAccountError(error));
 		}
 	};
 
@@ -132,6 +91,14 @@ export const Login = () => {
 						<LoginWithCode
 							initialEmail={getValues("email")}
 							onLoggedIn={completeLogin}
+							onSignupConfirmed={(email, signupToken) => {
+								// A new e-mail, already confirmed: on to the sign-up
+								saveConfirmedSignup(email, signupToken);
+								toast.success(
+									"E-mail confirmado! Agora escolha como vai usar a Vibratto."
+								);
+								void router.navigate({ to: "/welcome" });
+							}}
 							onUsePassword={(email) => {
 								if (email) setValue("email", email);
 								setMethod("password");
@@ -146,7 +113,11 @@ export const Login = () => {
 							<div className="flex flex-col gap-4 lg:gap-5 w-full">
 								<div>
 									<InputField
-										{...register("email")}
+										{...register("email", {
+											onChange: () => {
+												setHasNoAccount(false);
+											},
+										})}
 										autoComplete="email"
 										icon={<Mail size={20} />}
 										label="Email"
@@ -190,6 +161,9 @@ export const Login = () => {
 									<div className="text-red-600 text-sm text-center">
 										{errors.root.message}
 									</div>
+								)}
+								{hasNoAccount && (
+									<CreateAccountButton email={getValues("email")} />
 								)}
 								<div className="flex items-center justify-end">
 									<Link

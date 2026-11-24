@@ -31,6 +31,13 @@
 	}
 }
 
+/* Edge adds its own "show password" eye to focused password fields. Every
+   password field here has its own eye button, so there would be two */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+	display: none;
+}
+
 /* controls the RichTextEditorProps component */
 .rte-wrapper .ql-container {
 	@apply h-full max-h-full;
