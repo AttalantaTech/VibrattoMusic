@@ -855,6 +855,7 @@ export interface CreateProposalRequest {
 	acomodacaoInclusa?: boolean;
 	camarimIncluso?: boolean;
 	estruturaPalcoSomIluminacaoInclusa?: boolean;
+	notaFiscalInclusa?: boolean;
 	geradorIncluso?: boolean;
 	idOrcamento?: number | null;
 	idPropostaGerouContraProposta?: number | null;
@@ -934,6 +935,7 @@ export interface ProposalResponse {
 	acomodacaoInclusa: boolean;
 	camarimIncluso: boolean;
 	estruturaPalcoSomIluminacaoInclusa?: boolean;
+	notaFiscalInclusa?: boolean;
 	formaPagamento: Array<{
 		id: number;
 		nome: string;

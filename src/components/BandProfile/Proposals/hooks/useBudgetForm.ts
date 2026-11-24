@@ -123,6 +123,7 @@ export const useBudgetForm = ({
 			acomodacaoInclusa: false,
 			camarimIncluso: false,
 			estruturaPalcoSomIluminacaoInclusa: false,
+			notaFiscalInclusa: false,
 			// geradorIncluso: false
 		};
 	}, [budget, contractorName, getContractorId, dataEvento]);

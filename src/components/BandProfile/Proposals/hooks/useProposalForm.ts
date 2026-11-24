@@ -160,6 +160,7 @@ export const useProposalForm = ({
 			camarimIncluso: proposal?.camarimIncluso || false,
 			estruturaPalcoSomIluminacaoInclusa:
 				proposal?.estruturaPalcoSomIluminacaoInclusa || false,
+			notaFiscalInclusa: proposal?.notaFiscalInclusa || false,
 			// geradorIncluso: proposal?.geradorIncluso || false
 		};
 	}, [
