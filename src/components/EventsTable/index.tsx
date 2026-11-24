@@ -260,7 +260,23 @@ const columnBudget = [
 	}),
 	columnHelperBudget.accessor("budget.contratante.nome", {
 		header: "Cliente",
-		cell: ({ row }) => row.original.budget.contratante.nome || "-",
+		cell: ({ row }) => {
+			const { contratante, produtoMusicalContratante } = row.original.budget;
+			// Asked by a professional profile: the band talks to that profile, so
+			// its name comes first and the person behind it below
+			if (produtoMusicalContratante?.id && produtoMusicalContratante.nome)
+				return (
+					<div className="flex flex-col">
+						<span className="font-medium text-gray-900">
+							{produtoMusicalContratante.nome}
+						</span>
+						{contratante.nome ? (
+							<span className="text-gray-500">{contratante.nome}</span>
+						) : null}
+					</div>
+				);
+			return contratante.nome || "-";
+		},
 	}),
 	columnHelperBudget.display({
 		header: "Ações",
