@@ -13,7 +13,6 @@ import {
 	readConfirmedSignup,
 } from "@/utils/signupEmail";
 import { isSignupTokenError } from "@/utils/loginCode";
-import { EMAIL_CONFIRMATION_LIVE } from "@/features/EmailConfirmation/config";
 
 interface RegisterSubmitOptions {
 	/** The API refused the e-mail confirmation: it has to be done again */
@@ -65,9 +64,7 @@ export function useRegisterSubmit({
 				estado: data.estado.toUpperCase(),
 				complemento: data.complemento,
 				// Proof that the e-mail was confirmed with the code
-				...(EMAIL_CONFIRMATION_LIVE
-					? { tokenCadastro: readConfirmedSignup()?.token ?? null }
-					: {}),
+				tokenCadastro: readConfirmedSignup()?.token ?? null,
 			};
 
 			const registeredUser =
@@ -122,7 +119,7 @@ export function useRegisterSubmit({
 				await router.navigate({ to: "/band/profile-type" });
 			}
 		} catch (error: unknown) {
-			if (EMAIL_CONFIRMATION_LIVE && isSignupTokenError(error)) {
+			if (isSignupTokenError(error)) {
 				clearConfirmedSignup();
 				onConfirmationRejected?.();
 				toast.error(

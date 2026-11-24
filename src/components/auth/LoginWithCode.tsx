@@ -15,10 +15,6 @@ import {
 	normalizeLoginCode,
 } from "@/utils/loginCode";
 import { CreateAccountButton } from "./CreateAccountButton";
-import {
-	DEMO_SIGNUP_CODE,
-	EMAIL_CONFIRMATION_LIVE,
-} from "@/features/EmailConfirmation/config";
 
 const emailSchema = z.string().trim().email("Email inválido");
 
@@ -59,9 +55,6 @@ export const LoginWithCode = ({
 	const [isFinishing, setIsFinishing] = useState(false);
 	// The e-mail has no account: offer the sign-up with it
 	const [hasNoAccount, setHasNoAccount] = useState(false);
-	// Demonstration: the API doesn't send codes to new e-mails yet, so the
-	// code is simulated (see EmailConfirmation/config)
-	const [isDemoSignup, setIsDemoSignup] = useState(false);
 	const codeRef = useRef<HTMLInputElement>(null);
 	// The code tried last: a full code is sent by itself only once
 	const triedCode = useRef("");
@@ -94,8 +87,7 @@ export const LoginWithCode = ({
 			return;
 		}
 
-		const goToCode = (isDemo: boolean) => {
-			setIsDemoSignup(isDemo);
+		const goToCode = () => {
 			setEmail(parsed.data);
 			setCode("");
 			triedCode.current = "";
@@ -108,12 +100,8 @@ export const LoginWithCode = ({
 		setHasNoAccount(false);
 		try {
 			await requestCode.mutateAsync(parsed.data);
-			goToCode(false);
+			goToCode();
 		} catch (failure) {
-			if (!EMAIL_CONFIRMATION_LIVE && isNoAccountError(failure)) {
-				goToCode(true);
-				return;
-			}
 			setError(loginCodeErrorMessage(failure, "request"));
 			setHasNoAccount(isNoAccountError(failure));
 		}
@@ -124,13 +112,6 @@ export const LoginWithCode = ({
 
 		triedCode.current = value;
 		setError(null);
-
-		if (isDemoSignup) {
-			if (value === DEMO_SIGNUP_CODE) onSignupConfirmed(email, "demo");
-			else
-				setError(`Código incorreto. Na demonstração, use ${DEMO_SIGNUP_CODE}.`);
-			return;
-		}
 
 		try {
 			const result = await loginWithCode.mutateAsync({
@@ -200,16 +181,6 @@ export const LoginWithCode = ({
 						<span className="font-semibold">{email}</span>. Ele vale por 10
 						minutos. Não chegou? Confira o spam.
 					</div>
-					{isDemoSignup && (
-						<div
-							className="rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-xs text-yellow-900"
-							role="note"
-						>
-							<strong>Modo demonstração:</strong> o código para e-mail sem conta
-							ainda depende do back-end, então nenhum e-mail foi enviado. Use o
-							código <strong>{DEMO_SIGNUP_CODE}</strong>.
-						</div>
-					)}
 					<InputField
 						ref={codeRef}
 						autoComplete="one-time-code"
