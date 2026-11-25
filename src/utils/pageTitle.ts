@@ -10,6 +10,24 @@ export const formatPageTitle = (name?: string | null): string => {
 	return page ? `${page} · ${APP_NAME}` : APP_NAME;
 };
 
+/**
+ * "(3) Mensagens · Vibratto Music": conversations with unread messages, so a
+ * tab left open in the background shows that something arrived
+ */
+export const withUnreadCount = (title: string, unread: number): string =>
+	unread > 0 ? `(${unread > 9 ? "9+" : unread}) ${title}` : title;
+
+/**
+ * Conversations with at least one unread message (the number on the header's
+ * message icon and in the tab title)
+ */
+export const countUnreadConversations = (
+	conversations?: Array<{ numeroMensagensNaoLidas?: number | null }> | null
+): number =>
+	conversations?.filter(
+		(conversation) => (conversation.numeroMensagensNaoLidas ?? 0) > 0
+	).length ?? 0;
+
 /** The tabs of the logged-in area (/band/me?tab=...), as named in its menu */
 const TAB_NAMES: Record<string, string> = {
 	account: "Conta",
@@ -25,21 +43,21 @@ const TAB_NAMES: Record<string, string> = {
 };
 
 /**
- * The name of the page at this address. "" = only the brand; null = the page
- * names itself, because the name comes from data (a band's public profile,
- * see usePageTitle)
+ * The name of the page at this address ("" = only the brand). A page whose
+ * name comes from data replaces it once loaded (usePageTitle): a band's
+ * public profile shows "Perfil do artista" until the band's name arrives
  */
 export const pageNameFor = (
 	pathname: string,
 	search: Record<string, unknown> = {}
-): string | null => {
+): string => {
 	const path = pathname.replace(/\/+$/, "") || "/";
 
 	if (path === "/band/me") {
 		const tab = typeof search["tab"] === "string" ? search["tab"] : "messages";
 		return TAB_NAMES[tab] ?? "";
 	}
-	if (path.startsWith("/band/profile/")) return null;
+	if (path.startsWith("/band/profile/")) return "Perfil do artista";
 	if (path.startsWith("/band/contract/create")) return "Modelo de contrato";
 	if (path.startsWith("/band/contract/")) return "Contrato";
 	if (path === "/band/profile-type" || path.startsWith("/band/register"))
