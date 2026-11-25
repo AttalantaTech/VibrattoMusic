@@ -12,6 +12,7 @@ import type { MusicalProductApiResponse } from "../../api/types";
 import { StartConversationModal } from "../../components/BandProfile/Messages/components/StartConversationModal";
 import { toast } from "sonner";
 import { BandProfile } from "@/components/BandProfile/Account/BandProfile";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const PublicBandProfile = () => {
 	const { id } = useParams({ from: "/band/profile/$id" });
@@ -34,6 +35,9 @@ export const PublicBandProfile = () => {
 	};
 
 	const band = bandList?.[0];
+
+	// "Nome da banda · Vibratto Music" in the browser tab once loaded
+	usePageTitle(band?.nome ?? "Perfil do artista");
 
 	// Search for similar artists
 	const { data: similarArtists, isLoading: similarArtistsLoading } =
