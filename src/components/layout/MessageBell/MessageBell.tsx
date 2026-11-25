@@ -1,25 +1,16 @@
-import { useMemo } from "react";
 import { MessageSquare } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "../../../store/authStore";
 import { useChat } from "@/hooks/useChat";
-import type { Conversation } from "@/api/services/messages/types";
+import { countUnreadConversations } from "@/utils/pageTitle";
 
 export const MessageBell = () => {
 	const { isAuthenticated } = useAuthStore();
 	const navigate = useNavigate();
 	const { conversations } = useChat() || {};
 
-	const totalUnreadMessages: number = useMemo(() => {
-		return conversations?.reduce(
-			(total: number, conversation: Conversation) => {
-				return (
-					total + ((conversation.numeroMensagensNaoLidas || 0) > 0 ? 1 : 0)
-				);
-			},
-			0
-		);
-	}, [conversations]);
+	// Conversations with unread messages: the same number as the tab title
+	const totalUnreadMessages = countUnreadConversations(conversations);
 
 	// Don't render if not authenticated
 	if (!isAuthenticated) {

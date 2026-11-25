@@ -37,7 +37,7 @@ export const PublicBandProfile = () => {
 	const band = bandList?.[0];
 
 	// "Nome da banda · Vibratto Music" in the browser tab once loaded
-	usePageTitle(band?.nome ?? "Perfil do artista");
+	usePageTitle(band?.nome);
 
 	// Search for similar artists
 	const { data: similarArtists, isLoading: similarArtistsLoading } =

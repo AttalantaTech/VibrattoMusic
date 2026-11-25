@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { formatPageTitle, pageNameFor } from "../pageTitle";
+import {
+	countUnreadConversations,
+	formatPageTitle,
+	pageNameFor,
+	withUnreadCount,
+} from "../pageTitle";
 
 describe("browser tab title", () => {
 	it("page first, then the brand; no page: just the brand", () => {
@@ -34,8 +39,28 @@ describe("browser tab title", () => {
 		expect(pageNameFor("/band/profile-type")).toBe("Cadastro do perfil");
 	});
 
-	it("a band's public profile names itself with the band (null)", () => {
-		expect(pageNameFor("/band/profile/878")).toBeNull();
+	it("a band's public profile: a placeholder until the band's name arrives", () => {
+		expect(pageNameFor("/band/profile/878")).toBe("Perfil do artista");
+	});
+
+	it("conversations with unread messages go in front, up to 9+", () => {
+		expect(withUnreadCount("Mensagens · Vibratto Music", 3)).toBe(
+			"(3) Mensagens · Vibratto Music"
+		);
+		expect(withUnreadCount("Vibratto Music", 12)).toBe("(9+) Vibratto Music");
+		expect(withUnreadCount("Vibratto Music", 0)).toBe("Vibratto Music");
+	});
+
+	it("counts conversations with unread messages, not the messages", () => {
+		expect(
+			countUnreadConversations([
+				{ numeroMensagensNaoLidas: 4 },
+				{ numeroMensagensNaoLidas: 0 },
+				{ numeroMensagensNaoLidas: 1 },
+				{ numeroMensagensNaoLidas: null },
+			])
+		).toBe(2);
+		expect(countUnreadConversations(undefined)).toBe(0);
 	});
 
 	it("an address without a name gets only the brand", () => {
